@@ -1,0 +1,60 @@
+name: triage
+description: "Triage App for Psychiatric Units"
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+  material_symbols_icons: ^4.2928.1
+  google_fonts: ^8.0.2
+  http: ^1.2.1
+  sqflite: ^2.3.3+1
+  url_launcher: ^6.3.0
+  path: ^1.9.0
+  uuid: ^4.4.0
+  permission_handler: ^12.0.1
+  camera: ^0.12.0+1
+  # speech_to_text: ^7.4.0
+  google_mlkit_text_recognition: ^0.15.1
+  google_mlkit_barcode_scanning: ^0.14.2
+  path_provider: ^2.1.3
+  fl_chart: ^1.2.0
+  csv: ^6.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  # The core SQLite engine for Flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  generate: true
+  uses-material-design: true
+  assets:
+    - assets/assessment/
+    - assets/conditions/
+    - assets/drugs/
+    - assets/images/
+    - assets/images/faces/
+    - assets/interactions/
+    - assets/medications/
+    - assets/observations/
+    - assets/patients/
+    - assets/process/
+    - assets/questionnaires/
+    - assets/questions/
+    - assets/screen_captures/
+    - assets/sql/
+    - assets/staff/
+flutter_intl:
+  enabled: true
