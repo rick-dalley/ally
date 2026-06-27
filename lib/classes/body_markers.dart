@@ -5,7 +5,6 @@ import 'dart:ui';
 import 'package:triage/classes/database_manager.dart';
 import 'package:triage/classes/date_time_utilities.dart';
 import 'package:triage/classes/patient_sentiment.dart';
-import 'package:triage/classes/template_text.dart';
 
 import 'body_zone.dart';
 
@@ -43,8 +42,6 @@ enum Frequency { cyclical, chronic, acute }
 
 enum Nature { stinging, penetrating, dull, throbbing, achy, nagging, gnawing, sharp }
 
-typedef Chips = List<TemplateText>;
-
 class BodyMarker {
   final Offset offset;
   final Sentiment emoji;
@@ -52,13 +49,13 @@ class BodyMarker {
   final String name;
   final String medicalName;
   final BodyMarkerGroup group;
-  Chips? descriptions = [];
   VerbalSeverity? severity;
   Frequency? frequency;
   Nature? nature;
-  Chips? improvesWhen;
-  Chips? worsensWhen;
-  Chips? interventionsTried;
+  String? descriptions;
+  String? improvesWhen;
+  String? worsensWhen;
+  String? interventionsTried;
   int? recorded = DTUtilities.now();
 
   BodyMarker({
@@ -77,15 +74,6 @@ class BodyMarker {
     this.interventionsTried,
     this.recorded,
   });
-
-  static Chips chipList(dynamic json) {
-    Chips chips = [];
-    for (dynamic desc in json) {
-      TemplateText tt = TemplateText.fromJson(desc);
-      chips.add(tt);
-    }
-    return chips;
-  }
 
   factory BodyMarker.fromOffset(
     Offset offset,
@@ -112,10 +100,10 @@ class BodyMarker {
     Zone zoneFromJson = Zone.fromJson(item["zone"], zoneMap);
     double dx = item["dx"];
     double dy = item["dy"];
-    Chips descriptionChips = chipList(item["description"]);
-    Chips improvesWhenChips = chipList(item["improves_when"]);
-    Chips worsensWhenChips = chipList(item["worsens_when"]);
-    Chips interventionsTriedChips = chipList(item["interventions_tried"]);
+    String descriptionChips = item["description"];
+    String improvesWhenChips = item["improves_when"];
+    String worsensWhenChips = item["worsens_when"];
+    String interventionsTriedChips = item["interventions_tried"];
 
     return BodyMarker(
       offset: Offset(dx, dy),
@@ -145,10 +133,10 @@ class BodyMarker {
       "severity": severity?.index,
       "frequency": frequency?.index,
       "nature": nature?.index,
-      "improves_when": improvesWhen?.map((e) => e.toJson()).toList(),
-      "worsens_when": worsensWhen?.map((e) => e.toJson()).toList(),
-      "interventions_tried": interventionsTried?.map((e) => e.toJson()).toList(),
-      "descriptions": descriptions?.map((e) => e.toJson()).toList(),
+      "improves_when": improvesWhen,
+      "worsens_when": worsensWhen,
+      "interventions_tried": interventionsTried,
+      "descriptions": descriptions,
       "recorded": recorded,
       "zone": zoneMap,
       "group": group,

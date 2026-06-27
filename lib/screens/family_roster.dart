@@ -1,25 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/screens/police_report.dart';
+import 'package:triage/screens/intake.dart';
 import 'package:triage/widgets/card_flipper.dart';
-import 'package:triage/widgets/patient_information_card.dart';
+import 'package:triage/widgets/household_member_info_card.dart';
 import '../app_theme.dart';
 import '../classes/database_manager.dart';
 import '../classes/patient.dart';
-import '../widgets/interview_transcriber.dart';
-import '../widgets/patient_medical_card.dart';
+import '../widgets/household_member_medical_card.dart';
 import 'questionnaires.dart';
-import 'encounter_screen.dart';
 import 'meds.dart';
 
-class PatientRoster extends StatefulWidget {
-  const PatientRoster({super.key});
+class FamilyRoster extends StatefulWidget {
+  const FamilyRoster({super.key});
 
   @override
-  State<PatientRoster> createState() => PatientRosterState();
+  State<FamilyRoster> createState() => FamilyRosterState();
 }
 
-class PatientRosterState extends State<PatientRoster> {
+class FamilyRosterState extends State<FamilyRoster> {
   List<dynamic> _patients = [];
   String _searchQuery = "";
   late TextEditingController _searchController;
@@ -65,39 +63,11 @@ class PatientRosterState extends State<PatientRoster> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => IncidentTriageScreen(),
+        builder: (context) => IntakeScreen(),
         // This ensures the screen slides up like a focused task
         fullscreenDialog: true,
       ),
     );
-  }
-
-  void _launchInterviewModal(BuildContext context, int index) async {
-    // 1. Trigger the modal
-    final bool? didSave = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      // Allows the 85% height
-      useSafeArea: true,
-      showDragHandle: true,
-      backgroundColor: Colors.white,
-      builder: (context) => InterviewModal(patient: _patients[index]),
-    );
-
-    // 2. If the user hit "Finalize & Summarize", update the roster
-    if (didSave == true) {
-      setState(() {
-        // Create our writable copy
-        Patient updatedPatient = _patients[index];
-
-        // Increment the assessment count
-        int currentCount = updatedPatient.assessments;
-        updatedPatient.assessments = currentCount + 1;
-
-        // Update the master list
-        _patients[index] = updatedPatient;
-      });
-    }
   }
 
   @override
@@ -159,19 +129,15 @@ class PatientRosterState extends State<PatientRoster> {
                     itemCount: filteredPatients.length,
                     itemBuilder: (context, index) {
                       return FlippableCardController(
-                        height: 352,
-                        front: PatientMedicalCard(
-                          patient: filteredPatients[index],
-                          onPatientUpdate: ({required Patient patient}) {
+                        height: 332,
+                        front: HouseholdMemberMedicalCard(
+                          householdMember: filteredPatients[index],
+                          onMemberUpdate: ({required Patient patient}) {
                             updatePatient(index: index, patient: patient);
                           },
                           onVitalsUpdate: ({required Patient patient}) {
                             updatePatient(index: index, patient: patient);
                           },
-                        ),
-                        back: PatientInformationCard(
-                          patient: filteredPatients[index],
-                          onInterviewTap: () => _launchInterviewModal(context, index),
                           onAssessmentsTap: () => _showAssessmentsMenu(context, filteredPatients[index].patientUuid),
                           onMedsTap: () async {
                             final Map<String, dynamic>? result = await showModalBottomSheet(
@@ -193,22 +159,8 @@ class PatientRosterState extends State<PatientRoster> {
                               });
                             }
                           },
-                          onPoliceTap: () async {
-                            // 1. Navigate and WAIT for the signal from the Save button
-                            final int? reportCount = await Navigator.push<int>(
-                              context,
-                              MaterialPageRoute(builder: (context) => const PoliceReportScreen()),
-                            );
-
-                            // 2. If the user hit "Save" (which returns true)
-                            // Use a standard null check instead of the ! operator
-                            if (reportCount != null && reportCount > 0) {
-                              setState(() {
-                                filteredPatients[index].policeReports = reportCount;
-                              });
-                            }
-                          },
                         ),
+                        back: HouseholdMemberInformationCard(patient: filteredPatients[index]),
                       );
                     },
                   ),

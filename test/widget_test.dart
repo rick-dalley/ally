@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:triage/screens/patient_roster.dart';
+import 'package:triage/screens/family_roster.dart';
 
 void main() {
   runApp(const LuminescaApp());
@@ -19,7 +19,7 @@ class LuminescaApp extends StatelessWidget {
         useMaterial3: true,
         scaffoldBackgroundColor: const Color(0xFF121212), // Deep black for OLED
       ),
-      home: const PatientRoster(),
+      home: const FamilyRoster(),
     );
   }
 }

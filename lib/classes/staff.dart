@@ -34,7 +34,6 @@ class StaffMember {
   });
 
   factory StaffMember.fromJson(Map<String, dynamic> json) {
-
     return StaffMember(
       id: json["id"],
       firstName: json["first_name"],
@@ -86,20 +85,15 @@ class StaffFactory {
     return _cachedKeys!;
   }
 
-  // Call this whenever you add/remove staff to invalidate the cache
-  void _invalidateCache() {
-    _cachedKeys = null;
-  }
-
   // 4. Initialization method (call this once at app startup)
   Future<void> initialize() async {
     dynamic staffData = await DatabaseManager().getStaff();
     if (staffData == null) {
-       return;
+      return;
     }
     for (var item in staffData) {
-       StaffMember member = StaffMember.fromJson(item);
-       staff[member.id] = member;
+      StaffMember member = StaffMember.fromJson(item);
+      staff[member.id] = member;
     }
   }
 
@@ -107,5 +101,4 @@ class StaffFactory {
   StaffMember? getStaffMember({required String id}) => staff[id];
 
   Map<String, StaffMember> get allStaff => Map.unmodifiable(staff);
-
 }

@@ -111,11 +111,6 @@ class DatabaseManager {
     }
   }
 
-  Future<String?> getTemplateTextForCode(String code) async {
-    final db = await database;
-    return "";
-  }
-
   Future<void> insertBodyMarker(String patientUuid, Map<String, dynamic> marker) async {
     final db = await database;
 

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/database_manager.dart';
 import '../app_theme.dart';
-import '../classes/medication_services.dart';
 import '../classes/metric_value.dart';
 import '../classes/patient.dart';
 import 'body_metrics.dart';
@@ -21,27 +19,16 @@ class Tuple {
   const Tuple({required this.first, required this.second});
 }
 
-class PatientInformationCard extends StatefulWidget {
+class HouseholdMemberInformationCard extends StatefulWidget {
   final Patient patient;
-  final VoidCallback? onPoliceTap;
-  final VoidCallback? onAssessmentsTap;
-  final VoidCallback onInterviewTap; // <--- Add this
-  final VoidCallback? onMedsTap;
 
-  const PatientInformationCard({
-    super.key,
-    required this.patient,
-    this.onPoliceTap,
-    this.onAssessmentsTap,
-    required this.onInterviewTap,
-    this.onMedsTap,
-  });
+  const HouseholdMemberInformationCard({super.key, required this.patient});
 
   @override
-  State<StatefulWidget> createState() => PatientInformationCardState();
+  State<StatefulWidget> createState() => HouseholdMemberInformationCardState();
 }
 
-class PatientInformationCardState extends State<PatientInformationCard> {
+class HouseholdMemberInformationCardState extends State<HouseholdMemberInformationCard> {
   late Patient patient;
   String heightUom = "cm";
   String weightUom = "kg";
@@ -258,21 +245,6 @@ class PatientInformationCardState extends State<PatientInformationCard> {
   @override
   Widget build(BuildContext context) {
     final String name = '${patient.firstName} ${patient.lastName}';
-    bool hasReports = patient.policeReports > 0;
-    Color? medColor;
-    if (patient.medications > 0) {
-      switch (patient.medicationSafetyAudit) {
-        case MedicationSafetyAudit.interactionsNotDetected:
-          medColor = Colors.greenAccent;
-          break;
-        case MedicationSafetyAudit.interactionsDetected:
-          medColor = Colors.redAccent;
-          break;
-        case MedicationSafetyAudit.auditNotPerformed:
-          // Keep default theme colors
-          break;
-      }
-    }
 
     return Card(
       elevation: 2,
@@ -318,39 +290,7 @@ class PatientInformationCardState extends State<PatientInformationCard> {
               weightUom: patient.weightUoM,
             ),
             SizedBox(height: 16),
-            Wrap(
-              spacing: 8, // Horizontal space between buttons
-              runSpacing: 8, // Vertical space between lines
-              alignment: WrapAlignment.start,
-              children: [
-                _buildCompactButton(
-                  context: context,
-                  label: "Assess",
-                  icon: Symbols.medical_information,
-                  onTap: widget.onAssessmentsTap ?? () {},
-                ),
-                _buildCompactButton(
-                  context: context,
-                  label: "Interview",
-                  icon: Icons.mic,
-                  onTap: widget.onInterviewTap,
-                ),
-                _buildCompactButton(
-                  context: context,
-                  label: "Meds",
-                  icon: Symbols.medication,
-                  onTap: widget.onMedsTap ?? () {},
-                  color: medColor,
-                ),
-                _buildCompactButton(
-                  context: context,
-                  label: "Police",
-                  icon: Icons.local_police,
-                  onTap: widget.onPoliceTap ?? () {},
-                  color: hasReports ? Colors.greenAccent : null,
-                ),
-              ],
-            ),
+
             SizedBox(height: 8),
             _buildTuple(
               Tuple(
@@ -447,48 +387,5 @@ class PatientInformationCardState extends State<PatientInformationCard> {
       return "${clean.substring(0, 4)} ${clean.substring(4, 7)} ${clean.substring(7)}";
     }
     return rawPhn; // Fallback if format differs
-  }
-
-  Widget _buildCompactButton({
-    required BuildContext context,
-    required String label,
-    required IconData icon,
-    required VoidCallback onTap,
-    Color? color,
-  }) {
-    double availableWidth = MediaQuery.of(context).size.width - 80; // Adjusted for margins
-    return SizedBox(
-      width: availableWidth / 4,
-      child: OutlinedButton(
-        onPressed: onTap,
-        style: OutlinedButton.styleFrom(
-          // 1. Force a minimum height so the icon and text aren't cramped
-          minimumSize: const Size(0, 54),
-          // 2. Add specific vertical padding
-          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
-          foregroundColor: color,
-          side: color != null ? BorderSide(color: color, width: 1.5) : null,
-          backgroundColor: color?.withAlpha(20),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 22), // Slightly larger icon
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.normal,
-                letterSpacing: -0.2, // Tighter letters to prevent overflow
-              ),
-              maxLines: 1,
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

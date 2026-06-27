@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/acuity.dart';
 import 'package:triage/classes/body_zone.dart';
 import 'package:triage/classes/database_manager.dart';
-import 'package:triage/screens/staff_screen.dart';
+import 'package:triage/screens/family_roster.dart';
 import 'package:triage/screens/start_up.dart';
 import 'classes/action.dart';
 import 'classes/drugs.dart';
@@ -14,7 +13,6 @@ import 'classes/phase_state_handlers.dart';
 import 'classes/staff.dart';
 import 'classes/symptom_evaluation.dart';
 import 'generated/l10n.dart';
-import 'screens/patient_roster.dart';
 import 'app_theme.dart';
 
 Future<void> main() async {
@@ -101,14 +99,13 @@ class LuminescaHomeState extends State<LuminescaHome> {
             ],
           ),
         ),
-        actions: [IconButton(onPressed: () => showStaff(context), icon: const Icon(Symbols.person))],
       ),
       // The Roster stays in the tree at all times (so it lays out),
       // and we only animate the loading overlay on top.
       body: Stack(
         children: [
           // 1. The Roster: Always present and laid out, just hidden by the stack
-          const PatientRoster(),
+          const FamilyRoster(),
 
           // 2. The Loading Overlay: Only exists while loading
           FutureBuilder(
@@ -131,15 +128,6 @@ class LuminescaHomeState extends State<LuminescaHome> {
           ),
         ],
       ),
-    );
-  }
-
-  void showStaff(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const StaffScreen(),
     );
   }
 }

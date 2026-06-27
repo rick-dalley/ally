@@ -21,7 +21,6 @@ enum TransferDenialType {
   notDetermined,
 }
 
-
 enum ActionType {
   administerMedicine,
   performTest,
@@ -70,65 +69,6 @@ class PatientEvent implements TimelineItem {
       phase: PhaseIdentifier.values[rawPhase],
       eventId: json["event_id"],
       occurred: json["occurred"],
-      notes: json["notes"],
-    );
-  }
-}
-
-//Workflow: The 'Process'
-class TransferRequest implements TimelineItem {
-  final String id;
-  final String patientUuid;
-  final String requester;
-  final String requestingTeam;
-  final String granter;
-  final String fromWard;
-  final String toWard;
-  final TransferRequestStatus status;
-  final int requested;
-  TransferDenialType? denial; // Nullable: only populated if denied
-  int? disposed; //UNIX date time
-  int? transferred; //UNIX date time
-  String? notes;
-  @override
-  int occurred;
-
-  TransferRequest({
-    required this.id,
-    required this.status,
-    required this.requested,
-    required this.patientUuid,
-    required this.fromWard,
-    required this.granter,
-    required this.requester,
-    required this.requestingTeam,
-    required this.toWard,
-    this.notes,
-    this.disposed,
-    this.transferred,
-    this.denial,
-  }) : occurred = requested;
-
-  factory TransferRequest.fromJson(Map<String, dynamic> json) {
-    int? rawDenialReason = json["denial"];
-    int rawStatus = json["TransferRequestStatus"];
-    TransferRequestStatus status = TransferRequestStatus.values[rawStatus];
-    TransferDenialType denial = rawDenialReason == null
-        ? TransferDenialType.notDetermined
-        : TransferDenialType.values[rawDenialReason];
-    return TransferRequest(
-      id: json["id"],
-      status: status,
-      denial: denial,
-      requested: json["requested"],
-      patientUuid: json["patient_uuid"],
-      requester: json["requested_by_uuid"],
-      requestingTeam: json["requesting_team"],
-      granter: json["grantor_uuid"],
-      fromWard: json["from_ward"],
-      toWard: json["to_ward"],
-      transferred: DTUtilities.dateStringToUnixInt(json["transferred_at"]),
-      disposed: DTUtilities.dateStringToUnixInt(json["disposed_at"]),
       notes: json["notes"],
     );
   }
@@ -224,7 +164,6 @@ class TimeLine {
   final int startTime;
   final int endTime;
   List<PatientAction> actions = [];
-  List<TransferRequest> transfers = [];
   List<PatientEvent> events = [];
 
   TimeLine({
@@ -233,22 +172,16 @@ class TimeLine {
     required this.startTime,
     required this.events,
     required this.actions,
-    required this.transfers,
   });
 
   factory TimeLine.fromJson(Map<String, dynamic> json) {
     List<dynamic> eventJson = json["events"];
     List<PatientEvent> newEvents = [];
-    List<dynamic> transferJson = json["transfers"];
-    List<TransferRequest> newTransfers = [];
     List<dynamic> actionJson = json["actions"];
     List<PatientAction> newActions = [];
 
     for (Map<String, dynamic> json in eventJson) {
       newEvents.add(PatientEvent.fromJson(json));
-    }
-    for (Map<String, dynamic> json in transferJson) {
-      newTransfers.add(TransferRequest.fromJson(json));
     }
     for (Map<String, dynamic> json in actionJson) {
       newActions.add(PatientAction.fromJson(json));
@@ -259,14 +192,13 @@ class TimeLine {
       startTime: json["start_time"],
       endTime: json["end_time"],
       actions: newActions,
-      transfers: newTransfers,
       events: newEvents,
     );
   }
 
   // This is the "Magic" method for your CustomPainter
   List<TimelineItem> get sortedChronology {
-    List<TimelineItem> combined = [...actions, ...transfers, ...events];
+    List<TimelineItem> combined = [...actions, ...events];
     // Sort by integer using a common interface or getter
     combined.sort((a, b) => a.occurred.compareTo(b.occurred));
     return combined;
