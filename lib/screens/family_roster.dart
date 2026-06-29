@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/screens/intake.dart';
 import 'package:triage/widgets/card_flipper.dart';
+import 'package:triage/widgets/emergency_qr.dart';
 import 'package:triage/widgets/household_member_info_card.dart';
 import '../app_theme.dart';
 import '../classes/database_manager.dart';
 import '../classes/patient.dart';
 import '../widgets/household_member_medical_card.dart';
-import 'questionnaires.dart';
+import 'medical_profile_screen.dart';
 import 'meds.dart';
 
 class FamilyRoster extends StatefulWidget {
@@ -50,20 +50,20 @@ class FamilyRosterState extends State<FamilyRoster> {
     });
   }
 
-  void _showAssessmentsMenu(BuildContext context, String patientUuid) {
+  void _showAssessmentsMenu(BuildContext context, Patient householdMember) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => AssessmentsScreen(patientUuid: patientUuid),
+      builder: (context) => MedicalProfileScreen(householdMember: householdMember),
     );
   }
 
-  void _launchEncounterScreen(BuildContext context) {
+  void launchEmergencyQRCodeGenerator(BuildContext context, Patient householdMember) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => IntakeScreen(),
+        builder: (context) => EmergencyQRCodeView(householdMember: householdMember),
         // This ensures the screen slides up like a focused task
         fullscreenDialog: true,
       ),
@@ -138,7 +138,7 @@ class FamilyRosterState extends State<FamilyRoster> {
                           onVitalsUpdate: ({required Patient patient}) {
                             updatePatient(index: index, patient: patient);
                           },
-                          onAssessmentsTap: () => _showAssessmentsMenu(context, filteredPatients[index].patientUuid),
+                          onAssessmentsTap: () => _showAssessmentsMenu(context, filteredPatients[index]),
                           onMedsTap: () async {
                             final Map<String, dynamic>? result = await showModalBottomSheet(
                               context: context,
@@ -168,14 +168,13 @@ class FamilyRosterState extends State<FamilyRoster> {
         ],
       ),
 
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _launchEncounterScreen(context),
-        // New dedicated screen
-        label: const Text("+", style: TextStyle(letterSpacing: 1.0, fontWeight: FontWeight.w600)),
-        icon: const Icon(Symbols.frame_person),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => launchEmergencyQRCodeGenerator(context, _patients.first),
         // Signals scanning capability
         backgroundColor: AppTheme.deepLogicViolet,
         foregroundColor: AppTheme.clinicalWhite,
+        // New dedicated screen
+        child: const Icon(Symbols.qr_code_2_add, size: 36),
       ),
     );
   }

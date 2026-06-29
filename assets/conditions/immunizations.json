@@ -1,8 +1,203 @@
-Diphtheria, Tetanus, Pertussis (4+ doses DTP, DT, or DTaP): 80.4%
-Polio (3+ doses): 92.5%
-Measles, Mumps, Rubella (MMR) (1+ doses): 90.8%
-Haemophilus influenzae type b (Hib) (primary series + booster dose): 80.0%
-Hepatitis B (Hep B) (3+ doses): 91.4%
-Chickenpox (Varicella) (1+ doses): 90.3%
-Pneumococcal conjugate vaccine (PCV) (4+ doses): 81.4%
-Combined 7-vaccine series: 69.7%
+[
+  {
+    "country": "Canada",
+    "groups": [
+      {
+        "group": "Routine Lifelong Vaccines",
+        "vaccines": [
+          {
+            "name": "Tetanus and Diphtheria (Td)",
+            "recommendation": "Booster doses are recommended every 10 years.",
+            "interval_between_shots": 1
+          },
+          {
+            "name": "Pertussis (Whooping Cough)",
+            "recommendation": "A single adult dose (Tdap) is recommended if not previously received in adulthood.",
+            "interval_between_shots": 1
+          },
+          {
+            "name": "Measles, Mumps, and Rubella (MMR)",
+            "recommendation": "Recommended, for adults born in or after 1970 who are susceptible to these viruses (no documented proof of immunization or prior illness).",
+            "interval_between_shots": 1
+          },
+          {
+            "name": "Varicella (Chickenpox)",
+            "recommendation": "Two, doses are recommended for all susceptible adults.",
+            "interval_between_shots": 1
+          }
+        ]
+      },
+      {
+        "group": "Age-Specific Vaccines",
+        "vaccines": [
+          {
+            "name": "Influenza (Flu)",
+            "recommendation": "Recommended, annually for all adults.",
+            "interval_between_shots": 1
+          },
+          {
+            "name": "COVID-19",
+            "recommendation": "Annual, updated vaccines are recommended to protect against circulating variants.",
+            "interval_between_shots": 1
+          },
+          {
+            "name": "Human Papillomavirus (HPV)",
+            "recommendation": "Recommended, and publicly funded up to age 26, and available up to age 45 for individuals with ongoing risk of exposure.",
+            "interval_between_shots": 1
+          },
+          {
+            "name": "Shingles (Herpes Zoster)",
+            "recommendation": "A two-dose series of the Shingrix vaccine is recommended for adults 50 years of age or older.",
+            "interval_between_shots": 1
+          },
+          {
+            "name": "RSV (Respiratory Syncytial Virus)",
+            "recommendation": "Recommended, for older adults, typically starting between ages 60 and 75, depending on provincial coverage.",
+            "interval_between_shots": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "country": "United States of America",
+    "groups": [
+      {
+        "group": "Core Universal",
+        "vaccines": [
+          {
+            "name": "Tetanus and Diphtheria (Td)",
+            "recommendation": "Booster doses are recommended every 10 years.",
+            "interval_between_shots": 1
+          },
+          {
+            "name": "COVID-19",
+            "recommendation": "At least 1 dose of the current updated COVID-19 vaccine is recommended annually for all adults.",
+            "interval_between_shots": 1
+          },
+          {
+            "name": "Influenza (Flu)",
+            "recommendation": "1 dose is recommended every flu season for all adults.",
+            "interval_between_shots": 1
+          }
+        ]
+      },
+      {
+        "group": "Age and Condition-Specific Vaccines",
+        "vaccines": [
+          {
+            "name": "Pertussis (Whooping Cough)",
+            "recommendation": "A single adult dose (Tdap) is recommended if not previously received in adulthood.",
+            "interval_between_shots": 1
+          },
+          {
+            "name": "Shingles (Shingrix)",
+            "recommendation": "2 doses separated by 2-6 months, recommended for all adults aged 50 and older.",
+            "interval_between_shots": 1
+          },
+          {
+            "name": "Pneumococcal (Pneumonia)",
+            "recommendation": "Recommended, for adults 65 and older, or younger adults with certain underlying health conditions or risk factors. This series can include PCV15, PCV20, PCV21, or PPSV23.",
+            "interval_between_shots": 1
+          },
+          {
+            "name": "RSV (Respiratory Syncytial Virus)",
+            "recommendation": "1 dose recommended for adults aged 75 and older, or for adults aged 50 through 74 who have specific underlying medical conditions.",
+            "interval_between_shots": 1
+          },
+          {
+            "name": "Hepatitis B",
+            "recommendation": "Recommended for all adults aged 19 through 59, and for adults 60 and older with known risk factors.",
+            "interval_between_shots": 1
+          },
+          {
+            "name": "HPV (Human Papillomavirus)",
+            "recommendation": "Recommended for everyone through age 26. It may also be recommended for adults aged 27 to 45 based on shared clinical decision-making with a healthcare provider.",
+            "interval_between_shots": 1
+          },
+          {
+            "name": "MMR (Measles, Mumps, Rubella) & Chickenpox (Varicella)",
+            "recommendation": "Required for adults without evidence of immunity or prior vaccination.",
+            "interval_between_shots": 1
+          },
+          {
+            "name": "Hepatitis A",
+            "recommendation": "Recommended for adults who request it or those with certain risk factors/medical conditions.",
+            "interval_between_shots": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "country": "Mexico",
+    "groups": [
+      {
+        "group": "For Adults (Ages 20–59)",
+        "vaccines": [
+          {
+            "name": "SR (Sarampión y Rubéola)",
+            "recommendation": "The Measles and Rubella vaccine is provided to adults who do not have a documented, completed childhood series.",
+            "interval_between_shots": 1
+          },
+          {
+            "name": "Td (Tétanos y Difteria)",
+            "recommendation": "The Tetanus and Diphtheria vaccine is given as a primary series if missing, or as a booster shot every 10 years.",
+            "interval_between_shots": 1
+          },
+          {
+            "name": "Influenza Estacional",
+            "recommendation": "An annual seasonal flu shot is recommended for high-risk adults, including pregnant women, healthcare workers, and individuals with underlying chronic conditions (like diabetes or asthma).",
+            "interval_between_shots": 1
+          },
+          {
+            "name": "COVID-19",
+            "recommendation": "Routine or annual boosters are integrated into the public health guidelines, prioritized similarly to influenza.",
+            "interval_between_shots": 1
+          },
+          {
+            "name": "VPH (Virus del Papiloma Humano)",
+            "recommendation": "While, primarily targeted at young teens, catch-up human papillomavirus vaccination strategies apply to specific at-risk adult populations.",
+            "interval_between_shots": 1
+          }
+        ]
+      },
+      {
+        "group": "For Older Adults (Ages 60 and Over)",
+        "vaccines": [
+          {
+            "name": "Neumocócica Polisacárida / Conjugada",
+            "recommendation": "The Pneumococcal vaccine is given to prevent severe pneumonia. A single primary dose is given at age 65, with a revaccination booster 5 years later for individuals with high-risk health factors.",
+            "interval_between_shots": 1
+          },
+          {
+            "name": "Influenza Estacional",
+            "recommendation": "Unlike the younger bracket, the seasonal flu vaccine is recommended annually for all citizens over the age of 60, regardless of health status.",
+            "interval_between_shots": 1
+          },
+          {
+            "name": "Td (Tétanos y Difteria)",
+            "recommendation": "Maintenance boosters continue every 10 years.",
+            "interval_between_shots": 1
+          }
+        ]
+      },
+      {
+        "group": "Special/Occupational Risk Groups",
+        "vaccines": [
+          {
+            "name": "Hepatitis B",
+            "recommendation": "Routinely administered to adults working in the healthcare sector, dialyzed patients, or other high-exposure groups.",
+            "interval_between_shots": 1
+          },
+          {
+            "name": "Rabies",
+            "recommendation": "Provided proactively to agricultural workers or veterinarians in specific rural municipalities.",
+            "interval_between_shots": 1
+          }
+        ]
+      }
+    ]
+  }
+]
+

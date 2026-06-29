@@ -24,14 +24,14 @@ class AppTheme {
   static const Color lessUrgent = Color(0xFF23C402);
   static const Color nonUrgent = Color(0xFFFFFFFF);
 
-  static  Color resuscitationBackground = resuscitation.withAlpha(96);
-  static  Color emergentBackground = emergent.withAlpha(96);
-  static  Color urgentBackground = urgent .withAlpha(96);
-  static  Color lessUrgentBackground = lessUrgent.withAlpha(96);
-  static  Color nonUrgentBackground = nonUrgent.withAlpha(96);
+  static Color resuscitationBackground = resuscitation.withAlpha(96);
+  static Color emergentBackground = emergent.withAlpha(96);
+  static Color urgentBackground = urgent.withAlpha(96);
+  static Color lessUrgentBackground = lessUrgent.withAlpha(96);
+  static Color nonUrgentBackground = nonUrgent.withAlpha(96);
 
   static const Map<AcuityLevel, Color> acuityColors = {
-    AcuityLevel.resuscitation: resuscitation,
+    AcuityLevel.resuscitate: resuscitation,
     AcuityLevel.emergent: emergent,
     AcuityLevel.urgent: urgent,
     AcuityLevel.lessUrgent: lessUrgent,
@@ -39,15 +39,15 @@ class AppTheme {
   };
 
   static const Map<AcuityLevel, Color> acuityFontColors = {
-    AcuityLevel.resuscitation: resuscitation,
+    AcuityLevel.resuscitate: resuscitation,
     AcuityLevel.emergent: emergent,
     AcuityLevel.urgent: Color(0xFF000000),
     AcuityLevel.lessUrgent: lessUrgent,
     AcuityLevel.notUrgent: Color(0xFF080808),
   };
 
-  static  Map<AcuityLevel, Color> acuityBackgroundColors = {
-    AcuityLevel.resuscitation: resuscitationBackground,
+  static Map<AcuityLevel, Color> acuityBackgroundColors = {
+    AcuityLevel.resuscitate: resuscitationBackground,
     AcuityLevel.emergent: emergentBackground,
     AcuityLevel.urgent: urgentBackground,
     AcuityLevel.lessUrgent: lessUrgentBackground,
@@ -55,7 +55,7 @@ class AppTheme {
   };
 
   static const Map<AcuityLevel, IconData> acuityIcons = {
-    AcuityLevel.resuscitation: Icons.emergency,
+    AcuityLevel.resuscitate: Icons.emergency,
     AcuityLevel.emergent: Icons.circle_rounded,
     AcuityLevel.urgent: Icons.circle_rounded,
     AcuityLevel.lessUrgent: Icons.circle_rounded,
@@ -82,11 +82,7 @@ class AppTheme {
       brightness: Brightness.light,
       scaffoldBackgroundColor: canvasColor,
       textTheme: GoogleFonts.inclusiveSansTextTheme(),
-      colorScheme: ColorScheme.light(
-        primary: deepLogicViolet,
-        secondary: clinicalCyan,
-        surface: surfaceColor,
-      ),
+      colorScheme: ColorScheme.light(primary: deepLogicViolet, secondary: clinicalCyan, surface: surfaceColor),
 
       // AppBar styling for Light Mode (Clean & Professional)
       appBarTheme: const AppBarTheme(
@@ -109,11 +105,7 @@ class AppTheme {
           foregroundColor: defaultInverseFontColor,
           minimumSize: const Size.fromHeight(55), // Standardized height for easy hit-targets
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-          textStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.1,
-          ),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.1),
           elevation: 2, // Subtle lift to distinguish from the background
         ),
       ),
@@ -136,11 +128,7 @@ class AppTheme {
       scaffoldBackgroundColor: deepCharcoal,
       cardColor: darkSlate,
 
-      colorScheme: const ColorScheme.dark(
-        primary: deepLogicViolet,
-        secondary: clinicalCyan,
-        surface: darkSlate,
-      ),
+      colorScheme: const ColorScheme.dark(primary: deepLogicViolet, secondary: clinicalCyan, surface: darkSlate),
 
       // FAB Styling
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
@@ -153,30 +141,21 @@ class AppTheme {
         backgroundColor: deepCharcoal,
         elevation: 0,
         centerTitle: false,
-        titleTextStyle: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold
-        ),
+        titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
       ),
 
       // Input Decoration (Text Fields)
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white.withAlpha(8),
-        focusedBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: deepLogicViolet, width: 2),
-        ),
-        enabledBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.white10),
-        ),
+        focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: deepLogicViolet, width: 2)),
+        enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.white10)),
       ),
     );
   }
 
-
   static Map<String, IconData> eventIcons = {
-    "ED_ARRIV" : Symbols.check_in_out,
+    "ED_ARRIV": Symbols.check_in_out,
     "ED_AMBUL": Symbols.ambulance,
     "ED_POLIC": Symbols.local_police,
     "ED_INTAK": Symbols.medical_information,
@@ -202,7 +181,7 @@ class AppTheme {
     "MD_ADMIN": Symbols.admin_meds,
     "PR_PERFM": Symbols.procedure,
     "BL_TRANS": Symbols.fluid,
-    "MH_DETAIN":Symbols.psychiatry_sharp,
+    "MH_DETAIN": Symbols.psychiatry_sharp,
     "RE_START": Symbols.shield_lock,
     "RE_TERMN": Symbols.shield,
     "IS_OLATN": Symbols.safety_divider,
@@ -231,7 +210,6 @@ class AppTheme {
     "DC_PASTR": Symbols.family_home,
     "PT_DECEAS": Symbols.deceased,
     "DC_CORON": Symbols.deceased,
-    "UNKNWN":Symbols.unknown_document
+    "UNKNWN": Symbols.unknown_document,
   };
-
 }

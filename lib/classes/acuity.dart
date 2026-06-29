@@ -1,23 +1,34 @@
-
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
-enum AcuityLevel {
-  resuscitation, emergent, urgent, lessUrgent, notUrgent
+enum AcuityLevel { resuscitate, emergent, urgent, lessUrgent, notUrgent }
+
+extension AcuityLevelLabel on AcuityLevel {
+  String get label {
+    switch (this) {
+      case AcuityLevel.resuscitate:
+        return "Resuscitate";
+      case AcuityLevel.emergent:
+        return "Emergent";
+      case AcuityLevel.urgent:
+        return "Urgent";
+      case AcuityLevel.lessUrgent:
+        return "Less Urgent";
+      case AcuityLevel.notUrgent:
+        return "Not Urgent";
+    }
+  }
 }
 
-class Descriptor{
+class Descriptor {
   final String name;
   final String description;
 
   const Descriptor({required this.description, required this.name});
 
-  factory Descriptor.fromJson(dynamic json){
-    return Descriptor(
-      name: json['name'] ?? "",
-      description: json['description'] ?? ""
-    );
+  factory Descriptor.fromJson(dynamic json) {
+    return Descriptor(name: json['name'] ?? "", description: json['description'] ?? "");
   }
 }
 
@@ -35,29 +46,28 @@ class Acuity {
     required this.clinicalPicture,
     required this.interventionWindow,
     required this.presentingWith,
-    required this.secondaryModifiers
+    required this.secondaryModifiers,
   });
 
   // Using an initializer list is best practice for final fields in Dart
-  factory Acuity.fromJson(dynamic json){
+  factory Acuity.fromJson(dynamic json) {
     List<Descriptor> complaints = [];
     List<Descriptor> modifiers = [];
     dynamic rawComplaints = json["presenting_complaints"];
     dynamic rawModifiers = json["secondary_modifiers"];
-    for (dynamic item in rawComplaints){
+    for (dynamic item in rawComplaints) {
       complaints.add(Descriptor.fromJson(item));
     }
-    for (dynamic item in rawModifiers){
+    for (dynamic item in rawModifiers) {
       modifiers.add(Descriptor.fromJson(item));
     }
     return Acuity(
-        level : AcuityLevel.values[json['level']],
-        statusName : json['status'],
-        clinicalPicture : json['clinical_picture'],
-        interventionWindow : json['intervention_window'],
+      level: AcuityLevel.values[json['level']],
+      statusName: json['status'],
+      clinicalPicture: json['clinical_picture'],
+      interventionWindow: json['intervention_window'],
       presentingWith: complaints,
-      secondaryModifiers: modifiers
-
+      secondaryModifiers: modifiers,
     );
   }
 }
@@ -78,11 +88,7 @@ class AcuityFactory {
     final String jsonString = await rootBundle.loadString(jsonPath);
     final List<dynamic> jsonList = json.decode(jsonString);
 
-_acuities = {
-      for (var item in jsonList)
-        AcuityLevel.values[item['level']]: Acuity.fromJson(item)
-
-    };
+    _acuities = {for (var item in jsonList) AcuityLevel.values[item['level']]: Acuity.fromJson(item)};
   }
 
   // 5. Easy access
@@ -92,8 +98,6 @@ _acuities = {
 
   List<Acuity> getAllAcuitiesExcept(AcuityLevel currentLevel) {
     // We access .values to get the list of Acuity objects
-    return _acuities.values
-        .where((acuity) => acuity.level != currentLevel)
-        .toList();
+    return _acuities.values.where((acuity) => acuity.level != currentLevel).toList();
   }
 }

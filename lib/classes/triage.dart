@@ -162,7 +162,7 @@ class TriageAssessmentResult {
   // Calculate the highest common denominator
   AcuityLevel get overallAcuity {
     if (isMissingCritical || suicideRiskSeverity == Severity.unbearable) {
-      return AcuityLevel.resuscitation; // Highest level
+      return AcuityLevel.resuscitate; // Highest level
     }
     if (psychosisSeverity == Severity.unbearable || toxidromeSeverity == Severity.unbearable) {
       return AcuityLevel.urgent;

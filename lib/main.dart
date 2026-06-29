@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/acuity.dart';
 import 'package:triage/classes/body_zone.dart';
 import 'package:triage/classes/database_manager.dart';
 import 'package:triage/screens/family_roster.dart';
+import 'package:triage/screens/intake.dart';
 import 'package:triage/screens/start_up.dart';
 import 'classes/action.dart';
 import 'classes/drugs.dart';
@@ -76,6 +78,17 @@ class LuminescaHomeState extends State<LuminescaHome> {
     ]);
   }
 
+  void _launchIntakeScreen(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => IntakeScreen(),
+        // This ensures the screen slides up like a focused task
+        fullscreenDialog: true,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -99,6 +112,16 @@ class LuminescaHomeState extends State<LuminescaHome> {
             ],
           ),
         ),
+        actions: [
+          IconButton(
+            onPressed: () => _launchIntakeScreen(context),
+            icon: const Icon(Symbols.frame_person),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.deepLogicViolet,
+              foregroundColor: AppTheme.clinicalWhite,
+            ),
+          ),
+        ],
       ),
       // The Roster stays in the tree at all times (so it lays out),
       // and we only animate the loading overlay on top.

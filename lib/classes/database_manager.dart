@@ -87,10 +87,37 @@ class DatabaseManager {
     // 3. Execute each query in the order provided in the JSON
     for (var entry in createScripts) {
       final String query = entry['query'];
+      debugPrint(entry['table']);
       if (query.isNotEmpty) {
         await db.execute(query);
       }
     }
+  }
+
+  Future<List<Map<String, dynamic>>> getPatientVaccinations(String patientUuid) async {
+    final db = await database;
+    dynamic result = await db.query(
+      'patient_vaccination',
+      where: 'patient_uuid = ?',
+      whereArgs: [patientUuid],
+      orderBy: 'received DESC', // You can adjust this to your custom sorting logic
+    );
+    return result;
+  }
+
+  Future<int> insertVaccination(String patientUuid, String name, String protection, DateTime? received) async {
+    final db = await database;
+    return await db.insert('patient_vaccination', {
+      'patient_uuid': patientUuid,
+      'name': name,
+      'protection': protection,
+      'received': received?.toIso8601String(), // Store as ISO string for SQLite
+    });
+  }
+
+  Future<int> deleteVaccination(int id, String patientUuid) async {
+    final db = await database;
+    return await db.delete('patient_vaccination', where: 'id = ? and patient_uuid = ?', whereArgs: [id, patientUuid]);
   }
 
   // Drugs

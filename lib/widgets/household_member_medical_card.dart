@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/vitals.dart';
 import 'package:triage/screens/patient_timeline_screen.dart';
+import 'package:triage/widgets/blood_type_widget.dart';
 import 'package:triage/widgets/current_metrics.dart';
 import 'package:triage/widgets/sentiment_widget.dart';
 import 'package:triage/widgets/vitals_history.dart';
 import '../app_theme.dart';
 import '../classes/action.dart';
+import '../classes/blood_type.dart';
 import '../classes/database_manager.dart';
 import '../classes/medication_services.dart';
 import '../classes/patient.dart';
@@ -89,6 +91,21 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
     );
   }
 
+  void showBloodTypModal({required BuildContext context, required Patient patient}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppTheme.clinicalWhite,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+      builder: (context) => BloodTypeSelector(
+        selectedAbo: patient.bloodType.abo,
+        selectedRh: patient.bloodType.rh,
+        onAboChanged: onAboChanged,
+        onRhChanged: onRhChanged,
+      ),
+    );
+  }
+
   Future<void> showTimeLineScreen(BuildContext context, String uuid, String patientName) async {
     // Assuming this returns a List or an empty list
     final actions = PatientActionFactory.instance.getActionsForPatient(uuid);
@@ -103,6 +120,17 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
     );
   }
 
+  void onAboChanged(AboType? abo) {
+    // setState(() {
+    //   Database().updateBloodType(patient.patientUuid, abo);
+    // });
+  }
+  void onRhChanged(RhFactor? rh) {
+    // setState(() {
+    //   Database().updateBloodType(patient.patientUuid, abo);
+    // });
+    //
+  }
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -136,31 +164,45 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Replace your existing Container child: Row(...) block with this:
                 Container(
-                  // 1. Apply the background color fill and styling
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceColor, // Swap this for whatever color matches your layout theme
-                    borderRadius: BorderRadius.circular(8.0), // Keeps the container edges crisp and clean
-                  ),
-                  // 2. Add padding so your elements have breathing room inside the colored block
+                  decoration: BoxDecoration(color: AppTheme.surfaceColor, borderRadius: BorderRadius.circular(8.0)),
                   padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
-
-                  child: Row(
+                  child: Stack(
+                    clipBehavior: Clip.none, // Allows the widget to draw outside its bounds
+                    alignment: Alignment.centerRight,
                     children: [
-                      Text(
-                        patient.firstName,
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.deepCharcoal),
+                      // 1. The layout flow (Name + BloodType)
+                      Row(
+                        children: [
+                          Text(
+                            patient.firstName,
+                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.deepCharcoal),
+                          ),
+                          const Spacer(),
+                          BloodTypeTile(
+                            bloodType: patient.bloodType,
+                            onTap: () {
+                              showBloodTypModal(context: context, patient: patient);
+                            },
+                          ),
+                          const SizedBox(width: 56), // Reserve space for the SentimentWidget
+                        ],
                       ),
-                      const Spacer(),
-                      SentimentWidget(
-                        selectedSentiment: sentiment,
-                        painScale: sentiment.index * 2,
-                        onSelected: (Sentiment newSentiment, int index) {
-                          setState(() {
-                            sentiment = newSentiment;
-                            widget.householdMember.sentiment = sentiment;
-                          });
-                        },
+
+                      // 2. The SentimentWidget "floats" on top, ignoring the Row
+                      Positioned(
+                        right: 0,
+                        child: SentimentWidget(
+                          selectedSentiment: sentiment,
+                          painScale: sentiment.index * 2,
+                          onSelected: (Sentiment newSentiment, int index) {
+                            setState(() {
+                              sentiment = newSentiment;
+                              widget.householdMember.sentiment = sentiment;
+                            });
+                          },
+                        ),
                       ),
                     ],
                   ),
@@ -174,16 +216,8 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
                       height: 148, // Increased height to comfortably fit stacked icon buttons
                       child: Row(
                         children: [
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: Text(
-                              "at: 12:35 pm",
-                              style: TextStyle(fontSize: 12, color: AppTheme.deepLogicViolet),
-                            ),
-                          ),
-                          //Text(""),
-                          SizedBox(width: 24.0),
-                          // Graph: Expanded to fill remaining width
+                          const SizedBox(width: 8), // Add some breathing room
+                          // 2. Wrap the wide widget in Expanded to take up remaining space
                           Expanded(
                             child: InkWell(
                               child: CurrentMetrics(vitals: patient.vitals, height: 108),
@@ -215,7 +249,7 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
                           color: AppTheme.deepLogicViolet,
                         ),
                         CompactButton(
-                          label: "Assess",
+                          label: "Profile",
                           icon: Symbols.medical_information,
                           onTap: widget.onAssessmentsTap ?? () {},
                           color: AppTheme.deepLogicViolet,

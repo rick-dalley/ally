@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import 'package:triage/classes/acuity.dart';
+import 'package:triage/classes/blood_type.dart';
 import 'package:triage/classes/patient_sentiment.dart';
 import 'package:triage/classes/vitals.dart';
 
@@ -40,6 +41,7 @@ class Patient {
   final String relation; //'Partner',
   final String contactName; //'Silvain Saulter',
   String eyeColor;
+  BloodType bloodType;
   Sentiment sentiment;
   int assessments; //279,
   int medications; //11,
@@ -101,6 +103,7 @@ class Patient {
     this.sentiment = Sentiment.neutral,
     this.eyeColor = "",
     this.isAWOL = false,
+    this.bloodType = const BloodType(abo: AboType.o, rh: RhFactor.positive),
   });
 
   factory Patient.fromJson(Map<String, dynamic> item) {

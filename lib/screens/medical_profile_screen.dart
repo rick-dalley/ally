@@ -6,26 +6,28 @@ import 'package:triage/screens/physical_health.dart';
 
 import '../app_theme.dart';
 import '../classes/assessment_logic.dart';
+import '../classes/patient.dart';
 import '../classes/templates.dart';
+import 'immunization_screen.dart';
 import 'observation.dart';
 
-class AssessmentsScreen extends StatefulWidget {
-  final String patientUuid;
+class MedicalProfileScreen extends StatefulWidget {
+  final Patient householdMember;
 
-  const AssessmentsScreen({super.key, required this.patientUuid});
+  const MedicalProfileScreen({super.key, required this.householdMember});
 
   @override
-  State<AssessmentsScreen> createState() => _AssessmentsScreenState();
+  State<MedicalProfileScreen> createState() => _MedicalProfileScreenState();
 }
 
-class _AssessmentsScreenState extends State<AssessmentsScreen> {
+class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
   late Future<Map<String, int>> _assessmentCountsFuture;
 
   @override
   void initState() {
     super.initState();
     // Initialize the future once
-    _assessmentCountsFuture = DatabaseManager().countCompletedAssessments(widget.patientUuid);
+    _assessmentCountsFuture = DatabaseManager().countCompletedAssessments(widget.householdMember.patientUuid);
   }
 
   @override
@@ -64,7 +66,7 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
               const Padding(
                 padding: EdgeInsets.all(16.0),
                 child: Text(
-                  "ASSESSMENTS",
+                  "PROFILE",
                   style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.deepLogicViolet, letterSpacing: 1.2),
                 ),
               ),
@@ -73,7 +75,7 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
                   shrinkWrap: true,
                   children: [
                     // --- SECTION: PHYSICAL HEALTH (The "Total Picture") ---
-                    _buildSectionHeader("PHYSICAL HEALTH"),
+                    _buildSectionHeader("CONDITIONS"),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                       child: Card(
@@ -99,18 +101,18 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
                               solidIcon: Symbols.conditions_sharp,
                               activeColor: AppTheme.deepLogicViolet,
                             ),
-                            title: const Text("Pre-existing Conditions"),
-                            subtitle: const Text("Review & Update Physical Health History"),
+                            title: const Text("Existing Medical Conditions"),
+                            subtitle: const Text("Review & Update"),
                             onTap: () {
                               Navigator.pop(context);
-                              _launchPhysicalHealthChecklist(context, widget.patientUuid);
+                              _launchPhysicalHealthChecklist(context, widget.householdMember.patientUuid);
                             },
                           ),
                         ),
                       ),
                     ),
                     // --- SECTION: CLINICAL OBSERVATIONS ---
-                    _buildSectionHeader("CLINICAL NOTES"),
+                    _buildSectionHeader("DIARY"),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                       child: Card(
@@ -136,19 +138,50 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
                               solidIcon: Symbols.clinical_notes_sharp,
                               activeColor: AppTheme.deepLogicViolet,
                             ),
-                            title: const Text("Observations"),
-                            subtitle: const Text("Individual observations of patient behaviour"),
+                            title: const Text("Medical Diary"),
+                            subtitle: const Text("Observations about my health journey"),
                           ),
                         ),
                       ),
                     ),
-                    // --- SECTION: PSYCHIATRIC SCALES ---
-                    _buildSectionHeader("STANDARDIZED SCALES"),
+                    _buildSectionHeader("IMMUNIZATIONS"),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                      child: Card(
+                        elevation: 0,
+                        clipBehavior: Clip.antiAlias,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            // Subtle border changes color when task is done
+                            color: AppTheme.cardBorder,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.pop(context);
+                            _launchImmunizationModal(context, widget.householdMember);
+                          },
+                          child: ListTile(
+                            leading: _buildDynamicIcon(
+                              isCompleted: true,
+                              outlineIcon: Symbols.vaccines,
+                              solidIcon: Symbols.vaccines_sharp,
+                              activeColor: AppTheme.deepLogicViolet,
+                            ),
+                            title: const Text("Vaccinations"),
+                            subtitle: const Text("Vaccinations I've had"),
+                          ),
+                        ),
+                      ),
+                    ), // --- SECTION: PSYCHIATRIC SCALES ---
+                    _buildSectionHeader("QUESTIONNAIRES"),
 
                     _buildAssessmentTile(
                       context,
                       "PHQ-9",
-                      widget.patientUuid,
+                      widget.householdMember.patientUuid,
                       "Patient Health Questionnaire -9\n(Objectifies degree of depression severity)",
                       "phq-9.json",
                       'assets/questions/phq9_score_guide.json',
@@ -168,7 +201,7 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
                     _buildAssessmentTile(
                       context,
                       "GAD-7",
-                      widget.patientUuid,
+                      widget.householdMember.patientUuid,
                       "General Anxiety Disorder-7)\nMeasures severity of anxiety.",
                       "gad-7.json",
                       'assets/questions/gad7_score_guide.json',
@@ -187,7 +220,7 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
                     _buildAssessmentTile(
                       context,
                       "C-SSRS",
-                      widget.patientUuid,
+                      widget.householdMember.patientUuid,
                       "Columbia-Suicide Severity Rating Scale\nAssesses suicide risk, severity, and intent",
                       "c-ssrs.json",
                       null,
@@ -206,7 +239,7 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
                     _buildAssessmentTile(
                       context,
                       "DAST-10",
-                      widget.patientUuid,
+                      widget.householdMember.patientUuid,
                       "Drug Abuse Screening Test\nScreen for the presence and severity of substance use ",
                       "dast-10.json",
                       'assets/questions/dast10_score_guide.json',
@@ -225,7 +258,7 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
                     _buildAssessmentTile(
                       context,
                       "ASRS-V1.1",
-                      widget.patientUuid,
+                      widget.householdMember.patientUuid,
                       "Adult ADHD Self Report Scale\nVersion 1.1(",
                       "asrs.json",
                       'assets/questions/asrs_score_guide.json',
@@ -244,7 +277,7 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
                     _buildAssessmentTile(
                       context,
                       "PCL-5",
-                      widget.patientUuid,
+                      widget.householdMember.patientUuid,
                       "PTSD Checklist for DSM-5\nAssesses the 20 DSM-5 symptoms of PTSD",
                       "pcl-5.json",
                       'assets/questions/pcl5_score_guide.json',
@@ -489,7 +522,67 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
                 const SizedBox(height: 4),
                 Expanded(
                   // ✅ Pass the controller into the screen
-                  child: ObservationScreen(patientUuid: widget.patientUuid, scrollController: scrollController),
+                  child: ObservationScreen(
+                    patientUuid: widget.householdMember.patientUuid,
+                    scrollController: scrollController,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _launchImmunizationModal(BuildContext context, Patient householdMember) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      // ✅ Prevents accidental drag-down dismissals on the background area
+      enableDrag: false,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.9,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        snap: false, // ✅ Smooth, non-snapping fluid track
+        builder: (context, scrollController) {
+          return Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+            ),
+            child: Column(
+              children: [
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Centered pull bar handle indicator
+                      Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
+                      ),
+                      // ✅ Unified Top-Right Dismiss Button
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: IconButton(
+                          icon: const Icon(Icons.close, color: Colors.grey, size: 22),
+                          onPressed: () => Navigator.pop(context, false),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Expanded(
+                  // ✅ Pass the controller into the screen
+                  child: ImmunizationScreen(householdMember: householdMember),
                 ),
               ],
             ),
@@ -574,7 +667,7 @@ class _AssessmentsScreenState extends State<AssessmentsScreen> {
     if (result == true && mounted) {
       setState(() {
         _assessmentCountsFuture = DatabaseManager().countCompletedAssessments(
-          widget.patientUuid,
+          widget.householdMember.patientUuid,
         ); // This 'pokes' the UI to refresh icons
       });
     }
