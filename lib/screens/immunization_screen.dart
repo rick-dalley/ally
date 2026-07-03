@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:triage/classes/date_time_utilities.dart';
 
-import '../classes/database_manager.dart';
 import '../classes/immunization.dart';
 import '../classes/patient.dart';
 import '../widgets/vaccination_card.dart';

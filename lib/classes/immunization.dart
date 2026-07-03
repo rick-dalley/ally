@@ -137,10 +137,6 @@ class PatientVaccine {
       yearsAgo: yearsSince,
     );
   }
-
-  Future<void> persist({required String patientUuid}) async {
-    await DatabaseManager().insertVaccination(patientUuid, name, protection, received);
-  }
 }
 
 class ImmunizationService {
