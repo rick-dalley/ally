@@ -115,9 +115,13 @@ class DatabaseManager {
     });
   }
 
-  Future<int> deleteVaccination(int id, String patientUuid) async {
+  Future<int> deleteVaccination(String vaccinationName, String patientUuid) async {
     final db = await database;
-    return await db.delete('patient_vaccination', where: 'id = ? and patient_uuid = ?', whereArgs: [id, patientUuid]);
+    return await db.delete(
+      'patient_vaccination',
+      where: 'name = ? and patient_uuid = ?',
+      whereArgs: [vaccinationName, patientUuid],
+    );
   }
 
   // Drugs

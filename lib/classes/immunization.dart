@@ -1,9 +1,84 @@
 import 'dart:convert';
 import 'dart:ui' as ui;
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:triage/classes/database_manager.dart';
 import 'package:triage/classes/date_time_utilities.dart';
-import 'package:triage/classes/vaccine.dart';
+
+final Map<String, String> codeToName = {'CA': 'Canada', 'MX': 'Mexico', 'US': 'United States of America'};
+
+class Vaccine {
+  final String name;
+  final String recommendation;
+  final String protection;
+  final int interval;
+  DateTime? takenOn;
+  int yearsAgo;
+  String policy;
+  bool taken;
+
+  Vaccine({
+    required this.name,
+    required this.recommendation,
+    required this.interval,
+    this.yearsAgo = 0,
+    this.taken = false,
+    this.takenOn,
+    this.policy = "",
+    this.protection = "",
+  });
+
+  factory Vaccine.fromMap(Map<String, dynamic> item) {
+    return Vaccine(
+      name: item["name"],
+      recommendation: item["recommendation"],
+      interval: item["interval_between_shots"],
+    );
+  }
+
+  void setPatientRecord(PatientVaccine pv) {
+    if (pv.name == name) {
+      taken = true;
+      takenOn = pv.received;
+    }
+  }
+
+  DateTime? get expirationDate {
+    return takenOn != null ? DateTime(takenOn!.year + interval, takenOn!.month, takenOn!.day) : null;
+  }
+
+  int get yearsSince {
+    return takenOn != null ? DateTime.now().year - takenOn!.year : 0;
+  }
+
+  String get formattedVaccineDate {
+    return takenOn == null ? "" : DateFormat('MMMM d, y').format(takenOn!);
+  }
+
+  String get formattedExpirationDate {
+    return takenOn == null ? "" : DateFormat('MMMM d, y').format(expirationDate!);
+  }
+
+  String get reminder {
+    int yrs = yearsSince;
+    String rem = yrs > 1 ? "($yrs years ago)." : "($yrs year ago).";
+
+    rem = overdue
+        ? interval > 1
+              ? "$rem\nIt is recommended to take this vaccine every $interval year(s)."
+              : "It is recommended to take this vaccine every year."
+        : "$rem\nNext vaccination on:$formattedExpirationDate.";
+    return rem;
+  }
+
+  bool get overdue {
+    // Only check if it was actually taken
+    if (!taken || takenOn == null) return false;
+    DateTime? expDate = expirationDate;
+    // It is overdue if the expiration date is before today
+    return expDate == null ? false : expDate.isBefore(DateTime.now());
+  }
+}
 
 class ImmunizationGroup {
   final String group;
@@ -39,41 +114,38 @@ class DeviceLocaleHelper {
 }
 
 class PatientVaccine {
-  final int id;
   final String name;
   final String protection;
-  final DateTime? received;
-  final int? yearsAgo;
+  DateTime? received;
+  int yearsAgo;
+  bool taken;
 
-  const PatientVaccine({
-    required this.id,
-    required this.name,
-    required this.protection,
-    required this.received,
-    required this.yearsAgo,
-  });
+  PatientVaccine({required this.name, required this.protection, required this.received, this.yearsAgo = 0})
+    : taken = true;
 
   factory PatientVaccine.fromMap(Map<String, dynamic> item) {
     // Handle nulls safely
     DateTime? receivedDate = item['received'] != null ? DTUtilities.sqliteToDart(item['received']) : null;
 
     // Use years_ago if present, otherwise calculate from date, otherwise null
-    int? yearsSince =
-        item['years_ago'] ?? (receivedDate != null ? DTUtilities.calculateYearsSince(receivedDate) : null);
+    int yearsSince = item['years_ago'] ?? (receivedDate != null ? DTUtilities.calculateYearsSince(receivedDate) : null);
 
     return PatientVaccine(
-      id: item['id'] as int,
       name: item['name'] as String,
       protection: item['protection'] as String,
       received: receivedDate,
       yearsAgo: yearsSince,
     );
   }
+
+  Future<void> persist({required String patientUuid}) async {
+    await DatabaseManager().insertVaccination(patientUuid, name, protection, received);
+  }
 }
 
 class ImmunizationService {
   final List<CountrySchedule> _schedules;
-
+  Map<String, PatientVaccine> patientImmunizations = {};
   ImmunizationService._(this._schedules);
 
   static Future<ImmunizationService> create() async {
@@ -84,12 +156,9 @@ class ImmunizationService {
     return ImmunizationService._(schedules);
   }
 
-  // Resolves the detected country code to your dataset
+  // Resolves the detected country code to the dataset
   CountrySchedule? getScheduleForDevice() {
     String countryCode = DeviceLocaleHelper.getCountryCode();
-
-    // Map ISO codes to your JSON names
-    final Map<String, String> codeToName = {'CA': 'Canada', 'MX': 'Mexico', 'US': 'United States of America'};
 
     String? countryName = codeToName[countryCode.toUpperCase()];
 
@@ -108,15 +177,28 @@ class ImmunizationService {
     Map<String, PatientVaccine> vaccineMap = {
       for (var item in rawVaccines) item['name'] as String: PatientVaccine.fromMap(item),
     };
-
+    patientImmunizations = vaccineMap;
     return vaccineMap;
   }
 
+  void resolvePatientImmunizations(Map<String, PatientVaccine> patientVaccines, CountrySchedule schedule) {
+    for (ImmunizationGroup group in schedule.groups) {
+      for (Vaccine vaccine in group.vaccines) {
+        PatientVaccine? pv = patientVaccines[vaccine.name];
+        if (pv != null) {
+          vaccine.setPatientRecord(pv);
+        }
+      }
+    }
+  }
+
   Future<int> insertVaccination(String patientUuid, String name, String protection, DateTime? received) {
+    patientImmunizations[name] = PatientVaccine(name: name, protection: protection, received: received);
     return DatabaseManager().insertVaccination(patientUuid, name, protection, received);
   }
 
-  Future<int> deleteVaccination(int id, String patientUuid) {
-    return DatabaseManager().deleteVaccination(id, patientUuid);
+  Future<int> deleteVaccination(String name, String patientUuid) {
+    patientImmunizations.remove(name);
+    return DatabaseManager().deleteVaccination(name, patientUuid);
   }
 }

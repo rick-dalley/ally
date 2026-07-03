@@ -2,8 +2,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../classes/acuity.dart';
-import '../classes/vaccine.dart';
+import '../classes/immunization.dart';
 
 // 1. Add this extension to your file to handle Sentence Case easily
 extension StringExtension on String {
@@ -17,7 +16,7 @@ extension StringExtension on String {
 class VaccineCard extends StatelessWidget {
   final Vaccine vaccine;
   final Function(DateTime, String) onChangedDate;
-  final Function(bool, String) onTookVaccine;
+  final Function(String name, bool taken, String protection, DateTime when) onTookVaccine;
 
   const VaccineCard({super.key, required this.vaccine, required this.onChangedDate, required this.onTookVaccine});
 
@@ -50,7 +49,8 @@ class VaccineCard extends StatelessWidget {
               width: 24,
               child: Checkbox(
                 value: vaccine.taken,
-                onChanged: (val) => onTookVaccine(val!, vaccine.name),
+                onChanged: (val) =>
+                    onTookVaccine(vaccine.name, val!, vaccine.protection, vaccine.takenOn ?? DateTime.now()),
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ),

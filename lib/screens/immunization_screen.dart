@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:triage/classes/date_time_utilities.dart';
 
+import '../classes/database_manager.dart';
 import '../classes/immunization.dart';
 import '../classes/patient.dart';
 import '../widgets/vaccination_card.dart';
@@ -15,32 +17,69 @@ class ImmunizationScreen extends StatefulWidget {
 class ImmunizationScreenState extends State<ImmunizationScreen> {
   // Use a nullable Future to handle the loading state
   Future<void>? _loadingFuture;
-
+  late ImmunizationService service;
   CountrySchedule? _schedule;
   Map<String, PatientVaccine> _takenVaccines = {};
-
+  late String memberId;
   @override
   void initState() {
     super.initState();
     // Start the loading process
+    memberId = widget.householdMember.patientUuid;
     _loadingFuture = _initializeData();
   }
 
   Future<void> _initializeData() async {
-    // 1. Create the service
-    final service = await ImmunizationService.create();
-
-    // 2. Fetch the data and assign to your class-level variables
+    service = await ImmunizationService.create();
     final schedule = service.getScheduleForDevice();
-    final records = await service.getPatientVaccinations(widget.householdMember.patientUuid);
+    final records = await service.getPatientVaccinations(memberId);
 
     // 3. Update the state so the widget knows data is ready
     if (mounted) {
       setState(() {
         _schedule = schedule;
         _takenVaccines = records;
+        if (_schedule != null) {
+          service.resolvePatientImmunizations(_takenVaccines, _schedule!);
+        }
       });
     }
+  }
+
+  Future<void> onChangedDateHandler(DateTime takenOn, Vaccine v, PatientVaccine pv) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: takenOn,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) {
+      setState(() {
+        v.takenOn = picked;
+        pv.received = picked;
+      });
+    }
+  }
+
+  Future<void> onTookVaccineHandler({
+    required Vaccine vax,
+    required bool taken,
+    required DateTime when,
+    required String name,
+    required String protection,
+  }) async {
+    setState(() {
+      DateTime when = DateTime.now();
+      vax.taken = taken;
+      vax.takenOn = when;
+      int yearsAgo = DTUtilities.calculateYearsSince(when);
+      if (taken) {
+        _takenVaccines[name] = PatientVaccine(name: name, protection: protection, received: when, yearsAgo: yearsAgo);
+        service.insertVaccination(memberId, name, protection, when);
+      } else {
+        service.deleteVaccination(name, memberId);
+      }
+    });
   }
 
   @override
@@ -79,8 +118,23 @@ class ImmunizationScreenState extends State<ImmunizationScreen> {
                     final userRecord = _takenVaccines[v.name];
                     return VaccineCard(
                       vaccine: v,
-                      onChangedDate: (DateTime p1, String p2) {},
-                      onTookVaccine: (bool p1, String p2) {},
+                      onChangedDate: (DateTime when, String vaccineName) {
+                        setState(() {
+                          PatientVaccine? pv = _takenVaccines[vaccineName];
+                          if (pv != null) {
+                            onChangedDateHandler(when, v, pv);
+                          }
+                        });
+                      },
+                      onTookVaccine: (String vaccineName, bool taken, String protection, DateTime when) {
+                        onTookVaccineHandler(
+                          vax: v,
+                          taken: taken,
+                          when: when,
+                          name: vaccineName,
+                          protection: protection,
+                        );
+                      },
                     );
                   }),
 
