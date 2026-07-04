@@ -156,211 +156,6 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 // ROW OF ICON BUTTONS TO CHOOSE ANATOMY
-                Row(
-                  children: [
-                    IconButton(
-                      icon: Icon(
-                        Symbols.accessibility,
-                        size: anatomyMapTapped == AnatomyMapTapped.body ? 36 : 30,
-                        color: anatomyMapTapped == AnatomyMapTapped.body ? AppTheme.deepLogicViolet : Colors.black,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          anatomyMapTapped = AnatomyMapTapped.body;
-                          selectedMap = AnatomyZoneMaps.bodyFront;
-                          touchImage = TouchImageFactory.instance.getTouchImage(selection: selectedMap)!;
-                          anatomyImage = touchImage?.flip(imageOrientation);
-                          markerGroup = BodyMarkerGroup.bodyFront;
-                        });
-                      },
-                    ),
-                    //Right Hand
-                    IconButton(
-                      icon: Icon(
-                        Symbols.front_hand,
-                        size: anatomyMapTapped == AnatomyMapTapped.rightHand ? 36 : 30,
-                        color: anatomyMapTapped == AnatomyMapTapped.rightHand ? AppTheme.deepLogicViolet : Colors.black,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          anatomyMapTapped = AnatomyMapTapped.rightHand;
-                          selectedMap = AnatomyZoneMaps.handFront;
-                          imageOrientation = FlipDirection.flipX;
-                          touchImage = TouchImageFactory.instance.getTouchImage(selection: selectedMap)!;
-                          anatomyImage = touchImage?.flip(imageOrientation);
-                          markerGroup = BodyMarkerGroup.rightHandFront;
-                        });
-                      },
-                    ),
-                    //Left Hand
-                    IconButton(
-                      icon: Transform.flip(
-                        flipX: true,
-                        child: Icon(
-                          Symbols.front_hand,
-                          size: anatomyMapTapped == AnatomyMapTapped.leftHand ? 36 : 30,
-                          color: anatomyMapTapped == AnatomyMapTapped.leftHand
-                              ? AppTheme.deepLogicViolet
-                              : Colors.black,
-                        ),
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          anatomyMapTapped = AnatomyMapTapped.leftHand;
-                          selectedMap = AnatomyZoneMaps.handFront;
-                          imageOrientation = FlipDirection.none;
-                          touchImage = TouchImageFactory.instance.getTouchImage(selection: selectedMap)!;
-                          anatomyImage = touchImage?.flip(imageOrientation);
-                          markerGroup = BodyMarkerGroup.leftHandFront;
-                        });
-                      },
-                    ),
-                    IconButton(
-                      icon: Transform.flip(
-                        flipY: true,
-                        child: Icon(
-                          Symbols.barefoot,
-                          size: anatomyMapTapped == AnatomyMapTapped.rightFoot ? 36 : 30,
-                          color: anatomyMapTapped == AnatomyMapTapped.rightFoot
-                              ? AppTheme.deepLogicViolet
-                              : Colors.black,
-                        ),
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          anatomyMapTapped = AnatomyMapTapped.rightFoot;
-                          selectedMap = AnatomyZoneMaps.footBottom;
-                          imageOrientation = FlipDirection.flipX;
-                          touchImage = TouchImageFactory.instance.getTouchImage(selection: selectedMap)!;
-                          anatomyImage = touchImage?.flip(imageOrientation);
-                          markerGroup = BodyMarkerGroup.rightFootBottom;
-                        });
-                      },
-                    ),
-                    IconButton(
-                      icon: Transform.flip(
-                        flipX: true,
-                        flipY: true,
-                        child: Icon(
-                          Symbols.barefoot,
-                          size: anatomyMapTapped == AnatomyMapTapped.leftFoot ? 36 : 30,
-                          color: anatomyMapTapped == AnatomyMapTapped.leftFoot
-                              ? AppTheme.deepLogicViolet
-                              : Colors.black,
-                        ),
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          anatomyMapTapped = AnatomyMapTapped.leftFoot;
-                          selectedMap = AnatomyZoneMaps.footBottom;
-                          imageOrientation = FlipDirection.none;
-                          touchImage = TouchImageFactory.instance.getTouchImage(selection: selectedMap)!;
-                          anatomyImage = touchImage?.flip(imageOrientation);
-                          markerGroup = BodyMarkerGroup.leftFootBottom;
-                        });
-                      },
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        Symbols.face,
-                        size: anatomyMapTapped == AnatomyMapTapped.face ? 36 : 30,
-                        color: anatomyMapTapped == AnatomyMapTapped.face ? AppTheme.deepLogicViolet : Colors.black,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          anatomyMapTapped = AnatomyMapTapped.face;
-                          selectedMap = AnatomyZoneMaps.face;
-                          touchImage = TouchImageFactory.instance.getTouchImage(selection: selectedMap)!;
-                          anatomyImage = touchImage?.flip(imageOrientation);
-                          markerGroup = BodyMarkerGroup.face;
-                        });
-                      },
-                    ),
-                    Spacer(),
-
-                    //Flip
-                    IconButton(
-                      icon: Icon(Symbols.flip, size: 30),
-                      onPressed: () {
-                        AnatomyZoneMaps tappedMap = selectedMap;
-                        BodyMarkerGroup tappedMarkerGroup = markerGroup;
-                        switch (anatomyMapTapped) {
-                          case AnatomyMapTapped.body:
-                            {
-                              imageOrientation = FlipDirection.none;
-                              tappedMap = selectedMap == AnatomyZoneMaps.bodyBack
-                                  ? AnatomyZoneMaps.bodyFront
-                                  : AnatomyZoneMaps.bodyBack;
-                              tappedMarkerGroup = markerGroup == BodyMarkerGroup.bodyBack
-                                  ? BodyMarkerGroup.bodyFront
-                                  : BodyMarkerGroup.bodyBack;
-                            }
-                          case AnatomyMapTapped.face:
-                            {
-                              imageOrientation = FlipDirection.none;
-                              tappedMap = AnatomyZoneMaps.face;
-                              tappedMarkerGroup = BodyMarkerGroup.face;
-                            }
-                          case AnatomyMapTapped.rightHand:
-                            {
-                              imageOrientation = FlipDirection.flipX;
-                              tappedMap = selectedMap == AnatomyZoneMaps.handBack
-                                  ? AnatomyZoneMaps.handFront
-                                  : AnatomyZoneMaps.handBack;
-                              tappedMarkerGroup = markerGroup == BodyMarkerGroup.rightHandFront
-                                  ? BodyMarkerGroup.rightHandBack
-                                  : BodyMarkerGroup.rightHandFront;
-                            }
-                          case AnatomyMapTapped.leftHand:
-                            {
-                              imageOrientation = FlipDirection.none;
-                              tappedMap = selectedMap == AnatomyZoneMaps.handFront
-                                  ? AnatomyZoneMaps.handBack
-                                  : AnatomyZoneMaps.handFront;
-                              tappedMarkerGroup = markerGroup == BodyMarkerGroup.leftHandFront
-                                  ? BodyMarkerGroup.leftHandBack
-                                  : BodyMarkerGroup.leftHandFront;
-                            }
-                            tappedMarkerGroup = markerGroup == BodyMarkerGroup.bodyBack
-                                ? BodyMarkerGroup.bodyFront
-                                : BodyMarkerGroup.bodyBack;
-                          case AnatomyMapTapped.rightFoot:
-                            {
-                              imageOrientation = FlipDirection.flipX;
-                              tappedMap = selectedMap == AnatomyZoneMaps.footBottom
-                                  ? AnatomyZoneMaps.footTop
-                                  : AnatomyZoneMaps.footBottom;
-                              tappedMarkerGroup = markerGroup == BodyMarkerGroup.rightFootBottom
-                                  ? BodyMarkerGroup.rightFootTop
-                                  : BodyMarkerGroup.rightFootBottom;
-                            }
-                          case AnatomyMapTapped.leftFoot:
-                            {
-                              imageOrientation = FlipDirection.none;
-                              tappedMap = selectedMap == AnatomyZoneMaps.footBottom
-                                  ? AnatomyZoneMaps.footTop
-                                  : AnatomyZoneMaps.footBottom;
-                              tappedMarkerGroup = markerGroup == BodyMarkerGroup.leftFootBottom
-                                  ? BodyMarkerGroup.leftFootTop
-                                  : BodyMarkerGroup.leftFootBottom;
-                            }
-                          case AnatomyMapTapped.none:
-                            {
-                              tappedMap == selectedMap;
-                              tappedMarkerGroup = BodyMarkerGroup.none;
-                            }
-                        }
-                        setState(() {
-                          selectedMap = tappedMap;
-                          touchImage = TouchImageFactory.instance.getTouchImage(selection: selectedMap)!;
-                          anatomyImage = touchImage?.flip(imageOrientation);
-                          markerGroup = tappedMarkerGroup;
-                        });
-                        // Use a fixed duration for the flip to ensure it feels like a physical movement
-                      },
-                    ),
-                  ],
-                ),
                 Flexible(
                   fit: FlexFit.loose,
                   child: LayoutBuilder(
@@ -480,6 +275,209 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
                 ),
               ],
             ),
+          ),
+        ),
+        bottomNavigationBar: Container(
+          color: Colors.white,
+          padding: EdgeInsets.all(16),
+          child: Row(
+            children: [
+              IconButton(
+                icon: Icon(
+                  Symbols.accessibility,
+                  size: anatomyMapTapped == AnatomyMapTapped.body ? 36 : 30,
+                  color: anatomyMapTapped == AnatomyMapTapped.body ? AppTheme.deepLogicViolet : Colors.black,
+                ),
+                onPressed: () {
+                  setState(() {
+                    anatomyMapTapped = AnatomyMapTapped.body;
+                    selectedMap = AnatomyZoneMaps.bodyFront;
+                    touchImage = TouchImageFactory.instance.getTouchImage(selection: selectedMap)!;
+                    anatomyImage = touchImage?.flip(imageOrientation);
+                    markerGroup = BodyMarkerGroup.bodyFront;
+                  });
+                },
+              ),
+              //Right Hand
+              IconButton(
+                icon: Icon(
+                  Symbols.front_hand,
+                  size: anatomyMapTapped == AnatomyMapTapped.rightHand ? 36 : 30,
+                  color: anatomyMapTapped == AnatomyMapTapped.rightHand ? AppTheme.deepLogicViolet : Colors.black,
+                ),
+                onPressed: () {
+                  setState(() {
+                    anatomyMapTapped = AnatomyMapTapped.rightHand;
+                    selectedMap = AnatomyZoneMaps.handFront;
+                    imageOrientation = FlipDirection.flipX;
+                    touchImage = TouchImageFactory.instance.getTouchImage(selection: selectedMap)!;
+                    anatomyImage = touchImage?.flip(imageOrientation);
+                    markerGroup = BodyMarkerGroup.rightHandFront;
+                  });
+                },
+              ),
+              //Left Hand
+              IconButton(
+                icon: Transform.flip(
+                  flipX: true,
+                  child: Icon(
+                    Symbols.front_hand,
+                    size: anatomyMapTapped == AnatomyMapTapped.leftHand ? 36 : 30,
+                    color: anatomyMapTapped == AnatomyMapTapped.leftHand ? AppTheme.deepLogicViolet : Colors.black,
+                  ),
+                ),
+                onPressed: () {
+                  setState(() {
+                    anatomyMapTapped = AnatomyMapTapped.leftHand;
+                    selectedMap = AnatomyZoneMaps.handFront;
+                    imageOrientation = FlipDirection.none;
+                    touchImage = TouchImageFactory.instance.getTouchImage(selection: selectedMap)!;
+                    anatomyImage = touchImage?.flip(imageOrientation);
+                    markerGroup = BodyMarkerGroup.leftHandFront;
+                  });
+                },
+              ),
+              IconButton(
+                icon: Transform.flip(
+                  flipY: true,
+                  child: Icon(
+                    Symbols.barefoot,
+                    size: anatomyMapTapped == AnatomyMapTapped.rightFoot ? 36 : 30,
+                    color: anatomyMapTapped == AnatomyMapTapped.rightFoot ? AppTheme.deepLogicViolet : Colors.black,
+                  ),
+                ),
+                onPressed: () {
+                  setState(() {
+                    anatomyMapTapped = AnatomyMapTapped.rightFoot;
+                    selectedMap = AnatomyZoneMaps.footBottom;
+                    imageOrientation = FlipDirection.flipX;
+                    touchImage = TouchImageFactory.instance.getTouchImage(selection: selectedMap)!;
+                    anatomyImage = touchImage?.flip(imageOrientation);
+                    markerGroup = BodyMarkerGroup.rightFootBottom;
+                  });
+                },
+              ),
+              IconButton(
+                icon: Transform.flip(
+                  flipX: true,
+                  flipY: true,
+                  child: Icon(
+                    Symbols.barefoot,
+                    size: anatomyMapTapped == AnatomyMapTapped.leftFoot ? 36 : 30,
+                    color: anatomyMapTapped == AnatomyMapTapped.leftFoot ? AppTheme.deepLogicViolet : Colors.black,
+                  ),
+                ),
+                onPressed: () {
+                  setState(() {
+                    anatomyMapTapped = AnatomyMapTapped.leftFoot;
+                    selectedMap = AnatomyZoneMaps.footBottom;
+                    imageOrientation = FlipDirection.none;
+                    touchImage = TouchImageFactory.instance.getTouchImage(selection: selectedMap)!;
+                    anatomyImage = touchImage?.flip(imageOrientation);
+                    markerGroup = BodyMarkerGroup.leftFootBottom;
+                  });
+                },
+              ),
+              IconButton(
+                icon: Icon(
+                  Symbols.face,
+                  size: anatomyMapTapped == AnatomyMapTapped.face ? 36 : 30,
+                  color: anatomyMapTapped == AnatomyMapTapped.face ? AppTheme.deepLogicViolet : Colors.black,
+                ),
+                onPressed: () {
+                  setState(() {
+                    anatomyMapTapped = AnatomyMapTapped.face;
+                    selectedMap = AnatomyZoneMaps.face;
+                    touchImage = TouchImageFactory.instance.getTouchImage(selection: selectedMap)!;
+                    anatomyImage = touchImage?.flip(imageOrientation);
+                    markerGroup = BodyMarkerGroup.face;
+                  });
+                },
+              ),
+              Spacer(),
+
+              //Flip
+              IconButton(
+                icon: Icon(Symbols.flip, size: 30),
+                onPressed: () {
+                  AnatomyZoneMaps tappedMap = selectedMap;
+                  BodyMarkerGroup tappedMarkerGroup = markerGroup;
+                  switch (anatomyMapTapped) {
+                    case AnatomyMapTapped.body:
+                      {
+                        imageOrientation = FlipDirection.none;
+                        tappedMap = selectedMap == AnatomyZoneMaps.bodyBack
+                            ? AnatomyZoneMaps.bodyFront
+                            : AnatomyZoneMaps.bodyBack;
+                        tappedMarkerGroup = markerGroup == BodyMarkerGroup.bodyBack
+                            ? BodyMarkerGroup.bodyFront
+                            : BodyMarkerGroup.bodyBack;
+                      }
+                    case AnatomyMapTapped.face:
+                      {
+                        imageOrientation = FlipDirection.none;
+                        tappedMap = AnatomyZoneMaps.face;
+                        tappedMarkerGroup = BodyMarkerGroup.face;
+                      }
+                    case AnatomyMapTapped.rightHand:
+                      {
+                        imageOrientation = FlipDirection.flipX;
+                        tappedMap = selectedMap == AnatomyZoneMaps.handBack
+                            ? AnatomyZoneMaps.handFront
+                            : AnatomyZoneMaps.handBack;
+                        tappedMarkerGroup = markerGroup == BodyMarkerGroup.rightHandFront
+                            ? BodyMarkerGroup.rightHandBack
+                            : BodyMarkerGroup.rightHandFront;
+                      }
+                    case AnatomyMapTapped.leftHand:
+                      {
+                        imageOrientation = FlipDirection.none;
+                        tappedMap = selectedMap == AnatomyZoneMaps.handFront
+                            ? AnatomyZoneMaps.handBack
+                            : AnatomyZoneMaps.handFront;
+                        tappedMarkerGroup = markerGroup == BodyMarkerGroup.leftHandFront
+                            ? BodyMarkerGroup.leftHandBack
+                            : BodyMarkerGroup.leftHandFront;
+                      }
+                      tappedMarkerGroup = markerGroup == BodyMarkerGroup.bodyBack
+                          ? BodyMarkerGroup.bodyFront
+                          : BodyMarkerGroup.bodyBack;
+                    case AnatomyMapTapped.rightFoot:
+                      {
+                        imageOrientation = FlipDirection.flipX;
+                        tappedMap = selectedMap == AnatomyZoneMaps.footBottom
+                            ? AnatomyZoneMaps.footTop
+                            : AnatomyZoneMaps.footBottom;
+                        tappedMarkerGroup = markerGroup == BodyMarkerGroup.rightFootBottom
+                            ? BodyMarkerGroup.rightFootTop
+                            : BodyMarkerGroup.rightFootBottom;
+                      }
+                    case AnatomyMapTapped.leftFoot:
+                      {
+                        imageOrientation = FlipDirection.none;
+                        tappedMap = selectedMap == AnatomyZoneMaps.footBottom
+                            ? AnatomyZoneMaps.footTop
+                            : AnatomyZoneMaps.footBottom;
+                        tappedMarkerGroup = markerGroup == BodyMarkerGroup.leftFootBottom
+                            ? BodyMarkerGroup.leftFootTop
+                            : BodyMarkerGroup.leftFootBottom;
+                      }
+                    case AnatomyMapTapped.none:
+                      {
+                        tappedMap == selectedMap;
+                        tappedMarkerGroup = BodyMarkerGroup.none;
+                      }
+                  }
+                  setState(() {
+                    selectedMap = tappedMap;
+                    touchImage = TouchImageFactory.instance.getTouchImage(selection: selectedMap)!;
+                    anatomyImage = touchImage?.flip(imageOrientation);
+                    markerGroup = tappedMarkerGroup;
+                  });
+                  // Use a fixed duration for the flip to ensure it feels like a physical movement
+                },
+              ),
+            ],
           ),
         ),
       ),

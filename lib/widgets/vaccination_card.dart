@@ -87,7 +87,7 @@ class VaccineCard extends StatelessWidget {
                         constraints: const BoxConstraints(),
                         padding: EdgeInsets.zero,
                         onPressed: () => onChangedDate(vaccine.takenOn!, vaccine.name),
-                        icon: const Icon(Symbols.edit, size: 18),
+                        icon: const Icon(Symbols.calendar_clock, size: 18),
                       ),
                     ],
                   ),

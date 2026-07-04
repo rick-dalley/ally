@@ -1,6 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:triage/classes/database_manager.dart';
+import 'package:triage/classes/specialities.dart';
 
-enum DepartmentColors { blue, green, cyan, purple }
+enum DepartmentColors { blue, green, cyan, purple, red, orange, brown, darkPurple, slateGray, indigo, pink }
 
 class StaffMember {
   final String id;
@@ -11,14 +13,17 @@ class StaffMember {
   final String position;
   final DateTime hireDate;
   final bool isSpecialist;
+  final Specialities speciality;
   final bool onCall;
   final String department;
   final String? pager;
   final String phone;
   final DepartmentColors color;
+  final IconData icon;
 
   const StaffMember({
     required this.id,
+    required this.speciality,
     required this.firstName,
     required this.lastName,
     required this.email,
@@ -31,23 +36,28 @@ class StaffMember {
     required this.color,
     required this.department,
     required this.phone,
+    required this.icon,
   });
 
   factory StaffMember.fromJson(Map<String, dynamic> json) {
+    String positionRaw = json["position"] ?? "General Practice";
+    Specialities speciality = specialities[positionRaw] ?? Specialities.generalPractice;
     return StaffMember(
+      icon: speciality.icon,
       id: json["id"],
       firstName: json["first_name"],
       lastName: json["last_name"],
       email: json["email"] ?? "",
       gender: json["gender"],
-      position: json["position"] ?? "",
+      position: json["position"],
       hireDate: DateTime.now().subtract(Duration(days: 365)),
       isSpecialist: (json["is_specialist"] == 1),
+      speciality: speciality,
       onCall: (json["on_call"] == 1),
       pager: json["pager"] ?? "",
+      color: speciality.color,
+      department: speciality.name,
       phone: json["phone"] ?? "",
-      color: DepartmentColors.purple,
-      department: "Mental Health",
     );
   }
 

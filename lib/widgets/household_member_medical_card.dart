@@ -261,8 +261,8 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
                           color: AppTheme.deepLogicViolet,
                         ),
                         CompactButton(
-                          label: "It hurts",
-                          icon: Symbols.healing,
+                          label: "Symptoms",
+                          icon: Symbols.symptoms,
                           onTap: () {
                             showModalBottomSheet(
                               context: context,
