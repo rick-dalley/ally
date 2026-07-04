@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:triage/classes/database_manager.dart';
 import 'package:triage/classes/specialities.dart';
 
+import 'country_codes.dart';
+
 enum DepartmentColors { blue, green, cyan, purple, red, orange, brown, darkPurple, slateGray, indigo, pink }
 
 class StaffMember {
@@ -18,6 +20,12 @@ class StaffMember {
   final String department;
   final String? pager;
   final String phone;
+  final String street;
+  final String code;
+  final String city;
+  final String provOrState;
+  final String country;
+  final String? countryIso;
   final DepartmentColors color;
   final IconData icon;
 
@@ -37,11 +45,19 @@ class StaffMember {
     required this.department,
     required this.phone,
     required this.icon,
+    required this.street,
+    required this.code,
+    required this.city,
+    required this.provOrState,
+    required this.country,
+    this.countryIso,
   });
 
   factory StaffMember.fromJson(Map<String, dynamic> json) {
     String positionRaw = json["position"] ?? "General Practice";
     Specialities speciality = specialities[positionRaw] ?? Specialities.generalPractice;
+    String countryName = json["country"] ?? "Canada";
+    String countryISO = countryCodes[countryName]?.isoA2 ?? "CA";
     return StaffMember(
       icon: speciality.icon,
       id: json["id"],
@@ -58,6 +74,12 @@ class StaffMember {
       color: speciality.color,
       department: speciality.name,
       phone: json["phone"] ?? "",
+      street: json["street"] ?? "",
+      city: json["city"] ?? "",
+      provOrState: json["pr_st"] ?? "",
+      code: json["code"] ?? "",
+      country: json["country"] ?? "",
+      countryIso: countryISO,
     );
   }
 

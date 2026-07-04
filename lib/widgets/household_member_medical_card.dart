@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/vitals.dart';
 import 'package:triage/screens/patient_timeline_screen.dart';
-import 'package:triage/widgets/blood_type_widget.dart';
+import 'package:triage/widgets/blood_type_selector.dart';
 import 'package:triage/widgets/current_metrics.dart';
 import 'package:triage/widgets/sentiment_widget.dart';
 import 'package:triage/widgets/vitals_history.dart';
@@ -15,6 +15,8 @@ import '../classes/patient.dart';
 import '../classes/patient_sentiment.dart';
 import '../screens/body_screen.dart';
 import '../screens/staff_screen.dart';
+import 'blood_type_tile.dart';
+import 'carbon_button_compact.dart';
 
 class HouseholdMemberMedicalCard extends StatefulWidget {
   // Pass the initial patient snapshot down from the roster list
@@ -96,7 +98,7 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
       context: context,
       isScrollControlled: true,
       backgroundColor: AppTheme.clinicalWhite,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+      shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
       builder: (context) => BloodTypeSelector(
         selectedAbo: patient.bloodType.abo,
         selectedRh: patient.bloodType.rh,
@@ -154,9 +156,9 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
 
         return Card(
           elevation: 4,
-          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          shape: ContinuousRectangleBorder(
+            borderRadius: BorderRadius.zero,
             // side: BorderSide(color: statusColor, width: 3),
           ),
           child: Padding(
@@ -167,7 +169,7 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
                 // Replace your existing Container child: Row(...) block with this:
                 Container(
                   decoration: BoxDecoration(color: AppTheme.surfaceColor, borderRadius: BorderRadius.circular(8.0)),
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
+                  // padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
                   child: Stack(
                     clipBehavior: Clip.none, // Allows the widget to draw outside its bounds
                     alignment: Alignment.centerRight,
@@ -177,7 +179,7 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
                         children: [
                           Text(
                             patient.firstName,
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.deepCharcoal),
+                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400, color: AppTheme.deepCharcoal),
                           ),
                           const Spacer(),
                           BloodTypeTile(
@@ -186,7 +188,7 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
                               showBloodTypModal(context: context, patient: patient);
                             },
                           ),
-                          const SizedBox(width: 56), // Reserve space for the SentimentWidget
+                          const SizedBox(width: 72), // Reserve space for the SentimentWidget
                         ],
                       ),
 
@@ -235,7 +237,7 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
                       runSpacing: 8, // Vertical space between lines
                       alignment: WrapAlignment.start,
                       children: [
-                        CompactButton(
+                        CarbonCompactButton(
                           label: "Medical Team",
                           icon: Symbols.stethoscope,
                           onTap: () {
@@ -248,19 +250,19 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
                           },
                           color: AppTheme.deepLogicViolet,
                         ),
-                        CompactButton(
+                        CarbonCompactButton(
                           label: "Profile",
                           icon: Symbols.medical_information,
                           onTap: widget.onAssessmentsTap ?? () {},
                           color: AppTheme.deepLogicViolet,
                         ),
-                        CompactButton(
+                        CarbonCompactButton(
                           label: "Meds",
                           icon: Symbols.medication,
                           onTap: widget.onMedsTap ?? () {},
                           color: AppTheme.deepLogicViolet,
                         ),
-                        CompactButton(
+                        CarbonCompactButton(
                           label: "Symptoms",
                           icon: Symbols.symptoms,
                           onTap: () {
@@ -287,58 +289,6 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
           ),
         );
       },
-    );
-  }
-}
-
-class CompactButton extends StatefulWidget {
-  final String label;
-  final IconData icon;
-  final VoidCallback onTap;
-  final Color color;
-  const CompactButton({super.key, required this.label, required this.icon, required this.onTap, required this.color});
-
-  @override
-  State<StatefulWidget> createState() => CompactButtonState();
-}
-
-class CompactButtonState extends State<CompactButton> {
-  @override
-  Widget build(BuildContext context) {
-    Color color = widget.color;
-    double availableWidth = MediaQuery.of(context).size.width - 80; // Adjusted for margins
-    return SizedBox(
-      width: availableWidth / 4,
-      child: OutlinedButton(
-        onPressed: widget.onTap,
-        style: OutlinedButton.styleFrom(
-          // 1. Force a minimum height so the icon and text aren't cramped
-          minimumSize: const Size(0, 54),
-          // 2. Add specific vertical padding
-          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
-          foregroundColor: color,
-          side: BorderSide(color: color, width: 1.5),
-          backgroundColor: color.withAlpha(20),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(widget.icon, size: 22), // Slightly larger icon
-            const SizedBox(height: 4),
-            Text(
-              widget.label,
-              style: const TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.normal,
-                letterSpacing: -0.2, // Tighter letters to prevent overflow
-              ),
-              maxLines: 1,
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

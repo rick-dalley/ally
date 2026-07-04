@@ -4,36 +4,15 @@ import 'package:url_launcher/url_launcher.dart';
 
 class StaffIdCard extends StatelessWidget {
   final String photoPath;
-  final String name;
-  final String position;
-  final String department;
-  final String staffId;
-  final String hireDate;
-  final String phone;
-  final String email;
-  final String? pager;
-  final IconData icon;
-  final DepartmentColors departmentColor;
+  final StaffMember? staffMember;
   final int index;
 
-  const StaffIdCard({
-    super.key,
-    required this.photoPath,
-    required this.name,
-    required this.position,
-    required this.department,
-    required this.staffId,
-    required this.hireDate,
-    required this.phone,
-    required this.email,
-    this.pager,
-    required this.icon,
-    required this.departmentColor,
-    required this.index,
-  });
+  const StaffIdCard({super.key, required this.photoPath, required this.staffMember, required this.index});
 
   @override
   Widget build(BuildContext context) {
+    String pager = staffMember?.pager ?? "";
+    String name = "${staffMember?.firstName} ${staffMember?.lastName}";
     Map<DepartmentColors, Color> departmentColorList = {
       DepartmentColors.blue: Colors.blue,
       DepartmentColors.green: Colors.green,
@@ -68,100 +47,108 @@ class StaffIdCard extends StatelessWidget {
     };
 
     return Card(
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       elevation: 4,
       clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: SizedBox(
         width: double.infinity,
-        child: Column(
-          children: [
-            Container(
-              height: 40.0,
-              width: double.infinity,
-              color: departmentColorList[departmentColor],
-              alignment: Alignment.center, // This centers the Row within the Container
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center, // This centers the children inside the Row
+        child: staffMember == null
+            ? SizedBox(height: 100)
+            : Column(
                 children: [
-                  Text(
-                    "University Hospital - $department",
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  Container(
+                    height: 48.0,
+                    width: double.infinity,
+                    color: departmentColorList[staffMember?.color],
+                    alignment: Alignment.center, // This centers the Row within the Container
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center, // This centers the children inside the Row
+                      children: [
+                        Text(
+                          "University Hospital - ${staffMember?.department}",
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(width: 16),
+                        Icon(staffMember?.icon, color: Colors.white, size: 24),
+                      ],
+                    ),
                   ),
-                  SizedBox(width: 16),
-                  Icon(icon, color: Colors.white),
-                ],
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.all(16),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Left Side: Photo
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.asset(photos[index % 16]!, width: 100, height: 100, fit: BoxFit.cover),
-                  ),
-                  const SizedBox(width: 16),
-                  // Right Side: Info
-                  Expanded(
-                    child: Column(
+                  Container(
+                    padding: EdgeInsets.all(16),
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                        Text(position, style: const TextStyle(color: Colors.grey)),
-                        const SizedBox(height: 8),
-                        Text("ID: ${staffId.toUpperCase().substring(0, 8)}"),
-                        Text("Hired: $hireDate"),
-                        const SizedBox(height: 8),
-                        // Placeholder for Barcode/QR
-                        Row(
-                          children: [
-                            Container(
-                              height: 40,
-                              width: 40,
-                              color: Colors.black12, // Replace with your QR/Barcode widget
+                        // Left Side: Photo
+                        Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: const Color(0xFF525252), // Carbon-style border color
+                              width: 1.0, // Adjust width for thinness
                             ),
-                            Container(
-                              padding: EdgeInsets.all(8.0),
-                              alignment: Alignment.centerLeft,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  InkWell(
-                                    onTap: () async {
-                                      final Uri emailLaunchUri = Uri(
-                                        scheme: 'mailto',
-                                        path: email,
-                                        query: 'subject=Hello&body=Regarding your inquiry...', // Optional
-                                      );
+                            // If you want sharp corners, keep this BorderRadius.zero
+                            borderRadius: BorderRadius.zero,
+                          ),
+                          child: Image.asset(photos[index % 16]!, fit: BoxFit.cover),
+                        ),
+                        const SizedBox(width: 16),
+                        // Right Side: Info
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                              Text(staffMember!.position, style: const TextStyle(color: Colors.grey)),
+                              const SizedBox(height: 8),
+                              InkWell(
+                                onTap: () async {
+                                  final Uri emailLaunchUri = Uri(
+                                    scheme: 'mailto',
+                                    path: staffMember?.email,
+                                    query: 'subject=Hello&body=Regarding your inquiry...', // Optional
+                                  );
 
-                                      if (await canLaunchUrl(emailLaunchUri)) {
-                                        await launchUrl(emailLaunchUri);
-                                      } else {
-                                        // Handle the error (e.g., show a snackbar saying no email app is configured)
-                                      }
-                                    },
-                                    child: Text(
-                                      email,
-                                      style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
+                                  if (await canLaunchUrl(emailLaunchUri)) {
+                                    await launchUrl(emailLaunchUri);
+                                  } else {
+                                    // Handle the error (e.g., show a snackbar saying no email app is configured)
+                                  }
+                                },
+                                child: Text(
+                                  staffMember!.email,
+                                  style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
+                                ),
+                              ),
+                              Text("Ph: ${staffMember?.phone}"),
+                              if (pager.isNotEmpty) Text("Pg: $pager"),
+                              const SizedBox(height: 8),
+                              // Placeholder for Barcode/QR
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.all(8.0),
+                                    alignment: Alignment.centerLeft,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text("Address", style: const TextStyle(color: Colors.grey)),
+                                        Text("${staffMember?.street}"),
+                                        Text("${staffMember?.city}"),
+                                        Text("${staffMember?.provOrState}"),
+                                      ],
                                     ),
                                   ),
-                                  Text("Ph: $phone"),
-                                  if (pager != null || pager!.isNotEmpty) Text("Pg: $pager"),
                                 ],
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),
                   ),
                 ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }

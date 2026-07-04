@@ -38,38 +38,56 @@ class _AddCareProviderScreenState extends State<AddCareProviderScreen> {
         child: Form(
           child: Column(
             children: [
-              GestureDetector(
-                onTap: () {
-                  // Show a small dialog to input URL or trigger paste
-                  showDialog(context: context, builder: (_) => _imageInputDialog());
-                },
-                child: CircleAvatar(
-                  radius: 50,
-                  backgroundImage: _imageUrl != null ? NetworkImage(_imageUrl!) : null,
-                  child: _imageUrl == null ? const Icon(Icons.add_a_photo, size: 40) : null,
-                ),
-              ),
-              CarbonText(label: "First name", helperText: "enter the first name"),
-              CarbonText(label: "Last Name", helperText: "enter the last name"),
-              CarbonAutocomplete(
-                label: "Caregiver's Specialization",
-                // Pass only the keys (the display names) as the options
-                options: specialities.keys.toList(),
-                placeholder: 'Choose one...',
-                helperText: 'Please select from the available list.',
-                onChanged: (String? val) {
-                  // 'val' will be the string the user typed or selected
-                  print("Selected specialty: $val");
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start, // Align to top
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      showDialog(context: context, builder: (_) => _imageInputDialog());
+                    },
+                    child: Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF4F4F4),
+                        border: Border.all(color: const Color(0xFF525252)),
+                        borderRadius: BorderRadius.circular(4),
+                        image: _imageUrl != null
+                            ? DecorationImage(image: NetworkImage(_imageUrl!), fit: BoxFit.cover)
+                            : null,
+                      ),
+                      child: _imageUrl == null
+                          ? const Icon(Icons.add_a_photo, size: 30, color: Color(0xFF525252))
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(width: 16), // Add spacing between image and inputs
+                  Expanded(
+                    // <--- THIS IS THE KEY
+                    child: CarbonAutocomplete(
+                      label: "Caregiver's Specialization",
+                      // Pass only the keys (the display names) as the options
+                      options: specialities.keys.toList(),
+                      placeholder: "Enter the caregiver's title",
+                      helperText: "Select from the available list.",
+                      onChanged: (String? val) {
+                        // 'val' will be the string the user typed or selected
+                        print("Selected specialty: $val");
 
-                  // If you need the underlying enum/value, look it up in your map:
-                  // final underlyingValue = specialities[val];
-                },
+                        // If you need the underlying enum/value, look it up in your map:
+                        // final underlyingValue = specialities[val];
+                      },
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(height: 16),
-              CarbonText(label: "Email", helperText: "enter an email in the form name@site.com"),
-              CarbonText(label: "Other", helperText: "enter the fax, cell or pager number"),
-              CarbonText(label: "Office Location", helperText: "enter the address of the provider"),
-              CarbonText(label: "Notes", helperText: "enter anything you want to remember about the provider"),
+              const SizedBox(height: 16), // Spacing between the two text fields
+              CarbonTextEdit(label: "First name", helperText: "Enter the first name"),
+              CarbonTextEdit(label: "Last Name", helperText: "Enter the last name"),
+              CarbonTextEdit(label: "Email", helperText: "enter an email in the form name@site.com"),
+              CarbonTextEdit(label: "Other", helperText: "enter the fax, cell or pager number"),
+              CarbonTextEdit(label: "Office Location", helperText: "enter the address of the provider"),
+              CarbonTextEdit(label: "Notes", helperText: "enter anything you want to remember about the provider"),
               const SizedBox(height: 24),
               Row(
                 children: [
@@ -92,25 +110,43 @@ class _AddCareProviderScreenState extends State<AddCareProviderScreen> {
   Widget _imageInputDialog() {
     TextEditingController controller = TextEditingController();
     return AlertDialog(
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       title: const Text("Add Photo"),
+      insetPadding: EdgeInsets.all(0.0),
+      contentPadding: EdgeInsetsGeometry.all(16.0),
+      buttonPadding: EdgeInsetsGeometry.all(0.0),
+      actionsPadding: EdgeInsetsGeometry.all(0.0),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          TextField(
-            controller: controller,
-            decoration: const InputDecoration(labelText: "Image URL"),
-          ),
-          const SizedBox(height: 10),
+          CarbonTextEdit(label: "Image URL"),
+          const SizedBox(height: 16),
           TextButton(onPressed: _handlePaste, child: const Text("Paste from Clipboard")),
         ],
       ),
       actions: [
-        TextButton(
-          onPressed: () {
-            setState(() => _imageUrl = controller.text);
-            Navigator.pop(context);
-          },
-          child: const Text("Save"),
+        Row(
+          children: [
+            Expanded(
+              child: CarbonButton(
+                label: "Cancel",
+                color: Colors.black38,
+                isSecondary: true,
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+            Expanded(
+              child: CarbonButton(
+                onPressed: () {
+                  setState(() => _imageUrl = controller.text);
+                  Navigator.pop(context);
+                },
+                label: "Save",
+              ),
+            ),
+          ],
         ),
       ],
     );

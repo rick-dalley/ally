@@ -73,6 +73,10 @@ class DataSeeder {
           'on_call': entry['on_call'] ? 1 : 0,
           'pager': entry['pager'],
           'phone': entry['phone'],
+          'city': entry['city'],
+          'street': entry['street'],
+          'pr_st': entry['pr_st'],
+          'country': entry['country'],
         });
       }
 

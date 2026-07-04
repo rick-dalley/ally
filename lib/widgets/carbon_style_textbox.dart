@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../app_theme.dart';
 
-class CarbonText extends StatefulWidget {
+class CarbonTextEdit extends StatefulWidget {
   final String label;
   final String? errorText;
   final String? placeHolderText;
@@ -12,7 +12,7 @@ class CarbonText extends StatefulWidget {
   final Color? accentColor;
   final TextEditingController? controller;
 
-  const CarbonText({
+  const CarbonTextEdit({
     super.key,
     this.controller,
     required this.label,
@@ -27,7 +27,7 @@ class CarbonText extends StatefulWidget {
   State<StatefulWidget> createState() => CarbonStateText();
 }
 
-class CarbonStateText extends State<CarbonText> {
+class CarbonStateText extends State<CarbonTextEdit> {
   late Color fillColor = widget.fillColor ?? Color(0xFFF4F4F4);
   late Color accentColor = widget.accentColor ?? AppTheme.deepLogicViolet;
   @override

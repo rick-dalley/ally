@@ -49,20 +49,7 @@ class StaffScreenState extends State<StaffScreen> {
                 itemCount: staffKeys.length,
                 itemBuilder: (context, index) {
                   StaffMember? staffMember = StaffFactory.instance.getStaffMember(id: staffKeys[index]);
-                  return StaffIdCard(
-                    photoPath: 'photoPath',
-                    name: '${staffMember?.firstName} ${staffMember?.lastName}',
-                    position: staffMember!.position,
-                    department: staffMember.department,
-                    staffId: staffMember.id,
-                    hireDate: staffMember.hireDate.year.toString(),
-                    phone: staffMember.phone,
-                    email: staffMember.email,
-                    pager: staffMember.pager,
-                    icon: staffMember.icon,
-                    departmentColor: staffMember.color,
-                    index: index,
-                  );
+                  return StaffIdCard(photoPath: 'photoPath', staffMember: staffMember, index: index);
                 },
               ),
         floatingActionButton: FloatingActionButton(
