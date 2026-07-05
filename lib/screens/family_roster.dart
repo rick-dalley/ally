@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/widgets/card_flipper.dart';
-import 'package:triage/widgets/emergency_qr.dart';
 import 'package:triage/widgets/household_member_info_card.dart';
 import '../app_theme.dart';
 import '../classes/database_manager.dart';
 import '../classes/patient.dart';
+import '../widgets/carbon_style_search_field.dart';
 import '../widgets/household_member_medical_card.dart';
+import 'intake_screen.dart';
 import 'medical_profile_screen.dart';
 import 'meds.dart';
 
@@ -59,11 +60,11 @@ class FamilyRosterState extends State<FamilyRoster> {
     );
   }
 
-  void launchEmergencyQRCodeGenerator(BuildContext context, Patient householdMember) {
+  void _launchIntakeScreen(BuildContext context) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EmergencyQRCodeView(householdMember: householdMember),
+        builder: (context) => IntakeScreen(),
         // This ensures the screen slides up like a focused task
         fullscreenDialog: true,
       ),
@@ -82,39 +83,13 @@ class FamilyRosterState extends State<FamilyRoster> {
       // Keeping the body as the main focus
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      hintText: "Search by name...",
-                      prefixIcon: const Icon(Icons.search),
-                      // Add this to your decoration
-                      suffixIcon: _searchQuery.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear),
-                              onPressed: () {
-                                setState(() {
-                                  _searchQuery = ""; // Reset the query
-                                  _searchController.clear();
-                                });
-                              },
-                            )
-                          : null, // No icon if the field is empty
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    onChanged: (value) {
-                      setState(() {
-                        _searchQuery = value;
-                      });
-                    },
-                  ),
-                ),
-              ],
-            ),
+          CarbonSearchField(
+            controller: _searchController,
+            onChanged: (value) {
+              setState(() {
+                _searchQuery = value;
+              });
+            },
           ),
           Expanded(
             child: filteredPatients.isEmpty
@@ -129,7 +104,7 @@ class FamilyRosterState extends State<FamilyRoster> {
                     itemCount: filteredPatients.length,
                     itemBuilder: (context, index) {
                       return FlippableCardController(
-                        height: 332,
+                        height: 352,
                         front: HouseholdMemberMedicalCard(
                           householdMember: filteredPatients[index],
                           onMemberUpdate: ({required Patient patient}) {
@@ -169,12 +144,13 @@ class FamilyRosterState extends State<FamilyRoster> {
       ),
 
       floatingActionButton: FloatingActionButton(
-        onPressed: () => launchEmergencyQRCodeGenerator(context, _patients.first),
+        onPressed: () => _launchIntakeScreen(context),
         // Signals scanning capability
         backgroundColor: AppTheme.deepLogicViolet,
         foregroundColor: AppTheme.clinicalWhite,
+        shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
         // New dedicated screen
-        child: const Icon(Symbols.qr_code_2_add, size: 36),
+        child: const Padding(padding: EdgeInsetsGeometry.all(16), child: Icon(Symbols.frame_person_sharp, size: 24)),
       ),
     );
   }

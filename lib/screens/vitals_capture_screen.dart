@@ -1,7 +1,9 @@
-
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:triage/widgets/carbon_style_textbox.dart';
 import 'package:triage/widgets/vitals_scanner.dart';
+
+import '../widgets/carbon_style_button.dart';
 
 class VitalEntry {
   final String label;
@@ -27,7 +29,6 @@ class VitalsCaptureScreen extends StatefulWidget {
 }
 
 class VitalsCaptureScreenState extends State<VitalsCaptureScreen> {
-
   bool _isScannerLoaded = false;
   String assetPath = 'assets/screen_captures/WelchAllynConnex6000SpotProfileScreen.png';
 
@@ -56,12 +57,13 @@ class VitalsCaptureScreenState extends State<VitalsCaptureScreen> {
   @override
   void dispose() {
     for (var controller in _controllers.values) {
-      if (controller!=null) {
+      if (controller != null) {
         controller.dispose();
       }
     }
     super.dispose();
   }
+
   Key _scannerKey = UniqueKey();
 
   void _rescan() {
@@ -76,81 +78,87 @@ class VitalsCaptureScreenState extends State<VitalsCaptureScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Patient Vitals"),
-      actions: [
-        IconButton(
-          icon: const Icon(Symbols.frame_reload),
-          onPressed: _rescan, // Trigger the rescan
-          tooltip: "Rescan Vitals",
-        )
-      ],),
+      appBar: AppBar(
+        title: const Text("Patient Vitals"),
+        actions: [
+          IconButton(
+            icon: const Icon(Symbols.frame_reload),
+            onPressed: _rescan, // Trigger the rescan
+            tooltip: "Rescan Vitals",
+          ),
+        ],
+      ),
       body: Column(
         children: [
           // 1. CAMERA / OCR PLACEHOLDER SECTION
           !_isScannerLoaded
-            ? const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()))
-            :  VitalsScannerWidget(
-            key: _scannerKey,
-            assetPath: assetPath,
-            onScanCompleted: (results) {
-              if (mounted && results.isNotEmpty) {
-                setState(() {
-                  for (var entry in results) {
-                    switch (entry.key) {
-                      case 'SYS':
-                        getController('sys').text = entry.value;
-                        break;
-                      case 'DIA':
-                        getController('dia').text = entry.value;
-                        break;
-                      case 'PULSE':
-                      // Maps OCR "PULSE" to your controller "hr" (Heart Rate)
-                        getController('hr').text = entry.value;
-                        break;
-                      case 'SPO2':
-                      // Maps OCR "SPO2" to your controller "o2"
-                        getController('o2').text = entry.value;
-                        break;
-                      case 'TEMP':
-                        getController('temp').text = entry.value;
-                        break;
-                      case 'PATIENT_ID':
-                      // If you add a controller for Patient ID, update it here
-                      //   debugPrint("Captured Patient ID: ${entry.value}");
-                        break;
+              ? const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()))
+              : VitalsScannerWidget(
+                  key: _scannerKey,
+                  assetPath: assetPath,
+                  onScanCompleted: (results) {
+                    if (mounted && results.isNotEmpty) {
+                      setState(() {
+                        for (var entry in results) {
+                          switch (entry.key) {
+                            case 'SYS':
+                              getController('sys').text = entry.value;
+                              break;
+                            case 'DIA':
+                              getController('dia').text = entry.value;
+                              break;
+                            case 'PULSE':
+                              // Maps OCR "PULSE" to your controller "hr" (Heart Rate)
+                              getController('hr').text = entry.value;
+                              break;
+                            case 'SPO2':
+                              // Maps OCR "SPO2" to your controller "o2"
+                              getController('o2').text = entry.value;
+                              break;
+                            case 'TEMP':
+                              getController('temp').text = entry.value;
+                              break;
+                            case 'PATIENT_ID':
+                              // If you add a controller for Patient ID, update it here
+                              //   debugPrint("Captured Patient ID: ${entry.value}");
+                              break;
+                          }
+                        }
+                      });
                     }
-                  }
-                });
-              }
-            },
-          ),
+                  },
+                ),
 
           Expanded(
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
-                // First, we call the unique BP widget
                 _buildBloodPressureInput(),
-                // Then, we "spread" the generic vitals (HR, O2, Temp) into the list
-                // The ... (spread operator) takes the list created by .map and
-                // places each item directly into the children of the ListView.
-                ...vitalsList.map((vital) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12.0),
-                  child: _buildVitalInput(vital),
-                )),
+                ...vitalsList.map(
+                  (vital) => Padding(padding: const EdgeInsets.only(bottom: 16.0), child: _buildVitalInput(vital)),
+                ),
               ],
             ),
           ),
-          const Divider(height: 32),
-
-          // 3. SUBMIT ACTION
           Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton(
-              onPressed: _submitVitals,
-              child: const Text("SAVE"),
+            padding: EdgeInsetsGeometry.all(16.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: CarbonButton(
+                    onPressed: _submitVitals,
+                    isSecondary: true,
+                    color: Colors.black26,
+                    label: "Cancel",
+                  ),
+                ),
+                Expanded(
+                  child: CarbonButton(onPressed: _submitVitals, label: "Save"),
+                ),
+              ],
             ),
           ),
+          const SizedBox(height: 24.0),
         ],
       ),
     );
@@ -168,25 +176,19 @@ class VitalsCaptureScreenState extends State<VitalsCaptureScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Blood Pressure",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                Text("mmHg",
-                    style: TextStyle(fontSize: 12, color: Colors.black54)),
+                Text("Blood Pressure", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                Text("mmHg", style: TextStyle(fontSize: 12, color: Colors.black54)),
               ],
             ),
           ),
           // Systolic
           Expanded(
             flex: 1,
-            child: TextField(
+            child: CarbonTextEdit(
               controller: _controllers['sys'],
               keyboardType: TextInputType.number,
-              textAlign: TextAlign.center,
-              decoration: const InputDecoration(
-                hintText: "Sys",
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 8),
-              ),
+              helperText: "Systolic",
+              label: 'SYS',
             ),
           ),
           const Padding(
@@ -195,16 +197,11 @@ class VitalsCaptureScreenState extends State<VitalsCaptureScreen> {
           ),
           // Diastolic
           Expanded(
-            flex: 1,
-            child: TextField(
+            child: CarbonTextEdit(
               controller: _controllers['dia'],
               keyboardType: TextInputType.number,
-              textAlign: TextAlign.center,
-              decoration: const InputDecoration(
-                hintText: "Dia",
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 8),
-              ),
+              helperText: "Diastolic",
+              label: 'DIA',
             ),
           ),
         ],
@@ -215,23 +212,14 @@ class VitalsCaptureScreenState extends State<VitalsCaptureScreen> {
   Widget _buildVitalInput(VitalEntry vital) {
     return Row(
       children: [
-        Icon(vital.icon, color: Colors.blueGrey, size: 30),
+        Icon(vital.icon, color: Colors.blueGrey, size: 24),
         const SizedBox(width: 16),
         Expanded(
-          flex: 3,
-          child: Text(vital.label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-        ),
-        Expanded(
           flex: 2,
-          child: TextField(
+          child: CarbonTextEdit(
             controller: _controllers[vital.key],
             keyboardType: TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(
-              hintText: "0.0",
-              suffixText: vital.unit,
-              border: const OutlineInputBorder(),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-            ),
+            label: vital.label,
           ),
         ),
       ],
@@ -242,9 +230,9 @@ class VitalsCaptureScreenState extends State<VitalsCaptureScreen> {
     // Collect data for database/API
     int sys = int.tryParse(_controllers['sys']?.text ?? '') ?? 0;
     int dia = int.tryParse(_controllers['dia']?.text ?? '') ?? 0;
-    int hr  = int.tryParse(_controllers['hr']?.text ?? '') ?? 0;
+    int hr = int.tryParse(_controllers['hr']?.text ?? '') ?? 0;
 
-    double o2   = double.tryParse(_controllers['o2']?.text ?? '') ?? 0.0;
+    double o2 = double.tryParse(_controllers['o2']?.text ?? '') ?? 0.0;
     double temp = double.tryParse(_controllers['temp']?.text ?? '') ?? 0.0;
 
     // 2. SYNTAX: Invoke the parent callback via the 'widget.' prefix

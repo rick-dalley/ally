@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
-import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/scanned_data.dart';
+import 'package:triage/widgets/carbon_style_textbox.dart';
 import 'package:triage/widgets/scanner_widget.dart';
-import '../app_theme.dart';
+import '../widgets/carbon_style_button.dart';
 
 class IntakeScreen extends StatefulWidget {
   final bool? isSimulation;
@@ -78,55 +78,35 @@ class IntakeScreenState extends State<IntakeScreen> {
               padding: const EdgeInsets.all(20.0),
               children: [
                 SizedBox(height: 16.0),
-                TextField(
-                  controller: _firstNameController,
-                  decoration: const InputDecoration(labelText: "First Name"),
-                ),
+                CarbonTextEdit(controller: _firstNameController, label: "First Name"),
                 SizedBox(height: 16.0),
-                TextField(
-                  controller: _lastNameController,
-                  decoration: const InputDecoration(labelText: "Last Name"),
-                ),
+                CarbonTextEdit(controller: _lastNameController, label: "Last Name"),
                 SizedBox(height: 16.0),
-                TextField(
-                  controller: _dobController,
-                  decoration: const InputDecoration(labelText: "Date of Birth (YYYY-MMM-DD)"),
-                ),
+                CarbonTextEdit(controller: _dobController, label: "Date of Birth (YYYY-MMM-DD)"),
                 SizedBox(height: 16.0),
-                TextField(
-                  controller: _phnController,
-                  decoration: const InputDecoration(labelText: "PHN"),
-                  keyboardType: TextInputType.number,
-                ),
+                CarbonTextEdit(controller: _phnController, label: "PHN", keyboardType: TextInputType.number),
                 const SizedBox(height: 24),
                 Row(
                   children: [
                     Expanded(
-                      child: ElevatedButton(
+                      child: CarbonButton(
+                        label: 'Cancel',
+                        isSecondary: true,
+                        color: Colors.black26,
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ),
+                    Expanded(
+                      child: CarbonButton(
                         onPressed: () {
                           Navigator.pop(context);
                           if (widget.onScannedData != null) {
                             widget.onScannedData!(scannedData);
                           }
                         },
-                        style: ElevatedButton.styleFrom(
-                          fixedSize: const Size.fromHeight(50),
-                          backgroundColor: AppTheme.deepLogicViolet,
-                          foregroundColor: AppTheme.clinicalWhite,
-                        ),
-                        child: const Icon(Symbols.save, size: 32),
-                      ),
-                    ),
-                    const SizedBox(width: 16), // Spacing
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: ElevatedButton.styleFrom(
-                          fixedSize: const Size.fromHeight(50),
-                          backgroundColor: AppTheme.deepLogicViolet,
-                          foregroundColor: AppTheme.clinicalWhite,
-                        ),
-                        child: const Icon(Symbols.domino_mask, size: 32),
+                        label: "Save",
                       ),
                     ),
                   ],

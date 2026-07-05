@@ -17,6 +17,8 @@ import '../screens/body_screen.dart';
 import '../screens/staff_screen.dart';
 import 'blood_type_tile.dart';
 import 'carbon_button_compact.dart';
+import 'carbon_style_button.dart';
+import 'emergency_qr.dart';
 
 class HouseholdMemberMedicalCard extends StatefulWidget {
   // Pass the initial patient snapshot down from the roster list
@@ -87,7 +89,7 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
       context: context,
       isScrollControlled: true,
       backgroundColor: AppTheme.clinicalWhite,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+      shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
       builder: (context) =>
           VitalsHistoryView(patientUuid: patientUuid, vitals: vitals, onAddedVitals: refreshPatientData),
     );
@@ -133,6 +135,18 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
     // });
     //
   }
+
+  void launchEmergencyQRCodeGenerator(BuildContext context, Patient householdMember) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EmergencyQRCodeView(householdMember: householdMember),
+        // This ensures the screen slides up like a focused task
+        fullscreenDialog: true,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -182,11 +196,23 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
                             style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400, color: AppTheme.deepCharcoal),
                           ),
                           const Spacer(),
-                          BloodTypeTile(
-                            bloodType: patient.bloodType,
+                          CarbonCompactButton(
+                            label: "Symptoms",
+                            icon: Symbols.symptoms,
                             onTap: () {
-                              showBloodTypModal(context: context, patient: patient);
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true, // Allows full-screen height
+                                useSafeArea: false, // Prevents UI overlap with status/nav bars
+                                builder: (BuildContext context) {
+                                  return SizedBox(
+                                    height: MediaQuery.of(context).size.height, // 90% screen height
+                                    child: BodyOutlineScreen(patient: patient), // The Stateful Widget from before
+                                  );
+                                },
+                              );
                             },
+                            color: Colors.red,
                           ),
                           const SizedBox(width: 72), // Reserve space for the SentimentWidget
                         ],
@@ -209,7 +235,6 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 16),
                 Column(
                   mainAxisSize: MainAxisSize.min, // Prevents Column from taking infinite height
@@ -217,8 +242,19 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
                     SizedBox(
                       height: 148, // Increased height to comfortably fit stacked icon buttons
                       child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const SizedBox(width: 8), // Add some breathing room
+                          Padding(
+                            padding: EdgeInsetsGeometry.only(left: 8, right: 8, top: 8, bottom: 40.0),
+                            child: BloodTypeTile(
+                              bloodType: patient.bloodType,
+                              onTap: () {
+                                showBloodTypModal(context: context, patient: patient);
+                              },
+                            ),
+                          ),
+
+                          // const SizedBox(width: 16), // Add some breathing room
                           // 2. Wrap the wide widget in Expanded to take up remaining space
                           Expanded(
                             child: InkWell(
@@ -263,22 +299,12 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
                           color: AppTheme.deepLogicViolet,
                         ),
                         CarbonCompactButton(
-                          label: "Symptoms",
-                          icon: Symbols.symptoms,
+                          label: 'OCR',
+                          icon: Symbols.qr_code_2_add,
                           onTap: () {
-                            showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true, // Allows full-screen height
-                              useSafeArea: false, // Prevents UI overlap with status/nav bars
-                              builder: (BuildContext context) {
-                                return SizedBox(
-                                  height: MediaQuery.of(context).size.height, // 90% screen height
-                                  child: BodyOutlineScreen(patient: patient), // The Stateful Widget from before
-                                );
-                              },
-                            );
+                            launchEmergencyQRCodeGenerator(context, patient);
                           },
-                          color: Colors.red,
+                          color: AppTheme.deepLogicViolet,
                         ),
                       ],
                     ),

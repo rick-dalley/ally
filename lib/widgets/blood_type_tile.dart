@@ -13,7 +13,7 @@ class BloodTypeTile extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: const Color(0xFFF4F4F4),
           borderRadius: BorderRadius.zero,
@@ -38,7 +38,7 @@ class BloodTypeTile extends StatelessWidget {
                 Text(bloodType.label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               ],
             ),
-            const SizedBox(width: 12), // Gap between text and icon
+            const SizedBox(width: 8.0), // Gap between text and icon
             Icon(Symbols.bloodtype, color: Colors.red, size: 24),
           ],
         ),

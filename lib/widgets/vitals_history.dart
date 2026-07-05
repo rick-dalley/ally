@@ -45,10 +45,7 @@ class VitalsHistoryViewState extends State<VitalsHistoryView> {
         expand: false,
         builder: (context, scrollController) {
           return Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-            ),
+            decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.zero),
             child: Column(
               children: [
                 // A small handle to indicate the modal is draggable
@@ -56,7 +53,7 @@ class VitalsHistoryViewState extends State<VitalsHistoryView> {
                 Container(
                   width: 40,
                   height: 4,
-                  decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
+                  decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.zero),
                 ),
 
                 Expanded(

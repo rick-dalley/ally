@@ -10,6 +10,7 @@ class CarbonTextEdit extends StatefulWidget {
   final String? helperText;
   final Color? fillColor;
   final Color? accentColor;
+  final TextInputType? keyboardType;
   final TextEditingController? controller;
 
   const CarbonTextEdit({
@@ -21,6 +22,7 @@ class CarbonTextEdit extends StatefulWidget {
     this.helperText,
     this.placeHolderText,
     this.errorText,
+    this.keyboardType,
   });
 
   @override
@@ -30,8 +32,10 @@ class CarbonTextEdit extends StatefulWidget {
 class CarbonStateText extends State<CarbonTextEdit> {
   late Color fillColor = widget.fillColor ?? Color(0xFFF4F4F4);
   late Color accentColor = widget.accentColor ?? AppTheme.deepLogicViolet;
+
   @override
   Widget build(BuildContext context) {
+    TextInputType keyboard = widget.keyboardType ?? TextInputType.text;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -45,6 +49,7 @@ class CarbonStateText extends State<CarbonTextEdit> {
         TextField(
           controller: widget.controller,
           style: GoogleFonts.ibmPlexSans(fontSize: 16, color: Colors.black),
+          keyboardType: keyboard,
           decoration: InputDecoration(
             filled: true,
             fillColor: fillColor,

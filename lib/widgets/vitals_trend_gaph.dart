@@ -23,28 +23,32 @@ class _VitalsTrendGraphState extends State<VitalsTrendGraph> {
     final double graphHeight = MediaQuery.of(context).size.height * 0.225;
     return Card(
       // Extends the Monitor Black background to the entire widget area
+      shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
       child: Column(
         children: [
-          Padding(padding: EdgeInsets.all(24),
-          child: SizedBox(
-            height: graphHeight,
-            child: LineChart(
-              LineChartData(
-                // Set to transparent so the Container color shows through
-                backgroundColor: Colors.transparent,
-                gridData: const FlGridData(show: true),
-                titlesData: const FlTitlesData(show: false),
-                borderData: FlBorderData(show: false),
-                lineBarsData: [
-                  if (showPulse) _generateLine(widget.history, MetricType.pulse, AppTheme.vitalsPulse),
-                  if (showBP) _generateLine(widget.history, MetricType.systolic, AppTheme.vitalsBP),
-                  if (showBP) _generateLine(widget.history, MetricType.diastolic, AppTheme.vitalsBP.withAlpha(168)),
-                  if (showTemp) _generateLine(widget.history, MetricType.temperature, AppTheme.lightTheme.disabledColor),
-                  if (showO2) _generateLine(widget.history, MetricType.spo2, AppTheme.vitalsOxygen),
-                ],
+          Padding(
+            padding: EdgeInsets.all(16),
+            child: SizedBox(
+              height: graphHeight,
+              child: LineChart(
+                LineChartData(
+                  // Set to transparent so the Container color shows through
+                  backgroundColor: Colors.transparent,
+                  gridData: const FlGridData(show: true),
+                  titlesData: const FlTitlesData(show: false),
+                  borderData: FlBorderData(show: false),
+                  lineBarsData: [
+                    if (showPulse) _generateLine(widget.history, MetricType.pulse, AppTheme.vitalsPulse),
+                    if (showBP) _generateLine(widget.history, MetricType.systolic, AppTheme.vitalsBP),
+                    if (showBP) _generateLine(widget.history, MetricType.diastolic, AppTheme.vitalsBP.withAlpha(168)),
+                    if (showTemp)
+                      _generateLine(widget.history, MetricType.temperature, AppTheme.lightTheme.disabledColor),
+                    if (showO2) _generateLine(widget.history, MetricType.spo2, AppTheme.vitalsOxygen),
+                  ],
+                ),
               ),
             ),
-          ),),
+          ),
           const SizedBox(height: 16),
           // This will now sit on the black background
           _buildToggles(),
@@ -60,11 +64,11 @@ class _VitalsTrendGraphState extends State<VitalsTrendGraph> {
       // Switch to get the specific metric object based on the type
       final Metric? metric = switch (type) {
         MetricType.temperature => record.temp,
-        MetricType.systolic    => record.sys,
-        MetricType.diastolic   => record.dia,
-        MetricType.pulse       => record.pulse,
-        MetricType.spo2        => record.o2,
-        MetricType.unknown     => null,
+        MetricType.systolic => record.sys,
+        MetricType.diastolic => record.dia,
+        MetricType.pulse => record.pulse,
+        MetricType.spo2 => record.o2,
+        MetricType.unknown => null,
       };
 
       // Return the value, defaulting to 0.0 or handling nulls as needed
@@ -96,7 +100,10 @@ class _VitalsTrendGraphState extends State<VitalsTrendGraph> {
 
   Widget _toggleChip(String label, bool active, Color color, Function(bool) onToggle) {
     return FilterChip(
-      label: Text(label, style: TextStyle(color: active ? Colors.white:Colors.black, fontSize: 14, fontWeight: FontWeight.bold)),
+      label: Text(
+        label,
+        style: TextStyle(color: active ? Colors.white : Colors.black, fontSize: 14, fontWeight: FontWeight.bold),
+      ),
       selected: active,
       onSelected: onToggle,
       selectedColor: color,
