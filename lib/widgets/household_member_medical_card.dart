@@ -17,7 +17,6 @@ import '../screens/body_screen.dart';
 import '../screens/staff_screen.dart';
 import 'blood_type_tile.dart';
 import 'carbon_button_compact.dart';
-import 'carbon_style_button.dart';
 import 'emergency_qr.dart';
 
 class HouseholdMemberMedicalCard extends StatefulWidget {
