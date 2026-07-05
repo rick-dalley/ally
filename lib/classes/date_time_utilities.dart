@@ -1,6 +1,29 @@
 import 'dart:math';
 
 class DTUtilities {
+  static String getRecencyString(DateTime pastDate) {
+    final DateTime now = DateTime.now();
+    final Duration diff = now.difference(pastDate);
+
+    if (diff.inMinutes < 60) {
+      return "${diff.inMinutes} minutes ago";
+    } else if (diff.inHours < 24) {
+      return "${diff.inHours} hours ago";
+    } else if (diff.inDays < 7) {
+      return "${diff.inDays} days ago";
+    } else if (diff.inDays < 30) {
+      int weeks = diff.inDays ~/ 7;
+      int days = diff.inDays % 7;
+      return "$weeks weeks and $days days ago";
+    } else if (diff.inDays < 365) {
+      // 30.44 is the average number of days in a month (365/12)
+      double months = diff.inDays / 30.44;
+      return "${months.toStringAsFixed(1)} months ago";
+    } else {
+      double years = diff.inDays / 365.25;
+      return "${years.toStringAsFixed(1)} years ago";
+    }
+  }
 
   static int calculateYearsSince(DateTime pastDate) {
     final DateTime now = DateTime.now();
@@ -9,8 +32,7 @@ class DTUtilities {
     int years = now.year - pastDate.year;
 
     // 2. Adjust downwards if the anniversary hasn't happened yet this year
-    if (now.month < pastDate.month ||
-        (now.month == pastDate.month && now.day < pastDate.day)) {
+    if (now.month < pastDate.month || (now.month == pastDate.month && now.day < pastDate.day)) {
       years--;
     }
 
@@ -61,9 +83,7 @@ class DTUtilities {
   static int dateStringToUnixInt(String dateString) {
     try {
       // 1. Try standard ISO parsing first
-      return DateTime
-          .parse(dateString)
-          .millisecondsSinceEpoch ~/ 1000;
+      return DateTime.parse(dateString).millisecondsSinceEpoch ~/ 1000;
     } catch (e) {
       // 2. Fallback: Split "2/8/2026" by "/"
       List<String> parts = dateString.split('/');
@@ -75,51 +95,34 @@ class DTUtilities {
         return DateTime(year, month, day).millisecondsSinceEpoch ~/ 1000;
       }
       // 3. Last resort: Return current time if all else fails
-      return DateTime
-          .now()
-          .millisecondsSinceEpoch ~/ 1000;
+      return DateTime.now().millisecondsSinceEpoch ~/ 1000;
     }
   }
 
-  static DateTime aYearAgo(){
+  static DateTime aYearAgo() {
     DateTime now = DateTime.timestamp();
 
-// 2. Subtract 1 from the year (handles leap years correctly)
-    DateTime oneYearAgo = DateTime(
-        now.year - 1,
-        now.month,
-        now.day,
-        now.hour,
-        now.minute,
-        now.second,
-        now.millisecond
-    );
+    // 2. Subtract 1 from the year (handles leap years correctly)
+    DateTime oneYearAgo = DateTime(now.year - 1, now.month, now.day, now.hour, now.minute, now.second, now.millisecond);
     return oneYearAgo;
   }
+
   static int aYearAgoAsUnixInt() {
     // 1. Get the current UTC timestamp as a DateTime
 
-
-// 3. Convert to Unix timestamp (seconds)
+    // 3. Convert to Unix timestamp (seconds)
     return aYearAgo().millisecondsSinceEpoch ~/ 1000;
   }
-  static int now(){
-    return DateTime.now().millisecondsSinceEpoch ~/1000;
+
+  static int now() {
+    return DateTime.now().millisecondsSinceEpoch ~/ 1000;
   }
 
-  static DateTime aWhileAgo(int m){
+  static DateTime aWhileAgo(int m) {
     DateTime now = DateTime.timestamp();
 
-// 2. Subtract 1 from the year (handles leap years correctly)
-    DateTime aWhileAgo = DateTime(
-        now.year,
-        now.month-m,
-        now.day,
-        now.hour,
-        now.minute,
-        now.second,
-        now.millisecond
-    );
+    // 2. Subtract 1 from the year (handles leap years correctly)
+    DateTime aWhileAgo = DateTime(now.year, now.month - m, now.day, now.hour, now.minute, now.second, now.millisecond);
     return aWhileAgo;
   }
 
@@ -127,62 +130,36 @@ class DTUtilities {
     return aWhileAgo(m).millisecondsSinceEpoch ~/ 1000;
   }
 
-
-  static DateTime aMonthAgo(){
+  static DateTime aMonthAgo() {
     DateTime now = DateTime.timestamp();
     // Subtract 1 from the month (handles leap years correctly)
-    DateTime aMonthAgo = DateTime(
-        now.year,
-        now.month - 1,
-        now.day,
-        now.hour,
-        now.minute,
-        now.second,
-        now.millisecond
-    );
+    DateTime aMonthAgo = DateTime(now.year, now.month - 1, now.day, now.hour, now.minute, now.second, now.millisecond);
     return aMonthAgo;
   }
 
-  static int aMonthAgoUnixInt(){
+  static int aMonthAgoUnixInt() {
     return aMonthAgo().millisecondsSinceEpoch ~/ 1000;
   }
 
-  static DateTime aWeekAgo(){
+  static DateTime aWeekAgo() {
     DateTime now = DateTime.timestamp();
     // Subtract 1 from the month (handles leap years correctly)
-    DateTime aWeekAgo = DateTime(
-        now.year,
-        now.month,
-        now.day - 7,
-        now.hour,
-        now.minute,
-        now.second,
-        now.millisecond
-    );
+    DateTime aWeekAgo = DateTime(now.year, now.month, now.day - 7, now.hour, now.minute, now.second, now.millisecond);
     return aWeekAgo;
   }
 
-  static int aWeekAgoUnixInt(){
+  static int aWeekAgoUnixInt() {
     return aWeekAgo().millisecondsSinceEpoch ~/ 1000;
   }
 
-  static DateTime yesterday(){
+  static DateTime yesterday() {
     DateTime now = DateTime.timestamp();
     // Subtract 1 from the month (handles leap years correctly)
-    DateTime yesterday = DateTime(
-        now.year,
-        now.month,
-        now.day - 1,
-        now.hour,
-        now.minute,
-        now.second,
-        now.millisecond
-    );
+    DateTime yesterday = DateTime(now.year, now.month, now.day - 1, now.hour, now.minute, now.second, now.millisecond);
     return yesterday;
   }
 
-  static int yesterdayUnixInt(){
+  static int yesterdayUnixInt() {
     return yesterday().millisecondsSinceEpoch ~/ 1000;
   }
-
 }

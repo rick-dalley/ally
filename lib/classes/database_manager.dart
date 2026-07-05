@@ -5,6 +5,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:triage/classes/date_time_utilities.dart';
 import 'package:triage/classes/patient_condition.dart';
 import 'package:triage/classes/vitals.dart';
 import 'package:uuid/uuid.dart';
@@ -830,6 +831,24 @@ class DatabaseManager {
     return {for (var row in results) row['assessment_id'] as String: row['total'] as int};
   }
 
+  Future<Map<String, CompletedQuestionnaire>> getCompletedAssessments(String patientId) async {
+    final db = await database;
+
+    // We query the table directly using the assessment_id column as our key
+    final List<Map<String, dynamic>> results = await db.rawQuery(
+      '''
+    SELECT assessment_id, last_modified, COUNT(*) as total
+    FROM completed_assessment
+    WHERE patient_id = ? AND complete = 1
+    GROUP BY assessment_id
+  ''',
+      [patientId],
+    );
+
+    // Convert the list of rows into a Map: {'PHQ-9': 1, 'GAD-7': 0, ...}
+    return {for (var row in results) row['assessment_id'] as String: CompletedQuestionnaire.fromJson(row)};
+  }
+
   Future<void> saveAssessmentResults({
     required String assessmentId,
     required String patientId,
@@ -946,5 +965,21 @@ class DatabaseManager {
   ''',
       [id],
     );
+  }
+}
+
+class CompletedQuestionnaire {
+  final bool completed;
+  final DateTime? when;
+
+  const CompletedQuestionnaire({required this.completed, required this.when});
+
+  factory CompletedQuestionnaire.fromJson(Map<String, dynamic> item) {
+    bool isComplete = (item['total'] ?? 0) > 0;
+
+    String? whenCompletedRaw = isComplete ? item['last_modified'] : null;
+    DateTime? whenComplete = whenCompletedRaw != null ? DTUtilities.sqliteToDart(whenCompletedRaw) : null;
+
+    return CompletedQuestionnaire(completed: isComplete, when: whenComplete);
   }
 }

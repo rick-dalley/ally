@@ -25,16 +25,14 @@ class ObservationNote {
 /// 2. Primary Screen Component
 class ObservationScreen extends StatefulWidget {
   final String patientUuid;
-  final ScrollController scrollController; // Passed from the modal sheet parent framework
 
-  const ObservationScreen({super.key, required this.patientUuid, required this.scrollController});
+  const ObservationScreen({super.key, required this.patientUuid});
 
   @override
   State<ObservationScreen> createState() => _ObservationScreenState();
 }
 
 class _ObservationScreenState extends State<ObservationScreen> {
-
   List<ObservationNote> _history = [];
   List<ObservationNote> _filtered = [];
   bool _isLoading = true; // Tracks triage system load states cleanly
@@ -61,6 +59,7 @@ class _ObservationScreenState extends State<ObservationScreen> {
       }
     });
   }
+
   void _deleteNoteFromSystem(ObservationNote targetNote) async {
     // 1. Instantly clean the item out of your memory state lists
     setState(() {
@@ -89,7 +88,6 @@ class _ObservationScreenState extends State<ObservationScreen> {
         currentNote: existingNote,
         useMicrophone: useMicrophone,
         onNoteEntered: (ObservationNote completeNote) async {
-
           if (existingNote == null) {
             // NEW NOTE (ID is empty)
             try {
@@ -107,7 +105,6 @@ class _ObservationScreenState extends State<ObservationScreen> {
             } catch (e) {
               debugPrint("Failed to insert new note: $e");
             }
-
           } else {
             // EXISTING NOTE (ID is '1', '2', etc.)
             // Optimistically update the UI list instantly
@@ -121,12 +118,7 @@ class _ObservationScreenState extends State<ObservationScreen> {
 
             // Write the update to disk in the background
             try {
-              await DatabaseManager().updateObservation(
-                int.parse(completeNote.id),
-                {
-                  'content': completeNote.content,
-                },
-              );
+              await DatabaseManager().updateObservation(int.parse(completeNote.id), {'content': completeNote.content});
             } catch (e) {
               debugPrint("Failed to update note on disk: $e");
             }
@@ -171,7 +163,6 @@ class _ObservationScreenState extends State<ObservationScreen> {
                   )
                 : ListView.builder(
                     // Core unified scroll hooks to eliminate skipping or snapping bugs
-                    controller: widget.scrollController,
                     physics: const ClampingScrollPhysics(),
                     padding: const EdgeInsets.only(top: 8, bottom: 24),
                     itemCount: _filtered.length,
@@ -199,7 +190,7 @@ class _ObservationScreenState extends State<ObservationScreen> {
                           child: ObservationCard(note: tappedNote),
                         ),
                       );
-                      },
+                    },
                   ),
           ),
 
@@ -222,7 +213,10 @@ class _ObservationScreenState extends State<ObservationScreen> {
                         filled: true,
                         fillColor: Colors.white,
                         contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
                     ),
                   ),
@@ -230,26 +224,19 @@ class _ObservationScreenState extends State<ObservationScreen> {
                   const SizedBox(width: 8),
                   // Microphone Button with White Circular Background
                   Container(
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
+                    decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
                     child: IconButton(
                       icon: const Icon(Icons.mic_none_outlined, color: AppTheme.deepCharcoal, size: 26),
                       tooltip: "Dictate Observation",
                       // Open workspace and explicitly pass a custom flag to start recording immediately
-                      onPressed: () => _openNoteWorkspace(context, null, true ),
+                      onPressed: () => _openNoteWorkspace(context, null, true),
                     ),
                   ),
 
                   const SizedBox(width: 8), // Cleaned up to an even 8px gap between buttons
-
                   // Edit Button with White Circular Background
                   Container(
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
+                    decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
                     child: IconButton(
                       icon: const Icon(Icons.edit_outlined, color: AppTheme.deepCharcoal, size: 26),
                       tooltip: "New Observation",
@@ -267,9 +254,7 @@ class _ObservationScreenState extends State<ObservationScreen> {
 
   Future<void> _loadPatientObservations(String patientUuid) async {
     try {
-      final List<Map<String, dynamic>> rawRows = await DatabaseManager().getObservationsForPatient(
-       patientUuid,
-      );
+      final List<Map<String, dynamic>> rawRows = await DatabaseManager().getObservationsForPatient(patientUuid);
 
       final List<ObservationNote> loadedNotes = rawRows.map((row) {
         return ObservationNote(

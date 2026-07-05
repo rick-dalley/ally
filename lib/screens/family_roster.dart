@@ -54,8 +54,10 @@ class FamilyRosterState extends State<FamilyRoster> {
   void _showAssessmentsMenu(BuildContext context, Patient householdMember) {
     showModalBottomSheet(
       context: context,
+      shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: Colors.white,
+      useSafeArea: true,
       builder: (context) => MedicalProfileScreen(householdMember: householdMember),
     );
   }

@@ -3,6 +3,8 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/database_manager.dart';
 import 'package:triage/screens/observations_screen.dart';
 import 'package:triage/screens/physical_health.dart';
+import 'package:triage/widgets/carbon_style_action_tile.dart';
+import 'package:triage/widgets/questionnaire_tile.dart';
 
 import '../app_theme.dart';
 import '../classes/assessment_logic.dart';
@@ -17,521 +19,320 @@ class MedicalProfileScreen extends StatefulWidget {
   const MedicalProfileScreen({super.key, required this.householdMember});
 
   @override
-  State<MedicalProfileScreen> createState() => _MedicalProfileScreenState();
+  State<MedicalProfileScreen> createState() => MedicalProfileScreenState();
 }
 
-class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
-  late Future<Map<String, int>> _assessmentCountsFuture;
+class MedicalProfileScreenState extends State<MedicalProfileScreen> {
+  late Future<Map<String, CompletedQuestionnaire>> completedQuestionnaires;
 
   @override
   void initState() {
     super.initState();
     // Initialize the future once
-    _assessmentCountsFuture = DatabaseManager().countCompletedAssessments(widget.householdMember.patientUuid);
+    completedQuestionnaires = DatabaseManager().getCompletedAssessments(widget.householdMember.patientUuid);
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _assessmentCountsFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator()); // Show loader while fetching
-        }
+    return Scaffold(
+      backgroundColor: AppTheme.canvasColor,
 
-        if (snapshot.hasError) {
-          return Center(child: Text("Error loading history: ${snapshot.error}"));
-        }
+      body: SafeArea(
+        child: FutureBuilder<Map<String, CompletedQuestionnaire>>(
+          future: completedQuestionnaires,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (snapshot.hasError) {
+              return Center(child: Text("Error: ${snapshot.error}"));
+            }
 
-        // Pre-process the maps once the data arrives
-        final Map<String, int> counts = snapshot.data ?? {};
-        final Map<String, bool> completed = counts.map((key, value) => MapEntry(key, value > 0));
+            final Map<String, CompletedQuestionnaire> completed = snapshot.data ?? {};
 
-        return Container(
-          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.8),
-          decoration: BoxDecoration(
-            color: AppTheme.canvasColor,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 12),
-              // Modal Handle
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(color: AppTheme.canvasColor, borderRadius: BorderRadius.circular(10)),
-              ),
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  "PROFILE",
-                  style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.deepLogicViolet, letterSpacing: 1.2),
-                ),
-              ),
-              Flexible(
-                child: ListView(
-                  shrinkWrap: true,
+            return Column(
+              children: [
+                // HEADER AREA (Fixed)
+                Row(
                   children: [
-                    // --- SECTION: PHYSICAL HEALTH (The "Total Picture") ---
-                    _buildSectionHeader("CONDITIONS"),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                      child: Card(
-                        elevation: 0,
-                        clipBehavior: Clip.antiAlias,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(
-                            // Subtle border changes color when task is done
-                            color: AppTheme.cardBorder,
-                            width: 1.5,
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Text(
+                          "PROFILE",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w400,
+                            color: AppTheme.deepLogicViolet,
+                            letterSpacing: 1.2,
                           ),
                         ),
-                        child: InkWell(
-                          onTap: () {
-                            Navigator.pop(context);
-                            _launchObservationsModal(context);
-                          },
-                          child: ListTile(
-                            leading: _buildDynamicIcon(
-                              isCompleted: true,
-                              outlineIcon: Symbols.conditions,
-                              solidIcon: Symbols.conditions_sharp,
-                              activeColor: AppTheme.deepLogicViolet,
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Symbols.close, color: Colors.grey, size: 28),
+                              onPressed: () => Navigator.pop(context), // Dismisses the screen
                             ),
-                            title: const Text("Existing Medical Conditions"),
-                            subtitle: const Text("Review & Update"),
-                            onTap: () {
-                              Navigator.pop(context);
-                              _launchPhysicalHealthChecklist(context, widget.householdMember.patientUuid);
-                            },
-                          ),
+                          ],
                         ),
                       ),
                     ),
-                    // --- SECTION: CLINICAL OBSERVATIONS ---
-                    _buildSectionHeader("DIARY"),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                      child: Card(
-                        elevation: 0,
-                        clipBehavior: Clip.antiAlias,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(
-                            // Subtle border changes color when task is done
-                            color: AppTheme.cardBorder,
-                            width: 1.5,
-                          ),
-                        ),
-                        child: InkWell(
-                          onTap: () {
-                            Navigator.pop(context);
-                            _launchObservationsModal(context);
-                          },
-                          child: ListTile(
-                            leading: _buildDynamicIcon(
-                              isCompleted: true,
-                              outlineIcon: Symbols.clinical_notes,
-                              solidIcon: Symbols.clinical_notes_sharp,
-                              activeColor: AppTheme.deepLogicViolet,
-                            ),
-                            title: const Text("Medical Diary"),
-                            subtitle: const Text("Observations about my health journey"),
-                          ),
-                        ),
-                      ),
-                    ),
-                    _buildSectionHeader("IMMUNIZATIONS"),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                      child: Card(
-                        elevation: 0,
-                        clipBehavior: Clip.antiAlias,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(
-                            // Subtle border changes color when task is done
-                            color: AppTheme.cardBorder,
-                            width: 1.5,
-                          ),
-                        ),
-                        child: InkWell(
-                          onTap: () {
-                            Navigator.pop(context);
-                            _launchImmunizationModal(context, widget.householdMember);
-                          },
-                          child: ListTile(
-                            leading: _buildDynamicIcon(
-                              isCompleted: true,
-                              outlineIcon: Symbols.vaccines,
-                              solidIcon: Symbols.vaccines_sharp,
-                              activeColor: AppTheme.deepLogicViolet,
-                            ),
-                            title: const Text("Vaccinations"),
-                            subtitle: const Text("Vaccinations I've had"),
-                          ),
-                        ),
-                      ),
-                    ), // --- SECTION: PSYCHIATRIC SCALES ---
-                    _buildSectionHeader("QUESTIONNAIRES"),
-
-                    _buildAssessmentTile(
-                      context,
-                      "PHQ-9",
-                      widget.householdMember.patientUuid,
-                      "Patient Health Questionnaire -9\n(Objectifies degree of depression severity)",
-                      "phq-9.json",
-                      'assets/questions/phq9_score_guide.json',
-                      completed["PHQ-9"] ?? false,
-                      // The builder signature must match (String, dynamic, ScrollController)
-                      (assessmentId, data, ctrl) => QuestionnaireSelectorScreen(
-                        assessmentId: data["assessmentId"],
-                        patientUuid: data["patientUuid"],
-                        scoreGuidePath: data["scoreGuidePath"],
-                        template: data["template"],
-                        isReadOnly: data['isReadOnly'],
-                        logic: PHQ9Logic(),
-                        scrollController: ctrl,
-                      ),
-                    ),
-
-                    _buildAssessmentTile(
-                      context,
-                      "GAD-7",
-                      widget.householdMember.patientUuid,
-                      "General Anxiety Disorder-7)\nMeasures severity of anxiety.",
-                      "gad-7.json",
-                      'assets/questions/gad7_score_guide.json',
-                      completed["GAD-7"] ?? false,
-                      (assessmentId, data, ctrl) => QuestionnaireSelectorScreen(
-                        assessmentId: data["assessmentId"],
-                        patientUuid: data["patientUuid"],
-                        scoreGuidePath: data["scoreGuidePath"],
-                        template: data["template"],
-                        isReadOnly: data['isReadOnly'],
-                        logic: GAD7Logic(),
-                        scrollController: ctrl,
-                      ),
-                    ),
-
-                    _buildAssessmentTile(
-                      context,
-                      "C-SSRS",
-                      widget.householdMember.patientUuid,
-                      "Columbia-Suicide Severity Rating Scale\nAssesses suicide risk, severity, and intent",
-                      "c-ssrs.json",
-                      null,
-                      completed["C-SSRS"] ?? false,
-                      (assessmentId, data, ctrl) => QuestionnaireSelectorScreen(
-                        assessmentId: data["assessmentId"],
-                        patientUuid: data["patientUuid"],
-                        scoreGuidePath: data["scoreGuidePath"],
-                        template: data["template"],
-                        isReadOnly: data['isReadOnly'],
-                        logic: CSSRSLogic(),
-                        scrollController: ctrl,
-                      ),
-                    ),
-
-                    _buildAssessmentTile(
-                      context,
-                      "DAST-10",
-                      widget.householdMember.patientUuid,
-                      "Drug Abuse Screening Test\nScreen for the presence and severity of substance use ",
-                      "dast-10.json",
-                      'assets/questions/dast10_score_guide.json',
-                      completed["DAST-10"] ?? false,
-                      (assessmentId, data, ctrl) => QuestionnaireSelectorScreen(
-                        assessmentId: data["assessmentId"],
-                        patientUuid: data["patientUuid"],
-                        scoreGuidePath: data["scoreGuidePath"],
-                        template: data["template"],
-                        isReadOnly: data['isReadOnly'],
-                        logic: DAST10Logic(),
-                        scrollController: ctrl,
-                      ),
-                    ),
-
-                    _buildAssessmentTile(
-                      context,
-                      "ASRS-V1.1",
-                      widget.householdMember.patientUuid,
-                      "Adult ADHD Self Report Scale\nVersion 1.1(",
-                      "asrs.json",
-                      'assets/questions/asrs_score_guide.json',
-                      completed["ASRS-V1.1"] ?? false,
-                      (assessmentId, data, ctrl) => QuestionnaireSelectorScreen(
-                        assessmentId: data["assessmentId"],
-                        patientUuid: data["patientUuid"],
-                        scoreGuidePath: data["scoreGuidePath"],
-                        template: data["template"],
-                        isReadOnly: data['isReadOnly'],
-                        logic: ASRS11Logic(),
-                        scrollController: ctrl,
-                      ),
-                    ),
-
-                    _buildAssessmentTile(
-                      context,
-                      "PCL-5",
-                      widget.householdMember.patientUuid,
-                      "PTSD Checklist for DSM-5\nAssesses the 20 DSM-5 symptoms of PTSD",
-                      "pcl-5.json",
-                      'assets/questions/pcl5_score_guide.json',
-                      completed["PCL-5"] ?? false,
-                      (assessmentId, data, ctrl) => QuestionnaireSelectorScreen(
-                        assessmentId: data["assessmentId"],
-                        patientUuid: data["patientUuid"],
-                        scoreGuidePath: data["scoreGuidePath"],
-                        template: data["template"],
-                        isReadOnly: data['isReadOnly'],
-                        logic: PCL5Logic(),
-                        scrollController: ctrl,
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
                   ],
                 ),
-              ),
-            ],
-          ),
-        );
-      },
+
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text(
+                    "Complete the details of your current health status by completing these forms and taking these assessments.",
+                  ),
+                ),
+
+                // SCROLLABLE LIST AREA (Flexible/Expanded)
+                Expanded(
+                  child: ListView(
+                    // Use a Physics that feels natural on both iOS and Android
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.only(top: 16, bottom: 24),
+                    children: [
+                      _buildSectionHeader("Checklists"),
+                      CarbonActionTile(
+                        title: "Existing Medical Conditions",
+                        subTitle: "Review & Update",
+                        icon: Symbols.conditions,
+                        outlineIcon: Symbols.conditions_sharp,
+                        onTap: () => _launchPhysicalHealthChecklist(context, widget.householdMember.patientUuid),
+                      ),
+                      CarbonActionTile(
+                        title: "Medical Diary",
+                        subTitle: "Observations about my health journey",
+                        icon: Symbols.clinical_notes,
+                        outlineIcon: Symbols.clinical_notes_sharp,
+                        onTap: () => _launchObservationsModal(context),
+                      ),
+                      CarbonActionTile(
+                        title: "Immunizations",
+                        subTitle: "Immunization shots recommended in my locality",
+                        icon: Symbols.vaccines,
+                        outlineIcon: Symbols.vaccines_sharp,
+                        onTap: () => _launchImmunizationModal(context, widget.householdMember),
+                      ),
+                      _buildSectionHeader("Mental Health Questionnaires"),
+                      ..._buildQuestionnaireTiles(completed),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
     );
+  }
+
+  // Helper to consolidate the QuestionnaireTile list
+  List<Widget> _buildQuestionnaireTiles(Map<String, CompletedQuestionnaire> completed) {
+    final List<Map<String, dynamic>> configs = [
+      {
+        "name": "PHQ-9",
+        "subTitle": "Patient Health Questionnaire 9",
+        "explanation":
+            "The PHQ-9 (Patient Health Questionnaire-9) is a standardized, 9-item self-report tool used by clinicians to screen for, diagnose, and monitor the severity of depression. It evaluates symptoms over the past two weeks, such as depressed mood, sleep disturbances, and fatigue",
+        "template": "phq-9.json",
+        "logic": PHQ9Logic(),
+        "guide": 'assets/questions/phq9_score_guide.json',
+      },
+      {
+        "name": "GAD-7",
+        "subTitle": "General Anxiety Disorder-7",
+        "explanation":
+            "The GAD-7 is a 7-item clinical questionnaire used to screen for Generalized Anxiety Disorder and assess its severity. By rating symptoms over the past two weeks, individuals receive a score from 0 to 21. You can complete an interactive version on the MDCalc website.",
+        "template": "gad-7.json",
+        "logic": GAD7Logic(),
+        "guide": 'assets/questions/gad7_score_guide.json',
+      },
+      {
+        "name": "C-SSRS",
+        "subTitle": "Columbia-Suicide Severity Rating Scale",
+        "explanation":
+            "The Columbia-Suicide Severity Rating Scale (C-SSRS) is a widely used, evidence-based questionnaire designed to screen for suicide risk. It assesses the full spectrum of suicidal ideation (thoughts of suicide) and behavior (preparatory acts, aborted attempts, or actual attempts) to help clinicians determine the appropriate level of care",
+        "template": "c-ssrs.json",
+        "logic": CSSRSLogic(),
+        "guide": null,
+      },
+      {
+        "name": "DAST-10",
+        "subTitle": "Drug Abuse Screening Test 10",
+        "explanation":
+            "The DAST-10 provides a brief, simple, practical, but valid method for identifying individuals who are abusing psychoactive drugs. It also yields a quantitative index score of the degree of problems related to drug use and misuse. The DAST-10 obtains no information on the various types of drugs used, or on the frequency or duration of the drug use. It includes a question regarding multiple drug use, and some of the types of problems caused by drug use/abuse are surveyed. This includes marital-family relationships, legal, medical symptoms and physical health conditions. An examination of the individual item responses indicates the specific life problem areas.",
+        "template": "dast-10.json",
+        "logic": DAST10Logic(),
+        "guide": 'assets/questions/dast10_score_guide.json',
+      },
+      {
+        "name": "ASRS-V1.1",
+        "subTitle": "Adult ADHD Self-Report Scale (ASRS) version 1.1",
+        "explanation":
+            "The Adult ADHD Self-Report Scale (ASRS) version 1.1 is a diagnostic tool designed for the assessment of Attention-Deficit/Hyperactivity Disorder (ADHD) in adults; developed in collaboration between the World Health Organization (WHO) and researchers at Harvard Medical School.",
+        "template": "asrs.json",
+        "logic": ASRS11Logic(),
+        "guide": 'assets/questions/asrs_score_guide.json',
+      },
+      {
+        "name": "PCL-5",
+        "subTitle": "PTSD Checklist 5",
+        "explanation":
+            "The PCL-5 (Posttraumatic Stress Disorder Checklist for DSM-5) is a widely used, 20-item self-report questionnaire designed to screen for PTSD and measure symptom severity over the past month. It asks you to rate how much you've been bothered by specific problems stemming from a specific stressful event",
+        "template": "pcl-5.json",
+        "logic": PCL5Logic(),
+        "guide": 'assets/questions/pcl5_score_guide.json',
+      },
+    ];
+
+    return configs
+        .map(
+          (cfg) => QuestionnaireTile(
+            assessmentName: cfg["name"],
+            patientId: widget.householdMember.patientUuid,
+            dateTaken: completed[cfg["name"]]?.when,
+            description: cfg["explanation"],
+            subtitle: cfg["subTitle"], // Add specific subtitles per config if needed
+            template: cfg["template"],
+            scoreGuidePath: cfg["guide"],
+            isCompleted: completed[cfg["name"]]!.completed,
+            builder: (id, data, ctrl) => QuestionnaireSelectorScreen(
+              assessmentId: data["assessmentId"],
+              patientUuid: data["patientUuid"],
+              scoreGuidePath: data["scoreGuidePath"],
+              template: data["template"],
+              isReadOnly: data['isReadOnly'],
+              logic: cfg["logic"],
+              scrollController: ctrl,
+            ),
+            onLaunch: (ctx, name, pid, temp, guide, readOnly, builder) {
+              launchQuestionnaire(
+                ctx,
+                assessmentId: name,
+                patientId: pid,
+                templateName: temp,
+                scoreGuidePath: guide,
+                isReadOnly: readOnly,
+                screenBuilder: builder,
+              );
+            },
+          ),
+        )
+        .toList();
   }
 
   // Helper to keep the build method clean
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 8),
       child: Text(
         title,
-        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: AppTheme.deepCharcoal, letterSpacing: 1.1),
+        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400, color: AppTheme.deepCharcoal, letterSpacing: 1.1),
       ),
     );
   }
 
-  Widget _buildAssessmentTile(
-    BuildContext context,
-    String assessmentName,
-    String patientId,
-    String subtitle,
-    String template,
-    String? scoreGuidePath, // ADD THIS
-    bool isCompleted,
-    Widget Function(String, Map<String, dynamic>, ScrollController) builder,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      child: Card(
-        elevation: 0,
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: isCompleted ? AppTheme.clinicalCyan : AppTheme.cardBorder, width: 1.5),
-        ),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // 1. Centered Status Icon
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Center(
-                  child: Icon(
-                    isCompleted ? Symbols.ballot : Symbols.ballot_sharp,
-                    color: isCompleted ? AppTheme.clinicalCyan : AppTheme.deepCharcoal,
-                    size: 32,
-                  ),
-                ),
-              ),
-
-              // 2. Centered Text Content Area
-              Expanded(
-                child: InkWell(
-                  onTap: () => _launchAssessment(
-                    context,
-                    assessmentId: assessmentName,
-                    patientId: patientId,
-                    templateName: template,
-                    scoreGuidePath: scoreGuidePath,
-                    isReadOnly: isCompleted,
-                    screenBuilder: builder,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0), // Consistent padding
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center, // VERTICAL CENTERING
-                      crossAxisAlignment: CrossAxisAlignment.start, // LEFT ALIGN TEXT
-                      children: [
-                        Text(assessmentName, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                        const SizedBox(height: 4),
-                        Text(subtitle, style: TextStyle(fontSize: 13, color: Colors.grey.shade700)),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              // 3. Action Tab
-              Material(
-                color: AppTheme.deepLogicViolet,
-                child: InkWell(
-                  onTap: () => _launchAssessment(
-                    context,
-                    assessmentId: assessmentName,
-                    patientId: patientId,
-                    templateName: template,
-                    isReadOnly: false,
-                    screenBuilder: builder,
-                    scoreGuidePath: scoreGuidePath,
-                  ),
-                  child: const SizedBox(width: 60, child: Icon(Icons.add, color: Colors.white, size: 30)),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDynamicIcon({
-    required bool isCompleted,
-    required IconData outlineIcon,
-    required IconData solidIcon,
-    required Color activeColor,
-  }) {
-    return Icon(
-      isCompleted ? solidIcon : outlineIcon,
-      color: isCompleted ? activeColor : AppTheme.deepCharcoal,
-      size: 32,
-    );
-  }
-
-  void _launchPhysicalHealthChecklist(BuildContext context, String patientUuid) async {
-    final dynamic result = await showModalBottomSheet(
+  Future<void> _launchPhysicalHealthChecklist(BuildContext context, String patientUuid) async {
+    final result = await showModalBottomSheet(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      enableDrag: false,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.9,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        expand: false,
-        snap: false,
-        builder: (context, scrollController) {
-          return Container(
-            decoration: const BoxDecoration(
-              color: AppTheme.clinicalWhite,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-            ),
-            child: Column(
-              children: [
-                const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(color: AppTheme.cardBorder, borderRadius: BorderRadius.circular(10)),
-                      ),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: IconButton(
-                          icon: const Icon(Icons.close, color: Colors.grey, size: 22),
-                          onPressed: () => Navigator.pop(context, false),
-                        ),
-                      ),
-                    ],
+      isScrollControlled: true, // Allows the sheet to take full height
+      useSafeArea: true, // Respects the device notch and safe areas
+      backgroundColor: AppTheme.clinicalWhite,
+      // Set to zero for the strict, sharp-cornered Carbon aesthetic
+      shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
+      builder: (context) {
+        return Column(
+          children: [
+            // Header: Consistent with your other Carbon-style modals
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    icon: const Icon(Symbols.close, color: Colors.grey, size: 28),
+                    onPressed: () => Navigator.pop(context, false),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Expanded(
-                  child: PhysicalHealthAssessment(
-                    patientUuid: patientUuid,
-                    scrollController: scrollController, // Matches your inner definition name
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          );
-        },
-      ),
+
+            // Content: Expanded to fill the remaining vertical space
+            Expanded(
+              child: PhysicalHealthAssessment(
+                patientUuid: patientUuid,
+                // Pass a ScrollController if your assessment needs to manage scrolling
+                scrollController: ScrollController(),
+              ),
+            ),
+          ],
+        );
+      },
     );
 
-    if (result == true && mounted) {
+    if (mounted && result == true) {
       setState(() {
-        _assessmentCountsFuture = DatabaseManager().countCompletedAssessments(patientUuid);
+        completedQuestionnaires = DatabaseManager().getCompletedAssessments(patientUuid);
       });
     }
   }
 
-  void _launchObservationsModal(BuildContext context) {
-    showModalBottomSheet(
+  Future<void> _launchObservationsModal(BuildContext context) async {
+    await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      // ✅ Prevents accidental drag-down dismissals on the background area
-      enableDrag: false,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.9,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        expand: false,
-        snap: false, // ✅ Smooth, non-snapping fluid track
-        builder: (context, scrollController) {
-          return Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-            ),
-            child: Column(
-              children: [
-                const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Centered pull bar handle indicator
-                      Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
+      // Ensure the background is consistent with your theme
+      backgroundColor: AppTheme.clinicalWhite,
+      // Explicitly set to zero to override the default Material rounding
+      shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
+      builder: (context) {
+        return Container(
+          // Constrain height if it's not a full-screen sheet
+          height: MediaQuery.of(context).size.height * 0.9,
+          decoration: const BoxDecoration(
+            color: AppTheme.clinicalWhite,
+            borderRadius: BorderRadius.zero, // Sharp corners
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Pull bar handle indicator
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(color: AppTheme.cardBorder, borderRadius: BorderRadius.circular(10)),
+                    ),
+                    // Dismiss Button
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        icon: const Icon(Symbols.close, color: Colors.grey, size: 22),
+                        onPressed: () => Navigator.pop(context, false),
                       ),
-                      // ✅ Unified Top-Right Dismiss Button
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: IconButton(
-                          icon: const Icon(Icons.close, color: Colors.grey, size: 22),
-                          onPressed: () => Navigator.pop(context, false),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 4),
-                Expanded(
-                  // ✅ Pass the controller into the screen
-                  child: ObservationScreen(
-                    patientUuid: widget.householdMember.patientUuid,
-                    scrollController: scrollController,
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
+              ),
+              const SizedBox(height: 4),
+              Expanded(child: ObservationScreen(patientUuid: widget.householdMember.patientUuid)),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -592,7 +393,7 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
     );
   }
 
-  Future<void> _launchAssessment(
+  Future<void> launchQuestionnaire(
     BuildContext context, {
     required String assessmentId,
     required String patientId,
@@ -628,17 +429,14 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
         snap: false,
         builder: (context, scrollController) {
           return Container(
-            decoration: const BoxDecoration(
-              color: AppTheme.clinicalWhite,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-            ),
+            decoration: const BoxDecoration(color: AppTheme.clinicalWhite, borderRadius: BorderRadius.zero),
             child: Column(
               children: [
                 const SizedBox(height: 12),
                 Container(
                   width: 40,
                   height: 4,
-                  decoration: BoxDecoration(color: AppTheme.cardBorder, borderRadius: BorderRadius.circular(10)),
+                  decoration: BoxDecoration(color: AppTheme.cardBorder, borderRadius: BorderRadius.zero),
                 ),
                 Align(
                   alignment: Alignment.centerRight,
@@ -666,7 +464,7 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
 
     if (result == true && mounted) {
       setState(() {
-        _assessmentCountsFuture = DatabaseManager().countCompletedAssessments(
+        completedQuestionnaires = DatabaseManager().getCompletedAssessments(
           widget.householdMember.patientUuid,
         ); // This 'pokes' the UI to refresh icons
       });
