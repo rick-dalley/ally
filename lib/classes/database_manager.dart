@@ -837,10 +837,13 @@ class DatabaseManager {
     // We query the table directly using the assessment_id column as our key
     final List<Map<String, dynamic>> results = await db.rawQuery(
       '''
-    SELECT assessment_id, last_modified, COUNT(*) as total
-    FROM completed_assessment
-    WHERE patient_id = ? AND complete = 1
-    GROUP BY assessment_id
+   SELECT 
+    assessment_id, 
+    MAX(last_modified) as last_modified, 
+    COUNT(*) as total
+  FROM completed_assessment
+  WHERE patient_id = ? AND complete = 1
+  GROUP BY assessment_id
   ''',
       [patientId],
     );

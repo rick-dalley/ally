@@ -2,12 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:triage/classes/staff.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'appointment_chip.dart';
+
 class StaffIdCard extends StatelessWidget {
   final String photoPath;
   final StaffMember? staffMember;
   final int index;
 
   const StaffIdCard({super.key, required this.photoPath, required this.staffMember, required this.index});
+  Future<void> openMap(String address) async {
+    // Encode the address for a URL
+    final String encodedAddress = Uri.encodeComponent(address);
+    final Uri googleMapsUrl = Uri.parse('https://www.google.com/maps/search/?api=1&query=$encodedAddress');
+
+    if (await canLaunchUrl(googleMapsUrl)) {
+      await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication);
+    } else {
+      throw 'Could not launch $googleMapsUrl';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,18 +92,25 @@ class StaffIdCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Left Side: Photo
-                        Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: const Color(0xFF525252), // Carbon-style border color
-                              width: 1.0, // Adjust width for thinness
+                        Column(
+                          mainAxisSize: MainAxisSize.min, // Constrains the column to the size of its children
+                          children: [
+                            Container(
+                              width: 120,
+                              height: 120,
+                              decoration: BoxDecoration(
+                                border: Border.all(color: const Color(0xFF525252), width: 1.0),
+                                borderRadius: BorderRadius.zero,
+                              ),
+                              child: Image.asset(photos[index % 16]!, fit: BoxFit.cover),
                             ),
-                            // If you want sharp corners, keep this BorderRadius.zero
-                            borderRadius: BorderRadius.zero,
-                          ),
-                          child: Image.asset(photos[index % 16]!, fit: BoxFit.cover),
+                            const SizedBox(height: 8), // Add some breathing room
+                            // Use a fixed size or just wrap the content
+                            SizedBox(
+                              width: 120, // Match the width of the image
+                              child: AppointmentChip(),
+                            ),
+                          ],
                         ),
                         const SizedBox(width: 16),
                         // Right Side: Info
@@ -126,17 +146,22 @@ class StaffIdCard extends StatelessWidget {
                               // Placeholder for Barcode/QR
                               Row(
                                 children: [
-                                  Container(
-                                    padding: EdgeInsets.all(8.0),
-                                    alignment: Alignment.centerLeft,
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text("Address", style: const TextStyle(color: Colors.grey)),
-                                        Text("${staffMember?.street}"),
-                                        Text("${staffMember?.city}"),
-                                        Text("${staffMember?.provOrState}"),
-                                      ],
+                                  InkWell(
+                                    onTap: () {
+                                      openMap(staffMember!.address);
+                                    },
+                                    child: Container(
+                                      padding: EdgeInsets.all(8.0),
+                                      alignment: Alignment.centerLeft,
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text("Address", style: const TextStyle(color: Colors.grey)),
+                                          Text("${staffMember?.street}"),
+                                          Text("${staffMember?.city}"),
+                                          Text("${staffMember?.provOrState}"),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ],

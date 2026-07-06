@@ -2,13 +2,14 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:triage/widgets/carbon_style_button.dart';
 import '../app_theme.dart';
 import '../classes/assessment_logic.dart';
 import '../classes/database_manager.dart';
 import '../generated/l10n.dart';
 import '../widgets/likert_question.dart';
 
-class QuestionnaireSelectorScreen extends StatefulWidget {
+class QuestionnaireAnsweringScreen extends StatefulWidget {
   final String assessmentId;
   final String patientUuid;
   final bool isReadOnly;
@@ -17,7 +18,7 @@ class QuestionnaireSelectorScreen extends StatefulWidget {
   final AssessmentLogic? logic;
   final ScrollController? scrollController;
 
-  const QuestionnaireSelectorScreen({
+  const QuestionnaireAnsweringScreen({
     super.key,
     required this.assessmentId,
     required this.patientUuid,
@@ -29,13 +30,13 @@ class QuestionnaireSelectorScreen extends StatefulWidget {
   });
 
   @override
-  QuestionnaireSelectorScreenState createState() => QuestionnaireSelectorScreenState();
+  QuestionnaireAnsweringScreenState createState() => QuestionnaireAnsweringScreenState();
 }
 
-class QuestionnaireSelectorScreenState extends State<QuestionnaireSelectorScreen> {
+class QuestionnaireAnsweringScreenState extends State<QuestionnaireAnsweringScreen> {
   Map<String, AssessmentAnswer> answers = {};
   String? selectedImpactId;
-
+  bool isPreviousQuestionnaire = true;
   int get totalScore => answers.values.fold(0, (sum, val) => sum + val.value);
   bool _showValidationErrors = false;
   bool _isLoading = true;
@@ -85,6 +86,7 @@ class QuestionnaireSelectorScreenState extends State<QuestionnaireSelectorScreen
   @override
   void initState() {
     super.initState();
+    isPreviousQuestionnaire = widget.isReadOnly;
     _loadScoreGuide();
     _loadAnswers();
   }
@@ -112,10 +114,33 @@ class QuestionnaireSelectorScreenState extends State<QuestionnaireSelectorScreen
   }
 
   Widget _buildActionButton(bool isFormComplete) {
-    if (widget.isReadOnly) {
-      return ElevatedButton(onPressed: () => Navigator.of(context).pop(), child: const Text("Close Review"));
+    if (isPreviousQuestionnaire) {
+      return Row(
+        children: [
+          Expanded(
+            child: CarbonButton(
+              onPressed: () => Navigator.of(context).pop(),
+              isSecondary: true,
+              color: Colors.black26,
+              label: "Close Review",
+            ),
+          ),
+          Expanded(
+            child: CarbonButton(
+              onPressed: () {
+                setState(() {
+                  isPreviousQuestionnaire = false; // Now editable
+                  answers.clear(); // Clear past data
+                  _showValidationErrors = false; // Reset errors
+                });
+              },
+              label: "Retake",
+            ),
+          ),
+        ],
+      );
     } else {
-      return ElevatedButton(
+      return CarbonButton(
         onPressed: () {
           if (!isFormComplete) {
             setState(() => _showValidationErrors = true);
@@ -138,7 +163,7 @@ class QuestionnaireSelectorScreenState extends State<QuestionnaireSelectorScreen
             _submitAssessment();
           }
         },
-        child: const Text("Finalize & Map to DSM"),
+        label: "Save",
       );
     }
   }
@@ -187,7 +212,7 @@ class QuestionnaireSelectorScreenState extends State<QuestionnaireSelectorScreen
                   template: widget.template,
                   currentAnswer: answers[qId],
                   showWarning: _showValidationErrors && !answers.containsKey(qId),
-                  onChanged: widget.isReadOnly
+                  onChanged: isPreviousQuestionnaire
                       ? null
                       : (score) {
                           setState(() {
@@ -196,7 +221,7 @@ class QuestionnaireSelectorScreenState extends State<QuestionnaireSelectorScreen
                             answers[qId] = AssessmentAnswer(score, existingText, isBoolText);
                           });
                         },
-                  onDescriptionChanged: widget.isReadOnly
+                  onDescriptionChanged: isPreviousQuestionnaire
                       ? null
                       : (id, description) {
                           setState(() {
@@ -310,7 +335,7 @@ class QuestionnaireSelectorScreenState extends State<QuestionnaireSelectorScreen
     try {
       // 1. Call your persistence logic
       await DatabaseManager().saveAssessmentResults(
-        assessmentId: widget.assessmentId, // 'phq-9.json'
+        assessmentId: widget.assessmentId,
         patientId: widget.patientUuid, // Ensure this is passed into the widget
         answers: stringAnswers,
         isComplete: true,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/database_manager.dart';
-import 'package:triage/screens/observations_screen.dart';
+import 'package:triage/screens/questionnaire_answering_screen.dart';
 import 'package:triage/screens/physical_health.dart';
 import 'package:triage/widgets/carbon_style_action_tile.dart';
 import 'package:triage/widgets/questionnaire_tile.dart';
@@ -24,7 +24,7 @@ class MedicalProfileScreen extends StatefulWidget {
 
 class MedicalProfileScreenState extends State<MedicalProfileScreen> {
   late Future<Map<String, CompletedQuestionnaire>> completedQuestionnaires;
-
+  late Map<String, CompletedQuestionnaire> completed;
   @override
   void initState() {
     super.initState();
@@ -48,7 +48,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
               return Center(child: Text("Error: ${snapshot.error}"));
             }
 
-            final Map<String, CompletedQuestionnaire> completed = snapshot.data ?? {};
+            completed = snapshot.data ?? {};
 
             return Column(
               children: [
@@ -205,7 +205,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
             template: cfg["template"],
             scoreGuidePath: cfg["guide"],
             isCompleted: completed[cfg["name"]]!.completed,
-            builder: (id, data, ctrl) => QuestionnaireSelectorScreen(
+            builder: (id, data, ctrl) => QuestionnaireAnsweringScreen(
               assessmentId: data["assessmentId"],
               patientUuid: data["patientUuid"],
               scoreGuidePath: data["scoreGuidePath"],
@@ -369,7 +369,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                         height: 4,
                         decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
                       ),
-                      // ✅ Unified Top-Right Dismiss Button
+                      // nified Top-Right Dismiss Button
                       Align(
                         alignment: Alignment.centerRight,
                         child: IconButton(
@@ -382,7 +382,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                 ),
                 const SizedBox(height: 4),
                 Expanded(
-                  // ✅ Pass the controller into the screen
+                  // Pass the controller into the screen
                   child: ImmunizationScreen(householdMember: householdMember),
                 ),
               ],
@@ -447,12 +447,12 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                       size: 22,
                     ),
                     tooltip: "Dismiss assessment",
-                    // Closes the sheet instantly and flags a false result down to your database poker
+                    // Close the sheet  and flag a false result down to the database poker
                     onPressed: () => Navigator.pop(context, false),
                   ),
                 ),
                 Expanded(
-                  // 3. Inject the specific screen here
+                  // Inject the specific screen
                   child: screenBuilder(assessmentId, patientContext, scrollController),
                 ),
               ],
@@ -462,11 +462,17 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
       ),
     );
 
-    if (result == true && mounted) {
+    //RE-ASSIGN the Future to force the FutureBuilder to rebuild
+    final newFuture = DatabaseManager().getCompletedAssessments(widget.householdMember.patientUuid);
+
+    //  Await the data
+    final updatedCompleted = await newFuture;
+
+    // Update BOTH the Future and the local Map
+    if (mounted) {
       setState(() {
-        completedQuestionnaires = DatabaseManager().getCompletedAssessments(
-          widget.householdMember.patientUuid,
-        ); // This 'pokes' the UI to refresh icons
+        completedQuestionnaires = newFuture; // Poke the FutureBuilder
+        completed = updatedCompleted; // Poke the List UI
       });
     }
   }

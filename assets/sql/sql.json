@@ -113,6 +113,14 @@
    "query" : "CREATE TABLE staff (id TEXT PRIMARY KEY, first_name TEXT NOT NULL, last_name TEXT NOT NULL, email TEXT UNIQUE, gender TEXT, position TEXT, is_specialist INTEGER DEFAULT 0, on_call INTEGER DEFAULT 0, pager TEXT, phone TEXT, city TEXT, street TEXT, pr_st TEXT, code TEXT, country TEXT );"
   },
   {
+   "table" : "appointment",
+   "query" : "CREATE TABLE appointment (id TEXT PRIMARY KEY, staff_id TEXT, location_name TEXT, when DATETIME NOT NULL, appointment_update_url TEXT, appointment_url TEXT, notes TEXT, street TEXT, city TEXT, pr_st TEXT, country TEXT, code TEXT );"
+  },
+  {
+   "table": "appointment",
+   "query": "CREATE INDEX idx_appointment_when ON appointment(when);"
+  },
+  {
    "table": "acuity_log",
    "query": "CREATE TABLE acuity_log (id TEXT PRIMARY KEY, patient_uuid TEXT NOT NULL,acuity_level INTEGER NOT NULL, encounter_id TEXT, rationale TEXT,set_bu TEXT NOT NULL, set_at DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (patient_uuid) REFERENCES patient (patient_uuid) ON DELETE CASCADE);"
   },

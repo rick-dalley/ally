@@ -52,6 +52,9 @@ class StaffMember {
     required this.country,
     this.countryIso,
   });
+  String get address {
+    return '$street, $city, $provOrState, $code, $country';
+  }
 
   factory StaffMember.fromJson(Map<String, dynamic> json) {
     String positionRaw = json["position"] ?? "General Practice";
