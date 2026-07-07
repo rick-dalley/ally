@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/widgets/card_flipper.dart';
-import 'package:triage/widgets/household_member_info_card.dart';
 import '../app_theme.dart';
 import '../classes/database_manager.dart';
 import '../classes/patient.dart';
@@ -9,7 +7,7 @@ import '../widgets/carbon_style_search_field.dart';
 import '../widgets/household_member_medical_card.dart';
 import 'intake_screen.dart';
 import 'medical_profile_screen.dart';
-import 'meds.dart';
+import 'prescriptions.dart';
 
 class FamilyRoster extends StatefulWidget {
   const FamilyRoster({super.key});
@@ -105,39 +103,35 @@ class FamilyRosterState extends State<FamilyRoster> {
                     // Added top padding for breathing room
                     itemCount: filteredPatients.length,
                     itemBuilder: (context, index) {
-                      return FlippableCardController(
-                        height: 352,
-                        front: HouseholdMemberMedicalCard(
-                          householdMember: filteredPatients[index],
-                          onMemberUpdate: ({required Patient patient}) {
-                            updatePatient(index: index, patient: patient);
-                          },
-                          onVitalsUpdate: ({required Patient patient}) {
-                            updatePatient(index: index, patient: patient);
-                          },
-                          onAssessmentsTap: () => _showAssessmentsMenu(context, filteredPatients[index]),
-                          onMedsTap: () async {
-                            final Map<String, dynamic>? result = await showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              useSafeArea: true,
-                              showDragHandle: true,
-                              builder: (context) => MedicationScreen(patient: filteredPatients[index]),
-                            );
+                      return HouseholdMemberMedicalCard(
+                        householdMember: filteredPatients[index],
+                        onMemberUpdate: ({required Patient patient}) {
+                          updatePatient(index: index, patient: patient);
+                        },
+                        onVitalsUpdate: ({required Patient patient}) {
+                          updatePatient(index: index, patient: patient);
+                        },
+                        onAssessmentsTap: () => _showAssessmentsMenu(context, filteredPatients[index]),
+                        onMedsTap: () async {
+                          final Map<String, dynamic>? result = await showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            useSafeArea: true,
+                            showDragHandle: true,
+                            builder: (context) => PrescriptionScreen(patient: filteredPatients[index]),
+                          );
 
-                            if (result != null) {
-                              setState(() {
-                                // Create the writable copy to avoid read-only errors
-                                Patient updatedPatient = filteredPatients[index];
-                                // Map the returned values to our flat patient structure
-                                updatedPatient.medications = result['medications'];
-                                updatedPatient.medicationSafetyAudit = result['medication_safety_audit'];
-                                filteredPatients[index] = updatedPatient;
-                              });
-                            }
-                          },
-                        ),
-                        back: HouseholdMemberInformationCard(patient: filteredPatients[index]),
+                          if (result != null) {
+                            setState(() {
+                              // Create the writable copy to avoid read-only errors
+                              Patient updatedPatient = filteredPatients[index];
+                              // Map the returned values to our flat patient structure
+                              updatedPatient.medications = result['medications'];
+                              updatedPatient.medicationSafetyAudit = result['medication_safety_audit'];
+                              filteredPatients[index] = updatedPatient;
+                            });
+                          }
+                        },
                       );
                     },
                   ),

@@ -8,6 +8,7 @@ class CarbonTextEdit extends StatefulWidget {
   final String? errorText;
   final String? placeHolderText;
   final String? helperText;
+  final String? value;
   final Color? fillColor;
   final Color? accentColor;
   final TextInputType? keyboardType;
@@ -17,6 +18,7 @@ class CarbonTextEdit extends StatefulWidget {
     super.key,
     this.controller,
     required this.label,
+    this.value,
     this.fillColor,
     this.accentColor,
     this.helperText,
@@ -32,10 +34,37 @@ class CarbonTextEdit extends StatefulWidget {
 class CarbonStateText extends State<CarbonTextEdit> {
   late Color fillColor = widget.fillColor ?? Color(0xFFF4F4F4);
   late Color accentColor = widget.accentColor ?? AppTheme.deepLogicViolet;
+  late TextEditingController _controller;
+  late TextInputType _keyboard;
+  @override
+  void initState() {
+    super.initState();
+    // Use the provided controller if it exists, otherwise create one
+    _controller = widget.controller ?? TextEditingController();
+    _controller.text = widget.value ?? "";
+    _keyboard = widget.keyboardType ?? TextInputType.text;
+  }
+
+  @override
+  void didUpdateWidget(covariant CarbonTextEdit oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Only update the text if the value property actually changes
+    if (widget.value != oldWidget.value) {
+      _controller.text = widget.value ?? "";
+    }
+  }
+
+  @override
+  void dispose() {
+    // Only dispose if we created the controller ourselves
+    if (widget.controller == null) {
+      _controller.dispose();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    TextInputType keyboard = widget.keyboardType ?? TextInputType.text;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -47,9 +76,9 @@ class CarbonStateText extends State<CarbonTextEdit> {
           ),
         ),
         TextField(
-          controller: widget.controller,
+          controller: _controller,
           style: GoogleFonts.ibmPlexSans(fontSize: 16, color: Colors.black),
-          keyboardType: keyboard,
+          keyboardType: _keyboard,
           decoration: InputDecoration(
             filled: true,
             fillColor: fillColor,

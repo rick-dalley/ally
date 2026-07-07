@@ -18,6 +18,7 @@ import '../screens/staff_screen.dart';
 import 'blood_type_tile.dart';
 import 'carbon_button_compact.dart';
 import 'emergency_qr.dart';
+import 'household_member_info_card.dart';
 
 class HouseholdMemberMedicalCard extends StatefulWidget {
   // Pass the initial patient snapshot down from the roster list
@@ -43,6 +44,7 @@ class HouseholdMemberMedicalCard extends StatefulWidget {
 class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> {
   late PatientController patientController;
   late Sentiment sentiment;
+  bool _isExpanded = false;
   @override
   void initState() {
     super.initState();
@@ -148,6 +150,8 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
 
   @override
   Widget build(BuildContext context) {
+    double availableWidth = MediaQuery.of(context).size.width - 88;
+
     return ListenableBuilder(
       key: ValueKey(patientController.patient.acuityLevel),
       listenable: patientController,
@@ -168,20 +172,20 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
         }
 
         return Card(
-          elevation: 4,
-          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          elevation: 2,
+          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           shape: ContinuousRectangleBorder(
             borderRadius: BorderRadius.zero,
             // side: BorderSide(color: statusColor, width: 3),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(24.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Replace your existing Container child: Row(...) block with this:
                 Container(
-                  decoration: BoxDecoration(color: AppTheme.surfaceColor, borderRadius: BorderRadius.circular(8.0)),
+                  decoration: BoxDecoration(color: AppTheme.surfaceColor, borderRadius: BorderRadius.zero),
                   // padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
                   child: Stack(
                     clipBehavior: Clip.none, // Allows the widget to draw outside its bounds
@@ -195,29 +199,12 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
                             style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400, color: AppTheme.deepCharcoal),
                           ),
                           const Spacer(),
-                          CarbonCompactButton(
-                            label: "Symptoms",
-                            icon: Symbols.symptoms,
-                            onTap: () {
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true, // Allows full-screen height
-                                useSafeArea: false, // Prevents UI overlap with status/nav bars
-                                builder: (BuildContext context) {
-                                  return SizedBox(
-                                    height: MediaQuery.of(context).size.height, // 90% screen height
-                                    child: BodyOutlineScreen(patient: patient), // The Stateful Widget from before
-                                  );
-                                },
-                              );
-                            },
-                            color: Colors.red,
-                          ),
+
                           const SizedBox(width: 72), // Reserve space for the SentimentWidget
                         ],
                       ),
 
-                      // 2. The SentimentWidget "floats" on top, ignoring the Row
+                      // The SentimentWidget "floats" on top, ignoring the Row
                       Positioned(
                         right: 0,
                         child: SentimentWidget(
@@ -234,17 +221,15 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
                 Column(
                   mainAxisSize: MainAxisSize.min, // Prevents Column from taking infinite height
                   children: [
                     SizedBox(
-                      height: 148, // Increased height to comfortably fit stacked icon buttons
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Padding(
-                            padding: EdgeInsetsGeometry.only(left: 8, right: 8, top: 8, bottom: 40.0),
+                          Expanded(
                             child: BloodTypeTile(
                               bloodType: patient.bloodType,
                               onTap: () {
@@ -252,21 +237,40 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
                               },
                             ),
                           ),
-
-                          // const SizedBox(width: 16), // Add some breathing room
-                          // 2. Wrap the wide widget in Expanded to take up remaining space
+                          const SizedBox(width: 24),
                           Expanded(
-                            child: InkWell(
-                              child: CurrentMetrics(vitals: patient.vitals, height: 108),
+                            child: CarbonCompactButton(
+                              label: "Symptoms",
+                              icon: Symbols.symptoms,
                               onTap: () {
-                                showVitalsHistory(context: context, patientUuid: patientUuid, vitals: patient.vitals);
+                                showModalBottomSheet(
+                                  context: context,
+                                  isScrollControlled: true, // Allows full-screen height
+                                  useSafeArea: false, // Prevents UI overlap with status/nav bars
+                                  builder: (BuildContext context) {
+                                    return SizedBox(
+                                      height: MediaQuery.of(context).size.height, // 90% screen height
+                                      child: BodyOutlineScreen(patient: patient), // The Stateful Widget from before
+                                    );
+                                  },
+                                );
                               },
+                              color: Colors.red,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    SizedBox(height: 16),
+                    SizedBox(height: 24),
+                    CurrentMetrics(
+                      title: "Recent Metrics",
+                      vitals: patient.vitals,
+                      barHeight: 120,
+                      onTap: () {
+                        showVitalsHistory(context: context, patientUuid: patientUuid, vitals: patient.vitals);
+                      },
+                    ),
+                    SizedBox(height: 32),
                     Wrap(
                       spacing: 8, // Horizontal space between buttons
                       runSpacing: 8, // Vertical space between lines
@@ -275,6 +279,7 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
                         CarbonCompactButton(
                           label: "Medical Team",
                           icon: Symbols.stethoscope,
+                          width: availableWidth / 4,
                           onTap: () {
                             showModalBottomSheet(
                               context: context,
@@ -288,17 +293,20 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
                         CarbonCompactButton(
                           label: "Profile",
                           icon: Symbols.medical_information,
+                          width: availableWidth / 4,
                           onTap: widget.onAssessmentsTap ?? () {},
                           color: AppTheme.deepLogicViolet,
                         ),
                         CarbonCompactButton(
                           label: "Meds",
                           icon: Symbols.medication,
+                          width: availableWidth / 4,
                           onTap: widget.onMedsTap ?? () {},
                           color: AppTheme.deepLogicViolet,
                         ),
                         CarbonCompactButton(
                           label: 'OCR',
+                          width: availableWidth / 4,
                           icon: Symbols.qr_code_2_add,
                           onTap: () {
                             launchEmergencyQRCodeGenerator(context, patient);
@@ -306,6 +314,35 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
                           color: AppTheme.deepLogicViolet,
                         ),
                       ],
+                    ),
+                    SizedBox(height: 24),
+                    InkWell(
+                      onTap: () => setState(() => _isExpanded = !_isExpanded),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Row(
+                          children: [
+                            Text(
+                              "Clerical Details",
+                              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+                            ),
+                            const Spacer(),
+                            Icon(
+                              _isExpanded ? Symbols.keyboard_arrow_up : Symbols.keyboard_arrow_down,
+                              color: Colors.grey,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    AnimatedCrossFade(
+                      firstChild: const SizedBox.shrink(), // Shows nothing when collapsed
+                      secondChild: HouseholdMemberInformationCard(patient: widget.householdMember),
+                      crossFadeState: _isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                      duration: const Duration(milliseconds: 300),
+                      // This ensures the animation looks clean
+                      firstCurve: Curves.easeInOut,
+                      secondCurve: Curves.easeInOut,
                     ),
                   ],
                 ),

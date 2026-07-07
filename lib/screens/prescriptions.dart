@@ -51,16 +51,16 @@ final Map<BannerType, BannerData> banners = {
   ),
 };
 
-class MedicationScreen extends StatefulWidget {
+class PrescriptionScreen extends StatefulWidget {
   final Patient patient;
 
-  const MedicationScreen({super.key, required this.patient});
+  const PrescriptionScreen({super.key, required this.patient});
 
   @override
-  State<MedicationScreen> createState() => _MedicationScreenState();
+  State<PrescriptionScreen> createState() => _PrescriptionScreenState();
 }
 
-class _MedicationScreenState extends State<MedicationScreen> {
+class _PrescriptionScreenState extends State<PrescriptionScreen> {
   // Mocking the current baseline list
   bool _isLoading = false;
   bool _hasContraIndications = false;
@@ -138,7 +138,6 @@ class _MedicationScreenState extends State<MedicationScreen> {
         if (nameB.isEmpty || nameA == nameB) continue;
         final String? interaction = await DatabaseManager().getInteractions(nameA, nameB);
 
-
         if (interaction != null) {
           _currentConflicts.add(
             InteractionConflict(
@@ -210,7 +209,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
     return Container(
       width: double.infinity,
       color: AppTheme.lightTheme.canvasColor,
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Row(
         children: [
           if (_meds.length > 1) Icon(bannerData.icon, color: bannerData.color, size: 20),

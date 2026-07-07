@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import '../app_theme.dart';
@@ -70,25 +69,21 @@ class _MedicationCardState extends State<MedicationCard> {
         .toList();
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ExpansionTile(
         key: ValueKey("tile_$medicationId"),
         shape: const Border(),
         collapsedShape: const Border(),
-        leading: Icon(hasDatasheet ? Symbols.prescriptions :Symbols.cloud_download,
+        leading: Icon(
+          hasDatasheet ? Symbols.prescriptions : Symbols.cloud_download,
           color: hasDatasheet ? Colors.green : AppTheme.lightTheme.disabledColor,
         ),
-        title: Text(
-          medicationName,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: Text(medicationName, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Row 1: Your existing Dose/Freq info
-            Text(
-              "Dose: ${widget.medData['dose'] ?? 'N/A'} — Freq: ${widget.medData['freq'] ?? 'N/A'}",
-            ),
+            Text("Dose: ${widget.medData['dose'] ?? 'N/A'} — Freq: ${widget.medData['freq'] ?? 'N/A'}"),
 
             // Row 2: The "Entanglement" / Interaction Row
             // We check for a list of interactions (we'll build the logic for this tomorrow)
@@ -118,10 +113,7 @@ class _MedicationCardState extends State<MedicationCard> {
         },
         children: [
           if (_isFetching)
-            const Padding(
-              padding: EdgeInsets.all(20),
-              child: CircularProgressIndicator(),
-            )
+            const Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator())
           else if (_datasheet != null && _datasheet!.isNotEmpty) ...[
             ClassChips(dataSheet: _datasheet),
             ..._buildFdaSections(),
@@ -159,21 +151,12 @@ class _MedicationCardState extends State<MedicationCard> {
         // Remove the top and bottom borders when collapsed
         collapsedShape: const Border(),
         // Keep it explicit and simple to avoid the 'bool vs double' theme leak
-        title: Text(
-          entry.value,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-        ),
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SelectableText(text),
-          ),
-        ],
+        title: Text(entry.value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+        children: [Padding(padding: const EdgeInsets.all(16.0), child: SelectableText(text))],
       );
     }).toList();
   }
 }
-
 
 class ClassChips extends StatelessWidget {
   final Map<String, dynamic>? dataSheet;
@@ -184,11 +167,7 @@ class ClassChips extends StatelessWidget {
     final String classesRaw = dataSheet!['classes']?.toString() ?? "";
     if (classesRaw.isEmpty) return const SizedBox.shrink();
 
-    final List<String> classList = classesRaw
-        .split(',')
-        .map((s) => s.trim())
-        .where((s) => s.isNotEmpty)
-        .toList();
+    final List<String> classList = classesRaw.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
 
     if (classList.isEmpty) return const SizedBox.shrink();
 
@@ -200,13 +179,7 @@ class ClassChips extends StatelessWidget {
         children: classList
             .map(
               (tagName) => Chip(
-                label: Text(
-                  tagName.toUpperCase(),
-                  style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                label: Text(tagName.toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
                 backgroundColor: Colors.blue.shade50,
                 visualDensity: VisualDensity.compact,
                 side: BorderSide(color: Colors.blue.shade100),
@@ -221,11 +194,7 @@ class ClassChips extends StatelessWidget {
 class InteractionsChip extends StatefulWidget {
   final List<InteractionConflict> interactions;
   final String medicationName;
-  const InteractionsChip({
-    super.key,
-    required this.interactions,
-    required this.medicationName,
-  });
+  const InteractionsChip({super.key, required this.interactions, required this.medicationName});
 
   @override
   State<InteractionsChip> createState() => InteractionsChipState();
@@ -254,25 +223,13 @@ class InteractionsChipState extends State<InteractionsChip> {
         backgroundColor: Colors.red.shade900,
         largeSize: 18,
         child: ActionChip(
-          avatar: const Icon(
-              Symbols.join_inner,
-              size: 16,
-              color: Colors.white
-          ),
+          avatar: const Icon(Symbols.join_inner, size: 16, color: Colors.white),
           label: Text(
-            count == 1
-                ? "Interacts with: ${widget.interactions.first.conflicting}"
-                : "Multiple Interactions",
-            style: const TextStyle(
-                color: Colors.white,
-                fontSize: 11,
-                fontWeight: FontWeight.bold
-            ),
+            count == 1 ? "Interacts with: ${widget.interactions.first.conflicting}" : "Multiple Interactions",
+            style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
           ),
           backgroundColor: Colors.redAccent,
-          shape: StadiumBorder(
-              side: BorderSide(color: Colors.red.shade700)
-          ),
+          shape: StadiumBorder(side: BorderSide(color: Colors.red.shade700)),
           onPressed: () => _showInteractionDetails(context),
           visualDensity: VisualDensity.compact,
         ),
@@ -302,21 +259,13 @@ class InteractionsChipState extends State<InteractionsChip> {
                 final item = widget.interactions[index];
                 return ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text(
-                    item.description,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
+                  title: Text(item.description, style: const TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: Text(item.interaction),
                 );
               },
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text("Close"),
-            ),
-          ],
+          actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text("Close"))],
         );
       },
     );

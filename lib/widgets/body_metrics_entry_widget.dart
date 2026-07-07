@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class BodyMetricsWidget extends StatefulWidget {
+class BodyMetricsEntryWidget extends StatefulWidget {
   final double? weight;
   final double? height;
   final String heightUom;
   final String weightUom;
   final Function(double? weight, double? height) onMetricsChanged;
 
-  const BodyMetricsWidget({
+  const BodyMetricsEntryWidget({
     super.key,
     this.weight,
     this.height,
@@ -17,10 +17,10 @@ class BodyMetricsWidget extends StatefulWidget {
   });
 
   @override
-  State<BodyMetricsWidget> createState() => _BodyMetricsWidgetState();
+  State<BodyMetricsEntryWidget> createState() => _BodyMetricsEntryWidgetState();
 }
 
-class _BodyMetricsWidgetState extends State<BodyMetricsWidget> {
+class _BodyMetricsEntryWidgetState extends State<BodyMetricsEntryWidget> {
   late TextEditingController _heightController;
   late TextEditingController _weightController;
 
@@ -110,7 +110,7 @@ class _BodyMetricsWidgetState extends State<BodyMetricsWidget> {
               onPressed: _submitData,
               child: const Text('SAVE', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
-          )
+          ),
         ],
       ),
     );

@@ -5,12 +5,16 @@ class CarbonCompactButton extends StatefulWidget {
   final IconData icon;
   final VoidCallback onTap;
   final Color color;
+  final double? width;
+  final double? height;
   const CarbonCompactButton({
     super.key,
     required this.label,
     required this.icon,
     required this.onTap,
     required this.color,
+    this.width,
+    this.height,
   });
 
   @override
@@ -20,10 +24,12 @@ class CarbonCompactButton extends StatefulWidget {
 class CarbonCompactButtonState extends State<CarbonCompactButton> {
   @override
   Widget build(BuildContext context) {
+    double availableWidth = MediaQuery.of(context).size.width;
+    double width = widget.width ?? availableWidth;
     Color color = widget.color;
-    double availableWidth = MediaQuery.of(context).size.width - 80; // Adjusted for margins
+    // Adjusted for margins
     return SizedBox(
-      width: availableWidth / 4,
+      width: width,
       child: OutlinedButton(
         onPressed: widget.onTap,
         style: OutlinedButton.styleFrom(
