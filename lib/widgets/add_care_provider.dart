@@ -15,8 +15,6 @@ class AddCareProviderScreen extends StatefulWidget {
 }
 
 class _AddCareProviderScreenState extends State<AddCareProviderScreen> {
-  final _formKey = GlobalKey<FormState>();
-  String? _selectedSpecialtyLabel;
   String? _imageUrl;
 
   Future<void> _handlePaste() async {

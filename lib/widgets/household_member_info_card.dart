@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:triage/widgets/carbon_style_textbox.dart';
-import '../app_theme.dart';
 import '../classes/patient.dart';
 import 'body_metrics_widget.dart';
 

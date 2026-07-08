@@ -36,7 +36,6 @@ class CarbonButton extends StatelessWidget {
       ?iconWidget,
     ];
 
-    Color secondaryBackgroundColor = color ?? AppTheme.deepLogicViolet;
     return SizedBox(
       height: 48,
       child: ElevatedButton(

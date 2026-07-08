@@ -1,10 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/staff.dart';
-import 'package:triage/widgets/carbon_style_action_tile.dart';
-
 import '../app_theme.dart';
 
 class Address {
@@ -83,16 +80,23 @@ class Appointment {
   const Appointment({required this.when, this.who, this.where, this.why});
 }
 
-class AppointmentChip extends StatelessWidget {
-  Appointment? appointment;
+class AppointmentChip extends StatefulWidget {
+  final Appointment? appointment;
   final StaffMember? staffMember;
-  AppointmentChip({super.key, this.appointment, this.staffMember});
 
+  const AppointmentChip({super.key, this.appointment, this.staffMember});
+
+  @override
+  State<StatefulWidget> createState() => AppointmentChipState();
+}
+
+class AppointmentChipState extends State<AppointmentChip> {
   @override
   Widget build(BuildContext context) {
     Who who;
-    if (appointment == null) {
-      final staffMember = this.staffMember;
+    Appointment? appointment = widget.appointment;
+    if (widget.appointment == null) {
+      final staffMember = widget.staffMember;
       if (staffMember != null) {
         who = Who(
           first: staffMember.firstName,
@@ -110,7 +114,7 @@ class AppointmentChip extends StatelessWidget {
       avatar: Icon(isPast ? Symbols.history : Symbols.calendar_today, size: 16),
       label: Text(DateFormat('MMM d, h:mm a').format(appointment!.when)),
       onPressed: () => _showAppointmentDetails(appointment!),
-      backgroundColor: isPast ? Colors.amber.shade50 : AppTheme.clinicalCyan.withOpacity(0.1),
+      backgroundColor: isPast ? Colors.amber.shade50 : AppTheme.clinicalCyan.withValues(alpha: 0.1),
       side: BorderSide(color: isPast ? Colors.amber : AppTheme.clinicalCyan),
     );
   }

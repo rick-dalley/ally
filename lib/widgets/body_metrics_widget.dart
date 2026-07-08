@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
 import '../app_theme.dart';
 import '../classes/database_manager.dart';
 import '../classes/metric_value.dart';
@@ -18,17 +16,17 @@ class BodyMetricsWidget extends StatefulWidget {
 class BodyMetricsWidgetState extends State<BodyMetricsWidget> {
   @override
   Widget build(BuildContext context) {
-    final double? currentHeight = widget.patient.height;
-    final double? currentWeight = widget.patient.weight;
-    final String currentHeightUoM = widget.patient.heightUoM ?? "cm";
-    final String currentWeightUoM = widget.patient.weightUoM ?? "kg";
+    final double currentHeight = widget.patient.height;
+    final double currentWeight = widget.patient.weight;
+    final String currentHeightUoM = widget.patient.heightUoM;
+    final String currentWeightUoM = widget.patient.weightUoM;
 
-    final heightStr = currentHeight != null ? '${currentHeight.toStringAsFixed(1)} $currentHeightUoM' : 'Not Set';
-    final weightStr = currentWeight != null ? '${currentWeight.toStringAsFixed(1)} $currentWeightUoM' : 'Not Set';
+    final heightStr = '${currentHeight.toStringAsFixed(1)} $currentHeightUoM';
+    final weightStr = '${currentWeight.toStringAsFixed(1)} $currentWeightUoM';
     final bmiValue = MedicalMath.calculateBMI(
-      weight: currentWeight ?? 0.0,
+      weight: currentWeight,
       weightUom: currentWeightUoM,
-      height: currentHeight ?? 0.0,
+      height: currentHeight,
       heightUom: currentHeightUoM,
     );
     final bmiStr = bmiValue > 0 ? bmiValue.toStringAsFixed(1) : 'Not Set';
