@@ -42,7 +42,7 @@ class CarbonButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: isSecondary ? secondaryBackgroundColor : AppTheme.deepLogicViolet,
+          backgroundColor: isSecondary ? AppTheme.cancelButtonBackGround : AppTheme.deepLogicViolet,
           foregroundColor: isSecondary ? Colors.black : Colors.white,
           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
           padding: const EdgeInsets.symmetric(horizontal: 16),

@@ -7,7 +7,7 @@ import '../widgets/carbon_style_search_field.dart';
 import '../widgets/household_member_medical_card.dart';
 import 'intake_screen.dart';
 import 'medical_profile_screen.dart';
-import 'prescriptions.dart';
+import 'prescription_screen.dart';
 
 class FamilyRoster extends StatefulWidget {
   const FamilyRoster({super.key});
@@ -139,14 +139,15 @@ class FamilyRosterState extends State<FamilyRoster> {
         ],
       ),
 
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _launchIntakeScreen(context),
         // Signals scanning capability
         backgroundColor: AppTheme.deepLogicViolet,
         foregroundColor: AppTheme.clinicalWhite,
         shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
         // New dedicated screen
-        child: const Padding(padding: EdgeInsetsGeometry.all(16), child: Icon(Symbols.frame_person_sharp, size: 24)),
+        icon: Icon(Symbols.frame_person_sharp, size: 24),
+        label: Text("Add Member"),
       ),
     );
   }

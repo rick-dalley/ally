@@ -1,4 +1,5 @@
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:triage/screens/add_medication_screen.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:flutter/material.dart';
@@ -8,7 +9,6 @@ import '../classes/database_manager.dart';
 import '../classes/medication_services.dart';
 import '../classes/patient.dart';
 import '../widgets/medication_card.dart';
-import '../widgets/text_scanner.dart';
 
 enum BannerType { acknowledged, advisory, critical, none, unknown }
 
@@ -71,8 +71,8 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
 
   // These are derived flags
   final bool _hasPrecautions = false; // Set this based on your separate logic
-  final _nameController = TextEditingController();
-  final _doseController = TextEditingController();
+  final nameController = TextEditingController();
+  final dosageController = TextEditingController();
   late int _dataSheetCount = 0;
 
   @override
@@ -242,34 +242,6 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     );
   }
 
-  void _addMedication() async {
-    if (_nameController.text.isNotEmpty) {
-      var uuid = const Uuid();
-      final String medName = _nameController.text;
-      final String medId = uuid.v4(); // Generates a random version 4 UUID
-
-      final newMed = {
-        "id": medId,
-        "patient_uuid": widget.patient.patientUuid,
-        "name": medName,
-        "dose": _doseController.text,
-        "freq": "PRN",
-        "set_id": "",
-      };
-
-      // Save to DB (returns the UUID we just generated)
-      await DatabaseManager().insertMedication(newMed);
-
-      setState(() {
-        _meds.add({...newMed, "is_syncing": true});
-        _nameController.clear();
-        _doseController.clear();
-      });
-      // 2. Background Sync (Do not 'await' this)
-      _startBackgroundSync(medId, medName);
-    }
-  }
-
   void _refreshMedInUI(String medId, String setId) {
     setState(() {
       final index = _meds.indexWhere((m) => m['id'] == medId);
@@ -314,116 +286,52 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     });
   }
 
-  void _startBarcodeScanner() async {
-    // Use a simple full-screen modal or a dedicated camera route
-    final String? scannedResult = await showModalBottomSheet<String>(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => _BarcodeScannerModal(),
-    );
+  void _addMedication() async {
+    if (nameController.text.isNotEmpty) {
+      var uuid = const Uuid();
+      final String medName = nameController.text;
+      final String medId = uuid.v4(); // Generates a random version 4 UUID
 
-    if (scannedResult != null) {
-      // We found something!
+      final newMed = {
+        "id": medId,
+        "patient_uuid": widget.patient.patientUuid,
+        "name": medName,
+        "dose": dosageController.text,
+        "freq": "PRN",
+        "set_id": "",
+      };
+
+      // Save to DB (returns the UUID we just generated)
+      await DatabaseManager().insertMedication(newMed);
+
       setState(() {
-        // For now, let's assume the result is the DIN
-        // In the future, this is where you'd trigger your API lookup
-        _nameController.text = "Loading Med for $scannedResult...";
-        _doseController.text = ""; // Placeholder until sync/lookup finishes
+        _meds.add({...newMed, "is_syncing": true});
+        nameController.clear();
+        dosageController.clear();
       });
-
-      // Auto-trigger your existing lookup logic
-      // This matches the background sync you already have in _addMedication
-      _lookupAndAdd(scannedResult);
+      // 2. Background Sync (Do not 'await' this)
+      _startBackgroundSync(medId, medName);
     }
   }
 
-  // A helper to handle the lookup after scanning
-  void _lookupAndAdd(String barcodeValue) {
-    // Check if it's a known DIN (like your Amlodipine example)
-    if (barcodeValue == "02331292") {
-      setState(() {
-        _nameController.text = "Amlodipine";
-        _doseController.text = "10 MG Oral Tablet";
-      });
-    } else {
-      // If not in your "local" demo cache, use your existing name field
-      // to start the background sync process you've already built
-      _nameController.text = barcodeValue;
-      _addMedication();
-    }
-  }
-
-  void _showAddMedicationSheet() {
+  void showAddMedicationSheet() {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true, // Crucial to keep keyboard from covering fields
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       builder: (context) => Padding(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom, // Moves with keyboard
-          left: 20,
-          right: 20,
-          top: 20,
+          left: 24,
+          right: 24,
+          top: 24,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          // Modal only takes as much space as needed
-          children: [
-            // OPTION 1: THE SCANNER "HOOK"
-            InkWell(
-              onTap: () {
-                Navigator.pop(context); // Close modal
-                _startBarcodeScanner(); // Trigger your camera logic
-              },
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppTheme.deepLogicViolet.withAlpha(24),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppTheme.deepLogicViolet),
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.qr_code_scanner, color: AppTheme.deepLogicViolet),
-                    SizedBox(width: 12),
-                    Text(
-                      "SCAN BOTTLE BARCODE",
-                      style: TextStyle(color: AppTheme.deepLogicViolet, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-            const Text("OR ENTER MANUALLY", style: TextStyle(fontSize: 10, color: Colors.white38)),
-            const SizedBox(height: 12),
-
-            // OPTION 2: YOUR ORIGINAL FORM FIELDS
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(labelText: "Medication Name"),
-            ),
-            TextField(
-              controller: _doseController,
-              decoration: const InputDecoration(labelText: "Dosage (e.g. 10mg)"),
-            ),
-            const SizedBox(height: 20),
-
-            // RE-USING YOUR _addMedication LOGIC
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  _addMedication(); // Your existing function
-                  Navigator.pop(context); // Close modal
-                },
-                child: const Text("ADD TO LIST"),
-              ),
-            ),
-            const SizedBox(height: 20),
-          ],
+        child: AddMedicationScreen(
+          dosageController: dosageController,
+          nameController: nameController,
+          onAddMedication: () {
+            _addMedication();
+          },
         ),
       ),
     );
@@ -448,9 +356,10 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
       ),
       // The Floating Action Button replaces the top form
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddMedicationSheet(),
+        onPressed: () => showAddMedicationSheet(),
         label: const Text("ADD MEDICATION"),
         icon: const Icon(Symbols.pill),
+        shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
         backgroundColor: AppTheme.deepLogicViolet,
         foregroundColor: AppTheme.clinicalWhite,
       ),
@@ -525,56 +434,5 @@ class SafetyAudit {
     }
 
     return null;
-  }
-}
-
-class _BarcodeScannerModal extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.8,
-      color: Colors.black,
-      child: Column(
-        children: [
-          const SizedBox(height: 16),
-          const Text(
-            "ALIGN BARCODE",
-            style: TextStyle(color: Colors.cyanAccent, fontWeight: FontWeight.bold),
-          ),
-          Expanded(
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Your existing scanner logic, configured for Barcodes
-                TextScanner(
-                  onTextDetected: (text) {
-                    // Search for an 8-digit sequence (DIN) in the OCR
-                    final dinRegex = RegExp(r'\b\d{8}\b');
-                    final match = dinRegex.firstMatch(text.text);
-                    if (match != null) {
-                      Navigator.pop(context, match.group(0));
-                    }
-                  },
-                ),
-                // Visual "Scope" to help the clinician
-                Container(
-                  width: 280,
-                  height: 150,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.cyanAccent, width: 2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("CANCEL", style: TextStyle(color: Colors.white54)),
-          ),
-          const SizedBox(height: 20),
-        ],
-      ),
-    );
   }
 }
