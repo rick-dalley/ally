@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import '../app_theme.dart';
 import '../classes/medication_services.dart';
 import 'interaction_chip.dart';
 
@@ -9,11 +9,13 @@ class MedicationCard extends StatefulWidget {
   final List<InteractionConflict> interactions;
   final VoidCallback onDelete;
   final ValueChanged<bool>? onExpansionChanged;
+  final int? index;
   const MedicationCard({
     super.key,
     required this.medData,
     required this.interactions,
     required this.onDelete,
+    this.index,
     this.onExpansionChanged,
   });
 
@@ -24,10 +26,11 @@ class MedicationCard extends StatefulWidget {
 class _MedicationCardState extends State<MedicationCard> {
   Map<String, dynamic>? _datasheet;
   bool _isFetching = false;
-
+  MedicationShapes shape = MedicationShapes.round;
   @override
   void initState() {
     super.initState();
+    shape = widget.index != null ? MedicationShapes.values[widget.index!] : MedicationShapes.round;
     // If we already know the datasheet is local, get it immediately
     if (widget.medData['has_local_datasheet'] == 1) {
       _triggerFetch();
@@ -70,57 +73,81 @@ class _MedicationCardState extends State<MedicationCard> {
         .toList();
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      margin: const EdgeInsets.all(8),
       shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
-      child: ExpansionTile(
-        key: ValueKey("tile_$medicationId"),
-        shape: const Border(),
-        collapsedShape: const Border(),
-        leading: Icon(
-          hasDatasheet ? Symbols.prescriptions : Symbols.cloud_download,
-          color: hasDatasheet ? Colors.green : AppTheme.lightTheme.disabledColor,
-        ),
-        title: Text(medicationName, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Row 1: Your existing Dose/Freq info
-            Text("Dose: ${widget.medData['dose'] ?? 'N/A'} — Freq: ${widget.medData['freq'] ?? 'N/A'}"),
-
-            // Row 2: The "Entanglement" / Interaction Row
-            // We check for a list of interactions (we'll build the logic for this tomorrow)
-            Padding(
-              padding: const EdgeInsets.only(top: 4.0),
-              child: InteractionsChip(medicationName: medicationName, interactions: medicationInteractions),
-            ),
-          ],
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-              onPressed: () {
-                widget.onDelete();
-              },
-            ),
-            const Icon(Icons.expand_more), // Re-adding the expansion arrow
-          ],
-        ),
-        onExpansionChanged: (expanded) {
-          if (expanded && _datasheet == null) {
-            _triggerFetch();
-          }
-          widget.onExpansionChanged?.call(expanded);
-        },
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (_isFetching)
-            const Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator())
-          else if (_datasheet != null && _datasheet!.isNotEmpty) ...[
-            ClassChips(dataSheet: _datasheet),
-            ..._buildFdaSections(),
-          ] else
-            const ListTile(title: Text("No datasheet details found.")),
+          // 1. Icon (Direct child of Row)
+          Align(
+            alignment: Alignment.center,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
+              child: SvgPicture.asset(
+                'assets/images/pills/${shape.svg}',
+                width: 40,
+                height: 40,
+                // This is the magic property that applies the color
+                colorFilter: const ColorFilter.mode(
+                  Colors.orangeAccent, // Your desired color
+                  BlendMode.srcIn, // This keeps the alpha (transparency) of your SVG
+                ),
+              ),
+            ),
+          ),
+
+          // 2. Expanded (Direct child of Row - no Padding parent)
+          Expanded(
+            child: Column(
+              children: [
+                // Row: Name + Delete
+                Row(
+                  children: [
+                    // Corrected: Padding moved INSIDE Expanded
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 12, 0, 0),
+                        child: Text(medicationName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400)),
+                      ),
+                    ),
+                    IconButton(onPressed: widget.onDelete, icon: const Icon(Symbols.close)),
+                  ],
+                ),
+                // ExpansionTile
+                ExpansionTile(
+                  key: ValueKey("tile_$medicationId"),
+                  shape: const Border(),
+                  collapsedShape: const Border(),
+                  title: Text("Dose: ${widget.medData['dose'] ?? 'N/A'} — Freq: ${widget.medData['freq'] ?? 'N/A'}"),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4.0),
+                        child: InteractionsChip(medicationName: medicationName, interactions: medicationInteractions),
+                      ),
+                    ],
+                  ),
+                  trailing: const Icon(Icons.expand_more),
+                  onExpansionChanged: (expanded) {
+                    if (expanded && _datasheet == null) {
+                      _triggerFetch();
+                    }
+                    widget.onExpansionChanged?.call(expanded);
+                  },
+                  children: [
+                    if (_isFetching)
+                      const Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator())
+                    else if (_datasheet != null && _datasheet!.isNotEmpty) ...[
+                      ClassChips(dataSheet: _datasheet),
+                      ..._buildFdaSections(),
+                    ] else
+                      const ListTile(title: Text("No datasheet details found.")),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

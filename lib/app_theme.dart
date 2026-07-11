@@ -12,6 +12,9 @@ class AppTheme {
   static const Color clinicalCyanCanvas = Color(0x1A00BCD4);
   static const Color clinicalWhite = Color(0xFFF8F9FA);
   static const Color cancelButtonBackGround = Color(0xFFBFBBBB);
+  static const Color carbonFieldBorder = Color(0xFF525252);
+  static const Color carbonFieldColor = Color(0xFFF4F4F4);
+  static const Color carbonFieldBackgroundColor = Color(0xFFF4F4F4);
   // Hpspital Monitor Vitals Palette
   static const Color vitalsBP = Color(0xFFFFB300);
   static const Color vitalsOxygen = Color(0xFF82B1FF);

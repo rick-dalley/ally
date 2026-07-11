@@ -1,0 +1,4 @@
+<!-- Optional Score Line Component -->
+<g id="score-groove">
+    <line class="pill-score" x1="100" y1="65" x2="100" y2="115" /> <!-- Adjust coordinates per pill -->
+</g>

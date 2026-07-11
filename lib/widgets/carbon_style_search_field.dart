@@ -1,49 +1,134 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:material_symbols_icons/symbols.dart';
+import '../app_theme.dart';
 
 class CarbonSearchField extends StatefulWidget {
   final TextEditingController controller;
-  final Function onChanged;
-  const CarbonSearchField({super.key, required this.controller, required this.onChanged});
+  final Function(String)? onChanged;
+  final Function(String)? onSearch;
+  final String? errorText;
+  final String? label;
+  final String? hintText;
+  final String? promptText;
+
+  const CarbonSearchField({
+    super.key,
+    required this.controller,
+    this.onChanged,
+    this.onSearch,
+    this.errorText,
+    this.label,
+    this.hintText,
+    this.promptText,
+  });
 
   @override
-  State<StatefulWidget> createState() => CarbonSearchFieldState();
+  State<CarbonSearchField> createState() => CarbonSearchFieldState();
 }
 
 class CarbonSearchFieldState extends State<CarbonSearchField> {
-  late TextEditingController controller = widget.controller;
-  String searchTerm = "";
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_updateUI);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_updateUI);
+    super.dispose();
+  }
+
+  void _updateUI() {
+    // Rebuilds when the text changes to show/hide the clear icon
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: controller,
-              decoration: InputDecoration(
-                hintText: "Search by name...",
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: searchTerm.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          setState(() {
-                            searchTerm = ""; // Reset the query
-                            controller.clear();
-                          });
-                        },
-                      )
-                    : null, // No icon if the field is empty
-                border: OutlineInputBorder(borderRadius: BorderRadius.zero),
+    return Column(
+      children: [
+        if (widget.label != null)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 0, bottom: 0.0),
+              child: Text(
+                widget.label!,
+                style: GoogleFonts.ibmPlexSans(fontSize: 12, color: AppTheme.carbonFieldBorder),
               ),
-              onChanged: (value) {
-                widget.onChanged(value);
-              },
             ),
           ),
-        ],
-      ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: widget.controller,
+                  onChanged: (value) {
+                    if (widget.onChanged != null) widget.onChanged!(value);
+                  },
+                  decoration: InputDecoration(
+                    fillColor: AppTheme.carbonFieldBackgroundColor,
+                    filled: true,
+                    hintText: widget.hintText ?? "Enter a value to search",
+                    // Carbon-style borders
+                    border: const UnderlineInputBorder(
+                      borderSide: BorderSide(color: AppTheme.carbonFieldBorder, width: 1),
+                    ),
+                    focusedBorder: const UnderlineInputBorder(
+                      borderSide: BorderSide(color: AppTheme.deepLogicViolet, width: 2),
+                    ),
+                    errorBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFFDA1E28), width: 2)),
+                    errorText: widget.errorText,
+                    errorStyle: GoogleFonts.ibmPlexSans(color: const Color(0xFFDA1E28)),
+
+                    // Prefix: intentional search trapping
+                    prefixIcon: IconButton(
+                      icon: Icon(
+                        Symbols.search,
+                        color: widget.controller.text.isNotEmpty
+                            ? AppTheme.deepLogicViolet
+                            : AppTheme.carbonFieldBorder,
+                      ),
+                      onPressed: () {
+                        if (widget.onSearch != null) {
+                          widget.onSearch!(widget.controller.text);
+                        }
+                      },
+                    ),
+
+                    // Suffix: Text-clearing utility
+                    suffixIcon: widget.controller.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Symbols.clear, size: 16),
+                            onPressed: () {
+                              widget.controller.clear();
+                              if (widget.onChanged != null) widget.onChanged!("");
+                            },
+                          )
+                        : null,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (widget.promptText != null)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 0, bottom: 0.0),
+              child: Text(
+                widget.promptText!,
+                style: GoogleFonts.ibmPlexSans(fontSize: 12, color: AppTheme.carbonFieldBorder),
+              ),
+            ),
+          ),
+        const SizedBox(height: 16),
+      ],
     );
   }
 }

@@ -1,0 +1,9 @@
+<svg xmlns="http://w3.org" viewBox="0 0 200 200">
+    <!-- Outer Arch Side Shadow -->
+    <path class="pill-side-light" d="M 40,100 A 60,60 0 0,0 160,100 L 160,120 A 60,60 0 0,1 40,120 Z" />
+    <!-- Top Face -->
+    <path class="pill-top" d="M 40,100 A 60,60 0 0,0 160,100 A 40,40 0 0,1 40,100 Z" />
+    <!-- Outlines -->
+    <path class="pill-line" d="M 40,100 A 60,60 0 0,0 160,100 A 40,40 0 0,1 40,100 Z" />
+    <path class="pill-line" d="M 40,100 L 40,120 A 60,60 0 0,0 160,120 L 160,100" />
+</svg>

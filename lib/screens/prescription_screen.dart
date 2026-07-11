@@ -1,5 +1,6 @@
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/screens/add_medication_screen.dart';
+import 'package:triage/screens/add_medication_wizard.dart';
+import 'package:triage/widgets/carbon_style_button.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:flutter/material.dart';
@@ -73,6 +74,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
   final bool _hasPrecautions = false; // Set this based on your separate logic
   final nameController = TextEditingController();
   final dosageController = TextEditingController();
+  final frequencyController = TextEditingController();
   late int _dataSheetCount = 0;
 
   @override
@@ -221,21 +223,8 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                 style: TextStyle(color: bannerData.color, fontWeight: FontWeight.bold),
               ),
             ),
-
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: OutlinedButton.icon(
-                onPressed: _runSafetyAudit,
-                icon: const Icon(Symbols.fact_check, color: Colors.white),
-                label: const Text("RE-CHECK"),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(45),
-                  foregroundColor: Colors.white,
-                  backgroundColor: AppTheme.lightTheme.primaryColor,
-                ),
-              ),
-            ),
+            child: CarbonButton(label: "Check Again", onPressed: _runSafetyAudit, icon: Symbols.fact_check),
           ),
         ],
       ),
@@ -286,31 +275,70 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     });
   }
 
-  void _addMedication() async {
-    if (nameController.text.isNotEmpty) {
+  // void _addMedication(String medicationName) async {
+  //   if (medicationName.isNotEmpty) {
+  //     var uuid = const Uuid();
+  //     final String medId = uuid.v4(); // Generates a random version 4 UUID
+  //
+  //     final newMed = {
+  //       "id": medId,
+  //       "patient_uuid": widget.patient.patientUuid,
+  //       "name": medicationName,
+  //       "image_uri": "holder",
+  //       "dose": dosageController.text,
+  //       "freq": "PRN",
+  //       "set_id": "",
+  //     };
+  //
+  //     // Save to DB (returns the UUID we just generated)
+  //     await DatabaseManager().insertMedication(newMed);
+  //
+  //     setState(() {
+  //       _meds.add({...newMed, "is_syncing": true});
+  //       nameController.clear();
+  //       dosageController.clear();
+  //     });
+  //     // Background Sync (Do not 'await' this)
+  //     _startBackgroundSync(medId, medicationName);
+  //   }
+  // }
+
+  void _addMedication(String medicationName) async {
+    if (medicationName.isNotEmpty) {
       var uuid = const Uuid();
-      final String medName = nameController.text;
-      final String medId = uuid.v4(); // Generates a random version 4 UUID
+      final String medId = uuid.v4();
 
       final newMed = {
         "id": medId,
         "patient_uuid": widget.patient.patientUuid,
-        "name": medName,
+        "name": medicationName,
+        "image_uri": "holder",
         "dose": dosageController.text,
         "freq": "PRN",
-        "set_id": "",
+        "set_id": "", // <--- This is empty, causing your DB query to fail
+        "has_local_datasheet": 0, // <--- Explicitly set this to avoid null checks
       };
 
-      // Save to DB (returns the UUID we just generated)
-      await DatabaseManager().insertMedication(newMed);
-
+      // Update UI immediately
       setState(() {
         _meds.add({...newMed, "is_syncing": true});
+
+        // Sort the list by name
+        _meds.sort((a, b) => (a['name'] as String).toLowerCase().compareTo((b['name'] as String).toLowerCase()));
+        frequencyController.clear();
         nameController.clear();
         dosageController.clear();
       });
-      // 2. Background Sync (Do not 'await' this)
-      _startBackgroundSync(medId, medName);
+
+      // Database & Background logic
+      // Wrap in try-catch to prevent silent failures
+      try {
+        await DatabaseManager().insertMedication(newMed);
+        await _startBackgroundSync(medId, medicationName);
+      } catch (e) {
+        // Handle or log error
+        print("Error saving medication: $e");
+      }
     }
   }
 
@@ -318,7 +346,9 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true, // Crucial to keep keyboard from covering fields
+      useSafeArea: true, // This adds the padding for the notch and system bars
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+
       builder: (context) => Padding(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom, // Moves with keyboard
@@ -326,12 +356,11 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
           right: 24,
           top: 24,
         ),
-        child: AddMedicationScreen(
-          dosageController: dosageController,
+        child: AddMedicationWizard(
+          patientUuid: widget.patient.patientUuid,
           nameController: nameController,
-          onAddMedication: () {
-            _addMedication();
-          },
+          dosageController: dosageController,
+          frequencyController: frequencyController,
         ),
       ),
     );
@@ -345,8 +374,6 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
         title: Text("Medications: $name"),
         actions: [
           TextButton(
-            // 1. Call the function directly.
-            // Do NOT pop here; let _confirmAndSave handle the navigation.
             onPressed: _isLoading ? null : _confirmAndSave,
             child: const Text("SAVE", style: TextStyle(color: Colors.white)),
           ),
@@ -379,6 +406,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                   key: ValueKey(med['id']),
                   interactions: _currentConflicts,
                   medData: med,
+                  index: index,
                   onDelete: () async {
                     final String medIdToDelete = med['id'];
 

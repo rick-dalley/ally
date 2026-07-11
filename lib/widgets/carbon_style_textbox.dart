@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import '../app_theme.dart';
 
 class CarbonTextEdit extends StatefulWidget {
@@ -85,7 +84,7 @@ class CarbonStateText extends State<CarbonTextEdit> {
             hintText: widget.placeHolderText,
             hintStyle: GoogleFonts.ibmPlexSans(color: const Color(0xFFA8A8A8)),
             contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
-            border: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF525252), width: 1)),
+            border: const UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.carbonFieldBorder, width: 1)),
             focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: accentColor, width: 2)),
             errorBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFFDA1E28), width: 2)),
             errorText: widget.errorText,
@@ -98,7 +97,7 @@ class CarbonStateText extends State<CarbonTextEdit> {
             padding: const EdgeInsets.only(top: 8.0, bottom: 16),
             child: Text(
               widget.helperText!,
-              style: GoogleFonts.ibmPlexSans(fontSize: 12, color: const Color(0xFF525252)),
+              style: GoogleFonts.ibmPlexSans(fontSize: 12, color: AppTheme.carbonFieldBorder),
             ),
           ),
         SizedBox(height: 4),

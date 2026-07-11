@@ -11,6 +11,7 @@ import 'package:triage/classes/vitals.dart';
 import 'package:uuid/uuid.dart';
 import 'acuity.dart';
 import 'data_seeder.dart';
+import 'medication_services.dart';
 import 'metric_value.dart';
 
 class DatabaseManager {
@@ -587,7 +588,6 @@ class DatabaseManager {
       whereArgs: [setId],
       limit: 1,
     );
-
     if (results.isEmpty) return null;
 
     // 1. Start with the database row (includes 'classes', 'set_id', etc.)
@@ -969,6 +969,20 @@ class DatabaseManager {
       [id],
     );
   }
+
+  Future<void> addMedication({required String name, required String patientUuid}) async {}
+  Future<void> addDosage({required String name, required String patientUuid, required String dosage}) async {}
+  Future<void> addMedicationType({
+    required String name,
+    required String patientUuid,
+    required MedicationTypes type,
+  }) async {}
+  Future<void> addMedicationShape({
+    required String name,
+    required String patientUuid,
+    required MedicationShapes shape,
+  }) async {}
+  Future<void> addFrequency({required String name, required String patientUuid, required Frequency frequency}) async {}
 }
 
 class CompletedQuestionnaire {

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+    <path class="pill-side-light"
+        transform="translate(0, 20)"
+        d="M 100,150 C 40,110 20,70 40,50 C 60,30 90,45 100,65 C 110,45 140,30 160,50 C 180,70 160,110 100,150" />
+</svg>
+

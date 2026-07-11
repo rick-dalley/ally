@@ -305,9 +305,9 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
                           color: AppTheme.deepLogicViolet,
                         ),
                         CarbonCompactButton(
-                          label: 'OCR',
+                          label: 'QR Code',
                           width: availableWidth / 4,
-                          icon: Symbols.qr_code_2_add,
+                          icon: Symbols.qr_code_2,
                           onTap: () {
                             launchEmergencyQRCodeGenerator(context, patient);
                           },

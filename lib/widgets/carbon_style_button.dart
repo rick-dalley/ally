@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import '../app_theme.dart';
+import '../classes/carbon_style_constants.dart';
 
 class CarbonButton extends StatelessWidget {
   final String label;
@@ -10,6 +10,7 @@ class CarbonButton extends StatelessWidget {
   final IconData? icon;
   final MainAxisAlignment alignment;
   final Color? color;
+  final CarbonButtonSize? size;
   const CarbonButton({
     super.key,
     required this.label,
@@ -18,15 +19,17 @@ class CarbonButton extends StatelessWidget {
     this.isSecondary = false,
     this.icon,
     this.alignment = MainAxisAlignment.start,
+    this.size = CarbonButtonSize.medium,
   });
 
   @override
   Widget build(BuildContext context) {
     // Define the icon and text widgets
+    final size = this.size ?? CarbonButtonSize.medium;
     final iconWidget = icon != null ? Icon(icon, size: 18) : null;
     final textWidget = Text(
       label,
-      style: GoogleFonts.ibmPlexSans(fontSize: 16, fontWeight: FontWeight.w600, letterSpacing: 0.16),
+      style: GoogleFonts.ibmPlexSans(fontSize: size.fontSize, fontWeight: FontWeight.w400, letterSpacing: 0.16),
     );
     // Determine the list of children based on alignment
     // For 'Right' alignment, we place text first, then icon

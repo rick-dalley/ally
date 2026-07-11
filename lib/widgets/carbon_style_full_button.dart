@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
 
+import '../classes/carbon_style_constants.dart';
+
 class CarbonFullButton extends StatefulWidget {
   final String label;
   final IconData icon;
   final VoidCallback onTap;
   final Color color;
   final double? width;
-  final double? height;
-  final double? fontsSize;
+  final CarbonButtonSize? size;
   final FontWeight? fontWeight;
+  final double? overRideHeight;
   const CarbonFullButton({
     super.key,
     required this.label,
     required this.icon,
     required this.onTap,
     required this.color,
-    this.fontsSize,
+    this.size,
     this.fontWeight,
     this.width,
-    this.height,
+    this.overRideHeight,
   });
 
   @override
@@ -26,42 +28,58 @@ class CarbonFullButton extends StatefulWidget {
 }
 
 class CarbonFullButtonState extends State<CarbonFullButton> {
+  CarbonButtonSize size = CarbonButtonSize.medium;
+  double height = 0;
+  double width = 0;
+  FontWeight fontWeight = FontWeight.w400;
+  Color color = Colors.transparent;
+  @override
+  void initState() {
+    super.initState();
+    if (widget.size != null) {
+      size = widget.size!;
+      height = widget.overRideHeight ?? size.height;
+      fontWeight = widget.fontWeight ?? FontWeight.w400;
+      color = widget.color;
+    }
+  }
+
+  // Inside build method
   @override
   Widget build(BuildContext context) {
-    double availableWidth = MediaQuery.of(context).size.width;
-    double width = widget.width ?? availableWidth;
-    FontWeight fontWeight = widget.fontWeight ?? FontWeight.w400;
-    Color color = widget.color;
-    double fontSize = widget.fontsSize ?? 20;
-    // Adjusted for margins
+    final double displayWidth = widget.width ?? MediaQuery.of(context).size.width;
+    final double verticalPadding = size.verticalPadding;
+
     return SizedBox(
-      width: width,
+      width: displayWidth,
+      height: size.height,
       child: OutlinedButton(
         onPressed: widget.onTap,
         style: OutlinedButton.styleFrom(
-          minimumSize: const Size(0, 56),
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
-          foregroundColor: color,
-          side: BorderSide(color: color, width: 1),
-          backgroundColor: color.withAlpha(20),
-          shape: ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap, // Removes extra touch padding
+          padding: EdgeInsets.symmetric(vertical: verticalPadding, horizontal: 16),
+          foregroundColor: widget.color,
+          side: BorderSide(color: widget.color, width: 1),
+          backgroundColor: widget.color.withAlpha(20),
+          shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
         ),
         child: Row(
           children: [
-            Padding(
-              padding: EdgeInsetsGeometry.all(24),
+            Expanded(
               child: Text(
                 widget.label,
                 style: TextStyle(
-                  fontSize: fontSize,
-                  fontWeight: fontWeight,
-                  letterSpacing: -0.2, // Tighter letters to prevent overflow
+                  fontSize: size.fontSize, // Fixed font size as requested
+                  fontWeight: widget.fontWeight ?? FontWeight.w400,
+                  color: widget.color,
+                  letterSpacing: -0.2,
                 ),
                 maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            Spacer(),
-            Padding(padding: EdgeInsetsGeometry.all(24), child: Icon(widget.icon, size: 24)), // Slightly larger icon
+            Icon(widget.icon, size: 20),
           ],
         ),
       ),

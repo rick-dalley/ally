@@ -2,14 +2,14 @@ PODS:
   - camera_avfoundation (0.0.1):
     - Flutter
   - Flutter (1.0.0)
-  - google_mlkit_barcode_scanning (0.14.2):
+  - google_mlkit_barcode_scanning (0.15.0):
     - Flutter
     - google_mlkit_commons
     - GoogleMLKit/BarcodeScanning (~> 9.0.0)
-  - google_mlkit_commons (0.11.1):
+  - google_mlkit_commons (0.12.0):
     - Flutter
     - MLKitVision (~> 10.0.0)
-  - google_mlkit_text_recognition (0.15.1):
+  - google_mlkit_text_recognition (0.16.0):
     - Flutter
     - google_mlkit_commons
     - GoogleMLKit/TextRecognition (~> 9.0.0)
@@ -130,9 +130,9 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   camera_avfoundation: 769d252259fa21e39ada7399c9dc9c0921af8165
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
-  google_mlkit_barcode_scanning: 558187bc222df9e86110a2dad3c61695b4a3ac99
-  google_mlkit_commons: 1e6ef6605d7281f35baf2b355e6049b9984fd624
-  google_mlkit_text_recognition: 309a3a493765ea17c7368cadb4a710391e73902c
+  google_mlkit_barcode_scanning: ec258a9f08c16d43ed3c4f76e4f1f436ffa899df
+  google_mlkit_commons: 75b2579ccf522fe01d42e689babda04c4510ba2f
+  google_mlkit_text_recognition: 4d510169638309ef7ed2aff1971b620e8d785d6e
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
   GoogleMLKit: b1eee21a41c57704fe72483b15c85cb2c0cd7444
   GoogleToolboxForMac: d1a2cbf009c453f4d6ded37c105e2f67a32206d8

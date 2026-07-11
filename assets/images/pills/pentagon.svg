@@ -1,0 +1,12 @@
+<svg xmlns="http://w3.org" viewBox="0 0 200 200">
+    <!-- Left Side Shadow -->
+    <polygon class="pill-side-dark" points="45,120 100,155 100,175 45,140" />
+    <!-- Right Side Shadow -->
+    <polygon class="pill-side-light" points="100,155 155,120 155,140 100,175" />
+    <!-- Top Face -->
+    <polygon class="pill-top" points="100,45 155,85 155,120 100,155 45,120 45,85" />
+    <!-- Outlines -->
+    <polygon class="pill-line" points="100,45 155,85 155,120 100,155 45,120 45,85" />
+    <path class="pill-line" d="M 45,120 L 45,140 L 100,175 L 155,140 L 155,120" />
+    <line class="pill-line" x1="100" y1="155" x2="100" y2="175" />
+</svg>

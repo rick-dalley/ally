@@ -83,13 +83,18 @@ class FamilyRosterState extends State<FamilyRoster> {
       // Keeping the body as the main focus
       body: Column(
         children: [
-          CarbonSearchField(
-            controller: _searchController,
-            onChanged: (value) {
-              setState(() {
-                _searchQuery = value;
-              });
-            },
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0),
+            child: CarbonSearchField(
+              controller: _searchController,
+              label: "",
+              hintText: "Search by name",
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
+            ),
           ),
           Expanded(
             child: filteredPatients.isEmpty

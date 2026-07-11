@@ -1,31 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/widgets/carbon_style_button.dart';
+import 'package:triage/widgets/carbon_style_search_field.dart';
 
 import '../app_theme.dart';
+import '../classes/carbon_style_constants.dart';
+import '../classes/medication_services.dart';
 import '../widgets/carbon_style_full_button.dart';
-import '../widgets/carbon_style_textbox.dart';
 import '../widgets/text_scanner.dart';
 
-class AddMedicationScreen extends StatefulWidget {
+class GetMedicationName extends StatefulWidget {
   final TextEditingController nameController;
-  final TextEditingController dosageController;
-  final VoidCallback onAddMedication;
-
-  const AddMedicationScreen({
+  final Function(String) onAddMedication;
+  final Function(String)? onSearchMedication;
+  const GetMedicationName({
     super.key,
-    required this.dosageController,
     required this.nameController,
     required this.onAddMedication,
+    this.onSearchMedication,
   });
 
   @override
-  State<StatefulWidget> createState() => AddMedicationScreenState();
+  State<StatefulWidget> createState() => GetMedicationNameState();
 }
 
-class AddMedicationScreenState extends State<AddMedicationScreen> {
+class GetMedicationNameState extends State<GetMedicationName> {
   @override
   Widget build(BuildContext context) {
+    MedicationShapes selectedShape = MedicationShapes.round;
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom, // Moves with keyboard
@@ -42,32 +44,42 @@ class AddMedicationScreenState extends State<AddMedicationScreen> {
             child: Text("Add a medication", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400)),
           ),
           const SizedBox(height: 24),
+          const Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              "San the bar code on the pill bottle",
+              style: TextStyle(fontSize: 16, color: AppTheme.carbonFieldBorder),
+            ),
+          ),
+          const SizedBox(height: 24),
           CarbonFullButton(
-            label: 'SCAN LABEL BAR CODE',
+            label: 'SCAN',
+            size: CarbonButtonSize.large,
             onTap: () {
               Navigator.pop(context); // Close modal
               _startBarcodeScanner();
             },
             color: AppTheme.deepLogicViolet,
-            icon: Symbols.qr_code_2_add,
+            icon: Symbols.barcode_scanner,
           ),
 
-          const SizedBox(height: 20),
-          const Text("OR ENTER MANUALLY", style: TextStyle(fontSize: 10, color: Colors.white38)),
-          const SizedBox(height: 12),
+          const SizedBox(height: 24),
+          const Align(
+            alignment: Alignment.centerLeft,
+            child: Text("Or enter it manually", style: TextStyle(fontSize: 16, color: AppTheme.carbonFieldBorder)),
+          ),
+          const SizedBox(height: 24),
 
-          // OPTION 2: YOUR ORIGINAL FORM FIELDS
-          CarbonTextEdit(
+          CarbonSearchField(
             controller: widget.nameController,
             label: "Medication Name",
-            helperText: "Enter the name of the medication rather than the brand",
+            onSearch: (String searchTerm) {
+              if (widget.onSearchMedication != null) {
+                widget.onSearchMedication!(searchTerm); // 3. Call the passed-in function
+              }
+            },
           ),
-          CarbonTextEdit(
-            controller: widget.dosageController,
-            label: "Dosage",
-            helperText: "Enter the amount medication usually mg",
-          ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           Row(
             children: [
               Expanded(
@@ -83,7 +95,7 @@ class AddMedicationScreenState extends State<AddMedicationScreen> {
                 child: CarbonButton(
                   label: "ADD TO LIST",
                   onPressed: () {
-                    widget.onAddMedication; // Your existing function
+                    widget.onAddMedication(widget.nameController.text); // Your existing function
                     Navigator.pop(context);
                   },
                 ),
@@ -111,7 +123,6 @@ class AddMedicationScreenState extends State<AddMedicationScreen> {
         // For now, let's assume the result is the DIN
         // In the future, this is where you'd trigger your API lookup
         widget.nameController.text = "Loading Med for $scannedResult...";
-        widget.dosageController.text = ""; // Placeholder until sync/lookup finishes
       });
 
       // Auto-trigger your existing lookup logic
@@ -126,13 +137,12 @@ class AddMedicationScreenState extends State<AddMedicationScreen> {
     if (barcodeValue == "02331292") {
       setState(() {
         widget.nameController.text = "Amlodipine";
-        widget.dosageController.text = "10 MG Oral Tablet";
       });
     } else {
       // If not in your "local" demo cache, use your existing name field
       // to start the background sync process you've already built
       widget.nameController.text = barcodeValue;
-      widget.onAddMedication;
+      widget.onAddMedication(widget.nameController.text);
     }
   }
 }

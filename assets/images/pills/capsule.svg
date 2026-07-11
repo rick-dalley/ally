@@ -1,0 +1,13 @@
+<svg xmlns="http://w3.org" viewBox="0 0 200 200">
+    <g transform="rotate(-30 100 100)">
+        <!-- Side Shadow -->
+        <rect class="pill-side-light" x="40" y="80" width="120" height="40" rx="20" transform="translate(0, 20)" />
+        <!-- Top Face -->
+        <rect class="pill-top" x="40" y="80" width="120" height="40" rx="20" />
+        <!-- Center Join Line (For two-tone capsules) -->
+        <line class="pill-line" x1="100" y1="80" x2="100" y2="120" />
+        <!-- Outlines -->
+        <rect class="pill-line" x="40" y="80" width="120" height="40" rx="20" />
+        <path class="pill-line" d="M 40,100 L 40,120 A 20,20 0 0,0 60,140 L 140,140 A 20,20 0 0,0 160,120 L 160,100" />
+    </g>
+</svg>

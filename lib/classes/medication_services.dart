@@ -4,8 +4,184 @@ import 'package:http/http.dart' as http;
 
 import 'database_manager.dart';
 
-enum MedicationSafetyAudit {
-  auditNotPerformed, interactionsNotDetected, interactionsDetected
+enum MedicationShapes {
+  almond,
+  arrowHead,
+  capsule,
+  crescent,
+  diamond,
+  heart,
+  hexagon,
+  lozenge,
+  oval,
+  pentagon,
+  rectangle,
+  round,
+  square,
+  triangle,
+}
+
+extension MedicationShapesNames on MedicationShapes {
+  String get name {
+    switch (this) {
+      case MedicationShapes.almond:
+        return "Almond";
+      case MedicationShapes.arrowHead:
+        return "Arrow Head";
+      case MedicationShapes.capsule:
+        return "Capsule";
+      case MedicationShapes.crescent:
+        return "Crescent";
+      case MedicationShapes.diamond:
+        return "Diamond";
+      case MedicationShapes.heart:
+        return "Heart";
+      case MedicationShapes.hexagon:
+        return "Hexagon";
+      case MedicationShapes.lozenge:
+        return "Lozenge";
+      case MedicationShapes.oval:
+        return "Oval";
+      case MedicationShapes.pentagon:
+        return "Pentagon";
+      case MedicationShapes.rectangle:
+        return "Rectangle";
+      case MedicationShapes.round:
+        return "Round";
+      case MedicationShapes.square:
+        return "Square";
+      case MedicationShapes.triangle:
+        return "Triangle";
+    }
+  }
+}
+
+extension MedicationShapesSvg on MedicationShapes {
+  String get svg {
+    switch (this) {
+      case MedicationShapes.almond:
+        return "almond.svg";
+      case MedicationShapes.arrowHead:
+        return "arrow_head.svg";
+      case MedicationShapes.capsule:
+        return "capsule.svg";
+      case MedicationShapes.crescent:
+        return "crescent.svg";
+      case MedicationShapes.diamond:
+        return "diamond.svg";
+      case MedicationShapes.heart:
+        return "heart.svg";
+      case MedicationShapes.hexagon:
+        return "hexagon.svg";
+      case MedicationShapes.lozenge:
+        return "lozenge.svg";
+      case MedicationShapes.oval:
+        return "oval.svg";
+      case MedicationShapes.pentagon:
+        return "pentagon.svg";
+      case MedicationShapes.rectangle:
+        return "rectangle.svg";
+      case MedicationShapes.round:
+        return "round.svg";
+      case MedicationShapes.square:
+        return "square.svg";
+      case MedicationShapes.triangle:
+        return "triangle.svg";
+    }
+  }
+}
+
+//Oral Medications (Taken by mouth)
+// Tablets: Compressed powders that can be traditional, chewable, or caplets (tablet shaped like a capsule).
+// Some are designed to dissolve slowly in the mouth (sublingual or buccal) or in water (effervescent).
+// Capsules: Medication enclosed in an outer gelatin shell. They can be hard shells, softgels, or sprinkle capsules filled with granules.
+// Liquids & Syrups: Suspensions, solutions, drops, or elixirs that are swallowed.
+// Topical Medications (Applied to the skin/mucous membranes)Creams,
+// Ointments, & Gels: Semi-solid formulas applied directly to the skin for local relief.
+// Transdermal Patches: Adhesive patches applied to the skin that release medication steadily into the bloodstream.
+// Drops & Sprays: Liquid medications designed for the eyes, ears, or nasal passages.Inhalants (Breathed into the lungs)
+// Metered-Dose Inhalers (MDIs): Devices that deliver a specific, aerosolized mist of medication.Dry Powder Inhalers (DPIs): Deliver medication as a fine dry powder.
+// Nebulizers: Machines that turn liquid medication into a breathable mist.
+// Injections (Parenterals)Intravenous (IV): Injected directly into the vein for immediate effect.
+// Intramuscular (IM):Injected into a muscle.Subcutaneous: Injected into the fatty tissue just under the skin.
+// Suppositories and InsertsMedication formulated into a solid base that melts at body temperature, designed to be inserted into the rectum or vagina to treat local conditions or for systemic absorption.
+enum MedicationTypes {
+  tablet,
+  capsule,
+  liquid,
+  topical,
+  ointment,
+  gel,
+  transdermalPatch,
+  drops,
+  spray,
+  inhaler,
+  suppository,
+  injection,
+  iv,
+  nebulizer,
+  unknown,
+}
+
+extension MedicationTypeNames on MedicationTypes {
+  String get name {
+    switch (this) {
+      case MedicationTypes.tablet:
+        return "Tablet";
+      case MedicationTypes.capsule:
+        return "Capsule";
+      case MedicationTypes.liquid:
+        return "Liquid";
+      case MedicationTypes.topical:
+        return "Topical";
+      case MedicationTypes.ointment:
+        return "Ointment";
+      case MedicationTypes.gel:
+        return "Gel";
+      case MedicationTypes.transdermalPatch:
+        return "Transdermal Patch";
+      case MedicationTypes.drops:
+        return "Drops";
+      case MedicationTypes.spray:
+        return "Spray";
+      case MedicationTypes.inhaler:
+        return "Inhaler";
+      case MedicationTypes.suppository:
+        return "suppository";
+      case MedicationTypes.injection:
+        return "Injection";
+      case MedicationTypes.iv:
+        return "Intravenous";
+      case MedicationTypes.nebulizer:
+        return "Nebulizer";
+      case MedicationTypes.unknown:
+        return "unknown";
+    }
+  }
+}
+
+enum MedicationSafetyAudit { auditNotPerformed, interactionsNotDetected, interactionsDetected }
+
+class Frequency {
+  final double? occurrences;
+  final DateTime? specificTime;
+  final String? latinRecurrence;
+  final String? periodUoM;
+  final int? period;
+  final DateTime? start;
+  final DateTime? end;
+  final bool alert;
+
+  Frequency({
+    this.specificTime,
+    this.latinRecurrence,
+    this.periodUoM,
+    this.period,
+    this.start,
+    this.end,
+    required this.alert,
+    this.occurrences,
+  });
 }
 
 // InteractionConflict
@@ -14,11 +190,7 @@ class InteractionConflict {
   final String conflictingMedName;
   final String interaction;
 
-  InteractionConflict({
-    required this.primaryMedName,
-    required this.conflictingMedName,
-    required this.interaction,
-  });
+  InteractionConflict({required this.primaryMedName, required this.conflictingMedName, required this.interaction});
 
   // Returns a clean string for the Chip UI
   String get conflictDetail => "$conflictingMedName ($interaction)";
@@ -34,18 +206,16 @@ class InteractionConflict {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-          other is InteractionConflict &&
-              runtimeType == other.runtimeType &&
-              primaryMedName == other.primaryMedName &&
-              conflictingMedName == other.conflictingMedName &&
-              interaction == other.interaction;
+      other is InteractionConflict &&
+          runtimeType == other.runtimeType &&
+          primaryMedName == other.primaryMedName &&
+          conflictingMedName == other.conflictingMedName &&
+          interaction == other.interaction;
 
-  bool hasInteraction(String medicationName ) => ((primaryMedName == medicationName)  && (primaryMedName != conflictingMedName));
+  bool hasInteraction(String medicationName) =>
+      ((primaryMedName == medicationName) && (primaryMedName != conflictingMedName));
   @override
-  int get hashCode =>
-      primaryMedName.hashCode ^
-      conflictingMedName.hashCode ^
-      interaction.hashCode;
+  int get hashCode => primaryMedName.hashCode ^ conflictingMedName.hashCode ^ interaction.hashCode;
 
   // Handy for debugging in the console
   @override
@@ -55,6 +225,7 @@ class InteractionConflict {
 class Medication {
   final String setId;
   final String genericName;
+  final String? imageUrl;
   final String brandName;
   final bool hasLocalDataSheet;
   final Map<String, String> datasheetSections;
@@ -66,6 +237,7 @@ class Medication {
     required this.brandName,
     required this.hasLocalDataSheet,
     required this.datasheetSections,
+    this.imageUrl,
     this.hasInteractionAlert = false,
   });
 
@@ -81,7 +253,8 @@ class Medication {
       setId: json['set_id'] ?? '',
       genericName: (openFda['generic_name'] as List?)?.first ?? 'Unknown Medication',
       brandName: (openFda['brand_name'] as List?)?.first ?? '',
-      hasLocalDataSheet: json['has_local_dataset']==1,
+      imageUrl: json['image_uri'],
+      hasLocalDataSheet: json['has_local_dataset'] == 1,
       hasInteractionAlert: alert,
       datasheetSections: {
         'Boxed Warning': getSection('boxed_warning'),
@@ -103,7 +276,6 @@ class Medication {
   bool containsClass(String className) {
     return interactionsText.contains(className.toLowerCase());
   }
-
 }
 
 class MedicationService {
@@ -123,9 +295,7 @@ class MedicationService {
 
     // --- 1. THE SYNC CHECK ---
     // Check if we already have the datasheet row in the local DB.
-    Map<String, dynamic>? localData = setId.isNotEmpty
-        ? await db.getStoredDatasheet(setId)
-        : null;
+    Map<String, dynamic>? localData = setId.isNotEmpty ? await db.getStoredDatasheet(setId) : null;
 
     if (localData == null) {
       debugPrint('Local record missing for $name. Syncing from FDA...');
@@ -175,7 +345,6 @@ class MedicationService {
       }
     }
 
-    // --- 3. THE RETRIEVAL (Source of Truth) ---
     // We return the raw database map.
     // The widget will handle the jsonDecode of the blob and the split() of the classes string.
     return localData;
@@ -184,9 +353,7 @@ class MedicationService {
   static Future<List<String>> getPotentialMatches(String partialName) async {
     if (partialName.isEmpty) return [];
 
-    final url = Uri.parse(
-        "https://rxnav.nlm.nih.gov/REST/approximateTerm.json?term=$partialName&maxEntries=5"
-    );
+    final url = Uri.parse("https://rxnav.nlm.nih.gov/REST/approximateTerm.json?term=$partialName&maxEntries=5");
 
     try {
       final response = await http.get(url);
@@ -218,12 +385,18 @@ class MedicationService {
         final List infoList = data['rxclassDrugInfoList']?['rxclassDrugInfo'] ?? [];
         return infoList
             .where((item) => (item['rxclassMinConceptItem']?['classType'] ?? "").contains("EPC"))
-            .map((item) => (item['rxclassMinConceptItem']?['className']?.toString() ?? "").replaceAll(RegExp(r'\[.*?\]'), '').trim())
+            .map(
+              (item) => (item['rxclassMinConceptItem']?['className']?.toString() ?? "")
+                  .replaceAll(RegExp(r'\[.*?\]'), '')
+                  .trim(),
+            )
             .where((name) => name.isNotEmpty)
             .toSet()
             .join(', ');
       }
-    } catch (e) { debugPrint("RxNav Parse Error: $e"); }
+    } catch (e) {
+      debugPrint("RxNav Parse Error: $e");
+    }
     return "";
   }
 
@@ -237,14 +410,18 @@ class MedicationService {
         final List infoList = data['rxclassDrugInfoList']?['rxclassDrugInfo'] ?? [];
         return infoList
             .where((item) => item['rxclassMinConceptItem']?['classType'] == "EPC")
-            .map((item) => (item['rxclassMinConceptItem']?['className']?.toString() ?? "").replaceAll(RegExp(r'\[.*?\]'), '').trim())
+            .map(
+              (item) => (item['rxclassMinConceptItem']?['className']?.toString() ?? "")
+                  .replaceAll(RegExp(r'\[.*?\]'), '')
+                  .trim(),
+            )
             .where((name) => name.isNotEmpty && name.toLowerCase() != "other")
             .toSet()
             .join(', ');
       }
-    } catch (e) { debugPrint("RxNav API Error: $e"); }
+    } catch (e) {
+      debugPrint("RxNav API Error: $e");
+    }
     return "";
   }
-
-
 }

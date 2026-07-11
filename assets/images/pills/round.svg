@@ -1,0 +1,9 @@
+<svg xmlns="http://w3.org" viewBox="0 0 200 200">
+    <!-- Side Shadow -->
+    <path class="pill-side-light" d="M 40,90 A 60,25 0 0,0 160,90 L 160,115 A 60,25 0 0,1 40,115 Z" />
+    <!-- Top Face -->
+    <ellipse class="pill-top" cx="100" cy="90" rx="60" ry="25" />
+    <!-- Outlines -->
+    <path class="pill-line" d="M 40,90 A 60,25 0 0,0 160,90 A 60,25 0 0,0 40,90 Z" />
+    <path class="pill-line" d="M 40,90 L 40,115 A 60,25 0 0,0 160,115 L 160,90" />
+</svg>
