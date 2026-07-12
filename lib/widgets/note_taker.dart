@@ -68,7 +68,6 @@ class NoteTakerState extends State<NoteTaker> {
     }
   }
 
-
   @override
   void dispose() {
     _localController.dispose(); // Clean memory registers when dismissed
@@ -104,14 +103,14 @@ class NoteTakerState extends State<NoteTaker> {
                     Text(
                       _isListening ? "Listening..." : "Edit Observation",
                       style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: _isListening ? Colors.red : Colors.white
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: _isListening ? Colors.red : Colors.white,
                       ),
                     ),
                     Text(
                       widget.currentNote == null ? "New Observation" : "Edit Observation",
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.deepCharcoal),
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.greyDepth),
                     ),
                     TextButton(
                       onPressed: () {
@@ -130,7 +129,7 @@ class NoteTakerState extends State<NoteTaker> {
                       },
                       child: const Text(
                         "Done",
-                        style: TextStyle(color: AppTheme.deepLogicViolet, fontWeight: FontWeight.bold, fontSize: 15),
+                        style: TextStyle(color: AppColors.peacockBlue, fontWeight: FontWeight.bold, fontSize: 15),
                       ),
                     ),
                   ],
@@ -150,7 +149,7 @@ class NoteTakerState extends State<NoteTaker> {
                       minLines: null,
                       autofocus: true,
                       keyboardType: TextInputType.multiline,
-                      style: const TextStyle(fontSize: 16, height: 1.5, color: AppTheme.deepCharcoal),
+                      style: const TextStyle(fontSize: 16, height: 1.5, color: AppColors.greyDepth),
                       decoration: const InputDecoration(
                         hintText: "Start typing observation notes or behavioral records...",
                         hintStyle: TextStyle(color: Colors.grey),

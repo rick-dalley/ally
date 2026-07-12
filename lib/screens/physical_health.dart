@@ -16,14 +16,34 @@ class MedicalCategory {
 Map<String, MedicalCategory> categoryIcons = {
   "Cardiovascular": MedicalCategory(iconData: Symbols.cardiology, color: Color(0xFFBA0000), textColor: Colors.white),
   "Dermatological": MedicalCategory(iconData: Symbols.dermatology, color: Color(0xFFBA5D00), textColor: Colors.white),
-  "Gastrointestinal": MedicalCategory(iconData: Symbols.gastroenterology, color: Color(0xFF64008C), textColor: Colors.white),
-  "Infectious and Immunological":MedicalCategory(iconData: Symbols.microbiology, color: Color(0xFFBA8002), textColor: Colors.white),
-  "Mental and Behavioral Health": MedicalCategory(iconData: Symbols.psychiatry, color: Color(0xFF187303), textColor: Colors.white),
-  "Metabolic & Endocrine": MedicalCategory(iconData: Symbols.metabolism, color: Color(0xFF730350), textColor: Colors.white),
+  "Gastrointestinal": MedicalCategory(
+    iconData: Symbols.gastroenterology,
+    color: Color(0xFF64008C),
+    textColor: Colors.white,
+  ),
+  "Infectious and Immunological": MedicalCategory(
+    iconData: Symbols.microbiology,
+    color: Color(0xFFBA8002),
+    textColor: Colors.white,
+  ),
+  "Mental and Behavioral Health": MedicalCategory(
+    iconData: Symbols.psychiatry,
+    color: Color(0xFF187303),
+    textColor: Colors.white,
+  ),
+  "Metabolic & Endocrine": MedicalCategory(
+    iconData: Symbols.metabolism,
+    color: Color(0xFF730350),
+    textColor: Colors.white,
+  ),
   "Musculoskeletal": MedicalCategory(iconData: Symbols.orthopedics, color: Color(0xFF636363), textColor: Colors.white),
   "Neurological": MedicalCategory(iconData: Symbols.neurology, color: Color(0xFF215A8A), textColor: Colors.white),
   "Respiratory": MedicalCategory(iconData: Symbols.pulmonology, color: Color(0xFF0298BA), textColor: Colors.white),
-  "Urological and Reproductive": MedicalCategory(iconData: Symbols.urology, color: Color(0xFF8A346C), textColor: Colors.white),
+  "Urological and Reproductive": MedicalCategory(
+    iconData: Symbols.urology,
+    color: Color(0xFF8A346C),
+    textColor: Colors.white,
+  ),
 };
 
 class PhysicalHealthAssessment extends StatefulWidget {
@@ -89,9 +109,9 @@ class _PhysicalHealthAssessmentState extends State<PhysicalHealthAssessment> {
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               padding: !hasActiveConditions ? EdgeInsets.zero : const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: !hasActiveConditions ? Colors.transparent : AppTheme.clinicalCyanCanvas,
+                color: !hasActiveConditions ? Colors.transparent : AppColors.foam.all[0],
                 borderRadius: BorderRadius.circular(12),
-                border: !hasActiveConditions ? null : Border.all(color: AppTheme.clinicalCyanCanvas, width: 1),
+                border: !hasActiveConditions ? null : Border.all(color: AppColors.foam.all[0], width: 1),
               ),
               child: !hasActiveConditions
                   ? const SizedBox.shrink()
@@ -100,14 +120,14 @@ class _PhysicalHealthAssessmentState extends State<PhysicalHealthAssessment> {
                       children: [
                         Row(
                           children: const [
-                            Icon(Icons.assignment_late_outlined, size: 16, color: AppTheme.clinicalCyan),
+                            Icon(Icons.assignment_late_outlined, size: 16, color: AppColors.foamGreen),
                             SizedBox(width: 6),
                             Text(
                               "PATIENT ACTIVE PROFILE SUMMARY",
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
-                                color: AppTheme.clinicalCyan,
+                                color: AppColors.foamGreen,
                                 letterSpacing: 0.5,
                               ),
                             ),
@@ -232,7 +252,7 @@ class _PhysicalHealthAssessmentState extends State<PhysicalHealthAssessment> {
                   child: ElevatedButton(
                     onPressed: _saveAssessment,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.deepLogicViolet,
+                      backgroundColor: AppColors.peacockBlue,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                     child: const Text(
@@ -282,10 +302,7 @@ class _PhysicalHealthAssessmentState extends State<PhysicalHealthAssessment> {
                 fontSize: 14,
               ),
               // 2. Customize the Border Color and Thickness
-              side: BorderSide(
-                color: isSelected ? Colors.transparent : categoryIcon.color.withAlpha(128),
-                width: 1.5,
-              ),
+              side: BorderSide(color: isSelected ? Colors.transparent : categoryIcon.color.withAlpha(128), width: 1.5),
               // 3. Customize Background Fill dynamically to match
               color: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
                 if (states.contains(WidgetState.selected)) {

@@ -38,10 +38,10 @@ class _LikertQuestionTileState extends State<LikertQuestionTile> {
           width: double.infinity,
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: isSelected ? AppTheme.clinicalCyan.withValues(alpha: 0.08) : Colors.white,
+            color: isSelected ? AppColors.foamGreen.withValues(alpha: 0.08) : Colors.white,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: isSelected ? AppTheme.clinicalCyan : Colors.grey.shade300,
+              color: isSelected ? AppColors.foamGreen : Colors.grey.shade300,
               width: isSelected ? 2 : 1,
             ),
           ),
@@ -50,7 +50,7 @@ class _LikertQuestionTileState extends State<LikertQuestionTile> {
             children: [
               Icon(
                 isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-                color: isSelected ? AppTheme.clinicalCyan : Colors.grey,
+                color: isSelected ? AppColors.foamGreen : Colors.grey,
                 size: 22,
               ),
               const SizedBox(width: 12),
@@ -61,7 +61,7 @@ class _LikertQuestionTileState extends State<LikertQuestionTile> {
                     fontSize: 15,
                     height: 1.3,
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    color: isSelected ? AppTheme.clinicalCyan : Colors.black87,
+                    color: isSelected ? AppColors.foamGreen : Colors.black87,
                   ),
                 ),
               ),
@@ -89,12 +89,7 @@ class _LikertQuestionTileState extends State<LikertQuestionTile> {
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
         color: widget.showWarning ? Colors.red.withValues(alpha: 0.05) : Colors.transparent,
-        border: Border(
-          left: BorderSide(
-            color: widget.showWarning ? Colors.red : Colors.transparent,
-            width: 4,
-          ),
-        ),
+        border: Border(left: BorderSide(color: widget.showWarning ? Colors.red : Colors.transparent, width: 4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,7 +112,7 @@ class _LikertQuestionTileState extends State<LikertQuestionTile> {
                   visualDensity: VisualDensity.compact,
                   icon: Icon(
                     _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                    color: AppTheme.clinicalCyan, // Changed from blueAccent
+                    color: AppColors.foamGreen, // Changed from blueAccent
                   ),
                   onPressed: () => setState(() => _isExpanded = !_isExpanded),
                 ),
@@ -132,18 +127,13 @@ class _LikertQuestionTileState extends State<LikertQuestionTile> {
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppTheme.clinicalCyan.withValues(alpha: 0.05),
+                  color: AppColors.foamGreen.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppTheme.clinicalCyan.withValues(alpha: 0.1)),
+                  border: Border.all(color: AppColors.foamGreen.withValues(alpha: 0.1)),
                 ),
                 child: Text(
                   description,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontStyle: FontStyle.italic,
-                    color: AppTheme.clinicalCyan,
-                    height: 1.4,
-                  ),
+                  style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic, color: AppColors.foamGreen, height: 1.4),
                 ),
               ),
             ),
@@ -188,11 +178,9 @@ class _LikertQuestionTileState extends State<LikertQuestionTile> {
                           ),
                         ),
                         selected: isSelected,
-                        selectedColor: AppTheme.clinicalCyan, // FIX: Use Theme Color
+                        selectedColor: AppColors.foamGreen, // FIX: Use Theme Color
                         checkmarkColor: Colors.white,
-                        onSelected: widget.onChanged != null
-                            ? (selected) => widget.onChanged!(score)
-                            : null,
+                        onSelected: widget.onChanged != null ? (selected) => widget.onChanged!(score) : null,
                       ),
                     ),
                   );
@@ -209,7 +197,7 @@ class _LikertQuestionTileState extends State<LikertQuestionTile> {
                         style: TextStyle(
                           fontSize: 10,
                           height: 1.1,
-                          color: isSelected ? AppTheme.clinicalCyan : Colors.black54, // FIX
+                          color: isSelected ? AppColors.foamGreen : Colors.black54, // FIX
                           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
@@ -223,11 +211,9 @@ class _LikertQuestionTileState extends State<LikertQuestionTile> {
                           ),
                         ),
                         selected: isSelected,
-                        selectedColor: AppTheme.clinicalCyan, // FIX
+                        selectedColor: AppColors.foamGreen, // FIX
                         checkmarkColor: Colors.white,
-                        onSelected: widget.onChanged != null
-                            ? (selected) => widget.onChanged!(score)
-                            : null,
+                        onSelected: widget.onChanged != null ? (selected) => widget.onChanged!(score) : null,
                       ),
                     ],
                   ),
@@ -239,7 +225,7 @@ class _LikertQuestionTileState extends State<LikertQuestionTile> {
             const SizedBox(height: 12),
             const Text(
               "If yes, describe:",
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.clinicalCyan),
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.foamGreen),
             ),
             const SizedBox(height: 4),
             TextFormField(
@@ -262,7 +248,7 @@ class _LikertQuestionTileState extends State<LikertQuestionTile> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: AppTheme.clinicalCyan),
+                  borderSide: const BorderSide(color: AppColors.foamGreen),
                 ),
               ),
               onChanged: (val) => widget.onDescriptionChanged?.call(widget.q['id'] ?? "", val),

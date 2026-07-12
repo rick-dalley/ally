@@ -32,7 +32,7 @@ class CarbonTextEdit extends StatefulWidget {
 
 class CarbonStateText extends State<CarbonTextEdit> {
   late Color fillColor = widget.fillColor ?? Color(0xFFF4F4F4);
-  late Color accentColor = widget.accentColor ?? AppTheme.deepLogicViolet;
+  late Color accentColor = widget.accentColor ?? AppColors.peacockBlue;
   late TextEditingController _controller;
   late TextInputType _keyboard;
   @override
@@ -84,7 +84,7 @@ class CarbonStateText extends State<CarbonTextEdit> {
             hintText: widget.placeHolderText,
             hintStyle: GoogleFonts.ibmPlexSans(color: const Color(0xFFA8A8A8)),
             contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
-            border: const UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.carbonFieldBorder, width: 1)),
+            border: UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.carbonFieldBorder, width: 1)),
             focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: accentColor, width: 2)),
             errorBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFFDA1E28), width: 2)),
             errorText: widget.errorText,

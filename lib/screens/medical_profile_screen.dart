@@ -63,7 +63,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w400,
-                            color: AppTheme.deepLogicViolet,
+                            color: AppColors.peacockBlue,
                             letterSpacing: 1.2,
                           ),
                         ),
@@ -236,7 +236,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
       padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 8),
       child: Text(
         title,
-        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400, color: AppTheme.deepCharcoal, letterSpacing: 1.1),
+        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400, color: AppColors.greyDepth, letterSpacing: 1.1),
       ),
     );
   }

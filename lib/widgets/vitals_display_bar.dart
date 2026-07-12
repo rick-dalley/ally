@@ -22,16 +22,12 @@ class VitalsBar extends StatelessWidget {
   final VoidCallback onAddPressed;
   final VoidCallback onHistoryPressed;
 
-  const VitalsBar({
-    super.key,
-    required this.vitals,
-    required this.onAddPressed,
-    required this.onHistoryPressed,
-  });
+  const VitalsBar({super.key, required this.vitals, required this.onAddPressed, required this.onHistoryPressed});
 
   @override
   Widget build(BuildContext context) {
-    return IntrinsicHeight( // Ensures both containers match height perfectly
+    return IntrinsicHeight(
+      // Ensures both containers match height perfectly
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -39,18 +35,12 @@ class VitalsBar extends StatelessWidget {
           Expanded(
             child: InkWell(
               onTap: onHistoryPressed,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(8),
-                bottomLeft: Radius.circular(8),
-              ),
+              borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
               child: Ink(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: AppTheme.darkSlate,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(8),
-                    bottomLeft: Radius.circular(8),
-                  ),
+                  borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
                   border: Border.all(color: Colors.white10, width: 0.5),
                 ),
                 child: Row(
@@ -69,24 +59,14 @@ class VitalsBar extends StatelessWidget {
           // 2. ACTION CORNER: Tapping here jumps to Record Vitals
           InkWell(
             onTap: onAddPressed,
-            borderRadius: const BorderRadius.only(
-              topRight: Radius.circular(8),
-              bottomRight: Radius.circular(8),
-            ),
+            borderRadius: const BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
             child: Ink(
               width: 54,
               decoration: BoxDecoration(
-                color: AppTheme.clinicalCyan,
-                borderRadius: const BorderRadius.only(
-                  topRight: Radius.circular(8),
-                  bottomRight: Radius.circular(8),
-                ),
+                color: AppColors.foamGreen,
+                borderRadius: const BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
               ),
-              child: const Icon(
-                Icons.add,
-                color: Colors.white,
-                size: 28,
-              ),
+              child: const Icon(Icons.add, color: Colors.white, size: 28),
             ),
           ),
         ],
@@ -100,29 +80,15 @@ class VitalsBar extends StatelessWidget {
       children: [
         Text(
           label,
-          style: TextStyle(
-            color: color.withAlpha(196),
-            fontSize: 9,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 1.1,
-          ),
+          style: TextStyle(color: color.withAlpha(196), fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 1.1),
         ),
         Text(
           value,
-          style: TextStyle(
-            color: color,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'monospace',
-          ),
+          style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
         ),
         Text(
           units,
-          style: TextStyle(
-            color: color.withAlpha(150),
-            fontSize: 8,
-            fontWeight: FontWeight.w900,
-          ),
+          style: TextStyle(color: color.withAlpha(150), fontSize: 8, fontWeight: FontWeight.w900),
         ),
       ],
     );

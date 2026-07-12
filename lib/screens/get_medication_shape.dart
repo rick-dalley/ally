@@ -41,7 +41,7 @@ class GetMedicationShape extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: AppTheme.clinicalWhite,
                           border: Border.all(
-                            color: isSelected ? AppTheme.deepLogicViolet : AppTheme.carbonFieldBorder,
+                            color: isSelected ? AppColors.peacockBlue : AppTheme.carbonFieldBorder,
                             width: 1,
                           ),
                         ),
@@ -53,7 +53,7 @@ class GetMedicationShape extends StatelessWidget {
                                 padding: const EdgeInsets.all(8.0),
                                 child: SvgPicture.asset(
                                   "assets/images/pills/${shape.svg}",
-                                  colorFilter: const ColorFilter.mode(AppTheme.clinicalCyan, BlendMode.srcIn),
+                                  colorFilter: ColorFilter.mode(AppColors.foamGreen, BlendMode.srcIn),
                                 ),
                               ),
                             ),
@@ -61,7 +61,7 @@ class GetMedicationShape extends StatelessWidget {
                               padding: const EdgeInsets.only(bottom: 8.0),
                               child: Text(
                                 shape.name.toUpperCase(),
-                                style: const TextStyle(fontSize: 18, color: AppTheme.carbonFieldBorder),
+                                style: TextStyle(fontSize: 18, color: AppTheme.carbonFontColor),
                                 textAlign: TextAlign.center,
                                 overflow: TextOverflow.ellipsis,
                               ),

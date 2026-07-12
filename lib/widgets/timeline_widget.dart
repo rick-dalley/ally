@@ -59,10 +59,10 @@ class TimeLineWidgetState extends State<TimeLineWidget> {
   double _zoomLevel = 1.0;
   String _selectedRange = 'A';
   Color color = Colors.black26;
-  Color backgroundColor = AppTheme.clinicalCyan;
+  Color backgroundColor = AppColors.foamGreen;
   Color foregroundColor = AppTheme.clinicalWhite;
   Color selectedBackgroundColor = AppTheme.clinicalWhite;
-  Color selectedForegroundColor = AppTheme.clinicalCyan;
+  Color selectedForegroundColor = AppColors.foamGreen;
   late DateTime _currentStartTime;
   late DateTime _currentEndTime;
   late DateTime _timelineStart;
@@ -75,7 +75,7 @@ class TimeLineWidgetState extends State<TimeLineWidget> {
     // 2. Initialize with the provided widget values
     color = widget.timelineColor ?? Colors.black26;
     backgroundColor = widget.backgroundColor ?? AppTheme.clinicalWhite;
-    foregroundColor = widget.foregroundColor ?? AppTheme.clinicalCyan;
+    foregroundColor = widget.foregroundColor ?? AppColors.foamGreen;
     selectedBackgroundColor = foregroundColor;
     selectedForegroundColor = backgroundColor;
     _timelineStart = widget.startTime;
@@ -229,8 +229,8 @@ class TimeLineWidgetState extends State<TimeLineWidget> {
             showSelectedIcon: false,
             style: SegmentedButton.styleFrom(
               backgroundColor: AppTheme.clinicalWhite,
-              foregroundColor: AppTheme.deepLogicViolet,
-              selectedBackgroundColor: AppTheme.deepLogicViolet,
+              foregroundColor: AppColors.peacockBlue,
+              selectedBackgroundColor: AppColors.peacockBlue,
               selectedForegroundColor: AppTheme.clinicalWhite,
             ),
             onSelectionChanged: (newSelection) => _updateRange(newSelection.first),
@@ -321,9 +321,16 @@ class TimeLinePainter extends CustomPainter {
     final double centerX = size.width / 2;
 
     // Paints
-    final Paint axisPaint = Paint()..color = color ?? Colors.black26..strokeWidth = 2.0;
-    final Paint cardPaint = Paint()..color = backgroundColor ?? Colors.white..style = PaintingStyle.fill;
-    final Paint borderPaint = Paint()..color = foregroundColor ?? Colors.blue..style = PaintingStyle.stroke..strokeWidth = 1.5;
+    final Paint axisPaint = Paint()
+      ..color = color ?? Colors.black26
+      ..strokeWidth = 2.0;
+    final Paint cardPaint = Paint()
+      ..color = backgroundColor ?? Colors.white
+      ..style = PaintingStyle.fill;
+    final Paint borderPaint = Paint()
+      ..color = foregroundColor ?? Colors.blue
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
     final TextStyle textStyle = TextStyle(color: foregroundColor ?? Colors.blue, fontSize: 14);
 
     // 1. Draw Segments (Full-bleed, mapped to total height)
@@ -335,7 +342,9 @@ class TimeLinePainter extends CustomPainter {
         final double yStart = size.height * startProgress * zoomLevel;
         final double yEnd = size.height * endProgress * zoomLevel;
 
-        final Paint segPaint = Paint()..color = seg.backgroundColor ?? Colors.grey.shade100..style = PaintingStyle.fill;
+        final Paint segPaint = Paint()
+          ..color = seg.backgroundColor ?? Colors.grey.shade100
+          ..style = PaintingStyle.fill;
 
         paintSegment(
           canvas: canvas,

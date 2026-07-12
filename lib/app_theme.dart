@@ -3,19 +3,106 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/acuity.dart';
 
+class AppColors {
+  AppColors._(); // Private constructor prevents instantiation
+
+  // Base colors
+  static const Color peacockBlue = Color(0xFF096C6C);
+  static const Color foamGreen = Color(0xFF0DA673);
+  static const Color emeraldGreen = Color(0xFF0B8531);
+  static const Color oceanBlue = Color(0xFF0D709E);
+  static const Color greyDepth = Color(0xFF818585);
+
+  // Grouped Shades
+  static const PeacockBlue peacock = PeacockBlue._();
+  static const PaleGreen foam = PaleGreen._();
+  static const EmeraldGreen emerald = EmeraldGreen._();
+  static const OceanBlue ocean = OceanBlue._();
+  static const GreyDepth grey = GreyDepth._();
+}
+
+class PeacockBlue {
+  const PeacockBlue._();
+  final List<Color> all = const [
+    Color(0xFFafffff),
+    Color(0xFF20e8e8),
+    Color(0xFF18bdbd),
+    Color(0xFF109393),
+    Color(0xFF096c6c),
+    Color(0xFF044747),
+    Color(0xFF012525),
+  ];
+  Color operator [](int index) => all[index];
+}
+
+class PaleGreen {
+  const PaleGreen._();
+  final List<Color> all = const [
+    Color(0xFF1afeb2),
+    Color(0xFF13d192),
+    Color(0xFF0da673),
+    Color(0xFF077d56),
+    Color(0xFF03563a),
+    Color(0xFF013220),
+    Color(0xFF00150b),
+  ];
+  Color operator [](int index) => all[index];
+}
+
+class EmeraldGreen {
+  const EmeraldGreen._();
+  final List<Color> all = const [
+    Color(0xFF89ff9d),
+    Color(0xFF1adb56),
+    Color(0xFF12af43),
+    Color(0xFF0b8531),
+    Color(0xFF055d20),
+    Color(0xFF023910),
+    Color(0xFF001704),
+  ];
+  Color operator [](int index) => all[index];
+}
+
+class OceanBlue {
+  const OceanBlue._();
+  final List<Color> all = const [
+    Color(0xFFbddffe),
+    Color(0xFF53bdfd),
+    Color(0xFF1596d2),
+    Color(0xFF0d709e),
+    Color(0xFF064c6d),
+    Color(0xFF022b3f),
+    Color(0xFF01131f),
+  ];
+  Color operator [](int index) => all[index];
+}
+
+class GreyDepth {
+  const GreyDepth._();
+  final List<Color> all = const [
+    Color(0xFFEEF1F1),
+    Color(0xFFCCD2D2),
+    Color(0xFFa6abab),
+    Color(0xFF818585),
+    Color(0xFF5e6161),
+    Color(0xFF3d3f3f),
+    Color(0xFF1f2020),
+  ];
+  Color operator [](int index) => all[index];
+}
+
 class AppTheme {
-  // Brand Colors
-  static const Color deepCharcoal = Color(0xFF121212);
   static const Color darkSlate = Color(0xFF1E1E1E);
-  static const Color deepLogicViolet = Color(0xFF7C4DFF);
-  static const Color clinicalCyan = Color(0xFF00BCD4);
-  static const Color clinicalCyanCanvas = Color(0x1A00BCD4);
   static const Color clinicalWhite = Color(0xFFF8F9FA);
-  static const Color cancelButtonBackGround = Color(0xFFBFBBBB);
-  static const Color carbonFieldBorder = Color(0xFF525252);
-  static const Color carbonFieldColor = Color(0xFFF4F4F4);
-  static const Color carbonFieldBackgroundColor = Color(0xFFF4F4F4);
-  // Hpspital Monitor Vitals Palette
+
+  static Color cancelButtonBackGround = AppColors.grey.all[2];
+  static Color carbonFieldBorder = AppColors.grey.all[4];
+  static Color carbonFieldColor = AppColors.grey.all[0];
+  static Color carbonFieldBackgroundColor = AppColors.grey.all[0];
+  static Color carbonSeparator = AppColors.grey.all[3];
+  static Color carbonFontColor = AppColors.grey.all[6];
+
+  // Hospital Monitor Vitals Palette
   static const Color vitalsBP = Color(0xFFFFB300);
   static const Color vitalsOxygen = Color(0xFF82B1FF);
   static const Color vitalsPulse = Color(0xFF00E676);
@@ -67,18 +154,12 @@ class AppTheme {
   };
 
   // Background colors
-  static const Color canvasColor = Color(0xFFF5F5F7);
-  static const Color cardBorder = Color(0xFFAAAAAA);
-  static const Color chipBorder = Color(0xFFCCCCCC);
-  static const Color surfaceColor = Color(0xFFFFFFFF);
-  static const Color defaultFontColor = deepCharcoal;
-  static const Color defaultInverseFontColor = surfaceColor;
-  static const Color processStepPrimary = Color(0xFF2E7D32);
-  static const Color processStepTerminal = Color(0xFFFF3232);
-  static const Color processStepPlain = Color(0xFFA0A0A0);
-  static const Color processStepPossible = Color(0xFF90A4AE);
-  static const Color processStepRequired = Color(0xFF1E88E5);
-  static const Color processStepActive = Color(0xFF7C4DFF);
+  static final Color canvasColor = AppColors.grey.all[0]; //greyDepthShades[0
+  static final Color cardBorder = AppColors.grey.all[3];
+  static final Color chipBorder = AppColors.grey.all[3];
+  static final Color surfaceColor = Color(0xFFFFFFFF);
+  static final Color defaultFontColor = AppColors.grey.all[4];
+  static final Color defaultInverseFontColor = surfaceColor;
 
   static ThemeData get lightTheme {
     return ThemeData(
@@ -86,26 +167,30 @@ class AppTheme {
       brightness: Brightness.light,
       scaffoldBackgroundColor: canvasColor,
       textTheme: GoogleFonts.inclusiveSansTextTheme(),
-      colorScheme: ColorScheme.light(primary: deepLogicViolet, secondary: clinicalCyan, surface: surfaceColor),
+      colorScheme: ColorScheme.light(
+        primary: AppColors.peacockBlue,
+        secondary: AppColors.foamGreen,
+        surface: surfaceColor,
+      ),
 
       // AppBar styling for Light Mode (Clean & Professional)
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: surfaceColor,
         elevation: 0,
         scrolledUnderElevation: 0,
-        titleTextStyle: TextStyle(color: defaultFontColor, fontSize: 20, fontWeight: FontWeight.bold),
-        iconTheme: IconThemeData(color: deepLogicViolet),
+        titleTextStyle: TextStyle(color: defaultFontColor, fontSize: 20, fontWeight: FontWeight.w400),
+        iconTheme: IconThemeData(color: AppColors.peacockBlue),
       ),
 
       // FAB remains consistent but pops against the white
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: deepLogicViolet,
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: AppColors.oceanBlue,
         foregroundColor: defaultInverseFontColor,
       ),
 
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: deepLogicViolet,
+          backgroundColor: AppColors.peacockBlue,
           foregroundColor: defaultInverseFontColor,
           minimumSize: const Size.fromHeight(55), // Standardized height for easy hit-targets
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
@@ -129,20 +214,24 @@ class AppTheme {
   static ThemeData get darkTheme {
     return ThemeData(
       brightness: Brightness.dark,
-      scaffoldBackgroundColor: deepCharcoal,
+      scaffoldBackgroundColor: AppColors.greyDepth,
       cardColor: darkSlate,
 
-      colorScheme: const ColorScheme.dark(primary: deepLogicViolet, secondary: clinicalCyan, surface: darkSlate),
+      colorScheme: ColorScheme.dark(
+        primary: AppColors.peacockBlue,
+        secondary: AppColors.foamGreen,
+        surface: AppColors.grey[5],
+      ),
 
       // FAB Styling
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: deepLogicViolet,
+        backgroundColor: AppColors.peacockBlue,
         foregroundColor: Colors.white,
       ),
 
       // AppBar Styling
       appBarTheme: const AppBarTheme(
-        backgroundColor: deepCharcoal,
+        backgroundColor: AppColors.greyDepth,
         elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
@@ -152,7 +241,7 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white.withAlpha(8),
-        focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: deepLogicViolet, width: 2)),
+        focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: AppColors.peacockBlue, width: 2)),
         enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.white10)),
       ),
     );

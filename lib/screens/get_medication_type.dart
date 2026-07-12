@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../app_theme.dart';
 import '../classes/carbon_style_constants.dart';
 import '../classes/medication_services.dart';
-import '../widgets/carbon_style_selection_tile.dart';
 
 class GetMedicationType extends StatefulWidget {
   final Function(MedicationTypes) onTypeSelected;
@@ -25,25 +24,25 @@ class _GetMedicationTypeState extends State<GetMedicationType> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: ListView.separated(
-        padding: EdgeInsets.all(CarbonSpacing.wide.width),
-        itemCount: MedicationTypes.values.length,
-        separatorBuilder: (_, _) => SizedBox(height: CarbonSpacing.narrow.width),
-        itemBuilder: (context, index) {
-          final type = MedicationTypes.values[index];
-
-          return CarbonSelectionTile(
-            title: _formatType(type),
-            // Optionally add an icon based on type here
-            onTap: () {
-              setState(() => _selectedType = type);
-              widget.onTypeSelected(type);
-            },
-            // Logic to show a selected state if you have that capability in CarbonActionTile
-            // If CarbonActionTile doesn't handle "selected", you could wrap it in a Container
-          );
+      body: RadioGroup<MedicationTypes>(
+        groupValue: _selectedType,
+        onChanged: (MedicationTypes? value) {
+          setState(() => _selectedType = value);
+          if (value != null) widget.onTypeSelected(value);
         },
+        child: ListView.separated(
+          padding: EdgeInsets.symmetric(vertical: CarbonSpacing.wide.width),
+          itemCount: MedicationTypes.values.length,
+          // Now this will trigger between each tile
+          separatorBuilder: (_, _) => carbonSeparator,
+          itemBuilder: (context, index) {
+            final type = MedicationTypes.values[index];
+            return RadioListTile<MedicationTypes>(value: type, title: Text(_formatType(type)));
+          },
+        ),
       ),
     );
   }
+
+  static Widget get carbonSeparator => Divider(height: 1, thickness: 1, color: AppTheme.carbonSeparator);
 }

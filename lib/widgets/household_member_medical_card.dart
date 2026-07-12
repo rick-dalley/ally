@@ -196,7 +196,7 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
                         children: [
                           Text(
                             patient.firstName,
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400, color: AppTheme.deepCharcoal),
+                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400, color: AppColors.greyDepth),
                           ),
                           const Spacer(),
 
@@ -288,21 +288,21 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
                               builder: (context) => const StaffScreen(),
                             );
                           },
-                          color: AppTheme.deepLogicViolet,
+                          color: AppColors.peacockBlue,
                         ),
                         CarbonCompactButton(
                           label: "Profile",
                           icon: Symbols.medical_information,
                           width: availableWidth / 4,
                           onTap: widget.onAssessmentsTap ?? () {},
-                          color: AppTheme.deepLogicViolet,
+                          color: AppColors.peacockBlue,
                         ),
                         CarbonCompactButton(
                           label: "Meds",
                           icon: Symbols.medication,
                           width: availableWidth / 4,
                           onTap: widget.onMedsTap ?? () {},
-                          color: AppTheme.deepLogicViolet,
+                          color: AppColors.peacockBlue,
                         ),
                         CarbonCompactButton(
                           label: 'QR Code',
@@ -311,7 +311,7 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
                           onTap: () {
                             launchEmergencyQRCodeGenerator(context, patient);
                           },
-                          color: AppTheme.deepLogicViolet,
+                          color: AppColors.peacockBlue,
                         ),
                       ],
                     ),

@@ -24,7 +24,7 @@ class CarbonSelectionTile extends StatelessWidget {
         ),
         child: ListTile(
           leading: icon != null
-              ? _buildDynamicIcon(isCompleted: true, icon: icon!, activeColor: AppTheme.deepLogicViolet)
+              ? _buildDynamicIcon(isCompleted: true, icon: icon!, activeColor: AppColors.peacockBlue)
               : null,
           title: Text(title),
           subtitle: Text(subTitle ?? ""),
@@ -36,5 +36,5 @@ class CarbonSelectionTile extends StatelessWidget {
 }
 
 Widget _buildDynamicIcon({required bool isCompleted, required IconData icon, required Color activeColor}) {
-  return Icon(icon, color: isCompleted ? activeColor : AppTheme.deepCharcoal, size: 24);
+  return Icon(icon, color: isCompleted ? activeColor : AppColors.greyDepth, size: 24);
 }

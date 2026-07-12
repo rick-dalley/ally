@@ -59,7 +59,7 @@ class BodyMetricsWidgetState extends State<BodyMetricsWidget> {
                   Expanded(
                     child: Text(
                       heightStr,
-                      style: const TextStyle(fontSize: 13, color: AppTheme.deepCharcoal, fontWeight: FontWeight.w500),
+                      style: const TextStyle(fontSize: 13, color: AppColors.greyDepth, fontWeight: FontWeight.w500),
                       overflow: TextOverflow.ellipsis, // Prevents layout explosion if string is long
                       maxLines: 1,
                     ),
@@ -82,7 +82,7 @@ class BodyMetricsWidgetState extends State<BodyMetricsWidget> {
                   Expanded(
                     child: Text(
                       weightStr,
-                      style: const TextStyle(fontSize: 13, color: AppTheme.deepCharcoal, fontWeight: FontWeight.w500),
+                      style: const TextStyle(fontSize: 13, color: AppColors.greyDepth, fontWeight: FontWeight.w500),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                     ),
@@ -106,7 +106,7 @@ class BodyMetricsWidgetState extends State<BodyMetricsWidget> {
                   Expanded(
                     child: Text(
                       bmiStr,
-                      style: const TextStyle(fontSize: 13, color: AppTheme.deepCharcoal, fontWeight: FontWeight.w500),
+                      style: const TextStyle(fontSize: 13, color: AppColors.greyDepth, fontWeight: FontWeight.w500),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                     ),
@@ -178,7 +178,7 @@ class BodyMetricsWidgetState extends State<BodyMetricsWidget> {
         return AlertDialog(
           title: const Text(
             'Update Patient Metrics',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.deepCharcoal),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.greyDepth),
           ),
           shape: ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
           content: SizedBox(

@@ -153,7 +153,7 @@ class SentimentRow extends StatelessWidget {
                           disabledVeteransPainScaleDescriptions[painIndex],
                           style: TextStyle(
                             fontSize: 14,
-                            color: isSelected ? AppTheme.deepLogicViolet : Colors.black87,
+                            color: isSelected ? AppColors.peacockBlue : Colors.black87,
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                           ),
                         ),

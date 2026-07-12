@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/widgets/carbon_style_button.dart';
 import 'package:triage/widgets/carbon_style_search_field.dart';
 
 import '../app_theme.dart';
@@ -44,11 +44,11 @@ class GetMedicationNameState extends State<GetMedicationName> {
             child: Text("Add a medication", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400)),
           ),
           const SizedBox(height: 24),
-          const Align(
+          Align(
             alignment: Alignment.centerLeft,
             child: Text(
               "San the bar code on the pill bottle",
-              style: TextStyle(fontSize: 16, color: AppTheme.carbonFieldBorder),
+              style: TextStyle(fontSize: 16, color: AppTheme.carbonFontColor),
             ),
           ),
           const SizedBox(height: 24),
@@ -59,14 +59,14 @@ class GetMedicationNameState extends State<GetMedicationName> {
               Navigator.pop(context); // Close modal
               _startBarcodeScanner();
             },
-            color: AppTheme.deepLogicViolet,
+            color: AppColors.peacockBlue,
             icon: Symbols.barcode_scanner,
           ),
 
           const SizedBox(height: 24),
-          const Align(
+          Align(
             alignment: Alignment.centerLeft,
-            child: Text("Or enter it manually", style: TextStyle(fontSize: 16, color: AppTheme.carbonFieldBorder)),
+            child: Text("Or enter it manually", style: TextStyle(fontSize: 16, color: AppTheme.carbonFontColor)),
           ),
           const SizedBox(height: 24),
 
@@ -79,28 +79,12 @@ class GetMedicationNameState extends State<GetMedicationName> {
               }
             },
           ),
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              Expanded(
-                child: CarbonButton(
-                  label: "CANCEL",
-                  isSecondary: true,
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-              ),
-              Expanded(
-                child: CarbonButton(
-                  label: "ADD TO LIST",
-                  onPressed: () {
-                    widget.onAddMedication(widget.nameController.text); // Your existing function
-                    Navigator.pop(context);
-                  },
-                ),
-              ),
-            ],
+          const SizedBox(height: 40),
+          SvgPicture.asset(
+            "assets/images/pills.svg",
+            width: 96,
+            height: 96,
+            colorFilter: ColorFilter.mode(AppColors.foamGreen, BlendMode.srcIn),
           ),
 
           const SizedBox(height: 20),

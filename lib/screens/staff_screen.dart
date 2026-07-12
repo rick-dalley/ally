@@ -40,7 +40,7 @@ class StaffScreenState extends State<StaffScreen> {
         body: staffKeys.isEmpty
             ? const Center(
                 child: CircularProgressIndicator(
-                  color: AppTheme.deepLogicViolet, // Navy indicator for a "smart" feel
+                  color: AppColors.peacockBlue, // Navy indicator for a "smart" feel
                 ),
               )
             : ListView.builder(
@@ -57,7 +57,7 @@ class StaffScreenState extends State<StaffScreen> {
             Navigator.push(context, MaterialPageRoute(builder: (context) => const AddCareProviderScreen()));
           },
           // Signals scanning capability
-          backgroundColor: AppTheme.deepLogicViolet,
+          backgroundColor: AppColors.peacockBlue,
           foregroundColor: AppTheme.clinicalWhite,
           // New dedicated screen
           child: const Icon(Symbols.person_add, size: 36),

@@ -34,7 +34,7 @@ class CarbonNumberInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Color fillColor = this.fillColor ?? AppTheme.carbonFieldBackgroundColor;
-    Color accentColor = this.accentColor ?? AppTheme.deepLogicViolet;
+    Color accentColor = this.accentColor ?? AppColors.peacockBlue;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,8 +46,8 @@ class CarbonNumberInput extends StatelessWidget {
         // Unified Container for Input + Stepper
         Container(
           height: 40,
-          decoration: const BoxDecoration(
-            color: AppTheme.carbonFieldColor,
+          decoration: BoxDecoration(
+            color: AppTheme.carbonFieldBorder,
             border: Border(bottom: BorderSide(color: AppTheme.carbonFieldBorder, width: 0)),
           ),
           child: Row(
@@ -61,9 +61,7 @@ class CarbonNumberInput extends StatelessWidget {
                     fillColor: fillColor,
                     hintStyle: GoogleFonts.ibmPlexSans(color: const Color(0xFFA8A8A8)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
-                    border: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: AppTheme.carbonFieldBorder, width: 1),
-                    ),
+                    border: UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.carbonFieldBorder, width: 1)),
                     focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: accentColor, width: 1)),
                     errorBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFFDA1E28), width: 1)),
                     errorStyle: GoogleFonts.ibmPlexSans(color: const Color(0xFFDA1E28)),
@@ -92,7 +90,7 @@ class CarbonNumberInput extends StatelessWidget {
       onTap: onTap,
       child: Container(
         height: 40,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: Color(0xFFF4F4F4),
           border: Border(bottom: BorderSide(color: AppTheme.carbonFieldBorder, width: 1)),
         ),

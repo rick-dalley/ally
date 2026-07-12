@@ -79,36 +79,37 @@ class _InterviewModalState extends State<InterviewModal> {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: _isRecording ? Colors.red : AppTheme.deepLogicViolet,
+              color: _isRecording ? Colors.red : AppColors.peacockBlue,
               shape: BoxShape.circle,
-              border: Border.all(
-                color: _isRecording ? Colors.red : AppTheme.deepLogicViolet,
-                width: 2,
-              ),
+              border: Border.all(color: _isRecording ? Colors.red : AppColors.peacockBlue, width: 2),
             ),
-            child: Icon(
-              _isRecording ? Icons.pause : Icons.mic,
-              size: 32,
-              color: AppTheme.clinicalWhite,
-            ),
+            child: Icon(_isRecording ? Icons.pause : Icons.mic, size: 32, color: AppTheme.clinicalWhite),
           ),
         ),
 
         IconButton(onPressed: () {}, icon: const Icon(Icons.forward_10), iconSize: 32),
         IconButton(
-            onPressed: () => setState(() => _isRecording = false),
-            icon: const Icon(Icons.stop_circle, color: Colors.red),
-            iconSize: 40
+          onPressed: () => setState(() => _isRecording = false),
+          icon: const Icon(Icons.stop_circle, color: Colors.red),
+          iconSize: 40,
         ),
       ],
     );
   }
 
-  Widget _buildTextWindow({required String label, required TextEditingController controller, required String hint, bool isLive = false}) {
+  Widget _buildTextWindow({
+    required String label,
+    required TextEditingController controller,
+    required String hint,
+    bool isLive = false,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+        Text(
+          label,
+          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey),
+        ),
         const SizedBox(height: 8),
         Expanded(
           child: TextField(
@@ -117,7 +118,7 @@ class _InterviewModalState extends State<InterviewModal> {
             expands: true,
             decoration: InputDecoration(
               hintText: hint,
-              fillColor: isLive ? AppTheme.deepLogicViolet.withAlpha(32) : AppTheme.clinicalWhite,
+              fillColor: isLive ? AppColors.peacockBlue.withAlpha(32) : AppTheme.clinicalWhite,
               filled: true,
               border: const OutlineInputBorder(),
             ),
@@ -135,8 +136,10 @@ class _InterviewModalState extends State<InterviewModal> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("${widget.patient.firstName} ${widget.patient.lastName}",
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(
+              "${widget.patient.firstName} ${widget.patient.lastName}",
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const Text("Interview in Progress...", style: TextStyle(color: Colors.red, fontSize: 12)),
           ],
         ),

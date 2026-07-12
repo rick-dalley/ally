@@ -379,7 +379,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
           ),
         ],
         backgroundColor: AppTheme.clinicalWhite, // Your Navy brand color
-        foregroundColor: AppTheme.deepLogicViolet,
+        foregroundColor: AppColors.peacockBlue,
       ),
       // The Floating Action Button replaces the top form
       floatingActionButton: FloatingActionButton.extended(
@@ -387,7 +387,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
         label: const Text("ADD MEDICATION"),
         icon: const Icon(Symbols.pill),
         shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
-        backgroundColor: AppTheme.deepLogicViolet,
+        backgroundColor: AppColors.peacockBlue,
         foregroundColor: AppTheme.clinicalWhite,
       ),
 

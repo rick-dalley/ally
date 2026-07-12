@@ -7,10 +7,7 @@ import '../classes/patient_condition.dart';
 class ConfigureConditionDialog extends StatefulWidget {
   final PatientCondition patientCondition;
 
-  const ConfigureConditionDialog({
-    super.key,
-    required this.patientCondition,
-  });
+  const ConfigureConditionDialog({super.key, required this.patientCondition});
 
   @override
   State<ConfigureConditionDialog> createState() => _ConfigureConditionDialogState();
@@ -184,7 +181,7 @@ class _ConfigureConditionDialogState extends State<ConfigureConditionDialog> {
                     const SizedBox(height: 16),
                     const Text(
                       "TREATMENT NOTES",
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.deepCharcoal),
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.greyDepth),
                     ),
                     const SizedBox(height: 6),
                     TextField(
@@ -207,7 +204,7 @@ class _ConfigureConditionDialogState extends State<ConfigureConditionDialog> {
                   height: 48,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.deepLogicViolet,
+                      backgroundColor: AppColors.peacockBlue,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                     onPressed: () async {
@@ -228,7 +225,10 @@ class _ConfigureConditionDialogState extends State<ConfigureConditionDialog> {
                         navigator.pop(true);
                       }
                     },
-                    child: const Text("Confirm Changes", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    child: const Text(
+                      "Confirm Changes",
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
               ),

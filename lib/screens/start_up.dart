@@ -58,7 +58,7 @@ class _StartupScreenState extends State<StartupScreen> with SingleTickerProvider
             const Text(
               "CWICare",
               style: TextStyle(
-                color: AppTheme.deepLogicViolet,
+                color: AppColors.peacockBlue,
                 fontSize: 32,
                 fontWeight: FontWeight.w900,
                 letterSpacing: 4,
@@ -71,7 +71,7 @@ class _StartupScreenState extends State<StartupScreen> with SingleTickerProvider
                 child: Text(
                   "PARTNER",
                   style: TextStyle(
-                    color: AppTheme.clinicalCyan, // Your brand action color
+                    color: AppColors.foamGreen, // Your brand action color
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 8,

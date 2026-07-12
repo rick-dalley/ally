@@ -92,7 +92,7 @@ class _GetMedicationFrequencyState extends State<GetMedicationFrequency> {
                 Expanded(
                   child: CarbonFullButton(
                     icon: Symbols.calendar_clock,
-                    color: AppTheme.deepLogicViolet,
+                    color: AppColors.peacockBlue,
                     label: start != null ? "Start: ${start.toString().split(' ')[0]}" : "Start Date",
                     onTap: () async {
                       final date = await showDatePicker(
@@ -109,7 +109,7 @@ class _GetMedicationFrequencyState extends State<GetMedicationFrequency> {
                 Expanded(
                   child: CarbonFullButton(
                     icon: Symbols.calendar_clock,
-                    color: AppTheme.deepLogicViolet,
+                    color: AppColors.peacockBlue,
                     label: end != null ? "End: ${end.toString().split(' ')[0]}" : "End Date",
                     onTap: () async {
                       final date = await showDatePicker(
@@ -138,7 +138,7 @@ class _GetMedicationFrequencyState extends State<GetMedicationFrequency> {
             const Divider(),
 
             Container(
-              color: _shouldRecommendAlert && !_alert ? Colors.amber.withOpacity(0.1) : null,
+              color: _shouldRecommendAlert && !_alert ? Colors.amber.withValues(alpha: 0.1) : null,
               child: SwitchListTile(
                 title: const Text("Enable Medication Alerts"),
                 subtitle: _shouldRecommendAlert ? const Text("Recommended for specific times") : null,

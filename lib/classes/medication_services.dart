@@ -184,6 +184,27 @@ class Frequency {
   });
 }
 
+enum WizardSteps { name, dosage, type, frequency, shape, color }
+
+extension WizardStepsName on WizardSteps {
+  String get label {
+    switch (this) {
+      case WizardSteps.name:
+        return "Medication Name";
+      case WizardSteps.dosage:
+        return "Dosage";
+      case WizardSteps.type:
+        return "Type";
+      case WizardSteps.frequency:
+        return "Frequency";
+      case WizardSteps.shape:
+        return "Shape";
+      case WizardSteps.color:
+        return "Color";
+    }
+  }
+}
+
 // InteractionConflict
 class InteractionConflict {
   final String primaryMedName;

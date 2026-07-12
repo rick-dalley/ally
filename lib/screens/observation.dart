@@ -144,7 +144,7 @@ class _ObservationScreenState extends State<ObservationScreen> {
                 Row(children: const [Spacer()]),
 
                 const Text("Clinical Observations", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                Text("${_filtered.length} Notes", style: const TextStyle(fontSize: 13, color: AppTheme.deepCharcoal)),
+                Text("${_filtered.length} Notes", style: const TextStyle(fontSize: 13, color: AppColors.greyDepth)),
                 const SizedBox(height: 12),
               ],
             ),
@@ -159,7 +159,7 @@ class _ObservationScreenState extends State<ObservationScreen> {
                   )
                 : _filtered.isEmpty
                 ? Center(
-                    child: Text("Enter an observation or note.", style: TextStyle(color: AppTheme.deepCharcoal)),
+                    child: Text("Enter an observation or note.", style: TextStyle(color: AppColors.greyDepth)),
                   )
                 : ListView.builder(
                     // Core unified scroll hooks to eliminate skipping or snapping bugs
@@ -226,7 +226,7 @@ class _ObservationScreenState extends State<ObservationScreen> {
                   Container(
                     decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
                     child: IconButton(
-                      icon: const Icon(Icons.mic_none_outlined, color: AppTheme.deepCharcoal, size: 26),
+                      icon: const Icon(Icons.mic_none_outlined, color: AppColors.greyDepth, size: 26),
                       tooltip: "Dictate Observation",
                       // Open workspace and explicitly pass a custom flag to start recording immediately
                       onPressed: () => _openNoteWorkspace(context, null, true),
@@ -238,7 +238,7 @@ class _ObservationScreenState extends State<ObservationScreen> {
                   Container(
                     decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
                     child: IconButton(
-                      icon: const Icon(Icons.edit_outlined, color: AppTheme.deepCharcoal, size: 26),
+                      icon: const Icon(Icons.edit_outlined, color: AppColors.greyDepth, size: 26),
                       tooltip: "New Observation",
                       onPressed: () => _openNoteWorkspace(context, null, false),
                     ),

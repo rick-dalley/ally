@@ -114,8 +114,8 @@ class AppointmentChipState extends State<AppointmentChip> {
       avatar: Icon(isPast ? Symbols.history : Symbols.calendar_today, size: 16),
       label: Text(DateFormat('MMM d, h:mm a').format(appointment!.when)),
       onPressed: () => _showAppointmentDetails(appointment!),
-      backgroundColor: isPast ? Colors.amber.shade50 : AppTheme.clinicalCyan.withValues(alpha: 0.1),
-      side: BorderSide(color: isPast ? Colors.amber : AppTheme.clinicalCyan),
+      backgroundColor: isPast ? Colors.amber.shade50 : AppColors.foamGreen.withValues(alpha: 0.1),
+      side: BorderSide(color: isPast ? Colors.amber : AppColors.foamGreen),
     );
   }
 

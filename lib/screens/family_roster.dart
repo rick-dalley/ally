@@ -100,7 +100,7 @@ class FamilyRosterState extends State<FamilyRoster> {
             child: filteredPatients.isEmpty
                 ? const Center(
                     child: CircularProgressIndicator(
-                      color: AppTheme.deepLogicViolet, // Navy indicator for a "smart" feel
+                      color: AppColors.peacockBlue, // Navy indicator for a "smart" feel
                     ),
                   )
                 : ListView.builder(
@@ -147,7 +147,7 @@ class FamilyRosterState extends State<FamilyRoster> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _launchIntakeScreen(context),
         // Signals scanning capability
-        backgroundColor: AppTheme.deepLogicViolet,
+        backgroundColor: AppColors.peacockBlue,
         foregroundColor: AppTheme.clinicalWhite,
         shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
         // New dedicated screen

@@ -36,7 +36,7 @@ class CarbonActionTile extends StatelessWidget {
                   isCompleted: true,
                   outlineIcon: outlineIcon ?? icon!,
                   solidIcon: icon!,
-                  activeColor: AppTheme.deepLogicViolet,
+                  activeColor: AppColors.peacockBlue,
                 )
               : null,
           title: Text(title),
@@ -54,9 +54,5 @@ Widget _buildDynamicIcon({
   required IconData solidIcon,
   required Color activeColor,
 }) {
-  return Icon(
-    isCompleted ? solidIcon : outlineIcon,
-    color: isCompleted ? activeColor : AppTheme.deepCharcoal,
-    size: 24,
-  );
+  return Icon(isCompleted ? solidIcon : outlineIcon, color: isCompleted ? activeColor : AppColors.greyDepth, size: 24);
 }

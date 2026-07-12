@@ -86,7 +86,7 @@ class LuminescaHomeState extends State<LuminescaHome> {
             children: const [
               TextSpan(
                 text: 'CWICare',
-                style: TextStyle(fontWeight: FontWeight.w700, color: AppTheme.deepLogicViolet, letterSpacing: 1.2),
+                style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.peacockBlue, letterSpacing: 1.2),
               ),
               TextSpan(
                 text: ' — ',
@@ -94,7 +94,7 @@ class LuminescaHomeState extends State<LuminescaHome> {
               ),
               TextSpan(
                 text: 'Partner',
-                style: TextStyle(fontWeight: FontWeight.w400, color: AppTheme.clinicalCyan),
+                style: TextStyle(fontWeight: FontWeight.w400, color: AppColors.foamGreen),
               ),
             ],
           ),

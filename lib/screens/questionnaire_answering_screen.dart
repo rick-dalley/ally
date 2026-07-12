@@ -180,7 +180,7 @@ class QuestionnaireAnsweringScreenState extends State<QuestionnaireAnsweringScre
           Text(
             widget.template['title'],
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppTheme.deepLogicViolet, fontSize: 22, fontWeight: FontWeight.bold),
+            style: const TextStyle(color: AppColors.peacockBlue, fontSize: 22, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           const Divider(height: 1),
@@ -294,7 +294,7 @@ class QuestionnaireAnsweringScreenState extends State<QuestionnaireAnsweringScre
                     // Mimics the paper checkbox/radio look
                     Icon(
                       isSelected ? Icons.check_box : Icons.check_box_outline_blank,
-                      color: isSelected ? AppTheme.clinicalCyan : Colors.grey,
+                      color: isSelected ? AppColors.foamGreen : Colors.grey,
                     ),
                     const SizedBox(width: 12),
                     // The text now has the full width to breathe

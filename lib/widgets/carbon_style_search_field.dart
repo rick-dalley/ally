@@ -75,11 +75,9 @@ class CarbonSearchFieldState extends State<CarbonSearchField> {
                     filled: true,
                     hintText: widget.hintText ?? "Enter a value to search",
                     // Carbon-style borders
-                    border: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: AppTheme.carbonFieldBorder, width: 1),
-                    ),
+                    border: UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.carbonFontColor, width: 1)),
                     focusedBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: AppTheme.deepLogicViolet, width: 2),
+                      borderSide: BorderSide(color: AppColors.peacockBlue, width: 2),
                     ),
                     errorBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFFDA1E28), width: 2)),
                     errorText: widget.errorText,
@@ -89,9 +87,7 @@ class CarbonSearchFieldState extends State<CarbonSearchField> {
                     prefixIcon: IconButton(
                       icon: Icon(
                         Symbols.search,
-                        color: widget.controller.text.isNotEmpty
-                            ? AppTheme.deepLogicViolet
-                            : AppTheme.carbonFieldBorder,
+                        color: widget.controller.text.isNotEmpty ? AppColors.peacockBlue : AppTheme.carbonFieldBorder,
                       ),
                       onPressed: () {
                         if (widget.onSearch != null) {

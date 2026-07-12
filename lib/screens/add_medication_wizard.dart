@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/screens/get_medication_dosage.dart';
 import 'package:triage/screens/get_medication_frequency.dart';
-import 'package:triage/screens/get_medication_name_page.dart';
+import 'package:triage/screens/get_medication_name.dart';
 import 'package:triage/screens/get_medication_shape.dart';
 import 'package:triage/screens/get_medication_type.dart';
+import 'package:triage/widgets/carbon_button_compact.dart';
 
 import '../app_theme.dart';
 import '../classes/carbon_style_constants.dart';
 import '../classes/database_manager.dart';
 import '../classes/medication_services.dart';
-import '../widgets/carbon_style_button.dart';
 
 class AddMedicationWizard extends StatefulWidget {
   final String patientUuid;
@@ -91,11 +92,41 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
           children: [
             if (_currentStep > 0)
               Expanded(
-                child: CarbonButton(label: "BACK", isSecondary: true, onPressed: _goBack),
+                child: CarbonCompactButton(
+                  icon: Symbols.chevron_backward,
+                  label: "Back",
+                  color: AppColors.peacockBlue,
+                  onTap: _goBack,
+                ),
               ),
-            SizedBox(width: CarbonSpacing.medium.width),
             Expanded(
-              child: CarbonButton(label: _currentStep == 4 ? "FINISH" : "NEXT", onPressed: _goNext),
+              child: CarbonCompactButton(
+                icon: Symbols.cancel,
+                label: "Cancel",
+                color: AppTheme.darkSlate,
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+            Expanded(
+              child: CarbonCompactButton(
+                label: "Done",
+                icon: Symbols.save,
+                color: AppColors.peacockBlue,
+                onTap: () {
+                  _saveMedication();
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+            Expanded(
+              child: CarbonCompactButton(
+                icon: _currentStep == 4 ? Symbols.trophy : Symbols.navigate_next,
+                color: AppColors.peacockBlue,
+                label: _currentStep == 4 ? "FINISH" : WizardSteps.values[_currentStep + 1].label,
+                onTap: _goNext,
+              ),
             ),
           ],
         ),
