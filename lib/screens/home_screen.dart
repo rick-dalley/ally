@@ -67,7 +67,11 @@ class HomeScreenState extends State<HomeScreen> {
       MedicalProfileScreen(householdMember: patient),
       PrescriptionScreen(patient: patient),
       EmergencyQRCodeView(householdMember: patient),
-      TimelineScrollerWidget(actions: actions, startTime: DateTime(2025), endTime: DateTime.now()),
+      TimelineScrollerWidget(
+        actions: actions,
+        startTime: actions.first.getFormattedOccurred(),
+        endTime: DateTime.now(),
+      ),
     ];
   }
 
