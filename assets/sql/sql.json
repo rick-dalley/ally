@@ -114,11 +114,11 @@
   },
   {
    "table" : "appointment",
-   "query" : "CREATE TABLE appointment (id TEXT PRIMARY KEY, staff_id TEXT, location_name TEXT, when DATETIME NOT NULL, appointment_update_url TEXT, appointment_url TEXT, notes TEXT, street TEXT, city TEXT, pr_st TEXT, country TEXT, code TEXT );"
+   "query" : "CREATE TABLE appointment (id TEXT PRIMARY KEY, staff_id TEXT, location_name TEXT, scheduled_for DATETIME NOT NULL, appointment_update_url TEXT, appointment_url TEXT, notes TEXT, street TEXT, city TEXT, pr_st TEXT, country TEXT, code TEXT );"
   },
   {
    "table": "appointment",
-   "query": "CREATE INDEX idx_appointment_when ON appointment(when);"
+   "query": "CREATE INDEX idx_appointment_scheduled_for ON appointment(scheduled_for);"
   },
   {
    "table": "acuity_log",

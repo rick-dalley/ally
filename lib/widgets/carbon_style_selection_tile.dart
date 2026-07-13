@@ -18,7 +18,7 @@ class CarbonSelectionTile extends StatelessWidget {
           borderRadius: BorderRadius.zero,
           side: BorderSide(
             // Subtle border changes color when task is done
-            color: AppTheme.cardBorder,
+            color: AppTheme.carbonFieldBorder,
             width: 1,
           ),
         ),

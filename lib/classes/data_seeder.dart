@@ -82,7 +82,7 @@ class DataSeeder {
 
       await batch.commit(noResult: true);
     } catch (error) {
-      debugPrint("Critical failure executing master condition data migration: $error");
+      debugPrint("Critical failure in _seedStaff: $error");
     }
   }
 
@@ -119,7 +119,7 @@ class DataSeeder {
       // 4. Commit rows down to the storage engine
       await migrationBatch.commit(noResult: true);
     } catch (error) {
-      debugPrint("Critical failure executing master condition data migration: $error");
+      debugPrint("Critical failure in _seedConditionsCatalog: $error");
     }
   }
 

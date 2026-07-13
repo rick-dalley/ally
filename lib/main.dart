@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:triage/classes/acuity.dart';
 import 'package:triage/classes/body_zone.dart';
 import 'package:triage/classes/database_manager.dart';
-import 'package:triage/screens/family_roster.dart';
+import 'package:triage/screens/home_screen.dart';
 import 'package:triage/screens/start_up.dart';
 import 'classes/action.dart';
 import 'classes/drugs.dart';
@@ -105,7 +105,7 @@ class LuminescaHomeState extends State<LuminescaHome> {
       body: Stack(
         children: [
           // 1. The Roster: Always present and laid out, just hidden by the stack
-          const FamilyRoster(),
+          const HomeScreen(),
 
           // 2. The Loading Overlay: Only exists while loading
           FutureBuilder(

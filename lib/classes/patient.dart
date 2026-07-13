@@ -236,6 +236,10 @@ class Patient {
     patient.acuityLevel = acuityLevel;
     return patient;
   }
+
+  String get name {
+    return '$firstName $lastName';
+  }
 }
 
 class PatientController extends ChangeNotifier {

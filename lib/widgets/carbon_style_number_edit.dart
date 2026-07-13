@@ -34,7 +34,7 @@ class CarbonNumberInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Color fillColor = this.fillColor ?? AppTheme.carbonFieldBackgroundColor;
-    Color accentColor = this.accentColor ?? AppColors.peacockBlue;
+    Color accentColor = this.accentColor ?? AppColors.oceanBlue;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -59,19 +59,38 @@ class CarbonNumberInput extends StatelessWidget {
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: fillColor,
-                    hintStyle: GoogleFonts.ibmPlexSans(color: const Color(0xFFA8A8A8)),
+                    hintStyle: GoogleFonts.ibmPlexSans(color: AppTheme.carbonPlaceHolderFontColor),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
                     border: UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.carbonFieldBorder, width: 1)),
                     focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: accentColor, width: 1)),
-                    errorBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFFDA1E28), width: 1)),
-                    errorStyle: GoogleFonts.ibmPlexSans(color: const Color(0xFFDA1E28)),
+                    errorBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: AppTheme.carbonErrorFontColor, width: 1),
+                    ),
+                    errorStyle: GoogleFonts.ibmPlexSans(color: AppTheme.carbonErrorFontColor),
+                    suffixIcon: Row(
+                      mainAxisSize: MainAxisSize.min, // Vital: Keeps the row from expanding to fill the field
+                      children: [
+                        IconButton(
+                          icon: const Icon(Symbols.remove),
+                          onPressed: _decrement,
+                          constraints: const BoxConstraints(), // Removes default padding to fit better
+                          padding: const EdgeInsets.all(8),
+                        ),
+                        IconButton(
+                          icon: const Icon(Symbols.add),
+                          onPressed: _increment,
+                          constraints: const BoxConstraints(),
+                          padding: const EdgeInsets.all(8),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
               // const VerticalDivider(width: 0.5, color: Color(0xFFC6C6C6)),
-              _buildStepperButton(Symbols.remove, _decrement),
-              const VerticalDivider(width: 0.5, color: Color(0xFFC6C6C6)),
-              _buildStepperButton(Symbols.add, _increment),
+              // _buildStepperButton(icon: Symbols.remove, onTap: _decrement, accentColor: accentColor),
+              // VerticalDivider(width: 0.5, color: AppColors.grey.all[3]),
+              // _buildStepperButton(icon: Symbols.add, onTap: _increment, accentColor: accentColor),
             ],
           ),
         ),
@@ -85,17 +104,22 @@ class CarbonNumberInput extends StatelessWidget {
     );
   }
 
-  Widget _buildStepperButton(IconData icon, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        height: 40,
-        decoration: BoxDecoration(
-          color: Color(0xFFF4F4F4),
-          border: Border(bottom: BorderSide(color: AppTheme.carbonFieldBorder, width: 1)),
-        ),
-        child: SizedBox(width: 40, child: Icon(icon, size: 16)),
-      ),
-    );
-  }
+  // Widget _buildStepperButton({
+  //   required IconData icon,
+  //   required VoidCallback onTap,
+  //   required Color accentColor,
+  //   bool hasFocus = false,
+  // }) {
+  //   return InkWell(
+  //     onTap: onTap,
+  //     child: Container(
+  //       height: 40,
+  //       decoration: BoxDecoration(
+  //         color: Color(0xFFF4F4F4),
+  //         border: Border(bottom: BorderSide(color: hasFocus ? accentColor : AppTheme.carbonFieldBorder, width: 1)),
+  //       ),
+  //       child: SizedBox(width: 40, child: Icon(icon, size: 16)),
+  //     ),
+  //   );
+  // }
 }

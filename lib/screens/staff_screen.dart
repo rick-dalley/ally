@@ -28,40 +28,33 @@ class StaffScreenState extends State<StaffScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final double notchPadding = MediaQuery.of(context).padding.top > 0 ? MediaQuery.of(context).padding.top : 47.0;
-
-    return MediaQuery(
-      data: MediaQuery.of(context).copyWith(padding: MediaQuery.of(context).padding.copyWith(top: notchPadding)),
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text("Staff"),
-          leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.of(context).pop()),
-        ),
-        body: staffKeys.isEmpty
-            ? const Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.peacockBlue, // Navy indicator for a "smart" feel
-                ),
-              )
-            : ListView.builder(
-                padding: const EdgeInsets.only(top: 8, bottom: 80),
-                // Added top padding for breathing room
-                itemCount: staffKeys.length,
-                itemBuilder: (context, index) {
-                  StaffMember? staffMember = StaffFactory.instance.getStaffMember(id: staffKeys[index]);
-                  return StaffIdCard(photoPath: 'photoPath', staffMember: staffMember, index: index);
-                },
+    return Scaffold(
+      appBar: AppBar(title: Text("My Team")),
+      body: staffKeys.isEmpty
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: AppColors.peacockBlue, // Navy indicator for a "smart" feel
               ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const AddCareProviderScreen()));
-          },
-          // Signals scanning capability
-          backgroundColor: AppColors.peacockBlue,
-          foregroundColor: AppTheme.clinicalWhite,
-          // New dedicated screen
-          child: const Icon(Symbols.person_add, size: 36),
-        ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.only(top: 8, bottom: 80),
+              // Added top padding for breathing room
+              itemCount: staffKeys.length,
+              itemBuilder: (context, index) {
+                StaffMember? staffMember = StaffFactory.instance.getStaffMember(id: staffKeys[index]);
+                return StaffIdCard(photoPath: 'photoPath', staffMember: staffMember, index: index);
+              },
+            ),
+      floatingActionButton: FloatingActionButton(
+        key: Key("FAB_NewCareGiver"),
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const AddCareProviderScreen()));
+        },
+        // Signals scanning capability
+        backgroundColor: AppColors.peacockBlue,
+        foregroundColor: AppTheme.clinicalWhite,
+        // New dedicated screen
+        child: const Icon(Symbols.person_add, size: 36),
       ),
     );
   }

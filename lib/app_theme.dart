@@ -80,6 +80,8 @@ class OceanBlue {
 class GreyDepth {
   const GreyDepth._();
   final List<Color> all = const [
+    Color(0xFFFFFFFF),
+    Color(0xFFF1F5F5),
     Color(0xFFEEF1F1),
     Color(0xFFCCD2D2),
     Color(0xFFa6abab),
@@ -95,12 +97,15 @@ class AppTheme {
   static const Color darkSlate = Color(0xFF1E1E1E);
   static const Color clinicalWhite = Color(0xFFF8F9FA);
 
-  static Color cancelButtonBackGround = AppColors.grey.all[2];
+  static Color cancelButtonBackGround = AppColors.grey.all[3];
   static Color carbonFieldBorder = AppColors.grey.all[4];
-  static Color carbonFieldColor = AppColors.grey.all[0];
-  static Color carbonFieldBackgroundColor = AppColors.grey.all[0];
+  static Color carbonFieldColor = AppColors.grey.all[2];
+  static Color carbonFieldBackgroundColor = AppColors.grey.all[2];
   static Color carbonSeparator = AppColors.grey.all[3];
-  static Color carbonFontColor = AppColors.grey.all[6];
+  static Color carbonLabelFontColor = AppColors.grey.all[5];
+  static Color carbonFieldFontColor = AppColors.grey.all[6];
+  static Color carbonPlaceHolderFontColor = AppColors.grey.all[4];
+  static Color carbonErrorFontColor = Color(0xFFDA1E28);
 
   // Hospital Monitor Vitals Palette
   static const Color vitalsBP = Color(0xFFFFB300);
@@ -154,10 +159,10 @@ class AppTheme {
   };
 
   // Background colors
-  static final Color canvasColor = AppColors.grey.all[0]; //greyDepthShades[0
+  static final Color canvasColor = AppColors.grey.all[1]; //greyDepthShades[0
   static final Color cardBorder = AppColors.grey.all[3];
   static final Color chipBorder = AppColors.grey.all[3];
-  static final Color surfaceColor = Color(0xFFFFFFFF);
+  static final Color surfaceColor = AppColors.grey.all[0];
   static final Color defaultFontColor = AppColors.grey.all[4];
   static final Color defaultInverseFontColor = surfaceColor;
 
@@ -165,7 +170,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      scaffoldBackgroundColor: canvasColor,
+      scaffoldBackgroundColor: surfaceColor,
       textTheme: GoogleFonts.inclusiveSansTextTheme(),
       colorScheme: ColorScheme.light(
         primary: AppColors.peacockBlue,
@@ -202,7 +207,7 @@ class AppTheme {
       // Text fields that look "Interactive" but clean
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: surfaceColor,
+        fillColor: AppColors.grey.all[2],
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: Colors.black12),

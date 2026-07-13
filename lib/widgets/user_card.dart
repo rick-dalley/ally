@@ -14,34 +14,33 @@ import '../classes/medication_services.dart';
 import '../classes/patient.dart';
 import '../classes/patient_sentiment.dart';
 import '../screens/body_screen.dart';
-import '../screens/staff_screen.dart';
 import 'blood_type_tile.dart';
+import 'body_metrics_widget.dart';
 import 'carbon_button_compact.dart';
-import 'emergency_qr.dart';
-import 'household_member_info_card.dart';
+import 'carbon_style_textbox.dart';
 
-class HouseholdMemberMedicalCard extends StatefulWidget {
+class UserCard extends StatefulWidget {
   // Pass the initial patient snapshot down from the roster list
   final Patient householdMember;
-  final Function onMemberUpdate;
-  final Function onVitalsUpdate;
+  final Function(Patient) onMemberUpdate;
+  final Function(Patient) onVitalsUpdate;
   final VoidCallback? onAssessmentsTap;
   final VoidCallback? onMedsTap;
 
-  const HouseholdMemberMedicalCard({
+  const UserCard({
     super.key,
     required this.householdMember,
     this.onAssessmentsTap,
     this.onMedsTap,
-    required this.onMemberUpdate({required Patient patient}),
-    required this.onVitalsUpdate({required Patient patient}),
+    required this.onMemberUpdate(Patient patient),
+    required this.onVitalsUpdate(Patient patient),
   });
 
   @override
-  State<HouseholdMemberMedicalCard> createState() => HouseholdMemberMedicalCardState();
+  State<UserCard> createState() => UserCardState();
 }
 
-class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> {
+class UserCardState extends State<UserCard> {
   late PatientController patientController;
   late Sentiment sentiment;
   bool _isExpanded = false;
@@ -53,7 +52,7 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
   }
 
   @override
-  void didUpdateWidget(covariant HouseholdMemberMedicalCard oldWidget) {
+  void didUpdateWidget(covariant UserCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.householdMember != widget.householdMember) {
       patientController = PatientController(widget.householdMember);
@@ -72,12 +71,12 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
       setState(() {
         patientController.patient = Patient.fromJson(updatedPatient);
       });
-      widget.onMemberUpdate(householdMember: patientController.patient);
+      widget.onMemberUpdate(patientController.patient);
     }
   }
 
   void updateAcuity() {
-    widget.onMemberUpdate(householdMember: patientController.patient);
+    widget.onMemberUpdate(patientController.patient);
     setState(() {});
   }
 
@@ -137,17 +136,6 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
     //
   }
 
-  void launchEmergencyQRCodeGenerator(BuildContext context, Patient householdMember) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EmergencyQRCodeView(householdMember: householdMember),
-        // This ensures the screen slides up like a focused task
-        fullscreenDialog: true,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     double availableWidth = MediaQuery.of(context).size.width - 88;
@@ -171,13 +159,7 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
           }
         }
 
-        return Card(
-          elevation: 2,
-          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          shape: ContinuousRectangleBorder(
-            borderRadius: BorderRadius.zero,
-            // side: BorderSide(color: statusColor, width: 3),
-          ),
+        return SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
@@ -271,51 +253,6 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
                       },
                     ),
                     SizedBox(height: 32),
-                    Wrap(
-                      spacing: 8, // Horizontal space between buttons
-                      runSpacing: 8, // Vertical space between lines
-                      alignment: WrapAlignment.start,
-                      children: [
-                        CarbonCompactButton(
-                          label: "Medical Team",
-                          icon: Symbols.stethoscope,
-                          width: availableWidth / 4,
-                          onTap: () {
-                            showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              backgroundColor: Colors.transparent,
-                              builder: (context) => const StaffScreen(),
-                            );
-                          },
-                          color: AppColors.peacockBlue,
-                        ),
-                        CarbonCompactButton(
-                          label: "Profile",
-                          icon: Symbols.medical_information,
-                          width: availableWidth / 4,
-                          onTap: widget.onAssessmentsTap ?? () {},
-                          color: AppColors.peacockBlue,
-                        ),
-                        CarbonCompactButton(
-                          label: "Meds",
-                          icon: Symbols.medication,
-                          width: availableWidth / 4,
-                          onTap: widget.onMedsTap ?? () {},
-                          color: AppColors.peacockBlue,
-                        ),
-                        CarbonCompactButton(
-                          label: 'QR Code',
-                          width: availableWidth / 4,
-                          icon: Symbols.qr_code_2,
-                          onTap: () {
-                            launchEmergencyQRCodeGenerator(context, patient);
-                          },
-                          color: AppColors.peacockBlue,
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 24),
                     InkWell(
                       onTap: () => setState(() => _isExpanded = !_isExpanded),
                       child: Padding(
@@ -335,22 +272,47 @@ class HouseholdMemberMedicalCardState extends State<HouseholdMemberMedicalCard> 
                         ),
                       ),
                     ),
-                    AnimatedCrossFade(
-                      firstChild: const SizedBox.shrink(), // Shows nothing when collapsed
-                      secondChild: HouseholdMemberInformationCard(patient: widget.householdMember),
-                      crossFadeState: _isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-                      duration: const Duration(milliseconds: 300),
-                      // This ensures the animation looks clean
-                      firstCurve: Curves.easeInOut,
-                      secondCurve: Curves.easeInOut,
-                    ),
                   ],
                 ),
+                CarbonTextEdit(
+                  label: 'Provincial Health #:',
+                  helperText: "Enter your government issued health identification",
+                  value: _formatPHN(patient.phn.toString()),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Expanded(
+                      child: CarbonTextEdit(label: "Born:", value: patient.formattedDateOfBirth),
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(child: Text("(${patient.age} yrs)")),
+                  ],
+                ),
+                SizedBox(height: 16),
+                BodyMetricsWidget(patient: patient),
+                SizedBox(height: 16),
+                CarbonTextEdit(label: "CONTACT:", value: patient.contactName),
+                CarbonTextEdit(label: "PHONE:", value: patient.contactPhone),
+                SizedBox(height: 16),
+                CarbonTextEdit(label: "PRIMARY CAREGIVER:", value: patient.familyDoctorName),
+                CarbonTextEdit(label: "PHONE:", value: patient.familyDoctorPhone),
+                CarbonTextEdit(label: "PHARMACY:", value: patient.pharmacyPhone),
+                CarbonTextEdit(label: "FAX:", value: patient.pharmacyFax),
               ],
             ),
           ),
         );
       },
     );
+  }
+
+  // Standard string parser to separate long sdigits into readable "#### ### ###" blocks
+  String _formatPHN(String rawPhn) {
+    final clean = rawPhn.replaceAll(RegExp(r'\s+'), '');
+    if (clean.length == 10) {
+      return "${clean.substring(0, 4)} ${clean.substring(4, 7)} ${clean.substring(7)}";
+    }
+    return rawPhn; // Fallback if format differs
   }
 }

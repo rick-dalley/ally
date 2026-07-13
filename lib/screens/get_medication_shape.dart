@@ -61,7 +61,7 @@ class GetMedicationShape extends StatelessWidget {
                               padding: const EdgeInsets.only(bottom: 8.0),
                               child: Text(
                                 shape.name.toUpperCase(),
-                                style: TextStyle(fontSize: 18, color: AppTheme.carbonFontColor),
+                                style: TextStyle(fontSize: 18, color: AppTheme.carbonLabelFontColor),
                                 textAlign: TextAlign.center,
                                 overflow: TextOverflow.ellipsis,
                               ),

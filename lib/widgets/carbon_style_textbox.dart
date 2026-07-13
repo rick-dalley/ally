@@ -71,7 +71,11 @@ class CarbonStateText extends State<CarbonTextEdit> {
           padding: const EdgeInsets.only(left: 4.0),
           child: Text(
             widget.label,
-            style: GoogleFonts.ibmPlexSans(fontSize: 12, color: const Color(0xFF525252), fontWeight: FontWeight.w400),
+            style: GoogleFonts.ibmPlexSans(
+              fontSize: 12,
+              color: AppTheme.carbonLabelFontColor,
+              fontWeight: FontWeight.w400,
+            ),
           ),
         ),
         TextField(
@@ -82,13 +86,13 @@ class CarbonStateText extends State<CarbonTextEdit> {
             filled: true,
             fillColor: fillColor,
             hintText: widget.placeHolderText,
-            hintStyle: GoogleFonts.ibmPlexSans(color: const Color(0xFFA8A8A8)),
+            hintStyle: GoogleFonts.ibmPlexSans(color: AppTheme.carbonPlaceHolderFontColor),
             contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
             border: UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.carbonFieldBorder, width: 1)),
             focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: accentColor, width: 2)),
-            errorBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFFDA1E28), width: 2)),
+            errorBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.carbonErrorFontColor, width: 2)),
             errorText: widget.errorText,
-            errorStyle: GoogleFonts.ibmPlexSans(color: const Color(0xFFDA1E28)),
+            errorStyle: GoogleFonts.ibmPlexSans(color: AppTheme.carbonErrorFontColor),
           ),
         ),
         // Helper Text

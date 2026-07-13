@@ -5,7 +5,6 @@ import 'package:triage/widgets/carbon_style_search_field.dart';
 
 import '../app_theme.dart';
 import '../classes/carbon_style_constants.dart';
-import '../classes/medication_services.dart';
 import '../widgets/carbon_style_full_button.dart';
 import '../widgets/text_scanner.dart';
 
@@ -27,7 +26,6 @@ class GetMedicationName extends StatefulWidget {
 class GetMedicationNameState extends State<GetMedicationName> {
   @override
   Widget build(BuildContext context) {
-    MedicationShapes selectedShape = MedicationShapes.round;
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom, // Moves with keyboard
@@ -48,7 +46,7 @@ class GetMedicationNameState extends State<GetMedicationName> {
             alignment: Alignment.centerLeft,
             child: Text(
               "San the bar code on the pill bottle",
-              style: TextStyle(fontSize: 16, color: AppTheme.carbonFontColor),
+              style: TextStyle(fontSize: 16, color: AppTheme.carbonLabelFontColor),
             ),
           ),
           const SizedBox(height: 24),
@@ -66,7 +64,7 @@ class GetMedicationNameState extends State<GetMedicationName> {
           const SizedBox(height: 24),
           Align(
             alignment: Alignment.centerLeft,
-            child: Text("Or enter it manually", style: TextStyle(fontSize: 16, color: AppTheme.carbonFontColor)),
+            child: Text("Or enter it manually", style: TextStyle(fontSize: 16, color: AppTheme.carbonLabelFontColor)),
           ),
           const SizedBox(height: 24),
 

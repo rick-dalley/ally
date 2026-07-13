@@ -153,12 +153,13 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
         }
       }
     }
-
-    setState(() {
-      _isLoading = false;
-      _auditRun = true;
-      _hasContraIndications = _currentConflicts.isNotEmpty;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+        _auditRun = true;
+        _hasContraIndications = _currentConflicts.isNotEmpty;
+      });
+    }
   }
 
   Color fromHex(String hexString) {
@@ -275,34 +276,6 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     });
   }
 
-  // void _addMedication(String medicationName) async {
-  //   if (medicationName.isNotEmpty) {
-  //     var uuid = const Uuid();
-  //     final String medId = uuid.v4(); // Generates a random version 4 UUID
-  //
-  //     final newMed = {
-  //       "id": medId,
-  //       "patient_uuid": widget.patient.patientUuid,
-  //       "name": medicationName,
-  //       "image_uri": "holder",
-  //       "dose": dosageController.text,
-  //       "freq": "PRN",
-  //       "set_id": "",
-  //     };
-  //
-  //     // Save to DB (returns the UUID we just generated)
-  //     await DatabaseManager().insertMedication(newMed);
-  //
-  //     setState(() {
-  //       _meds.add({...newMed, "is_syncing": true});
-  //       nameController.clear();
-  //       dosageController.clear();
-  //     });
-  //     // Background Sync (Do not 'await' this)
-  //     _startBackgroundSync(medId, medicationName);
-  //   }
-  // }
-
   void _addMedication(String medicationName) async {
     if (medicationName.isNotEmpty) {
       var uuid = const Uuid();
@@ -383,6 +356,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
       ),
       // The Floating Action Button replaces the top form
       floatingActionButton: FloatingActionButton.extended(
+        key: Key("FAB_NewMedication"),
         onPressed: () => showAddMedicationSheet(),
         label: const Text("ADD MEDICATION"),
         icon: const Icon(Symbols.pill),

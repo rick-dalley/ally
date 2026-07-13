@@ -56,7 +56,7 @@ class CarbonSearchFieldState extends State<CarbonSearchField> {
               padding: const EdgeInsets.only(left: 0, bottom: 0.0),
               child: Text(
                 widget.label!,
-                style: GoogleFonts.ibmPlexSans(fontSize: 12, color: AppTheme.carbonFieldBorder),
+                style: GoogleFonts.ibmPlexSans(fontSize: 12, color: AppTheme.carbonLabelFontColor),
               ),
             ),
           ),
@@ -70,18 +70,21 @@ class CarbonSearchFieldState extends State<CarbonSearchField> {
                   onChanged: (value) {
                     if (widget.onChanged != null) widget.onChanged!(value);
                   },
+
                   decoration: InputDecoration(
                     fillColor: AppTheme.carbonFieldBackgroundColor,
                     filled: true,
                     hintText: widget.hintText ?? "Enter a value to search",
-                    // Carbon-style borders
-                    border: UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.carbonFontColor, width: 1)),
+                    hintStyle: GoogleFonts.ibmPlexSans(color: AppTheme.carbonPlaceHolderFontColor),
+                    border: UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.carbonFieldBorder, width: 1)),
                     focusedBorder: const UnderlineInputBorder(
                       borderSide: BorderSide(color: AppColors.peacockBlue, width: 2),
                     ),
-                    errorBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFFDA1E28), width: 2)),
+                    errorBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: AppTheme.carbonErrorFontColor, width: 2),
+                    ),
                     errorText: widget.errorText,
-                    errorStyle: GoogleFonts.ibmPlexSans(color: const Color(0xFFDA1E28)),
+                    errorStyle: GoogleFonts.ibmPlexSans(color: AppTheme.carbonErrorFontColor),
 
                     // Prefix: intentional search trapping
                     prefixIcon: IconButton(

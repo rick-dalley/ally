@@ -4,7 +4,7 @@ import '../app_theme.dart';
 import '../classes/database_manager.dart';
 import '../classes/patient.dart';
 import '../widgets/carbon_style_search_field.dart';
-import '../widgets/household_member_medical_card.dart';
+import '../widgets/user_card.dart';
 import 'intake_screen.dart';
 import 'medical_profile_screen.dart';
 import 'prescription_screen.dart';
@@ -108,12 +108,12 @@ class FamilyRosterState extends State<FamilyRoster> {
                     // Added top padding for breathing room
                     itemCount: filteredPatients.length,
                     itemBuilder: (context, index) {
-                      return HouseholdMemberMedicalCard(
+                      return UserCard(
                         householdMember: filteredPatients[index],
-                        onMemberUpdate: ({required Patient patient}) {
+                        onMemberUpdate: (Patient patient) {
                           updatePatient(index: index, patient: patient);
                         },
-                        onVitalsUpdate: ({required Patient patient}) {
+                        onVitalsUpdate: (Patient patient) {
                           updatePatient(index: index, patient: patient);
                         },
                         onAssessmentsTap: () => _showAssessmentsMenu(context, filteredPatients[index]),
