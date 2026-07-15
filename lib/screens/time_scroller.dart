@@ -18,6 +18,19 @@ class TherapyPeriod {
     required this.color,
     required this.icon,
   });
+
+  Duration get totalDuration {
+    return endDate.difference(startDate);
+  }
+
+  double get startProgress {
+    final double totalMs = totalDuration.inMilliseconds.toDouble();
+    return startDate.difference(startDate).inMilliseconds / totalMs;
+  }
+
+  double get endProgress {
+    return endDate.difference(startDate).inMilliseconds / totalDuration.inMilliseconds.toDouble();
+  }
 }
 
 class TimelineScrollerWidget extends StatefulWidget {
