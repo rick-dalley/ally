@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:triage/classes/date_time_utilities.dart';
 
+import '../app_theme.dart';
 import '../classes/immunization.dart';
 import '../classes/patient.dart';
 import '../widgets/vaccination_card.dart';
@@ -84,7 +85,16 @@ class ImmunizationScreenState extends State<ImmunizationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Immunization Schedule")),
+      appBar: AppBar(
+        title: Align(
+          alignment: AlignmentGeometry.centerLeft,
+          child: Text(
+            "Immunization Schedule",
+            style: TextStyle(color: AppTheme.lightTheme.primaryColorDark, fontSize: 24, fontWeight: FontWeight.w400),
+          ),
+        ),
+        backgroundColor: AppTheme.lightTheme.canvasColor,
+      ),
       body: FutureBuilder(
         future: _loadingFuture,
         builder: (context, snapshot) {

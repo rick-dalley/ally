@@ -29,7 +29,9 @@ class StaffScreenState extends State<StaffScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("My Team")),
+      appBar: AppBar(title: Text("My Team"), backgroundColor: AppTheme.lightTheme.canvasColor.withValues(alpha: 0.25)),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      backgroundColor: Colors.transparent,
       body: staffKeys.isEmpty
           ? const Center(
               child: CircularProgressIndicator(
@@ -45,16 +47,19 @@ class StaffScreenState extends State<StaffScreen> {
                 return StaffIdCard(photoPath: 'photoPath', staffMember: staffMember, index: index);
               },
             ),
-      floatingActionButton: FloatingActionButton(
-        key: Key("FAB_NewCareGiver"),
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const AddCareProviderScreen()));
-        },
-        // Signals scanning capability
-        backgroundColor: AppColors.peacockBlue,
-        foregroundColor: AppTheme.clinicalWhite,
-        // New dedicated screen
-        child: const Icon(Symbols.person_add, size: 36),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 90),
+        child: FloatingActionButton(
+          key: Key("FAB_NewCareGiver"),
+          onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const AddCareProviderScreen()));
+          },
+          // Signals scanning capability
+          backgroundColor: AppColors.peacockBlue,
+          foregroundColor: AppTheme.clinicalWhite,
+          // New dedicated screen
+          child: const Icon(Symbols.person_add, size: 36),
+        ),
       ),
     );
   }

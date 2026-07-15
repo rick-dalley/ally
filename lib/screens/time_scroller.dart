@@ -259,12 +259,12 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
           ),
         ),
         Positioned(
-          bottom: 0,
+          bottom: 90,
           left: 0,
           right: 0,
           child: Container(
             padding: const EdgeInsets.all(16),
-            color: Colors.white.withValues(alpha: 0.9),
+            color: Colors.white.withValues(alpha: 0.25),
             child: HorizontalMiniMap(
               controller: _scrollController,
               totalTimelineHeight: 2000.0,

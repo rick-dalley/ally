@@ -20,7 +20,7 @@ class BannerData {
 
   const BannerData({required this.color, required this.message, required this.icon});
 
-  Color get bannerColor => color.withAlpha(128);
+  Color get bannerColor => AppTheme.surfaceColor;
 }
 
 // Fixed map syntax using standard key: value pairs
@@ -225,7 +225,12 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
               ),
             ),
           Expanded(
-            child: CarbonButton(label: "Check Again", onPressed: _runSafetyAudit, icon: Symbols.fact_check),
+            child: CarbonButton(
+              label: "Check Again",
+              onPressed: _runSafetyAudit,
+              icon: Symbols.fact_check,
+              color: AppTheme.lightTheme.primaryColorDark,
+            ),
           ),
         ],
       ),
@@ -343,6 +348,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
   Widget build(BuildContext context) {
     final name = "${widget.patient.firstName} ${widget.patient.lastName}";
     return Scaffold(
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       appBar: AppBar(
         title: Text("Medications: $name"),
         actions: [
@@ -355,14 +361,17 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
         foregroundColor: AppColors.peacockBlue,
       ),
       // The Floating Action Button replaces the top form
-      floatingActionButton: FloatingActionButton.extended(
-        key: Key("FAB_NewMedication"),
-        onPressed: () => showAddMedicationSheet(),
-        label: const Text("ADD MEDICATION"),
-        icon: const Icon(Symbols.pill),
-        shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
-        backgroundColor: AppColors.peacockBlue,
-        foregroundColor: AppTheme.clinicalWhite,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 90.0),
+        child: FloatingActionButton(
+          key: Key("FAB_NewMedication"),
+          onPressed: () => showAddMedicationSheet(),
+          shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
+          backgroundColor: AppTheme.lightTheme.primaryColorDark,
+          foregroundColor: AppTheme.lightTheme.primaryColorLight,
+          // label: const Text("ADD", style: TextStyle(fontWeight: FontWeight.w400, fontSize: 20)),
+          child: const Icon(Symbols.add, size: 32),
+        ),
       ),
 
       body: Column(

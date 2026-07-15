@@ -88,7 +88,7 @@ class UserCardState extends State<UserCard> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppTheme.clinicalWhite,
+      backgroundColor: AppTheme.surfaceColor,
       shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
       builder: (context) =>
           VitalsHistoryView(patientUuid: patientUuid, vitals: vitals, onAddedVitals: refreshPatientData),
@@ -99,7 +99,7 @@ class UserCardState extends State<UserCard> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppTheme.clinicalWhite,
+      backgroundColor: AppTheme.surfaceColor,
       shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
       builder: (context) => BloodTypeSelector(
         selectedAbo: patient.bloodType.abo,
@@ -167,7 +167,11 @@ class UserCardState extends State<UserCard> {
               children: [
                 // Replace your existing Container child: Row(...) block with this:
                 Container(
-                  decoration: BoxDecoration(color: AppTheme.surfaceColor, borderRadius: BorderRadius.zero),
+                  // color: AppTheme.surfaceColor,
+                  decoration: BoxDecoration(
+                    color: AppTheme.lightTheme.scaffoldBackgroundColor,
+                    borderRadius: BorderRadius.zero,
+                  ),
                   // padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
                   child: Stack(
                     clipBehavior: Clip.none, // Allows the widget to draw outside its bounds
@@ -178,7 +182,11 @@ class UserCardState extends State<UserCard> {
                         children: [
                           Text(
                             patient.firstName,
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400, color: AppColors.greyDepth),
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w400,
+                              color: AppTheme.carbonLabelFontColor,
+                            ),
                           ),
                           const Spacer(),
 

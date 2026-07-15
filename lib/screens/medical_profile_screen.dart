@@ -22,7 +22,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.canvasColor,
+      backgroundColor: AppTheme.lightTheme.scaffoldBackgroundColor,
 
       body: SafeArea(
         child: Column(
@@ -36,9 +36,9 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     child: Text(
                       "PROFILE",
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 24,
                         fontWeight: FontWeight.w400,
-                        color: AppColors.peacockBlue,
+                        color: AppTheme.lightTheme.primaryColorDark,
                         letterSpacing: 1.2,
                       ),
                     ),
@@ -64,35 +64,40 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                   CarbonActionTile(
                     title: "Existing Medical Conditions",
                     subTitle: "Review & Update",
-                    icon: Symbols.diagnosis,
+                    icon: Symbols.diagnosis_sharp,
+                    iconSize: Size(40.0, 40.0),
                     outlineIcon: Symbols.diagnosis_sharp,
                     onTap: () => _launchPhysicalHealthChecklist(context, widget.householdMember.patientUuid),
                   ),
                   CarbonActionTile(
                     title: "Medical Diary",
                     subTitle: "Observations about my health journey",
-                    icon: Symbols.clinical_notes,
+                    icon: Symbols.clinical_notes_sharp,
+                    iconSize: Size(40.0, 40.0),
                     outlineIcon: Symbols.clinical_notes_sharp,
                     onTap: () => _launchObservationsModal(context),
                   ),
                   CarbonActionTile(
                     title: "Immunizations",
                     subTitle: "Immunization shots recommended in my locality",
-                    icon: Symbols.vaccines,
+                    icon: Symbols.vaccines_sharp,
+                    iconSize: Size(40.0, 40.0),
                     outlineIcon: Symbols.vaccines_sharp,
                     onTap: () => _launchImmunizationModal(context, widget.householdMember),
                   ),
                   CarbonActionTile(
                     title: "Prescriptions",
                     subTitle: "Medications that have been prescribed for you",
-                    icon: Symbols.medication,
+                    icon: Symbols.medication_sharp,
+                    iconSize: Size(40.0, 40.0),
                     outlineIcon: Symbols.medication_sharp,
                     onTap: () => launchMedicationScreen(patient: widget.householdMember),
                   ),
                   CarbonActionTile(
                     title: "Mental Wellness Questionnaires",
                     subTitle: "Questionnaires to help your care giver assess your current mental health",
-                    icon: Symbols.ballot,
+                    icon: Symbols.ballot_sharp,
+                    iconSize: Size(40.0, 40.0),
                     outlineIcon: Symbols.ballot_sharp,
                     onTap: () => launchQuestionnairesScreen(patient: widget.householdMember),
                   ),

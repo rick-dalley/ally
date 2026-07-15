@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:qr_flutter/qr_flutter.dart';
 
+import '../app_theme.dart';
 import '../classes/patient.dart';
 
 class EmergencyQRCodeView extends StatelessWidget {
@@ -24,8 +25,8 @@ class EmergencyQRCodeView extends StatelessWidget {
     final String qrPayload = jsonEncode(emergencyData);
     return Scaffold(
       extendBodyBehindAppBar: false,
-      backgroundColor: Colors.black,
-      appBar: AppBar(title: const Text("Emergency Passport")),
+      backgroundColor: AppTheme.lightTheme.primaryColorDark,
+      appBar: AppBar(title: const Text("Emergency Passport"), backgroundColor: AppTheme.lightTheme.primaryColorDark),
       body: SafeArea(
         // This ensures the content respects notches and system UI
         child: Center(

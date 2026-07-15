@@ -159,23 +159,28 @@ class AppTheme {
   };
 
   // Background colors
-  static final Color canvasColor = AppColors.grey.all[1]; //greyDepthShades[0
+  static final Color canvasColor = AppColors.grey.all[1];
   static final Color cardBorder = AppColors.grey.all[3];
   static final Color chipBorder = AppColors.grey.all[3];
   static final Color surfaceColor = AppColors.grey.all[0];
   static final Color defaultFontColor = AppColors.grey.all[4];
   static final Color defaultInverseFontColor = surfaceColor;
-
+  //   static final Color canvasColor = AppColors.grey.all[1];
+  //   static final Color cardBorder = AppColors.grey.all[3];
+  //   static final Color chipBorder = AppColors.grey.all[3];
+  //   static final Color surfaceColor = AppColors.grey.all[0];
+  //   static final Color defaultFontColor = AppColors.grey.all[4];
+  //   static final Color defaultInverseFontColor = surfaceColor;
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      scaffoldBackgroundColor: surfaceColor,
+      scaffoldBackgroundColor: AppColors.grey.all[1],
       textTheme: GoogleFonts.inclusiveSansTextTheme(),
       colorScheme: ColorScheme.light(
         primary: AppColors.peacockBlue,
         secondary: AppColors.foamGreen,
-        surface: surfaceColor,
+        surface: AppColors.grey.all[0],
       ),
 
       // AppBar styling for Light Mode (Clean & Professional)
@@ -210,7 +215,7 @@ class AppTheme {
         fillColor: AppColors.grey.all[2],
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Colors.black12),
+          borderSide: BorderSide(color: carbonFieldBorder),
         ),
       ),
     );

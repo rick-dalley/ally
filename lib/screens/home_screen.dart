@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/action.dart';
@@ -98,6 +100,8 @@ class HomeScreenState extends State<HomeScreen> {
     }
 
     return Scaffold(
+      extendBody: true,
+      backgroundColor: Colors.transparent,
       body: PageView.builder(
         controller: _pageController,
         itemCount: patients.length,
@@ -118,22 +122,26 @@ class HomeScreenState extends State<HomeScreen> {
         children: [
           Align(
             alignment: Alignment.center,
-            child: Container(
-              height: 64,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [BoxShadow(color: AppColors.grey.all[2], blurRadius: 10, offset: const Offset(0, -5))],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  const SizedBox(width: 60),
-                  _navButton(index: 1, icon: Symbols.diversity_4),
-                  _navButton(index: 2, icon: Symbols.conditions),
-                  _navButton(index: 3, icon: Symbols.medication),
-                  _navButton(index: 4, icon: Symbols.qr_code_2),
-                  _navButton(index: 5, icon: Symbols.view_object_track),
-                ],
+            child: ClipRect(
+              // Required for BackdropFilter to work
+              child: BackdropFilter(
+                filter: ui.ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                child: Container(
+                  height: 90,
+                  // Use a color with a lower alpha to let the blur show through
+                  color: AppTheme.lightTheme.canvasColor.withValues(alpha: 0.25),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(width: 88),
+                      _navButton(index: 1, icon: Symbols.diversity_4),
+                      _navButton(index: 2, icon: Symbols.conditions),
+                      _navButton(index: 3, icon: Symbols.medication),
+                      _navButton(index: 4, icon: Symbols.qr_code_2),
+                      _navButton(index: 5, icon: Symbols.view_object_track),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
@@ -152,22 +160,50 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _navButton({required int index, required IconData icon}) {
-    return IconButton(
-      icon: Icon(icon),
-      color: _currentIndex == index ? AppColors.oceanBlue : AppColors.peacockBlue,
-      onPressed: () => setState(() => _currentIndex = index),
+    final bool isSelected = _currentIndex == index;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      // Add padding/margin inside the container to make it a pill or square
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: isSelected ? AppTheme.lightTheme.primaryColorDark : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: InkWell(
+        onTap: () => setState(() => _currentIndex = index),
+        child: Icon(
+          icon,
+          size: 32,
+          // If selected, force white; otherwise use the dark primary color
+          color: isSelected ? Colors.white : AppTheme.lightTheme.primaryColorDark,
+        ),
+      ),
     );
   }
 
   Widget _buildPatientAvatar() {
-    return Container(
-      padding: const EdgeInsets.all(4),
+    final bool isSelected = _currentIndex == 0;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      // Adjust padding to keep it circular/balanced compared to icon buttons
+      padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 2))],
+        color: isSelected ? AppTheme.lightTheme.primaryColorDark : Colors.transparent,
+        shape: BoxShape.circle, // Keeps the selection highlight circular
+        border: Border.all(color: isSelected ? AppColors.oceanBlue : Colors.transparent, width: 4),
       ),
-      child: const CircleAvatar(radius: 32, backgroundImage: AssetImage("assets/images/faces/dr_face_1.png")),
+      child: InkWell(
+        customBorder: const CircleBorder(), // Ensures the ripple effect is circular
+        onTap: () => setState(() => _currentIndex = 0),
+        child: const CircleAvatar(
+          radius: 30, // Slightly smaller to accommodate the 4px border inside the container
+          backgroundImage: AssetImage("assets/images/faces/dr_face_1.png"),
+        ),
+      ),
     );
   }
 }

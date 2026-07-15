@@ -25,8 +25,9 @@ class CarbonButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Define the icon and text widgets
+    final buttonColor = this.color ?? AppTheme.lightTheme.primaryColorDark;
     final size = this.size ?? CarbonButtonSize.medium;
-    final iconWidget = icon != null ? Icon(icon, size: 18) : null;
+    final iconWidget = icon != null ? Icon(icon, size: 20) : null;
     final textWidget = Text(
       label,
       style: GoogleFonts.ibmPlexSans(fontSize: size.fontSize, fontWeight: FontWeight.w400, letterSpacing: 0.16),
@@ -44,7 +45,7 @@ class CarbonButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: isSecondary ? AppTheme.cancelButtonBackGround : AppColors.peacockBlue,
+          backgroundColor: isSecondary ? AppTheme.cancelButtonBackGround : buttonColor,
           foregroundColor: isSecondary ? Colors.black : Colors.white,
           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
           padding: const EdgeInsets.symmetric(horizontal: 16),
