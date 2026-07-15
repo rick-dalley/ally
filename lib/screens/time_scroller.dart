@@ -20,36 +20,74 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
   final ValueNotifier<String> _needleTime = ValueNotifier<String>("");
   final ValueNotifier<PatientAction?> _activeAction = ValueNotifier<PatientAction?>(null);
   final double timelineHeight = 2000.0;
+
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_updateNeedleTime);
   }
 
+  // void _updateNeedleTime() {
+  //   debugPrint("_updateNeedleTime");
+  //   if (!_scrollController.hasClients) return;
+  //
+  //   final double needleY = _scrollController.offset + (MediaQuery.of(context).size.height / 2 - 250);
+  //   debugPrint(
+  //     "Needle at $needleY vs Action Ys: ${widget.actions.map((a) => (a.occurred * 1000 - widget.startTime.millisecondsSinceEpoch) / (widget.endTime.millisecondsSinceEpoch - widget.startTime.millisecondsSinceEpoch) * 2000).toList()}",
+  //   );
+  //
+  //   // Use UTC milliseconds for all calculations
+  //   final startMs = widget.startTime.millisecondsSinceEpoch;
+  //   final endMs = widget.endTime.millisecondsSinceEpoch;
+  //   final totalDuration = endMs - startMs;
+  //
+  //   final double progress = (needleY / timelineHeight).clamp(0.0, 1.0);
+  //   final int currentMillis = (startMs + (progress * totalDuration)).toInt();
+  //
+  //   _needleTime.value = DateFormat(
+  //     'MMM d, HH:mm',
+  //   ).format(DateTime.fromMillisecondsSinceEpoch(currentMillis, isUtc: true));
+  //
+  //   // Find nearest action
+  //   PatientAction? closest;
+  //   double minDistance = 50.0;
+  //   for (var action in widget.actions) {
+  //     // action.occurred MUST be compared against startMs in UTC
+  //     final actionProgress = (action.occurred - startMs) / totalDuration;
+  //     final actionY = timelineHeight * actionProgress;
+  //
+  //     if ((actionY - needleY).abs() < minDistance) {
+  //       closest = action;
+  //       minDistance = (actionY - needleY).abs();
+  //     }
+  //   }
+  //   _activeAction.value = closest;
+  // }
   void _updateNeedleTime() {
-    if (!_scrollController.hasClients) return;
+    if (!_scrollController.hasClients || widget.actions.isEmpty) return;
+
+    // 1. Calculate the real bounds of your data
+    final List<int> allTimes = widget.actions.map((a) => a.occurred * 1000).toList();
+    final int minMs = allTimes.reduce((a, b) => a < b ? a : b);
+    final int maxMs = allTimes.reduce((a, b) => a > b ? a : b);
+    final int range = (maxMs - minMs) > 0 ? (maxMs - minMs) : 1;
 
     final double needleY = _scrollController.offset + (MediaQuery.of(context).size.height / 2 - 250);
 
-    // Use UTC milliseconds for all calculations
-    final startMs = widget.startTime.millisecondsSinceEpoch;
-    final endMs = widget.endTime.millisecondsSinceEpoch;
-    final totalDuration = endMs - startMs;
-
+    // 2. Map needleY to the range
     final double progress = (needleY / timelineHeight).clamp(0.0, 1.0);
-    final int currentMillis = (startMs + (progress * totalDuration)).toInt();
+    final int currentMillis = minMs + (progress * range).toInt();
 
     _needleTime.value = DateFormat(
       'MMM d, HH:mm',
     ).format(DateTime.fromMillisecondsSinceEpoch(currentMillis, isUtc: true));
 
-    // Find nearest action
+    // 3. Find closest using the same normalized range
     PatientAction? closest;
-    double minDistance = 50.0;
+    double minDistance = 100.0;
     for (var action in widget.actions) {
-      // action.occurred MUST be compared against startMs in UTC
-      final actionProgress = (action.occurred - startMs) / totalDuration;
-      final actionY = timelineHeight * actionProgress;
+      final double actionProgress = ((action.occurred * 1000) - minMs) / range;
+      final double actionY = timelineHeight * actionProgress;
 
       if ((actionY - needleY).abs() < minDistance) {
         closest = action;
@@ -166,9 +204,20 @@ class TimeLinePainter extends CustomPainter {
 
   TimeLinePainter({required this.actions, required this.startTime, required this.endTime, this.activeAction});
 
+  // double calculateY(int occurred, double canvasHeight) {
+  //   final totalDuration = endTime.millisecondsSinceEpoch - startTime.millisecondsSinceEpoch;
+  //   final progress = ((occurred * 1000) - startTime.millisecondsSinceEpoch) / totalDuration;
+  //   return canvasHeight * progress.clamp(0.0, 1.0);
+  // }
   double calculateY(int occurred, double canvasHeight) {
-    final totalDuration = endTime.millisecondsSinceEpoch - startTime.millisecondsSinceEpoch;
-    final progress = ((occurred * 1000) - startTime.millisecondsSinceEpoch) / totalDuration;
+    final int startMs = startTime.millisecondsSinceEpoch;
+    final int endMs = endTime.millisecondsSinceEpoch;
+    final int totalDuration = endMs - startMs;
+
+    // FIX: Ensure you are consistently comparing milliseconds to milliseconds
+    final int occurredMs = occurred * 1000;
+    final double progress = (occurredMs - startMs) / totalDuration;
+
     return canvasHeight * progress.clamp(0.0, 1.0);
   }
 
@@ -179,27 +228,38 @@ class TimeLinePainter extends CustomPainter {
   }
 
   @override
+  @override
   void paint(Canvas canvas, Size size) {
-    final double axisX = 80.0;
-    final totalDurationMs = endTime.millisecondsSinceEpoch - startTime.millisecondsSinceEpoch;
+    if (actions.isEmpty) return;
 
-    // 1. Determine "Smart" Interval
+    final double axisX = 80.0;
+
+    // 1. NORMALIZE: Use the actual data bounds to ensure 0.0 to 1.0 progress
+    final List<int> allTimes = actions.map((a) => a.occurred * 1000).toList();
+    final int minMs = allTimes.reduce((a, b) => a < b ? a : b);
+    final int maxMs = allTimes.reduce((a, b) => a > b ? a : b);
+    final int rangeMs = (maxMs - minMs) > 0 ? (maxMs - minMs) : 1;
+
+    // 2. Draw smart increments based on normalized range
+    DateTime minDate = DateTime.fromMillisecondsSinceEpoch(minMs, isUtc: true);
+    DateTime maxDate = DateTime.fromMillisecondsSinceEpoch(maxMs, isUtc: true);
+
     Duration interval;
-    if (totalDurationMs < Duration(hours: 2).inMilliseconds) {
+    if (rangeMs < Duration(hours: 2).inMilliseconds) {
       interval = const Duration(minutes: 15);
-    } else if (totalDurationMs < Duration(hours: 24).inMilliseconds) {
+    } else if (rangeMs < Duration(hours: 24).inMilliseconds) {
       interval = const Duration(hours: 1);
-    } else if (totalDurationMs < Duration(days: 7).inMilliseconds) {
+    } else if (rangeMs < Duration(days: 7).inMilliseconds) {
       interval = const Duration(days: 1);
     } else {
       interval = const Duration(days: 7);
     }
 
-    // 2. Draw smart increments
-    DateTime currentTime = startTime;
-    while (currentTime.isBefore(endTime)) {
-      final double progress = (currentTime.millisecondsSinceEpoch - startTime.millisecondsSinceEpoch) / totalDurationMs;
-      final double y = size.height * progress;
+    DateTime currentTime = minDate;
+    while (currentTime.isBefore(maxDate.add(interval))) {
+      final double progress = (currentTime.millisecondsSinceEpoch - minMs) / rangeMs;
+      final double y = size.height * progress.clamp(0.0, 1.0);
+
       final TextPainter tp = TextPainter(
         text: TextSpan(
           text: _formatByInterval(currentTime, interval),
@@ -222,7 +282,9 @@ class TimeLinePainter extends CustomPainter {
 
     // 4. Draw Events
     for (var action in actions) {
-      final double y = calculateY(action.occurred, size.height);
+      final double progress = ((action.occurred * 1000) - minMs) / rangeMs;
+      final double y = size.height * progress.clamp(0.0, 1.0);
+
       if (activeAction != null && action.id == activeAction!.id) {
         canvas.drawCircle(Offset(axisX, y), 8, Paint()..color = Colors.orange.withValues(alpha: 0.3));
       }
@@ -231,5 +293,8 @@ class TimeLinePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant TimeLinePainter oldDelegate) => oldDelegate.activeAction != activeAction;
+  bool shouldRepaint(covariant TimeLinePainter oldDelegate) {
+    // MUST compare both the action list and the activeAction
+    return oldDelegate.activeAction != activeAction || oldDelegate.actions != actions;
+  }
 }

@@ -96,8 +96,8 @@ class StaffIdCard extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min, // Constrains the column to the size of its children
                           children: [
                             Container(
-                              width: 120,
-                              height: 120,
+                              width: 184,
+                              height: 184,
                               decoration: BoxDecoration(
                                 border: Border.all(color: const Color(0xFF525252), width: 1.0),
                                 borderRadius: BorderRadius.zero,
@@ -107,7 +107,7 @@ class StaffIdCard extends StatelessWidget {
                             const SizedBox(height: 8), // Add some breathing room
                             // Use a fixed size or just wrap the content
                             SizedBox(
-                              width: 120, // Match the width of the image
+                              width: 184, // Match the width of the image
                               child: AppointmentChip(),
                             ),
                           ],
