@@ -69,8 +69,8 @@ class HomeScreenState extends State<HomeScreen> {
       EmergencyQRCodeView(householdMember: patient),
       TimelineScrollerWidget(
         actions: actions,
-        startTime: actions.first.getFormattedOccurred(),
-        endTime: DateTime.now(),
+        startTime: actions.first.occurred.toUtc(),
+        endTime: DateTime.now().toUtc(),
       ),
     ];
   }

@@ -56,7 +56,7 @@ class DatabaseManager {
     }
   }
 
-  Future<Database> _init({bool overwrite = false}) async {
+  Future<Database> _init({bool overwrite = true}) async {
     final String response = await rootBundle.loadString('assets/sql/sql.json');
     sqlConfig = json.decode(response);
 

@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:flutter/cupertino.dart';
+
 class DTUtilities {
   static String getRecencyString(DateTime pastDate) {
     final DateTime now = DateTime.now();
@@ -82,20 +84,25 @@ class DTUtilities {
 
   static int dateStringToUnixInt(String dateString) {
     try {
-      // 1. Try standard ISO parsing first
-      return DateTime.parse(dateString).millisecondsSinceEpoch ~/ 1000;
+      debugPrint("dateStringToUnixInt(String dateString): $dateString");
+      // Expected format: 2026-12-17T19:07:52Z
+      // We manually extract the parts to avoid all timezone parsing logic
+      int year = int.parse(dateString.substring(0, 4));
+      int month = int.parse(dateString.substring(5, 7));
+      int day = int.parse(dateString.substring(8, 10));
+      int hour = int.parse(dateString.substring(11, 13));
+      int min = int.parse(dateString.substring(14, 16));
+      int sec = int.parse(dateString.substring(17, 19));
+
+      return DateTime.utc(year, month, day, hour, min, sec).millisecondsSinceEpoch ~/ 1000;
     } catch (e) {
-      // 2. Fallback: Split "2/8/2026" by "/"
+      // Fallback for the slash format
       List<String> parts = dateString.split('/');
       if (parts.length == 3) {
-        int month = int.parse(parts[0]);
-        int day = int.parse(parts[1]);
-        int year = int.parse(parts[2]);
-
-        return DateTime(year, month, day).millisecondsSinceEpoch ~/ 1000;
+        return DateTime.utc(int.parse(parts[2]), int.parse(parts[0]), int.parse(parts[1])).millisecondsSinceEpoch ~/
+            1000;
       }
-      // 3. Last resort: Return current time if all else fails
-      return DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      return DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
     }
   }
 

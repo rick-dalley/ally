@@ -363,7 +363,7 @@ class TimeLinePainter extends CustomPainter {
 
     // 3. Draw Tags (Mapped to total height, but clamped)
     for (var action in actions) {
-      final progress = ((action.occurred * 1000) - startTime.millisecondsSinceEpoch) / totalDuration;
+      final progress = ((action.occurredAsUnixInt * 1000) - startTime.millisecondsSinceEpoch) / totalDuration;
 
       // Map directly to the same scale as segments
       final double rawY = size.height * progress * zoomLevel;
@@ -523,7 +523,7 @@ class TimeLinePainter extends CustomPainter {
       canvas.drawPath(path, cardPaint);
       canvas.drawPath(path, borderPaint);
       // Date inside the box
-      final timeStr = DateFormat('MMM d').format(DateTime.fromMillisecondsSinceEpoch(action.occurred * 1000));
+      final timeStr = DateFormat('MMM d').format(DateTime.fromMillisecondsSinceEpoch(action.occurredAsUnixInt * 1000));
       final timePainter = TextPainter(
         text: TextSpan(text: timeStr, style: textStyle),
         textDirection: TextDirection.ltr,

@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'dart:core';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:triage/classes/date_time_utilities.dart';
 import 'package:triage/classes/phase_state_handlers.dart';
 
 abstract class TimelineItem {
-  int get occurred;
+  int get occurredAsUnixInt;
 }
 
 enum TransferRequestStatus { pending, approved, denied, retracted }
@@ -46,7 +47,7 @@ class PatientEvent implements TimelineItem {
   final PhaseIdentifier phase;
   final String eventId;
   @override
-  final int occurred;
+  final int occurredAsUnixInt;
   final String? notes;
 
   // 1. Standard Const Constructor
@@ -55,7 +56,7 @@ class PatientEvent implements TimelineItem {
     required this.eventId,
     this.notes,
     required this.phase,
-    required this.occurred,
+    required this.occurredAsUnixInt,
   });
 
   // 2. Factory Constructor for JSON
@@ -68,7 +69,7 @@ class PatientEvent implements TimelineItem {
       patientUuid: json["patient_uuid"],
       phase: PhaseIdentifier.values[rawPhase],
       eventId: json["event_id"],
-      occurred: json["occurred"],
+      occurredAsUnixInt: json["occurred"],
       notes: json["notes"],
     );
   }
@@ -83,8 +84,10 @@ class PatientAction implements TimelineItem {
   final String witnessUuid;
   final ActionType type;
   @override
-  final int occurred;
+  final int occurredAsUnixInt;
   final String notes;
+  final String occurredAsString;
+  final DateTime occurred;
 
   String getName() {
     return actionLabels[type] ?? "Unknown";
@@ -94,6 +97,8 @@ class PatientAction implements TimelineItem {
     required this.type,
     required this.notes,
     required this.id,
+    required this.occurredAsUnixInt,
+    required this.occurredAsString,
     required this.occurred,
     required this.patientUuid,
     required this.actionId,
@@ -104,15 +109,17 @@ class PatientAction implements TimelineItem {
   factory PatientAction.fromJson(Map<String, dynamic> json) {
     int rawType = json["action"] ?? 0;
     dynamic rawOccurred = json["occurred"];
-    // Convert to Unix timestamp (seconds)
-    int unixOccurred = DTUtilities.dateStringToUnixInt(rawOccurred.toString());
+    DateTime dt = DateTime.parse(rawOccurred);
+    int unixOccurred = dt.millisecondsSinceEpoch ~/ 1000;
 
     return PatientAction(
       id: json["id"],
       patientUuid: json["patient_uuid"],
       actionId: json["id"],
       type: ActionType.values[rawType],
-      occurred: unixOccurred,
+      occurredAsUnixInt: unixOccurred,
+      occurredAsString: rawOccurred,
+      occurred: dt,
       actorUuid: json["actor_uuid"] ?? "",
       witnessUuid: json["witness_uuid"] ?? "",
       notes: json["notes"] ?? "",
@@ -120,7 +127,7 @@ class PatientAction implements TimelineItem {
   }
 
   DateTime getFormattedOccurred() {
-    return DateTime.fromMillisecondsSinceEpoch(occurred * 1000);
+    return DateTime.fromMillisecondsSinceEpoch(occurredAsUnixInt * 1000);
   }
 }
 
@@ -200,7 +207,7 @@ class TimeLine {
   List<TimelineItem> get sortedChronology {
     List<TimelineItem> combined = [...actions, ...events];
     // Sort by integer using a common interface or getter
-    combined.sort((a, b) => a.occurred.compareTo(b.occurred));
+    combined.sort((a, b) => a.occurredAsUnixInt.compareTo(b.occurredAsUnixInt));
     return combined;
   }
 }
