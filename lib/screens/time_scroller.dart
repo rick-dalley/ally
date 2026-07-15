@@ -18,19 +18,6 @@ class TherapyPeriod {
     required this.color,
     required this.icon,
   });
-
-  Duration get totalDuration {
-    return endDate.difference(startDate);
-  }
-
-  double get startProgress {
-    final double totalMs = totalDuration.inMilliseconds.toDouble();
-    return startDate.difference(startDate).inMilliseconds / totalMs;
-  }
-
-  double get endProgress {
-    return endDate.difference(startDate).inMilliseconds / totalDuration.inMilliseconds.toDouble();
-  }
 }
 
 class TimelineScrollerWidget extends StatefulWidget {
@@ -200,7 +187,7 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
                 top: yTop - _scrollController.offset + 250, // 250 is your padding
                 left: xPos,
                 child: CustomPaint(
-                  size: const Size(120, 40),
+                  size: const Size(80, 120),
                   painter: CapsuleSliderBubble(
                     icon: period.icon,
                     label: period.name,
@@ -558,7 +545,6 @@ class CapsuleSliderBubble extends CustomPainter {
   final Color? color;
   final Color? iconColor;
   final Color? labelColor;
-
   // These make the painter "self-aware" of its scroll position
   final double scrollOffset;
   final double yTop;
@@ -593,21 +579,20 @@ class CapsuleSliderBubble extends CustomPainter {
     }
     // 2. Define Styles
     final Paint bubblePaint = Paint()
-      ..color = color ?? Colors.blue.withOpacity(0.85)
+      ..color = color ?? AppColors.ocean.all[5].withValues(alpha: 0.85)
       ..style = PaintingStyle.fill;
 
-    final Color effectiveIconColor = iconColor ?? Colors.black.withOpacity(0.65);
-    final Color effectiveLabelColor = labelColor ?? Colors.black;
+    final Color effectiveIconColor = iconColor ?? Colors.white.withValues(alpha: 0.65);
+    final Color effectiveLabelColor = labelColor ?? Colors.white;
 
     // 3. Move the canvas to the calculated sticky position
     canvas.save();
     canvas.translate(0, bubbleY - yTop);
 
     // 4. Draw Background
-    final RRect rrect = RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(20));
-    canvas.drawRRect(rrect, bubblePaint);
+    final RRect backgroundRect = RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(20));
+    canvas.drawRRect(backgroundRect, bubblePaint);
 
-    // 5. Draw Icon
     if (icon != null) {
       final TextPainter iconPainter = TextPainter(
         text: TextSpan(
@@ -621,19 +606,29 @@ class CapsuleSliderBubble extends CustomPainter {
         ),
         textDirection: ui.TextDirection.ltr,
       )..layout();
-      iconPainter.paint(canvas, Offset(8, (size.height - iconPainter.height) / 2));
+
+      // Center icon horizontally, position at top with 8px padding
+      final double iconX = (size.width - iconPainter.width) / 2;
+      iconPainter.paint(canvas, Offset(iconX, 8));
     }
 
-    // 6. Draw Text
     if (label != null) {
-      final TextPainter textPainter = TextPainter(
+      final double maxTextWidth = size.width - 16;
+
+      final TextPainter labelPainter = TextPainter(
         text: TextSpan(
           text: label,
           style: TextStyle(color: effectiveLabelColor, fontWeight: FontWeight.w400, fontSize: 16),
         ),
         textDirection: ui.TextDirection.ltr,
-      )..layout();
-      textPainter.paint(canvas, Offset(40, (size.height - textPainter.height) / 2));
+        textAlign: TextAlign.center,
+      )..layout(maxWidth: maxTextWidth);
+
+      // Positioned below icon (assuming icon takes up ~32px of space)
+      final double labelY = 32;
+      final double labelX = (size.width - labelPainter.width) / 2;
+
+      labelPainter.paint(canvas, Offset(labelX, labelY));
     }
 
     canvas.restore();
