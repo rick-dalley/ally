@@ -46,6 +46,12 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
     super.initState();
     periods = getMockPeriods();
     _scrollController.addListener(_updateNeedleTime);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        // Jump to the bottom instantly
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      }
+    });
   }
 
   void _updateNeedleTime() {
@@ -260,7 +266,7 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
         ),
         Positioned(
           bottom: 90,
-          left: 0,
+          left: 90,
           right: 0,
           child: Container(
             padding: const EdgeInsets.all(16),
@@ -268,6 +274,8 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
             child: HorizontalMiniMap(
               controller: _scrollController,
               totalTimelineHeight: 2000.0,
+              periods: periods,
+              height: 80,
               minDate: widget.startTime, // Use the injected start
               maxDate: widget.endTime, // Use the injected end
             ),
@@ -400,7 +408,7 @@ class TherapyPeriodPainter extends CustomPainter {
 
       // Draw the capsule
       final rect = RRect.fromRectAndRadius(Rect.fromLTWH(xPos, yTop, 80, height), const Radius.circular(12));
-      canvas.drawRRect(rect, Paint()..color = period.color.withOpacity(0.2));
+      canvas.drawRRect(rect, Paint()..color = period.color.withValues(alpha: 0.2));
     }
   }
 
@@ -416,15 +424,19 @@ class TherapyPeriodPainter extends CustomPainter {
 class HorizontalMiniMap extends StatelessWidget {
   final ScrollController controller;
   final double totalTimelineHeight;
+  final List<TherapyPeriod> periods;
   final DateTime minDate;
   final DateTime maxDate;
+  final double? height;
 
   const HorizontalMiniMap({
     super.key,
     required this.controller,
     required this.totalTimelineHeight,
+    required this.periods,
     required this.minDate,
     required this.maxDate,
+    this.height,
   });
 
   String _getLabel(double progress) {
@@ -447,48 +459,169 @@ class HorizontalMiniMap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double widgetHeight = height ?? 80;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         return AnimatedBuilder(
           animation: controller,
           builder: (context, child) {
             final viewportHeight = MediaQuery.of(context).size.height;
-            final scrollProgress = controller.hasClients
-                ? (controller.offset / (totalTimelineHeight - viewportHeight)).clamp(0.0, 1.0)
-                : 0.0;
+            final maxScroll = totalTimelineHeight - viewportHeight;
+            final scrollProgress = controller.hasClients ? (controller.offset / maxScroll).clamp(0.0, 1.0) : 0.0;
 
-            return Column(
-              children: [
-                // Dynamic Label
-                Text(_getLabel(scrollProgress), style: const TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                // Slider Track
-                Container(
-                  height: 12,
-                  width: constraints.maxWidth,
-                  decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(6)),
-                  child: Stack(
-                    children: [
-                      Positioned(
-                        left:
-                            scrollProgress *
-                            (constraints.maxWidth - (constraints.maxWidth * (viewportHeight / totalTimelineHeight))),
-                        child: Container(
-                          width: constraints.maxWidth * (viewportHeight / totalTimelineHeight),
-                          height: 12,
-                          decoration: BoxDecoration(color: AppColors.oceanBlue, borderRadius: BorderRadius.circular(6)),
+            const double padding = 4;
+            final double handleWidth = constraints.maxWidth * (viewportHeight / totalTimelineHeight);
+            final double activeTrackWidth = constraints.maxWidth - (padding * 2);
+            final double effectiveHandleWidth = handleWidth - (padding * 2);
+
+            // void handleDrag(double localX) {
+            //   if (!controller.hasClients) return;
+            //   final double newProgress = ((localX - padding) / activeTrackWidth).clamp(0.0, 1.0);
+            //   controller.jumpTo(newProgress * maxScroll);
+            // }
+            void handleDrag(double localX) {
+              if (!controller.hasClients) return;
+
+              // 1. Calculate offset relative to the actual track (subtract padding)
+              final double relativeX = (localX - padding).clamp(0.0, activeTrackWidth);
+
+              // 2. Calculate progress based on the usable width
+              final double newProgress = (relativeX / activeTrackWidth).clamp(0.0, 1.0);
+
+              // 3. Jump to that position
+              controller.jumpTo(newProgress * controller.position.maxScrollExtent);
+            }
+
+            return GestureDetector(
+              onHorizontalDragUpdate: (details) => handleDrag(details.localPosition.dx),
+              onTapDown: (details) => handleDrag(details.localPosition.dx),
+              child: Column(
+                children: [
+                  Text(_getLabel(scrollProgress), style: const TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 6),
+                  Container(
+                    height: widgetHeight,
+                    width: constraints.maxWidth,
+                    decoration: BoxDecoration(color: Colors.transparent, borderRadius: BorderRadius.circular(6)),
+                    child: Stack(
+                      children: [
+                        // Track Background
+                        Padding(
+                          padding: const EdgeInsets.all(padding),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: AppTheme.lightTheme.primaryColorLight.withValues(alpha: 0.85),
+                              borderRadius: BorderRadius.zero,
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
+
+                        // Inside your Stack, in HorizontalMiniMap:
+                        ...List.generate(periods.length, (i) {
+                          final period = periods[i];
+
+                          // 1. Fixed height and spacing logic
+                          const double capsuleHeight = 20.0;
+                          const double spacing = 4.0;
+                          final double top = padding + (i * (capsuleHeight + spacing));
+
+                          // 2. Proportional Horizontal Mapping
+                          // Divide the track into equal slots based on the number of periods
+                          // This removes the "100px" offset and spreads them across the full width
+                          final int totalPeriods = periods.length;
+                          final double slotWidth = constraints.maxWidth / totalPeriods;
+                          final double capsuleWidth = 80.0; // Your desired width
+
+                          // Center each capsule within its allocated slot
+                          final double xPos = (i * slotWidth) + (slotWidth / 2) - (capsuleWidth / 2);
+
+                          return Positioned(
+                            top: top,
+                            left: xPos.clamp(padding, constraints.maxWidth - capsuleWidth - padding),
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 4.0),
+                              child: Container(
+                                width: capsuleWidth,
+                                height: capsuleHeight,
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: period.color, width: 1.0),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                        // The Interactive Handle (Thumb)
+                        // The Interactive Handle (Thumb)
+                        Positioned(
+                          left: padding + (scrollProgress * (activeTrackWidth - effectiveHandleWidth)),
+                          child: Container(
+                            width: effectiveHandleWidth,
+                            height: widgetHeight,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: AppTheme.lightTheme.primaryColorDark, width: 4.0),
+                              borderRadius: BorderRadius.zero,
+                            ),
+                            // We add a child that shifts the line inside the thumb
+                            child: LayoutBuilder(
+                              builder: (context, thumbConstraints) {
+                                // Calculate how much the line should move based on scroll progress
+                                // We want it to stay centered at 0% and 100% scroll
+                                final double lineOffset = (thumbConstraints.maxWidth - 2) * scrollProgress;
+
+                                return Stack(
+                                  children: [
+                                    Positioned(
+                                      left: lineOffset,
+                                      top: 0,
+                                      bottom: 0,
+                                      width: 2, // The width of your line
+                                      child: CustomPaint(
+                                        painter: DashedLinePainter(color: AppTheme.lightTheme.primaryColorDark),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             );
           },
         );
       },
     );
   }
+}
+
+class DashedLinePainter extends CustomPainter {
+  final Color color;
+  DashedLinePainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = color
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
+
+    const double dashWidth = 4;
+    const double dashSpace = 4;
+    double currentX = 0;
+
+    // Draw the line segment by segment
+    canvas.drawLine(Offset(currentX + size.width / 2, 0), Offset(currentX + size.width / 2, size.height), paint);
+    currentX += dashWidth + dashSpace;
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class VerticalMiniMap extends StatelessWidget {
@@ -643,38 +776,3 @@ class CapsuleSliderBubble extends CustomPainter {
         oldDelegate.color != color;
   }
 }
-
-//
-// class CapsuleSliderBubble extends StatelessWidget {
-//   final IconData? icon;
-//   final Color? color;
-//   final Color? iconColor;
-//   final Color? labelColor;
-//   final String? label;
-//
-//   const CapsuleSliderBubble({super.key, this.icon, this.label, this.color, this.iconColor, this.labelColor});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     Color bubbleColor = color ?? AppColors.oceanBlue.withValues(alpha: .85);
-//     Color bubbleIconColor = iconColor ?? AppColors.oceanBlue.withValues(alpha: 0.65); // Darkest (text/icon)
-//     Color bubbleLabelColor = labelColor ?? AppColors.ocean.all[6];
-//     String bubbleLabel = label ?? "";
-//
-//     return Container(
-//       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-//       decoration: BoxDecoration(color: bubbleColor, borderRadius: BorderRadius.circular(20)),
-//       child: Row(
-//         mainAxisSize: MainAxisSize.min,
-//         children: [
-//           Icon(icon, color: bubbleIconColor, size: 24),
-//           const SizedBox(width: 8),
-//           Text(
-//             bubbleLabel,
-//             style: TextStyle(color: bubbleLabelColor, fontWeight: FontWeight.w400),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }

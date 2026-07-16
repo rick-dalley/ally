@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'dart:core';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:triage/classes/date_time_utilities.dart';
 import 'package:triage/classes/phase_state_handlers.dart';
 
 abstract class TimelineItem {

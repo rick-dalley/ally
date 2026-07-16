@@ -25,7 +25,7 @@ class CarbonButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Define the icon and text widgets
-    final buttonColor = this.color ?? AppTheme.lightTheme.primaryColorDark;
+    final buttonColor = color ?? AppTheme.lightTheme.primaryColorDark;
     final size = this.size ?? CarbonButtonSize.medium;
     final iconWidget = icon != null ? Icon(icon, size: 20) : null;
     final textWidget = Text(

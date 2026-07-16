@@ -40,13 +40,13 @@ final Map<BannerType, BannerData> banners = {
     message: "All Risks Acknowledged & Accepted",
     icon: Icons.check_circle_outline,
   ),
-  BannerType.none: const BannerData(
-    color: Color(0xFF2E7D32),
+  BannerType.none: BannerData(
+    color: AppTheme.lightTheme.primaryColorDark,
     message: "No Interactions Detected",
     icon: Symbols.verified,
   ),
-  BannerType.unknown: const BannerData(
-    color: Color(0xFF888888),
+  BannerType.unknown: BannerData(
+    color: AppColors.grey.all[3],
     message: "Not yet checked",
     icon: Symbols.unknown_document,
   ),
@@ -350,7 +350,13 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       appBar: AppBar(
-        title: Text("Medications: $name"),
+        title: Align(
+          alignment: AlignmentGeometry.centerLeft,
+          child: Text(
+            "Medications: $name",
+            style: TextStyle(color: AppTheme.lightTheme.primaryColorDark, fontWeight: FontWeight.w400, fontSize: 20),
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: _isLoading ? null : _confirmAndSave,
