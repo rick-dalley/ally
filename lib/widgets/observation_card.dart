@@ -17,7 +17,7 @@ class ObservationCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      color: Colors.white,
+      color: AppColors.grey.all[0],
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
         side: BorderSide(color: AppTheme.cardBorder, width: 1),

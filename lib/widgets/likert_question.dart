@@ -38,7 +38,7 @@ class _LikertQuestionTileState extends State<LikertQuestionTile> {
           width: double.infinity,
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.foamGreen.withValues(alpha: 0.08) : Colors.white,
+            color: isSelected ? AppColors.foamGreen.withValues(alpha: 0.08) : AppColors.grey.all[0],
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: isSelected ? AppColors.foamGreen : Colors.grey.shade300,
@@ -172,14 +172,14 @@ class _LikertQuestionTileState extends State<LikertQuestionTile> {
                           child: Text(
                             labelText,
                             style: TextStyle(
-                              color: isSelected ? Colors.white : Colors.black87,
+                              color: isSelected ? AppColors.grey.all[0] : Colors.black87,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
                         selected: isSelected,
                         selectedColor: AppColors.foamGreen, // FIX: Use Theme Color
-                        checkmarkColor: Colors.white,
+                        checkmarkColor: AppColors.grey.all[0],
                         onSelected: widget.onChanged != null ? (selected) => widget.onChanged!(score) : null,
                       ),
                     ),
@@ -207,12 +207,12 @@ class _LikertQuestionTileState extends State<LikertQuestionTile> {
                           score.toString(),
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: isSelected ? Colors.white : Colors.black,
+                            color: isSelected ? AppColors.grey.all[0] : Colors.black,
                           ),
                         ),
                         selected: isSelected,
                         selectedColor: AppColors.foamGreen, // FIX
-                        checkmarkColor: Colors.white,
+                        checkmarkColor: AppColors.grey.all[0],
                         onSelected: widget.onChanged != null ? (selected) => widget.onChanged!(score) : null,
                       ),
                     ],
@@ -236,7 +236,7 @@ class _LikertQuestionTileState extends State<LikertQuestionTile> {
               style: const TextStyle(fontSize: 14),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: AppColors.grey.all[0],
                 contentPadding: const EdgeInsets.all(12),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),

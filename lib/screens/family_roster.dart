@@ -54,7 +54,7 @@ class FamilyRosterState extends State<FamilyRoster> {
       context: context,
       shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.grey.all[0],
       useSafeArea: true,
       builder: (context) => MedicalProfileScreen(householdMember: householdMember),
     );

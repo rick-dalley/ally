@@ -41,7 +41,7 @@ class VitalsBar extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppTheme.darkSlate,
                   borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
-                  border: Border.all(color: Colors.white10, width: 0.5),
+                  border: Border.all(color: AppColors.grey.all[0]10, width: 0.5),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -66,7 +66,7 @@ class VitalsBar extends StatelessWidget {
                 color: AppColors.foamGreen,
                 borderRadius: const BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
               ),
-              child: const Icon(Icons.add, color: Colors.white, size: 28),
+              child: const Icon(Icons.add, color: AppColors.grey.all[0], size: 28),
             ),
           ),
         ],

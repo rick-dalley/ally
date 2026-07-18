@@ -238,7 +238,7 @@ class _VitalsScannerWidgetState extends State<VitalsScannerWidget> with WidgetsB
           child: Text(
             "Camera permission is required for Vitals OCR.",
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: AppColors.grey.all[0]),
           ),
         ),
       );
@@ -293,7 +293,7 @@ class _ScannerOverlay extends StatelessWidget {
             child: Text(
              deviceBrand,
               style: const TextStyle(
-                color: Colors.white,
+                color: AppColors.grey.all[0],
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
                 backgroundColor: Colors.black45,
@@ -301,7 +301,7 @@ class _ScannerOverlay extends StatelessWidget {
             ),
           ),
           const Center(
-            child: Icon(Icons.add, color: Colors.white54, size: 40),
+            child: Icon(Icons.add, color: AppColors.grey.all[0]54, size: 40),
           ),
         ],
       ),

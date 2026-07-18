@@ -325,7 +325,7 @@ class TimeLinePainter extends CustomPainter {
       ..color = color ?? Colors.black26
       ..strokeWidth = 2.0;
     final Paint cardPaint = Paint()
-      ..color = backgroundColor ?? Colors.white
+      ..color = backgroundColor ?? AppColors.grey.all[0]
       ..style = PaintingStyle.fill;
     final Paint borderPaint = Paint()
       ..color = foregroundColor ?? Colors.blue

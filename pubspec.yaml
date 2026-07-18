@@ -49,7 +49,8 @@ flutter:
     - assets/conditions/
     - assets/drugs/
     - assets/images/
-    - assets/images/faces/
+    - assets/images/faces/staff/
+    - assets/images/faces/users/
     - assets/images/pills/
     - assets/interactions/
     - assets/medications/

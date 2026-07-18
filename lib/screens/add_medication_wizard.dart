@@ -85,7 +85,7 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.grey.all[0],
       bottomNavigationBar: Padding(
         padding: EdgeInsets.all(CarbonSpacing.wide.width),
         child: Row(

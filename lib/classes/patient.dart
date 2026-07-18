@@ -240,6 +240,17 @@ class Patient {
   String get name {
     return '$firstName $lastName';
   }
+
+  String get initials {
+    // Get the first character of each, default to empty string if name is missing
+    String firstInitial = firstName.isNotEmpty ? firstName[0] : '';
+    String lastInitial = lastName.isNotEmpty ? lastName[0] : '';
+
+    // Combine them and return as uppercase
+    return '$firstInitial$lastInitial'.toUpperCase();
+  }
+
+  bool get hasCustomAvatar => true;
 }
 
 class PatientController extends ChangeNotifier {

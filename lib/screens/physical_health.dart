@@ -14,35 +14,55 @@ class MedicalCategory {
 }
 
 Map<String, MedicalCategory> categoryIcons = {
-  "Cardiovascular": MedicalCategory(iconData: Symbols.cardiology, color: Color(0xFFBA0000), textColor: Colors.white),
-  "Dermatological": MedicalCategory(iconData: Symbols.dermatology, color: Color(0xFFBA5D00), textColor: Colors.white),
+  "Cardiovascular": MedicalCategory(
+    iconData: Symbols.cardiology,
+    color: Color(0xFFBA0000),
+    textColor: AppColors.grey.all[0],
+  ),
+  "Dermatological": MedicalCategory(
+    iconData: Symbols.dermatology,
+    color: Color(0xFFBA5D00),
+    textColor: AppColors.grey.all[0],
+  ),
   "Gastrointestinal": MedicalCategory(
     iconData: Symbols.gastroenterology,
     color: Color(0xFF64008C),
-    textColor: Colors.white,
+    textColor: AppColors.grey.all[0],
   ),
   "Infectious and Immunological": MedicalCategory(
     iconData: Symbols.microbiology,
     color: Color(0xFFBA8002),
-    textColor: Colors.white,
+    textColor: AppColors.grey.all[0],
   ),
   "Mental and Behavioral Health": MedicalCategory(
     iconData: Symbols.psychiatry,
     color: Color(0xFF187303),
-    textColor: Colors.white,
+    textColor: AppColors.grey.all[0],
   ),
   "Metabolic & Endocrine": MedicalCategory(
     iconData: Symbols.metabolism,
     color: Color(0xFF730350),
-    textColor: Colors.white,
+    textColor: AppColors.grey.all[0],
   ),
-  "Musculoskeletal": MedicalCategory(iconData: Symbols.orthopedics, color: Color(0xFF636363), textColor: Colors.white),
-  "Neurological": MedicalCategory(iconData: Symbols.neurology, color: Color(0xFF215A8A), textColor: Colors.white),
-  "Respiratory": MedicalCategory(iconData: Symbols.pulmonology, color: Color(0xFF0298BA), textColor: Colors.white),
+  "Musculoskeletal": MedicalCategory(
+    iconData: Symbols.orthopedics,
+    color: Color(0xFF636363),
+    textColor: AppColors.grey.all[0],
+  ),
+  "Neurological": MedicalCategory(
+    iconData: Symbols.neurology,
+    color: Color(0xFF215A8A),
+    textColor: AppColors.grey.all[0],
+  ),
+  "Respiratory": MedicalCategory(
+    iconData: Symbols.pulmonology,
+    color: Color(0xFF0298BA),
+    textColor: AppColors.grey.all[0],
+  ),
   "Urological and Reproductive": MedicalCategory(
     iconData: Symbols.urology,
     color: Color(0xFF8A346C),
-    textColor: Colors.white,
+    textColor: AppColors.grey.all[0],
   ),
 };
 
@@ -228,7 +248,7 @@ class _PhysicalHealthAssessmentState extends State<PhysicalHealthAssessment> {
                     decoration: InputDecoration(
                       hintText: "Enter any conditions not listed above...",
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: AppColors.grey.all[0],
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                   ),
@@ -257,7 +277,7 @@ class _PhysicalHealthAssessmentState extends State<PhysicalHealthAssessment> {
                     ),
                     child: const Text(
                       "SAVE ASSESSMENT",
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                      style: TextStyle(color: AppColors.grey.all[0], fontWeight: FontWeight.bold, fontSize: 15),
                     ),
                   ),
                 ),
@@ -297,7 +317,7 @@ class _PhysicalHealthAssessmentState extends State<PhysicalHealthAssessment> {
               label: Text(condition.name),
               // 1. Customize the Text Style and Font Color
               labelStyle: TextStyle(
-                color: isSelected ? Colors.white : categoryIcon.color,
+                color: isSelected ? AppColors.grey.all[0] : categoryIcon.color,
                 fontWeight: FontWeight.w500,
                 fontSize: 14,
               ),

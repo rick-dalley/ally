@@ -50,7 +50,7 @@ class CountdownTimer extends StatelessWidget {
                   value: percentExpired,
                   strokeWidth: 3,
                   color: timerColor,
-                  backgroundColor: Colors.white10,
+                  backgroundColor: AppColors.grey.all[0]10,
                 ),
                 Center(
                   child: Text(

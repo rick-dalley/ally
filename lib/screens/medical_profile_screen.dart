@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/screens/physical_health.dart';
+import 'package:triage/screens/prescription_screen.dart';
 import 'package:triage/screens/questionnaires_screen.dart';
+import 'package:triage/screens/tests_screen.dart';
 import 'package:triage/widgets/carbon_style_action_tile.dart';
 
 import '../app_theme.dart';
@@ -94,6 +96,14 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     onTap: () => launchMedicationScreen(patient: widget.householdMember),
                   ),
                   CarbonActionTile(
+                    title: "Tests",
+                    subTitle: "Medical testing and lab work",
+                    icon: Symbols.lab_panel,
+                    iconSize: Size(40.0, 40.0),
+                    outlineIcon: Symbols.lab_panel,
+                    onTap: () => launchTestsScreen(patient: widget.householdMember),
+                  ),
+                  CarbonActionTile(
                     title: "Mental Wellness Questionnaires",
                     subTitle: "Questionnaires to help your care giver assess your current mental health",
                     icon: Symbols.ballot_sharp,
@@ -136,7 +146,41 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
             ),
 
             // Content: Expanded to fill the remaining vertical space
-            Expanded(child: MedicalProfileScreen(householdMember: patient)),
+            Expanded(child: PrescriptionScreen(patient: patient)),
+          ],
+        );
+      },
+    );
+    //
+  }
+
+  void launchTestsScreen({required Patient patient}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Allows the sheet to take full height
+      useSafeArea: true, // Respects the device notch and safe areas
+      backgroundColor: AppTheme.clinicalWhite,
+      // Set to zero for the strict, sharp-cornered Carbon aesthetic
+      shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
+      builder: (context) {
+        return Column(
+          children: [
+            // Header: Consistent with your other Carbon-style modals
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    icon: const Icon(Symbols.close, color: Colors.grey, size: 28),
+                    onPressed: () => Navigator.pop(context, false),
+                  ),
+                ],
+              ),
+            ),
+
+            // Content: Expanded to fill the remaining vertical space
+            Expanded(child: TestsScreen(user: patient)),
           ],
         );
       },
@@ -288,7 +332,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
         builder: (context, scrollController) {
           return Container(
             decoration: const BoxDecoration(
-              color: Colors.white,
+              color: AppColors.grey.all[0],
               borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
             ),
             child: Column(

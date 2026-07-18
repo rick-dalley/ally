@@ -360,7 +360,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
         actions: [
           TextButton(
             onPressed: _isLoading ? null : _confirmAndSave,
-            child: const Text("SAVE", style: TextStyle(color: Colors.white)),
+            child: const Text("SAVE", style: TextStyle(color: AppColors.grey.all[0])),
           ),
         ],
         backgroundColor: AppTheme.clinicalWhite, // Your Navy brand color

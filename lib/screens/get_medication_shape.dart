@@ -14,7 +14,7 @@ class GetMedicationShape extends StatelessWidget {
     MedicationShapes? selectedShape = shape;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.grey.all[0],
       body: LayoutBuilder(
         builder: (context, constraints) {
           bool isPortrait = constraints.maxWidth < constraints.maxHeight;

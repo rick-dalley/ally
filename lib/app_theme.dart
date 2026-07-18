@@ -165,12 +165,7 @@ class AppTheme {
   static final Color surfaceColor = AppColors.grey.all[0];
   static final Color defaultFontColor = AppColors.grey.all[4];
   static final Color defaultInverseFontColor = surfaceColor;
-  //   static final Color canvasColor = AppColors.grey.all[1];
-  //   static final Color cardBorder = AppColors.grey.all[3];
-  //   static final Color chipBorder = AppColors.grey.all[3];
-  //   static final Color surfaceColor = AppColors.grey.all[0];
-  //   static final Color defaultFontColor = AppColors.grey.all[4];
-  //   static final Color defaultInverseFontColor = surfaceColor;
+
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
@@ -236,7 +231,7 @@ class AppTheme {
       // FAB Styling
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: AppColors.peacockBlue,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.grey.all[0],
       ),
 
       // AppBar Styling
@@ -244,15 +239,15 @@ class AppTheme {
         backgroundColor: AppColors.greyDepth,
         elevation: 0,
         centerTitle: false,
-        titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+        titleTextStyle: TextStyle(color: AppColors.grey.all[0], fontSize: 20, fontWeight: FontWeight.bold),
       ),
 
       // Input Decoration (Text Fields)
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white.withAlpha(8),
+        fillColor: AppColors.grey.all[0].withAlpha(8),
         focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: AppColors.peacockBlue, width: 2)),
-        enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.white10)),
+        enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: AppColors.grey.all[0]10)),
       ),
     );
   }

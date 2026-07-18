@@ -109,7 +109,7 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
 
     return [
       TherapyPeriod(
-        name: "Medication X",
+        name: "Perindopril",
         color: Colors.red,
         // Use the duration multiplication and addition directly on the DateTime
         startDate: widget.startTime.add(totalDuration * 0.1),
@@ -117,7 +117,7 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
         icon: Icons.medication,
       ),
       TherapyPeriod(
-        name: "CPAP Therapy",
+        name: "CPAP",
         color: Colors.green,
         startDate: widget.startTime.add(totalDuration * 0.3),
         endDate: widget.startTime.add(totalDuration * 0.7),
@@ -249,7 +249,7 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
               return Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.grey.all[0],
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
                 ),
@@ -270,7 +270,7 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
           right: 0,
           child: Container(
             padding: const EdgeInsets.all(16),
-            color: Colors.white.withValues(alpha: 0.25),
+            color: AppColors.grey.all[0].withValues(alpha: 0.25),
             child: HorizontalMiniMap(
               controller: _scrollController,
               totalTimelineHeight: 2000.0,
@@ -715,8 +715,8 @@ class CapsuleSliderBubble extends CustomPainter {
       ..color = color ?? AppColors.ocean.all[5].withValues(alpha: 0.85)
       ..style = PaintingStyle.fill;
 
-    final Color effectiveIconColor = iconColor ?? Colors.white.withValues(alpha: 0.65);
-    final Color effectiveLabelColor = labelColor ?? Colors.white;
+    final Color effectiveIconColor = iconColor ?? AppColors.grey.all[0].withValues(alpha: 0.65);
+    final Color effectiveLabelColor = labelColor ?? AppColors.grey.all[0];
 
     // 3. Move the canvas to the calculated sticky position
     canvas.save();

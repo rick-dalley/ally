@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:triage/screens/body_screen.dart';
 
+import '../app_theme.dart';
+
 enum AnatomyZoneMaps { bodyFront, bodyBack, face, handFront, handBack, footTop, footBottom }
 
 enum BodyMarkerGroup {
@@ -114,7 +116,7 @@ class PolygonPainter extends CustomPainter {
       final textPainter = TextPainter(
         text: TextSpan(
           text: zone.name,
-          style: const TextStyle(fontSize: 10, color: Colors.white),
+          style: TextStyle(fontSize: 10, color: AppColors.grey.all[0]),
         ),
         textDirection: TextDirection.ltr,
       )..layout();

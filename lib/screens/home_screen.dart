@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/action.dart';
+import 'package:triage/screens/add_patients_wheel.dart';
 import 'package:triage/screens/time_scroller.dart';
 import '../app_theme.dart';
 import '../classes/database_manager.dart';
@@ -85,10 +86,14 @@ class HomeScreenState extends State<HomeScreen> {
   void _showMemberJumpList(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      builder: (context) => ListView.builder(
-        itemCount: patients.length,
-        itemBuilder: (context, index) =>
-            ListTile(title: Text(patients[index].name), onTap: () => _jumpToPatient(index)),
+      backgroundColor: Colors.transparent,
+      builder: (context) => AddPatientsWheel(
+        familyMembers: patients,
+        onDismiss: () {
+          Navigator.pop(context);
+        },
+        onUserSelected: (dynamic patientUuid) {},
+        onAddMember: () {},
       ),
     );
   }
@@ -151,7 +156,7 @@ class HomeScreenState extends State<HomeScreen> {
             child: GestureDetector(
               onLongPress: () => _showMemberJumpList(context),
               onTap: () => setState(() => _currentIndex = 0),
-              child: _buildPatientAvatar(),
+              child: _buildPatientAvatar(patients[_currentPageIndex].name),
             ),
           ),
         ],
@@ -177,13 +182,13 @@ class HomeScreenState extends State<HomeScreen> {
           icon,
           size: 32,
           // If selected, force white; otherwise use the dark primary color
-          color: isSelected ? Colors.white : AppTheme.lightTheme.primaryColorDark,
+          color: isSelected ? AppColors.grey.all[0] : AppTheme.lightTheme.primaryColorDark,
         ),
       ),
     );
   }
 
-  Widget _buildPatientAvatar() {
+  Widget _buildPatientAvatar(String patientName) {
     final bool isSelected = _currentIndex == 0;
 
     return AnimatedContainer(
@@ -199,9 +204,9 @@ class HomeScreenState extends State<HomeScreen> {
       child: InkWell(
         customBorder: const CircleBorder(), // Ensures the ripple effect is circular
         onTap: () => setState(() => _currentIndex = 0),
-        child: const CircleAvatar(
+        child: CircleAvatar(
           radius: 30, // Slightly smaller to accommodate the 4px border inside the container
-          backgroundImage: AssetImage("assets/images/faces/dr_face_1.png"),
+          backgroundImage: AssetImage("assets/images/faces/users/${patientName}.png"),
         ),
       ),
     );

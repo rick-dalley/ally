@@ -44,7 +44,7 @@ class SentimentWidgetState extends State<SentimentWidget> {
       curve: Curves.easeInOut,
       padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.grey.all[0],
         borderRadius: BorderRadius.zero,
         boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 2)],
       ),

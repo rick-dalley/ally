@@ -278,7 +278,7 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
           ),
         ),
         bottomNavigationBar: Container(
-          color: Colors.white,
+          color: AppColors.grey.all[0],
           padding: EdgeInsets.all(16),
           child: Row(
             children: [

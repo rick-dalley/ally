@@ -102,7 +102,11 @@ class _VitalsTrendGraphState extends State<VitalsTrendGraph> {
     return FilterChip(
       label: Text(
         label,
-        style: TextStyle(color: active ? Colors.white : Colors.black, fontSize: 14, fontWeight: FontWeight.bold),
+        style: TextStyle(
+          color: active ? AppColors.grey.all[0] : Colors.black,
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+        ),
       ),
       selected: active,
       onSelected: onToggle,

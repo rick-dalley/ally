@@ -35,10 +35,10 @@ class InteractionsChipState extends State<InteractionsChip> {
         backgroundColor: Colors.red.shade900,
         largeSize: 18,
         child: ActionChip(
-          avatar: const Icon(Symbols.join_inner, size: 16, color: Colors.white),
+          avatar: const Icon(Symbols.join_inner, size: 16, color: AppColors.grey.all[0]),
           label: Text(
             count == 1 ? "Interacts with: ${widget.interactions.first.conflicting}" : "Multiple Interactions",
-            style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+            style: const TextStyle(color: AppColors.grey.all[0], fontSize: 11, fontWeight: FontWeight.bold),
           ),
           backgroundColor: Colors.redAccent,
           shape: StadiumBorder(side: BorderSide(color: Colors.red.shade700)),

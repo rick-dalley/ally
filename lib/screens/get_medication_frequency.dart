@@ -53,7 +53,7 @@ class _GetMedicationFrequencyState extends State<GetMedicationFrequency> {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Container(
-        color: Colors.white,
+        color: AppColors.grey.all[0],
         child: Column(
           children: [
             Text("Frequency", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400)),

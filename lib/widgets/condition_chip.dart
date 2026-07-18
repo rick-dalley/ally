@@ -24,6 +24,7 @@ class ConditionChip extends StatefulWidget {
   @override
   State<ConditionChip> createState() => ConditionChipState();
 }
+
 class ConditionChipState extends State<ConditionChip> {
   @override
   Widget build(BuildContext context) {
@@ -34,7 +35,7 @@ class ConditionChipState extends State<ConditionChip> {
         color: AppTheme.clinicalWhite,
       ),
       label: Text(widget.patientCondition.name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-      labelStyle: const TextStyle(color: Colors.white),
+      labelStyle: const TextStyle(color: AppColors.grey.all[0]),
       backgroundColor: widget.color,
       deleteIcon: const Icon(Icons.cancel, size: 14, color: AppTheme.clinicalWhite),
       onDeleted: () {

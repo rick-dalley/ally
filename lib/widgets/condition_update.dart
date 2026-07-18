@@ -227,7 +227,7 @@ class _ConfigureConditionDialogState extends State<ConfigureConditionDialog> {
                     },
                     child: const Text(
                       "Confirm Changes",
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      style: TextStyle(color: AppColors.grey.all[0], fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),

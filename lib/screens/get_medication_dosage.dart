@@ -15,7 +15,7 @@ class GetMedicationDosageState extends State<GetMedicationDosage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.grey.all[0],
       body: Column(
         children: [
           Text("Dosage Amount", style: TextStyle(fontWeight: FontWeight.w400, fontSize: 20)),

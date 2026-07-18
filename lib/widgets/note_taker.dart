@@ -84,7 +84,7 @@ class NoteTakerState extends State<NoteTaker> {
       builder: (context, localScrollController) {
         return Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.grey.all[0],
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
@@ -105,7 +105,7 @@ class NoteTakerState extends State<NoteTaker> {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
-                        color: _isListening ? Colors.red : Colors.white,
+                        color: _isListening ? Colors.red : AppColors.grey.all[0],
                       ),
                     ),
                     Text(

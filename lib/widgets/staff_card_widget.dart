@@ -41,22 +41,22 @@ class StaffIdCard extends StatelessWidget {
     };
 
     Map<int, String> photos = {
-      0: "assets/images/faces/dr_face_1.png",
-      1: "assets/images/faces/dr_face_2.png",
-      2: "assets/images/faces/emerg_face_1.png",
-      3: "assets/images/faces/emerg_face_2.png",
-      4: "assets/images/faces/nurse_face_1.png",
-      5: "assets/images/faces/nurse_face_2.png",
-      6: "assets/images/faces/police_face_1.png",
-      7: "assets/images/faces/police_face_2.png",
-      8: "assets/images/faces/psych_face_1.png",
-      9: "assets/images/faces/psych_face_2.png",
-      10: "assets/images/faces/psych_nurse_1.png",
-      11: "assets/images/faces/psych_nurse_2.png",
-      12: "assets/images/faces/prof_face_1.png",
-      13: "assets/images/faces/prof_face_2.png",
-      14: "assets/images/faces/prof_yng_1.png",
-      15: "assets/images/faces/prof_old_1.png",
+      0: "assets/images/faces/staff/dr_face_1.png",
+      1: "assets/images/faces/staff/dr_face_2.png",
+      2: "assets/images/faces/staff/emerg_face_1.png",
+      3: "assets/images/faces/staff/emerg_face_2.png",
+      4: "assets/images/faces/staff/nurse_face_1.png",
+      5: "assets/images/faces/staff/nurse_face_2.png",
+      6: "assets/images/faces/staff/police_face_1.png",
+      7: "assets/images/faces/staff/police_face_2.png",
+      8: "assets/images/faces/staff/psych_face_1.png",
+      9: "assets/images/faces/staff/psych_face_2.png",
+      10: "assets/images/faces/staff/psych_nurse_1.png",
+      11: "assets/images/faces/staff/psych_nurse_2.png",
+      12: "assets/images/faces/staff/prof_face_1.png",
+      13: "assets/images/faces/staff/prof_face_2.png",
+      14: "assets/images/faces/staff/prof_yng_1.png",
+      15: "assets/images/faces/staff/prof_old_1.png",
     };
 
     return Card(
@@ -79,10 +79,10 @@ class StaffIdCard extends StatelessWidget {
                       children: [
                         Text(
                           "University Hospital - ${staffMember?.department}",
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          style: TextStyle(color: AppColors.grey.all[0], fontWeight: FontWeight.bold),
                         ),
                         SizedBox(width: 16),
-                        Icon(staffMember?.icon, color: Colors.white, size: 24),
+                        Icon(staffMember?.icon, color: AppColors.grey.all[0], size: 24),
                       ],
                     ),
                   ),

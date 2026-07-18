@@ -30,7 +30,7 @@ class _AddCareProviderScreenState extends State<AddCareProviderScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Add New Caregiver")),
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.grey.all[0],
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(

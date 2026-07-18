@@ -14,10 +14,7 @@ Future<File> getFileFromAsset(String assetPath) async {
   final file = File('${(await getTemporaryDirectory()).path}/${assetPath.split('/').last}');
 
   // Write the bytes to the file
-  await file.writeAsBytes(byteData.buffer.asUint8List(
-      byteData.offsetInBytes,
-      byteData.lengthInBytes
-  ));
+  await file.writeAsBytes(byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
 
   return file;
 }
@@ -26,11 +23,7 @@ class TextScanner extends StatefulWidget {
   final Function(RecognizedText) onTextDetected;
   final String? mockImagePath; // If passed, we OCR this instead of the live feed
 
-  const TextScanner({
-    super.key,
-    required this.onTextDetected,
-    this.mockImagePath,
-  });
+  const TextScanner({super.key, required this.onTextDetected, this.mockImagePath});
 
   @override
   State<TextScanner> createState() => _TextScannerState();
@@ -67,6 +60,7 @@ class _TextScannerState extends State<TextScanner> with WidgetsBindingObserver {
       debugPrint("OCR Mock Error: $e");
     }
   }
+
   // --- Camera Lifecycle & Permissions ---
   Future<void> _requestCameraPermission() async {
     final status = await Permission.camera.request();
@@ -82,11 +76,7 @@ class _TextScannerState extends State<TextScanner> with WidgetsBindingObserver {
     final cameras = await availableCameras();
     if (cameras.isEmpty) return;
 
-    _controller = CameraController(
-      cameras[0],
-      ResolutionPreset.high,
-      enableAudio: false,
-    );
+    _controller = CameraController(cameras[0], ResolutionPreset.high, enableAudio: false);
 
     await _controller?.initialize();
     if (!mounted) return;
@@ -121,7 +111,9 @@ class _TextScannerState extends State<TextScanner> with WidgetsBindingObserver {
     }
 
     if (!_isPermissionGranted) {
-      return const Center(child: Text("Camera permission required", style: TextStyle(color: Colors.white)));
+      return const Center(
+        child: Text("Camera permission required", style: TextStyle(color: AppColors.grey.all[0])),
+      );
     }
 
     if (_controller == null || !_controller!.value.isInitialized) {
@@ -130,24 +122,13 @@ class _TextScannerState extends State<TextScanner> with WidgetsBindingObserver {
 
     return AspectRatio(
       aspectRatio: 3 / 4, // More suitable for documents than a square
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          CameraPreview(_controller!),
-          _buildDocumentOverlay(),
-        ],
-      ),
+      child: Stack(fit: StackFit.expand, children: [CameraPreview(_controller!), _buildDocumentOverlay()]),
     );
   }
 
   Widget _buildDocumentOverlay() {
     return Container(
-      decoration: ShapeDecoration(
-        shape: _DocumentOverlayShape(
-          borderColor: Colors.indigoAccent,
-          borderWidth: 3.0,
-        ),
-      ),
+      decoration: ShapeDecoration(shape: _DocumentOverlayShape(borderColor: Colors.indigoAccent, borderWidth: 3.0)),
       child: const Align(
         alignment: Alignment.bottomCenter,
         child: Padding(
@@ -187,17 +168,9 @@ class _DocumentOverlayShape extends ShapeBorder {
       ..strokeWidth = borderWidth;
 
     // A vertical document-style frame
-    final frameRect = Rect.fromLTWH(
-      rect.width * 0.1,
-      rect.height * 0.1,
-      rect.width * 0.8,
-      rect.height * 0.8,
-    );
+    final frameRect = Rect.fromLTWH(rect.width * 0.1, rect.height * 0.1, rect.width * 0.8, rect.height * 0.8);
 
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(frameRect, const Radius.circular(12)),
-      paint,
-    );
+    canvas.drawRRect(RRect.fromRectAndRadius(frameRect, const Radius.circular(12)), paint);
   }
 
   @override
