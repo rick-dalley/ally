@@ -40,7 +40,7 @@ class AvatarActionWidget extends StatelessWidget {
             width: width,
             decoration: BoxDecoration(
               color: themeColor,
-              borderRadius: BorderRadius.circular(width / 2), // Circular avatar
+              borderRadius: BorderRadius.circular(width * 0.5 + 4), // Circular avatar
             ),
             child: Center(child: avatar ?? Icon(Symbols.person_rounded, color: AppColors.grey.all[0])),
           ),
