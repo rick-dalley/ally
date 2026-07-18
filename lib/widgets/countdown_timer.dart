@@ -1,22 +1,19 @@
 import 'package:flutter/material.dart';
 
+import '../app_theme.dart';
 
 // Pulses every minute to update all timers in the app
 // Add .asBroadcastStream() at the end
 final Stream<DateTime> _heartbeat = Stream.periodic(
-    const Duration(minutes: 1),
-        (_) => DateTime.now()
+  const Duration(minutes: 1),
+  (_) => DateTime.now(),
 ).asBroadcastStream();
 
 class CountdownTimer extends StatelessWidget {
   final DateTime admittedAt;
   final VoidCallback? onTap;
 
-  const CountdownTimer({
-    super.key,
-    required this.admittedAt,
-    this.onTap
-  });
+  const CountdownTimer({super.key, required this.admittedAt, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +47,7 @@ class CountdownTimer extends StatelessWidget {
                   value: percentExpired,
                   strokeWidth: 3,
                   color: timerColor,
-                  backgroundColor: AppColors.grey.all[0]10,
+                  backgroundColor: AppColors.grey.all[0],
                 ),
                 Center(
                   child: Text(
@@ -67,7 +64,6 @@ class CountdownTimer extends StatelessWidget {
           ),
           tooltip: 'Admitted: ${admittedAt.hour}:${admittedAt.minute.toString().padLeft(2, "0")}',
         );
-
       },
     );
   }

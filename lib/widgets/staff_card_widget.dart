@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:triage/classes/staff.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../app_theme.dart';
 import 'appointment_chip.dart';
 
 class StaffIdCard extends StatelessWidget {

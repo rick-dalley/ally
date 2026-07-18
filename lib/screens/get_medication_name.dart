@@ -171,7 +171,7 @@ class _BarcodeScannerModal extends StatelessWidget {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("CANCEL", style: TextStyle(color: AppColors.grey.all[0]54)),
+            child: Text("CANCEL", style: TextStyle(color: AppColors.grey.all[0])),
           ),
           const SizedBox(height: 20),
         ],

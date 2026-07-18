@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/acuity.dart';
 
+import '../app_theme.dart';
+
 class AcuityStyle {
   final Color color;
   final Color iconColor;
@@ -57,8 +59,8 @@ Map<AcuityLevel, AcuityStyle> acuityStyles = {
   ),
   AcuityLevel.notUrgent: AcuityStyle(
     color: Colors.black45,
-    iconColor: AppColors.grey.all[0]70,
-    backgroundColor: AppColors.grey.all[0]70,
+    iconColor: AppColors.grey.all[0],
+    backgroundColor: AppColors.grey.all[0],
     icon: Symbols.emergency,
     weight: 200,
     fill: false,
@@ -66,9 +68,9 @@ Map<AcuityLevel, AcuityStyle> acuityStyles = {
 };
 AcuityStyle blankAcuityStyle = AcuityStyle(
   color: Colors.grey,
-  iconColor: AppColors.grey.all[0]70,
+  iconColor: AppColors.grey.all[0],
   icon: Symbols.help,
-  backgroundColor: AppColors.grey.all[0]70,
+  backgroundColor: AppColors.grey.all[0],
   weight: 200,
   fill: false,
 );

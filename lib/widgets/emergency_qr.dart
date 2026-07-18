@@ -33,7 +33,7 @@ class EmergencyQRCodeView extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("Show this to emergency staff", style: TextStyle(fontSize: 18, color: AppColors.grey.all[0])),
+              Text("Show this to emergency staff", style: TextStyle(fontSize: 18, color: AppColors.grey.all[0])),
               const SizedBox(height: 20),
               Container(
                 width: 300,

@@ -206,7 +206,7 @@ class HomeScreenState extends State<HomeScreen> {
         onTap: () => setState(() => _currentIndex = 0),
         child: CircleAvatar(
           radius: 30, // Slightly smaller to accommodate the 4px border inside the container
-          backgroundImage: AssetImage("assets/images/faces/users/${patientName}.png"),
+          backgroundImage: AssetImage("assets/images/faces/users/$patientName.png"),
         ),
       ),
     );

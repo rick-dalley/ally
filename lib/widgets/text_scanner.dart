@@ -6,6 +6,8 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../app_theme.dart';
+
 Future<File> getFileFromAsset(String assetPath) async {
   // Load the asset data
   final byteData = await rootBundle.load(assetPath);
@@ -111,7 +113,7 @@ class _TextScannerState extends State<TextScanner> with WidgetsBindingObserver {
     }
 
     if (!_isPermissionGranted) {
-      return const Center(
+      return Center(
         child: Text("Camera permission required", style: TextStyle(color: AppColors.grey.all[0])),
       );
     }

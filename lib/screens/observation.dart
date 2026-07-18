@@ -177,7 +177,7 @@ class _ObservationScreenState extends State<ObservationScreen> {
                           color: Colors.red.shade800,
                           alignment: Alignment.centerRight,
                           padding: const EdgeInsets.only(right: 20.0),
-                          child: const Icon(Icons.delete_sweep, color: AppColors.grey.all[0], size: 26),
+                          child: Icon(Icons.delete_sweep, color: AppColors.grey.all[0], size: 26),
                         ),
 
                         // Fires immediately when the swipe animation completes
@@ -224,7 +224,7 @@ class _ObservationScreenState extends State<ObservationScreen> {
                   const SizedBox(width: 8),
                   // Microphone Button with White Circular Background
                   Container(
-                    decoration: const BoxDecoration(color: AppColors.grey.all[0], shape: BoxShape.circle),
+                    decoration: BoxDecoration(color: AppColors.grey.all[0], shape: BoxShape.circle),
                     child: IconButton(
                       icon: const Icon(Icons.mic_none_outlined, color: AppColors.greyDepth, size: 26),
                       tooltip: "Dictate Observation",
@@ -236,7 +236,7 @@ class _ObservationScreenState extends State<ObservationScreen> {
                   const SizedBox(width: 8), // Cleaned up to an even 8px gap between buttons
                   // Edit Button with White Circular Background
                   Container(
-                    decoration: const BoxDecoration(color: AppColors.grey.all[0], shape: BoxShape.circle),
+                    decoration: BoxDecoration(color: AppColors.grey.all[0], shape: BoxShape.circle),
                     child: IconButton(
                       icon: const Icon(Icons.edit_outlined, color: AppColors.greyDepth, size: 26),
                       tooltip: "New Observation",

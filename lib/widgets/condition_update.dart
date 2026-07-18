@@ -225,7 +225,7 @@ class _ConfigureConditionDialogState extends State<ConfigureConditionDialog> {
                         navigator.pop(true);
                       }
                     },
-                    child: const Text(
+                    child: Text(
                       "Confirm Changes",
                       style: TextStyle(color: AppColors.grey.all[0], fontWeight: FontWeight.bold),
                     ),

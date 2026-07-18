@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:triage/widgets/sentiment_detail_widget.dart';
+import '../app_theme.dart';
 import '../classes/patient_sentiment.dart';
 
 class SentimentWidget extends StatefulWidget {

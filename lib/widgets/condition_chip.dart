@@ -32,12 +32,12 @@ class ConditionChipState extends State<ConditionChip> {
       avatar: Icon(
         widget.icon, // Pass your Material Symbol or Icon here
         size: 16,
-        color: AppTheme.clinicalWhite,
+        color: AppColors.grey.all[0],
       ),
       label: Text(widget.patientCondition.name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-      labelStyle: const TextStyle(color: AppColors.grey.all[0]),
+      labelStyle: TextStyle(color: AppColors.grey.all[0]),
       backgroundColor: widget.color,
-      deleteIcon: const Icon(Icons.cancel, size: 14, color: AppTheme.clinicalWhite),
+      deleteIcon: Icon(Icons.cancel, size: 14, color: AppColors.grey.all[0]),
       onDeleted: () {
         int? id = widget.patientCondition.id;
         if (id != null) {

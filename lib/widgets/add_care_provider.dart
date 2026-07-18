@@ -4,6 +4,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/widgets/carbon_style_autocomplete.dart';
 import 'package:triage/widgets/carbon_style_textbox.dart';
 
+import '../app_theme.dart';
 import '../classes/specialities.dart';
 import 'carbon_style_button.dart';
 

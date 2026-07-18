@@ -2,6 +2,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../app_theme.dart';
 import '../classes/immunization.dart';
 
 // 1. Add this extension to your file to handle Sentence Case easily

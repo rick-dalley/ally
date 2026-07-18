@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:triage/widgets/text_scanner.dart';
 
+import '../app_theme.dart';
+
 class ScannerWidget extends StatefulWidget {
   final bool scanFront; // Is the camera/scanner active right now?
   final bool? scanBack;
@@ -126,7 +128,7 @@ class ScannerCardSlotState extends State<ScannerCardSlot> {
         decoration: BoxDecoration(
           color: Colors.grey.shade900,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: widget.isScanning ? Colors.cyanAccent : AppColors.grey.all[0]10, width: 2),
+          border: Border.all(color: widget.isScanning ? Colors.cyanAccent : AppColors.grey.all[0], width: 2),
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(10),
@@ -148,12 +150,12 @@ class ScannerCardSlotState extends State<ScannerCardSlot> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.add_a_photo_outlined, color: AppColors.grey.all[0]24, size: 32),
+                        Icon(Icons.add_a_photo_outlined, color: AppColors.grey.all[0], size: 32),
                         const SizedBox(height: 8),
                         Text(
                           widget.label,
-                          style: const TextStyle(
-                            color: AppColors.grey.all[0]24,
+                          style: TextStyle(
+                            color: AppColors.grey.all[0],
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.2,

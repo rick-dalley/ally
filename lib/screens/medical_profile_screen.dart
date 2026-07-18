@@ -331,7 +331,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
         snap: false, // ✅ Smooth, non-snapping fluid track
         builder: (context, scrollController) {
           return Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.grey.all[0],
               borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
             ),

@@ -229,13 +229,13 @@ class AppTheme {
       ),
 
       // FAB Styling
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: AppColors.peacockBlue,
         foregroundColor: AppColors.grey.all[0],
       ),
 
       // AppBar Styling
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: AppColors.greyDepth,
         elevation: 0,
         centerTitle: false,
@@ -247,7 +247,7 @@ class AppTheme {
         filled: true,
         fillColor: AppColors.grey.all[0].withAlpha(8),
         focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: AppColors.peacockBlue, width: 2)),
-        enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: AppColors.grey.all[0]10)),
+        enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: AppColors.grey.all[0])),
       ),
     );
   }

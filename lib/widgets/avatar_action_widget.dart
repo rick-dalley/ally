@@ -42,7 +42,7 @@ class AvatarActionWidget extends StatelessWidget {
               color: themeColor,
               borderRadius: BorderRadius.circular(width / 2), // Circular avatar
             ),
-            child: Center(child: avatar ?? const Icon(Symbols.person_rounded, color: AppColors.grey.all[0])),
+            child: Center(child: avatar ?? Icon(Symbols.person_rounded, color: AppColors.grey.all[0])),
           ),
           if (label != null) ...[const SizedBox(height: 8), Text(label!, style: style)],
         ],

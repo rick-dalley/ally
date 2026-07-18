@@ -7,6 +7,8 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../app_theme.dart';
+
 /// Flexible return type for various medical devices
 typedef VitalsResult = List<MapEntry<String, String>>;
 
@@ -24,12 +26,7 @@ class VitalsScannerWidget extends StatefulWidget {
   final Function(VitalsResult) onScanCompleted;
   final VoidCallback? onPermissionDenied;
 
-  const VitalsScannerWidget({
-    super.key,
-    this.assetPath,
-    required this.onScanCompleted,
-    this.onPermissionDenied,
-  });
+  const VitalsScannerWidget({super.key, this.assetPath, required this.onScanCompleted, this.onPermissionDenied});
 
   @override
   State<VitalsScannerWidget> createState() => _VitalsScannerWidgetState();
@@ -66,16 +63,18 @@ class _VitalsScannerWidgetState extends State<VitalsScannerWidget> with WidgetsB
     if (widget.assetPath == null) return;
 
     final Image image = Image.asset(widget.assetPath!);
-    image.image.resolve(const ImageConfiguration()).addListener(
-      ImageStreamListener((ImageInfo info, bool _) {
-        if (mounted) {
-          setState(() {
-            _imageAspectRatio = info.image.width / info.image.height;
-            _isImageLoaded = true;
-          });
-        }
-      }),
-    );
+    image.image
+        .resolve(const ImageConfiguration())
+        .addListener(
+          ImageStreamListener((ImageInfo info, bool _) {
+            if (mounted) {
+              setState(() {
+                _imageAspectRatio = info.image.width / info.image.height;
+                _isImageLoaded = true;
+              });
+            }
+          }),
+        );
   }
 
   void _runStaticSimulation() async {
@@ -146,10 +145,7 @@ class _VitalsScannerWidgetState extends State<VitalsScannerWidget> with WidgetsB
       try {
         // In a real implementation, you'd capture the image stream or take a picture
         // For the POC, we simulate the OCR service call here
-        final results = await VitalsParser.analyze(
-            controller: _controller!,
-            type: deviceType
-        );
+        final results = await VitalsParser.analyze(controller: _controller!, type: deviceType);
 
         if (results.isNotEmpty) {
           widget.onScanCompleted(results);
@@ -189,7 +185,6 @@ class _VitalsScannerWidgetState extends State<VitalsScannerWidget> with WidgetsB
     final maxHeight = _imageAspectRatio > 1.0 ? screenHeight : screenHeight * 0.4;
 
     if (widget.assetPath != null) {
-
       return Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxHeight: maxHeight),
@@ -211,9 +206,7 @@ class _VitalsScannerWidgetState extends State<VitalsScannerWidget> with WidgetsB
                   if (_isStaticMode || !_isImageLoaded)
                     Container(
                       color: Colors.black54,
-                      child: const Center(
-                        child: CircularProgressIndicator(color: Colors.cyan),
-                      ),
+                      child: const Center(child: CircularProgressIndicator(color: Colors.cyan)),
                     ),
 
                   // Guide overlay
@@ -234,7 +227,7 @@ class _VitalsScannerWidgetState extends State<VitalsScannerWidget> with WidgetsB
     if (!_isPermissionGranted) {
       return Container(
         color: Colors.black87,
-        child: const Center(
+        child: Center(
           child: Text(
             "Camera permission is required for Vitals OCR.",
             textAlign: TextAlign.center,
@@ -255,7 +248,6 @@ class _VitalsScannerWidgetState extends State<VitalsScannerWidget> with WidgetsB
       ),
     );
   }
-
 }
 
 /// Specialized overlay to guide the user based on the device layout
@@ -278,10 +270,7 @@ class _ScannerOverlay extends StatelessWidget {
     }
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(
-          color: deviceType == DeviceType.welchAllyn ? Colors.cyan : Colors.green,
-          width: 3,
-        ),
+        border: Border.all(color: deviceType == DeviceType.welchAllyn ? Colors.cyan : Colors.green, width: 3),
         borderRadius: BorderRadius.circular(12),
       ),
       margin: const EdgeInsets.all(40),
@@ -291,18 +280,16 @@ class _ScannerOverlay extends StatelessWidget {
             top: 10,
             left: 10,
             child: Text(
-             deviceBrand,
-              style: const TextStyle(
+              deviceBrand,
+              style: TextStyle(
                 color: AppColors.grey.all[0],
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
-                backgroundColor: Colors.black45,
+                backgroundColor: AppColors.greyDepth,
               ),
             ),
           ),
-          const Center(
-            child: Icon(Icons.add, color: AppColors.grey.all[0]54, size: 40),
-          ),
+          Center(child: Icon(Icons.add, color: AppColors.grey.all[0], size: 40)),
         ],
       ),
     );
@@ -338,18 +325,13 @@ class StaticVitalsParser {
           .timeout(const Duration(seconds: 5));
 
       // 1. SENSE: Create the big string to check for the brand
-      final String senseText = recognizedText.blocks
-          .map((b) => b.text.toUpperCase())
-          .join(" ");
+      final String senseText = recognizedText.blocks.map((b) => b.text.toUpperCase()).join(" ");
 
       // 2. DECIDE: Set the enum based on your simple binary check
-      DeviceType deviceType = senseText.contains('OMRON')
-          ? DeviceType.omron
-          : DeviceType.welchAllyn;
+      DeviceType deviceType = senseText.contains('OMRON') ? DeviceType.omron : DeviceType.welchAllyn;
 
       final vitals = _parseBlocks(recognizedText.blocks, deviceType);
       return OcrResponse(vitals: vitals, deviceType: deviceType);
-
     } catch (e) {
       debugPrint("Failed to process $assetPath: $e");
       return OcrResponse(vitals: [], deviceType: DeviceType.unknown);
@@ -367,12 +349,7 @@ class StaticVitalsParser {
   static VitalsResult _parseOmronBlocks(List<TextBlock> blocks) {
     // Check if we are using our specific demo images
 
-      return [
-        const MapEntry("SYS", "129"),
-        const MapEntry("DIA", "73"),
-        const MapEntry("PULSE", "60"),
-      ];
-
+    return [const MapEntry("SYS", "129"), const MapEntry("DIA", "73"), const MapEntry("PULSE", "60")];
   }
 
   //_parseWelchAllynBlocks
@@ -428,9 +405,7 @@ class StaticVitalsParser {
 
     // Map them specifically
     // 1. Identify the NIBP area
-    final nibpBlock = blocks.indexWhere(
-            (b) => b.text.toUpperCase().contains("NIBP")
-    );
+    final nibpBlock = blocks.indexWhere((b) => b.text.toUpperCase().contains("NIBP"));
 
     if (nibpBlock != -1) {
       // Look at the block itself and the next 5 blocks for the BP digits
@@ -464,15 +439,11 @@ class StaticVitalsParser {
 
     return results.toSet().toList();
   }
-
 }
 
 /// The logic 'Brain' that handles color-keyed text parsing
 class VitalsParser {
-  static Future<VitalsResult> analyze({
-    required CameraController controller,
-    required DeviceType type,
-  }) async {
+  static Future<VitalsResult> analyze({required CameraController controller, required DeviceType type}) async {
     // Placeholder for ML Kit / OCR Implementation
     // This is where you will apply your HEX color filters
     // to separate the NIBP (Red), SpO2 (Cyan), and Pulse (Green).

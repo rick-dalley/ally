@@ -22,10 +22,10 @@ class AddPatientsWheel extends StatefulWidget {
   });
 
   @override
-  _AddPatientsWheelState createState() => _AddPatientsWheelState();
+  AddPatientsWheelState createState() => AddPatientsWheelState();
 }
 
-class _AddPatientsWheelState extends State<AddPatientsWheel> {
+class AddPatientsWheelState extends State<AddPatientsWheel> {
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -33,7 +33,7 @@ class _AddPatientsWheelState extends State<AddPatientsWheel> {
         // 1. The Blur Layer
         BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(color: Colors.black.withOpacity(0.2)),
+          child: Container(color: AppColors.grey.all[0].withValues(alpha: 0.2)),
         ),
 
         // 2. The Close Button (The X)
@@ -187,11 +187,11 @@ class DottedPlaceholder extends StatelessWidget {
       height: 64,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: AppColors.grey.all[0]54, width: 2, style: BorderStyle.solid),
+        border: Border.all(color: AppColors.grey.all[0], width: 2, style: BorderStyle.solid),
         // Note: For a true dashed border, you'd use a CustomPainter,
         // but a simple dashed-looking border works well for UI.
       ),
-      child: const Icon(Icons.add, color: AppColors.grey.all[0]54),
+      child: Icon(Icons.add, color: AppColors.grey.all[0]),
     );
   }
 }

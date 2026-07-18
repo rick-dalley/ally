@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:triage/widgets/vitals_trend_gaph.dart';
+import '../app_theme.dart';
 import '../classes/database_manager.dart';
 import '../classes/vitals.dart';
 import '../screens/vitals_capture_screen.dart';
@@ -45,7 +46,7 @@ class VitalsHistoryViewState extends State<VitalsHistoryView> {
         expand: false,
         builder: (context, scrollController) {
           return Container(
-            decoration: const BoxDecoration(color: AppColors.grey.all[0], borderRadius: BorderRadius.zero),
+            decoration: BoxDecoration(color: AppColors.grey.all[0], borderRadius: BorderRadius.zero),
             child: Column(
               children: [
                 // A small handle to indicate the modal is draggable

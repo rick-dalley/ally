@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../app_theme.dart';
 import '../classes/medication_services.dart';
 
 class InteractionsChip extends StatefulWidget {
@@ -35,10 +36,10 @@ class InteractionsChipState extends State<InteractionsChip> {
         backgroundColor: Colors.red.shade900,
         largeSize: 18,
         child: ActionChip(
-          avatar: const Icon(Symbols.join_inner, size: 16, color: AppColors.grey.all[0]),
+          avatar: Icon(Symbols.join_inner, size: 16, color: AppColors.grey.all[0]),
           label: Text(
             count == 1 ? "Interacts with: ${widget.interactions.first.conflicting}" : "Multiple Interactions",
-            style: const TextStyle(color: AppColors.grey.all[0], fontSize: 11, fontWeight: FontWeight.bold),
+            style: TextStyle(color: AppColors.grey.all[0], fontSize: 11, fontWeight: FontWeight.bold),
           ),
           backgroundColor: Colors.redAccent,
           shape: StadiumBorder(side: BorderSide(color: Colors.red.shade700)),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../app_theme.dart';
+
 class VitalsDashboard extends StatefulWidget {
   final Map<String, TextEditingController> controllers;
 
@@ -32,11 +34,11 @@ class _VitalsDashboardState extends State<VitalsDashboard> {
         padding: const EdgeInsets.symmetric(horizontal: 4),
         child: TextField(
           controller: controller,
-          style: const TextStyle(color: AppColors.grey.all[0], fontSize: 14),
+          style: TextStyle(color: AppColors.grey.all[0], fontSize: 14),
           decoration: InputDecoration(
             labelText: label,
-            labelStyle: const TextStyle(color: AppColors.grey.all[0]54, fontSize: 12),
-            border: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.grey.all[0]24)),
+            labelStyle: TextStyle(color: AppColors.grey.all[0], fontSize: 12),
+            border: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.grey.all[0])),
           ),
           keyboardType: TextInputType.number,
         ),
