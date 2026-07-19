@@ -1,106 +1,112 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
-enum Sentiment { happy, content, neutral, dissatisfied, sad, stressed }
+import '../app_theme.dart';
+import 'flyout_base.dart';
 
-extension SentimentColor on Sentiment {
+enum Sentiment implements Flyable {
+  angry,
+  calm,
+  content,
+  excited,
+  frustrated,
+  happy,
+  neutral,
+  sad,
+  stressed,
+  worried,
+  sick;
+
+  @override
   Color get color {
+    return AppColors.greyDepth;
+  }
+
+  @override
+  Color get onPrimary {
+    return AppColors.grey.all[0];
+  }
+
+  @override
+  IconData get icon {
     switch (this) {
-      case Sentiment.happy:
-        return Color(0xFF0EBA00);
+      case Sentiment.angry:
+        return Symbols.sentiment_extremely_dissatisfied_sharp;
+      case Sentiment.calm:
+        return Symbols.sentiment_calm_sharp;
       case Sentiment.content:
-        return Colors.blue;
+        return Symbols.sentiment_content_sharp;
+      case Sentiment.excited:
+        return Symbols.sentiment_excited_sharp;
+      case Sentiment.frustrated:
+        return Symbols.sentiment_frustrated_sharp;
+      case Sentiment.happy:
+        return Symbols.mood_sharp;
       case Sentiment.neutral:
-        return Colors.blueGrey;
-      case Sentiment.dissatisfied:
-        return Colors.purpleAccent;
+        return Symbols.sentiment_neutral_sharp;
       case Sentiment.sad:
-        return Colors.orange;
+        return Symbols.sentiment_sad_sharp;
       case Sentiment.stressed:
-        return Colors.red.shade900;
+        return Symbols.sentiment_stressed_sharp;
+      case Sentiment.worried:
+        return Symbols.sentiment_worried_sharp;
+      case Sentiment.sick:
+        return Symbols.sick_sharp;
     }
   }
-}
 
-extension SentimentDescription on Sentiment {
+  @override
+  String get label {
+    switch (this) {
+      case Sentiment.angry:
+        return "Angry";
+      case Sentiment.calm:
+        return "Calm";
+      case Sentiment.content:
+        return "Content";
+      case Sentiment.excited:
+        return "Excited";
+      case Sentiment.frustrated:
+        return "Frustrated";
+      case Sentiment.happy:
+        return "Happy";
+      case Sentiment.neutral:
+        return "Neutral";
+      case Sentiment.sad:
+        return "Sad";
+      case Sentiment.stressed:
+        return "Stressed";
+      case Sentiment.worried:
+        return "Worried";
+      case Sentiment.sick:
+        return "Sick";
+    }
+  }
+
+  @override
   String get description {
     switch (this) {
       case Sentiment.happy:
         return "Thriving: High energy, positive outlook, fully engaged.";
       case Sentiment.content:
         return "Stable: At ease, no discomfort, functioning well.";
+      case Sentiment.calm:
       case Sentiment.neutral:
         return "Baseline: Neither distressed nor particularly uplifted.";
-      case Sentiment.dissatisfied:
+      case Sentiment.worried:
         return "Mild Distress: Persistent discomfort or minor anxiety.";
       case Sentiment.sad:
         return "Low Mood: Withdrawn, lethargic, or lacking motivation.";
       case Sentiment.stressed:
         return "Acute Distress: High anxiety, overwhelmed, requires attention.";
+      case Sentiment.angry:
+        return "Angry";
+      case Sentiment.excited:
+        return "Excited";
+      case Sentiment.frustrated:
+        return "Frustrated";
+      case Sentiment.sick:
+        return "Sick";
     }
   }
 }
-
-enum TextSentiment { noPain, worstPainEver }
-
-class PatientSentiment {
-  final IconData iconData;
-  final double diameter;
-  final Color color;
-
-  const PatientSentiment({required this.iconData, required this.diameter, required this.color});
-
-  Icon getIcon() {
-    return Icon(iconData, size: diameter, color: color);
-  }
-}
-
-final Map<Sentiment, List<int>> sentimentToPainMap = {
-  Sentiment.happy: [0],
-  Sentiment.content: [1, 2],
-  Sentiment.neutral: [3, 4],
-  Sentiment.dissatisfied: [5, 6],
-  Sentiment.sad: [7, 8],
-  Sentiment.stressed: [9, 10],
-};
-
-final List<String> disabledVeteransPainScaleDescriptions = [
-  "0: No pain. Feels normal.",
-  "1: Hardly noticeable.",
-  "2: Noticeable/distracting, but can do daily activities.",
-  "3: Distressing/distracting, but can do daily activities.",
-  "4: Strong, life-interrupting. I need to stop.",
-  "5: Strong, life-limiting. Cannot do daily activities.",
-  "6: Strong, life-limiting. Struggling to concentrate.",
-  "7: Severe, life-limiting. Cannot engage in any activity.",
-  "8: Intense, life-limiting. Unable to function.",
-  "9: Intense, life-limiting. Bed-bound.",
-  "10: As bad as it could be. Nothing else matters.",
-];
-
-Map<Sentiment, PatientSentiment> patientSentiments = {
-  Sentiment.happy: PatientSentiment(iconData: Symbols.sentiment_calm, color: Sentiment.happy.color, diameter: 32),
-  Sentiment.content: PatientSentiment(
-    iconData: Symbols.sentiment_content,
-    color: Sentiment.content.color,
-    diameter: 32,
-  ),
-  Sentiment.neutral: PatientSentiment(
-    iconData: Symbols.sentiment_neutral,
-    color: Sentiment.neutral.color,
-    diameter: 32,
-  ),
-  Sentiment.dissatisfied: PatientSentiment(
-    iconData: Symbols.sentiment_dissatisfied,
-    color: Sentiment.dissatisfied.color,
-    diameter: 32,
-  ),
-  Sentiment.sad: PatientSentiment(iconData: Symbols.sentiment_sad, color: Sentiment.sad.color, diameter: 32),
-  Sentiment.stressed: PatientSentiment(
-    iconData: Symbols.sentiment_stressed,
-    color: Sentiment.stressed.color,
-    diameter: 32,
-  ),
-};
-
-Map<TextSentiment, String> dvprs = {TextSentiment.noPain: "", TextSentiment.worstPainEver: "worst pain ever"};

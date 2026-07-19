@@ -3,10 +3,7 @@ class MetricValue {
   final DateTime recorded;
 
   // Standard constructor with named arguments
-  const MetricValue({
-    required this.value,
-    required this.recorded,
-  });
+  const MetricValue({required this.value, required this.recorded});
 
   /// Factory constructor to parse database raw maps cleanly
   factory MetricValue.fromJson(Map<String, dynamic> json) {
@@ -20,10 +17,7 @@ class MetricValue {
         ? DateTime.tryParse(rawDate.toString()) ?? DateTime.now()
         : DateTime.now();
 
-    return MetricValue(
-      value: parsedValue,
-      recorded: parsedDate,
-    );
+    return MetricValue(value: parsedValue, recorded: parsedDate);
   }
 
   /// Converts the model object back into a map structured for SQLite writes

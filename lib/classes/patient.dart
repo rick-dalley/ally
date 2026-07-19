@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import 'package:triage/classes/acuity.dart';
 import 'package:triage/classes/blood_type.dart';
-import 'package:triage/classes/patient_sentiment.dart';
+import 'package:triage/classes/patient_pain.dart';
 import 'package:triage/classes/vitals.dart';
 
 import 'database_manager.dart';
@@ -42,7 +42,7 @@ class Patient {
   final String contactName; //'Silvain Saulter',
   String eyeColor;
   BloodType bloodType;
-  Sentiment sentiment;
+  PainLevel pain;
   int assessments; //279,
   int medications; //11,
   MedicationSafetyAudit medicationSafetyAudit; //1,
@@ -100,7 +100,7 @@ class Patient {
     this.formattedDateOfBirth = "",
     this.age = 17,
     this.vitals,
-    this.sentiment = Sentiment.neutral,
+    this.pain = PainLevel.distracting,
     this.eyeColor = "",
     this.isAWOL = false,
     this.bloodType = const BloodType(abo: AboType.o, rh: RhFactor.positive),
@@ -110,8 +110,8 @@ class Patient {
     final DateTime adm = DTUtilities.randomHrsAgo(max: 48);
     final DateTime birth = DTUtilities.randomYrsAgo(min: 17, max: 95);
     CurrentVitalsRecord vitalsRecord = CurrentVitalsRecord.fromPatientJson(item);
-    int sentimentIndex = Random().nextInt(5);
-    Sentiment sentiment = Sentiment.values[sentimentIndex];
+    int painIndex = Random().nextInt(5);
+    PainLevel pain = PainLevel.values[painIndex];
 
     return Patient(
       patientUuid: item['patient_uuid'],
@@ -185,7 +185,7 @@ class Patient {
       vitals: vitalsRecord,
       //'Partner',
       narrativeHint: item['narrative_hint'] ?? "", //'Maecenas ut massa ...
-      sentiment: sentiment,
+      pain: pain,
       eyeColor: "brown", //item["eye_color"],
     );
   }

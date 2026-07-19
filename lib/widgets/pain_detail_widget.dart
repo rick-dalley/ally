@@ -1,33 +1,33 @@
 import 'package:flutter/material.dart';
 import '../app_theme.dart';
-import '../classes/patient_sentiment.dart';
+import '../classes/patient_pain.dart';
 import 'carbon_style_button.dart';
 
-class DetailedSentimentModal extends StatefulWidget {
-  final Sentiment initialSentiment;
+class DetailedPainModal extends StatefulWidget {
+  final PainLevel initialPain;
   final int initialPainIndex;
-  final Function(Sentiment, int) onSave;
+  final Function(PainLevel, int) onSave;
   final VoidCallback onCancel;
-  const DetailedSentimentModal({
+  const DetailedPainModal({
     super.key,
-    required this.initialSentiment,
+    required this.initialPain,
     required this.initialPainIndex,
     required this.onSave,
     required this.onCancel,
   });
 
   @override
-  State<DetailedSentimentModal> createState() => DetailedSentimentModalState();
+  State<DetailedPainModal> createState() => DetailedPainModalState();
 }
 
-class DetailedSentimentModalState extends State<DetailedSentimentModal> {
-  late Sentiment _selectedSentiment;
+class DetailedPainModalState extends State<DetailedPainModal> {
+  late PainLevel simplePain;
   late int _selectedPainIndex;
 
   @override
   void initState() {
     super.initState();
-    _selectedSentiment = widget.initialSentiment;
+    simplePain = widget.initialPain;
     _selectedPainIndex = widget.initialPainIndex;
   }
 
@@ -52,19 +52,19 @@ class DetailedSentimentModalState extends State<DetailedSentimentModal> {
             child: ListView.builder(
               shrinkWrap: true, // This is key: it tells the list to size itself to its children
               physics: const ClampingScrollPhysics(), // Ensures it doesn't bounce unnecessarily
-              itemCount: Sentiment.values.length,
+              itemCount: PainLevel.values.length,
               itemBuilder: (context, index) {
-                final s = Sentiment.values[index];
+                final s = PainLevel.values[index];
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
-                  child: SentimentRow(
-                    sentiment: s, // Pass the enum
-                    selectedSentiment: _selectedSentiment,
+                  child: PainLevelRow(
+                    pain: s, // Pass the enum
+                    selectedPain: simplePain,
                     selectedPainIndex: _selectedPainIndex,
                     onSelectionChanged: (newSentiment, newIndex) {
                       // Parent manages the state update
                       setState(() {
-                        _selectedSentiment = newSentiment;
+                        simplePain = newSentiment;
                         _selectedPainIndex = newIndex;
                       });
                     },
@@ -89,7 +89,7 @@ class DetailedSentimentModalState extends State<DetailedSentimentModal> {
                 child: CarbonButton(
                   label: "Save",
                   onPressed: () {
-                    widget.onSave(_selectedSentiment, _selectedPainIndex);
+                    widget.onSave(simplePain, _selectedPainIndex);
                     Navigator.pop(context);
                   },
                 ),
@@ -103,40 +103,40 @@ class DetailedSentimentModalState extends State<DetailedSentimentModal> {
   }
 }
 
-class SentimentRow extends StatelessWidget {
+class PainLevelRow extends StatelessWidget {
   // Can be Stateless now!
-  final Sentiment sentiment; // Pass the actual enum, not just index
+  final PainLevel pain; // Pass the actual enum, not just index
   final int selectedPainIndex;
-  final Sentiment selectedSentiment;
-  final Function(Sentiment, int) onSelectionChanged; // The Callback
+  final PainLevel selectedPain;
+  final Function(PainLevel, int) onSelectionChanged; // The Callback
 
-  const SentimentRow({
+  const PainLevelRow({
     super.key,
-    required this.sentiment,
-    required this.selectedSentiment,
+    required this.pain,
+    required this.selectedPain,
     required this.selectedPainIndex,
     required this.onSelectionChanged,
   });
   @override
   Widget build(BuildContext context) {
-    final painIndices = sentimentToPainMap[sentiment]!;
+    final painIndices = painLevelToDescription[pain]!;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
-          color: sentiment.color.withValues(alpha: 0.2),
+          color: pain.color.withValues(alpha: 0.2),
           padding: EdgeInsets.only(top: 36.0, bottom: 36.0, left: 16.0, right: 16.0),
-          child: patientSentiments[sentiment]!.getIcon(),
+          child: pains[pain]!.getIcon(),
         ),
         const SizedBox(width: 8.0),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: painIndices.map((painIndex) {
-              bool isSelected = selectedSentiment == sentiment && selectedPainIndex == painIndex;
+              bool isSelected = selectedPain == pain && selectedPainIndex == painIndex;
               return InkWell(
-                onTap: () => onSelectionChanged(sentiment, painIndex),
+                onTap: () => onSelectionChanged(pain, painIndex),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: Row(

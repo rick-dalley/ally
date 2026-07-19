@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:triage/classes/patient_sentiment.dart';
+import 'package:triage/classes/patient_pain.dart';
 
 import 'acuity.dart';
 
@@ -22,20 +22,20 @@ extension SeveritySymbol on Severity {
     switch (this) {
       case Severity.none:
       case Severity.mild:
-        return patientSentiments[Sentiment.happy]!.iconData;
+        return pains[PainLevel.none]!.iconData;
       case Severity.minor:
       case Severity.distracting:
-        return patientSentiments[Sentiment.content]!.iconData;
+        return pains[PainLevel.mild]!.iconData;
       case Severity.moderate:
       case Severity.moderatelyStrong:
       case Severity.difficult:
-        return patientSentiments[Sentiment.neutral]!.iconData;
+        return pains[PainLevel.distracting]!.iconData;
       case Severity.strong:
       case Severity.interfering:
-        return patientSentiments[Sentiment.dissatisfied]!.iconData;
+        return pains[PainLevel.limiting]!.iconData;
       case Severity.unbearable:
       case Severity.debilitating:
-        return patientSentiments[Sentiment.stressed]!.iconData;
+        return pains[PainLevel.severe]!.iconData;
     }
   }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:triage/classes/patient_sentiment.dart';
+import 'package:triage/classes/patient_pain.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:triage/classes/symptom_flag.dart';
@@ -23,7 +23,7 @@ enum TriggerDirection { isGreaterThan, isLessThan, none }
 
 class Symptom {
   final SymptomFlag symptomFlag;
-  final Sentiment sentiment;
+  final PainLevel pain;
   final String name;
   final String description;
   final double triggerPoint;
@@ -33,7 +33,7 @@ class Symptom {
   final List<String> descriptors;
   Symptom({
     required this.symptomFlag,
-    required this.sentiment,
+    required this.pain,
     required this.name,
     required this.description,
     required this.triggerIf,
@@ -54,7 +54,7 @@ class Symptom {
     List<String> itemDescriptors = (item["keywords"] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
     Symptom symptom = Symptom(
       symptomFlag: itemSymptomFlag,
-      sentiment: Sentiment.happy,
+      pain: PainLevel.none,
       name: itemSymptomName,
       description: itemDescription,
       triggerPoint: itemTriggerPoint.toDouble(),

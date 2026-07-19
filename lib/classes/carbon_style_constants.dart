@@ -26,7 +26,9 @@ extension CarbonSpacingWidth on CarbonSpacing {
   }
 }
 
-enum CarbonButtonSize { extraSmall, small, medium, large, largeBold, extralarge, extraExtraLarge }
+enum CarbonButtonStyle { ghost, primary }
+
+enum CarbonButtonSize { extraSmall, small, medium, large, largeBold, extraLarge, extraExtraLarge }
 
 extension CarbonButtonSizeHeight on CarbonButtonSize {
   double get height {
@@ -40,7 +42,7 @@ extension CarbonButtonSizeHeight on CarbonButtonSize {
       case CarbonButtonSize.large:
       case CarbonButtonSize.largeBold:
         return 56;
-      case CarbonButtonSize.extralarge:
+      case CarbonButtonSize.extraLarge:
         return 64;
       case CarbonButtonSize.extraExtraLarge:
         return 72;
@@ -61,7 +63,7 @@ extension CarbonButtonVerticalPadding on CarbonButtonSize {
         return 12;
       case CarbonButtonSize.largeBold:
         return 10;
-      case CarbonButtonSize.extralarge:
+      case CarbonButtonSize.extraLarge:
         return 16;
       case CarbonButtonSize.extraExtraLarge:
         return 24;
@@ -80,7 +82,7 @@ extension CarbonButtonFontSize on CarbonButtonSize {
       case CarbonButtonSize.large:
         return 18;
       case CarbonButtonSize.largeBold:
-      case CarbonButtonSize.extralarge:
+      case CarbonButtonSize.extraLarge:
       case CarbonButtonSize.extraExtraLarge:
         return 20;
     }

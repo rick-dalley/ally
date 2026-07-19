@@ -20,7 +20,6 @@ class Address {
     this.locationName,
   });
   factory Address.fromMap(Map<String, dynamic> item) {
-    String? locationNameRaw = item['location_name'];
     String streetRaw = item['street'];
     String cityRaw = item['city'];
     String provinceOrStateRaw = item['pr_st'];

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/classes/acuity.dart';
 
 class AppColors {
   AppColors._(); // Private constructor prevents instantiation
@@ -66,13 +65,13 @@ class EmeraldGreen {
 class OceanBlue {
   const OceanBlue._();
   final List<Color> all = const [
-    Color(0xFFbddffe),
-    Color(0xFF53bdfd),
-    Color(0xFF1596d2),
-    Color(0xFF0d709e),
-    Color(0xFF064c6d),
-    Color(0xFF022b3f),
-    Color(0xFF01131f),
+    Color(0xFFBDDFFE),
+    Color(0xFF53BDFD),
+    Color(0xFF1596D2),
+    Color(0xFF0d709E),
+    Color(0xFF064C6D),
+    Color(0xFF022B3F),
+    Color(0xFF01131F),
   ];
   Color operator [](int index) => all[index];
 }
@@ -84,11 +83,11 @@ class GreyDepth {
     Color(0xFFF1F5F5),
     Color(0xFFEEF1F1),
     Color(0xFFCCD2D2),
-    Color(0xFFa6abab),
+    Color(0xFFA6ABAB),
     Color(0xFF818585),
-    Color(0xFF5e6161),
-    Color(0xFF3d3f3f),
-    Color(0xFF1f2020),
+    Color(0xFF5E6161),
+    Color(0xFF3d3F3F),
+    Color(0xFF1F2020),
   ];
   Color operator [](int index) => all[index];
 }
@@ -107,56 +106,40 @@ class AppTheme {
   static Color carbonPlaceHolderFontColor = AppColors.grey.all[4];
   static Color carbonErrorFontColor = Color(0xFFDA1E28);
 
+  static TextStyle carbonHeadingTextStyle = TextStyle(
+    fontWeight: FontWeight.w400,
+    fontSize: 20,
+    color: carbonLabelFontColor,
+  );
+
+  static TextStyle carbonPrimaryButtonTextStyle = TextStyle(
+    fontWeight: FontWeight.w400,
+    fontSize: 20,
+    color: AppColors.grey.all[0],
+  );
+  static TextStyle carbonGhostButtonTextStyle = TextStyle(
+    fontWeight: FontWeight.w400,
+    fontSize: 20,
+    color: carbonLabelFontColor,
+  );
+
+  static TextStyle carbonTextStyle = TextStyle(fontWeight: FontWeight.w400, fontSize: 16, color: carbonLabelFontColor);
+  static TextStyle carbonTinyTextStyle = TextStyle(
+    fontWeight: FontWeight.w400,
+    fontSize: 12,
+    color: carbonLabelFontColor,
+  );
+  static TextStyle carbonTinyTextStyleOnPrimary = TextStyle(
+    fontWeight: FontWeight.w400,
+    fontSize: 12,
+    color: AppColors.grey.all[0],
+  );
   // Hospital Monitor Vitals Palette
   static const Color vitalsBP = Color(0xFFFFB300);
   static const Color vitalsOxygen = Color(0xFF82B1FF);
   static const Color vitalsPulse = Color(0xFF00E676);
   static const Color vitalsTemp = Color(0xFFFFFFFF);
   static const Color monitorBlack = Color(0xFF000000);
-
-  static const Color resuscitation = Color(0xFF043AC4);
-  static const Color emergent = Color(0xFFFC900F);
-  static const Color urgent = Color(0xFFFFEA00);
-  static const Color lessUrgent = Color(0xFF23C402);
-  static const Color nonUrgent = Color(0xFFFFFFFF);
-
-  static Color resuscitationBackground = resuscitation.withAlpha(96);
-  static Color emergentBackground = emergent.withAlpha(96);
-  static Color urgentBackground = urgent.withAlpha(96);
-  static Color lessUrgentBackground = lessUrgent.withAlpha(96);
-  static Color nonUrgentBackground = nonUrgent.withAlpha(96);
-
-  static const Map<AcuityLevel, Color> acuityColors = {
-    AcuityLevel.resuscitate: resuscitation,
-    AcuityLevel.emergent: emergent,
-    AcuityLevel.urgent: urgent,
-    AcuityLevel.lessUrgent: lessUrgent,
-    AcuityLevel.notUrgent: nonUrgent,
-  };
-
-  static const Map<AcuityLevel, Color> acuityFontColors = {
-    AcuityLevel.resuscitate: resuscitation,
-    AcuityLevel.emergent: emergent,
-    AcuityLevel.urgent: Color(0xFF000000),
-    AcuityLevel.lessUrgent: lessUrgent,
-    AcuityLevel.notUrgent: Color(0xFF080808),
-  };
-
-  static Map<AcuityLevel, Color> acuityBackgroundColors = {
-    AcuityLevel.resuscitate: resuscitationBackground,
-    AcuityLevel.emergent: emergentBackground,
-    AcuityLevel.urgent: urgentBackground,
-    AcuityLevel.lessUrgent: lessUrgentBackground,
-    AcuityLevel.notUrgent: nonUrgentBackground,
-  };
-
-  static const Map<AcuityLevel, IconData> acuityIcons = {
-    AcuityLevel.resuscitate: Icons.emergency,
-    AcuityLevel.emergent: Icons.circle_rounded,
-    AcuityLevel.urgent: Icons.circle_rounded,
-    AcuityLevel.lessUrgent: Icons.circle_rounded,
-    AcuityLevel.notUrgent: Icons.circle_rounded,
-  };
 
   // Background colors
   static final Color canvasColor = AppColors.grey.all[1];
@@ -169,6 +152,7 @@ class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
+      fontFamily: GoogleFonts.inclusiveSans().fontFamily,
       brightness: Brightness.light,
       scaffoldBackgroundColor: AppColors.grey.all[1],
       textTheme: GoogleFonts.inclusiveSansTextTheme(),

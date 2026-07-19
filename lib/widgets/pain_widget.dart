@@ -1,34 +1,29 @@
 import 'package:flutter/material.dart';
-import 'package:triage/widgets/sentiment_detail_widget.dart';
+import 'package:triage/widgets/pain_detail_widget.dart';
 import '../app_theme.dart';
-import '../classes/patient_sentiment.dart';
+import '../classes/patient_pain.dart';
 
-class SentimentWidget extends StatefulWidget {
-  final Sentiment selectedSentiment;
+class PainWidget extends StatefulWidget {
+  final PainLevel selectedPain;
   final int painScale;
-  final Function(Sentiment, int) onSelected;
+  final Function(PainLevel, int) onSelected;
 
-  const SentimentWidget({
-    super.key,
-    required this.selectedSentiment,
-    required this.onSelected,
-    required this.painScale,
-  });
+  const PainWidget({super.key, required this.selectedPain, required this.onSelected, required this.painScale});
 
   @override
-  SentimentWidgetState createState() => SentimentWidgetState();
+  PainWidgetState createState() => PainWidgetState();
 }
 
-class SentimentWidgetState extends State<SentimentWidget> {
+class PainWidgetState extends State<PainWidget> {
   bool _isExpanded = false;
 
-  void showSentimentDetailSelector(BuildContext context) {
+  void showPainSelector(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
-      builder: (context) => DetailedSentimentModal(
-        initialSentiment: widget.selectedSentiment,
+      builder: (context) => DetailedPainModal(
+        initialPain: widget.selectedPain,
         initialPainIndex: widget.painScale,
         onSave: (newSentiment, newScale) {
           // Logic to update patient sentiment and precision scale
@@ -65,8 +60,8 @@ class SentimentWidgetState extends State<SentimentWidget> {
           context: context,
           isScrollControlled: true,
           shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
-          builder: (context) => DetailedSentimentModal(
-            initialSentiment: widget.selectedSentiment,
+          builder: (context) => DetailedPainModal(
+            initialPain: widget.selectedPain,
             initialPainIndex: widget.painScale, // Or your logic for existing scale
             onSave: (newSentiment, newScale) {
               setState(() {
@@ -78,13 +73,13 @@ class SentimentWidgetState extends State<SentimentWidget> {
           ),
         );
       },
-      child: patientSentiments[widget.selectedSentiment]!.getIcon(),
+      child: pains[widget.selectedPain]!.getIcon(),
     );
   }
 
   // The view when open: list of all options
   List<Widget> _buildExpandedView() {
-    return Sentiment.values.map((sentiment) {
+    return PainLevel.values.map((sentiment) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
         child: GestureDetector(
@@ -92,7 +87,7 @@ class SentimentWidgetState extends State<SentimentWidget> {
             widget.onSelected(sentiment, sentiment.index * 2);
             setState(() => _isExpanded = false);
           },
-          child: patientSentiments[sentiment]!.getIcon(),
+          child: pains[sentiment]!.getIcon(),
         ),
       );
     }).toList();

@@ -65,7 +65,7 @@ class AcuityWidget extends StatelessWidget {
   Widget _buildHeader(Acuity acuity, BuildContext context) {
     return Container(
       width: double.infinity,
-      color: AppTheme.acuityBackgroundColors[acuity.level],
+      color: acuity.level.backgroundColor,
       padding: const EdgeInsets.fromLTRB(24.0, 12.0, 24.0, 16.0),
       child: Text(acuity.statusName, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
     );

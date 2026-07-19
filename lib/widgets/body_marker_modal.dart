@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:triage/classes/patient_sentiment.dart';
+import 'package:triage/classes/patient_pain.dart';
 
 import '../classes/body_markers.dart';
 
@@ -38,37 +38,37 @@ class _BodyMarkerModalState extends State<BodyMarkerModal> {
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  icon: patientSentiments[Sentiment.happy]!.getIcon(),
+                  icon: pains[PainLevel.none]!.getIcon(),
                 ),
                 IconButton(
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  icon: patientSentiments[Sentiment.content]!.getIcon(),
+                  icon: pains[PainLevel.mild]!.getIcon(),
                 ),
                 IconButton(
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  icon: patientSentiments[Sentiment.neutral]!.getIcon(),
+                  icon: pains[PainLevel.distracting]!.getIcon(),
                 ),
                 IconButton(
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  icon: patientSentiments[Sentiment.dissatisfied]!.getIcon(),
+                  icon: pains[PainLevel.limiting]!.getIcon(),
                 ),
                 IconButton(
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  icon: patientSentiments[Sentiment.sad]!.getIcon(),
+                  icon: pains[PainLevel.incapacitating]!.getIcon(),
                 ),
                 IconButton(
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  icon: patientSentiments[Sentiment.stressed]!.getIcon(),
+                  icon: pains[PainLevel.severe]!.getIcon(),
                 ),
               ],
             ),

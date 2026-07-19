@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:triage/screens/user_screen.dart';
 import '../app_theme.dart';
 import '../classes/database_manager.dart';
 import '../classes/patient.dart';
 import '../widgets/carbon_style_search_field.dart';
-import '../widgets/user_card.dart';
 import 'intake_screen.dart';
 import 'medical_profile_screen.dart';
 import 'prescription_screen.dart';
@@ -108,8 +108,8 @@ class FamilyRosterState extends State<FamilyRoster> {
                     // Added top padding for breathing room
                     itemCount: filteredPatients.length,
                     itemBuilder: (context, index) {
-                      return UserCard(
-                        householdMember: filteredPatients[index],
+                      return UserScreen(
+                        user: filteredPatients[index],
                         onMemberUpdate: (Patient patient) {
                           updatePatient(index: index, patient: patient);
                         },

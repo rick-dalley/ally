@@ -5,6 +5,7 @@ import '../app_theme.dart';
 class VerticalRangeIndicator extends StatelessWidget {
   final double current, min, max, clinicalMin, clinicalMax, height;
   final Color color;
+  final Color? backgroundColor;
   final bool showHistoricOutlierMarkers;
   final String? label;
 
@@ -16,6 +17,7 @@ class VerticalRangeIndicator extends StatelessWidget {
     required this.clinicalMin,
     required this.clinicalMax,
     required this.color,
+    this.backgroundColor,
     this.showHistoricOutlierMarkers = false,
     this.label,
     required this.height,
@@ -23,6 +25,7 @@ class VerticalRangeIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Color specifiedBackgroundColor = backgroundColor ?? AppColors.grey.all[0];
     // 1. Determine if we are out of bounds for the ripple
     double margin = height * 0.25;
     double paintAreaHeight = height - (2 * margin);
@@ -32,11 +35,10 @@ class VerticalRangeIndicator extends StatelessWidget {
     final double range = clinicalMax - clinicalMin;
     double currentY;
     if (current > clinicalMax) {
-      currentY = -(6.0 - margin*2);
+      currentY = -(6.0 - margin * 2);
     } else if (current < clinicalMin) {
       currentY = height + 6.0;
-    }
-    else {
+    } else {
       currentY = height - (((current - clinicalMin) / range) * height);
     }
 
@@ -45,9 +47,9 @@ class VerticalRangeIndicator extends StatelessWidget {
 
       children: [
         // 1. The existing graph stack
-        SizedBox(height: margin,),
+        SizedBox(height: margin),
         Container(
-          color: AppTheme.lightTheme.scaffoldBackgroundColor,
+          color: specifiedBackgroundColor,
           width: 48,
           height: paintAreaHeight,
           child: Stack(
@@ -63,12 +65,12 @@ class VerticalRangeIndicator extends StatelessWidget {
                   clinicalMin: clinicalMin,
                   clinicalMax: clinicalMax,
                   color: color,
-                    showHistoricOutlierMarkers: showHistoricOutlierMarkers,
+                  showHistoricOutlierMarkers: showHistoricOutlierMarkers,
                 ),
               ),
               if (isOutlier)
                 Positioned(
-                  top: currentY - (margin*2)-12,
+                  top: currentY - (margin * 2) - 12,
                   child: IgnorePointer(child: RippleIndicator(color: color)),
                 ),
             ],
@@ -98,7 +100,7 @@ class VerticalRangeIndicator extends StatelessWidget {
 class IndicatorPainter extends CustomPainter {
   final double current, min, max, clinicalMin, clinicalMax;
   final Color color;
-final bool showHistoricOutlierMarkers;
+  final bool showHistoricOutlierMarkers;
   IndicatorPainter({
     required this.current,
     required this.min,
@@ -145,7 +147,7 @@ final bool showHistoricOutlierMarkers;
         Paint()..color = color.withAlpha(128),
       );
 
-      if(showHistoricOutlierMarkers){
+      if (showHistoricOutlierMarkers) {
         // 3. Red Round Boundary Markers (Width matched to bar, but circular)
         final Paint redPaint = Paint()..color = Colors.red;
         double currentY;
@@ -170,7 +172,6 @@ final bool showHistoricOutlierMarkers;
           canvas.drawCircle(Offset(centerX, size.height - circleRadius), circleRadius, redPaint);
         }
       }
-
     }
     // canvas.drawRRect(
     //   borderRect,
@@ -184,11 +185,9 @@ final bool showHistoricOutlierMarkers;
     double currentY;
     if (current > clinicalMax) {
       currentY = -circleRadius;
-    }
-    else if (current < clinicalMin) {
+    } else if (current < clinicalMin) {
       currentY = size.height + circleRadius;
-    }
-    else {
+    } else {
       currentY = getY(current);
     }
 
@@ -238,7 +237,7 @@ class RippleIndicatorState extends State<RippleIndicator> with SingleTickerProvi
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             // Solid color, no border, fading opacity
-            color: widget.color.withValues(alpha:0.5 * opacity),
+            color: widget.color.withValues(alpha: 0.5 * opacity),
           ),
         );
       },

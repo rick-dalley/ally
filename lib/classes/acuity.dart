@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 enum AcuityLevel { resuscitate, emergent, urgent, lessUrgent, notUrgent }
 
@@ -17,6 +19,87 @@ extension AcuityLevelLabel on AcuityLevel {
         return "Less Urgent";
       case AcuityLevel.notUrgent:
         return "Not Urgent";
+    }
+  }
+}
+
+extension AcuityLevelColor on AcuityLevel {
+  Color get color {
+    switch (this) {
+      case AcuityLevel.resuscitate:
+        return Color(0xFF043AC4);
+      case AcuityLevel.emergent:
+        return Color(0xFFFC900F);
+      case AcuityLevel.urgent:
+        return Color(0xFFFFEA00);
+      case AcuityLevel.lessUrgent:
+        return Color(0xFF23C402);
+      case AcuityLevel.notUrgent:
+        return Color(0xFFFFFFFF);
+    }
+  }
+}
+
+extension AcuityLevelBackgroundColor on AcuityLevel {
+  Color get backgroundColor {
+    switch (this) {
+      case AcuityLevel.resuscitate:
+        return AcuityLevel.resuscitate.color.withAlpha(96);
+      case AcuityLevel.emergent:
+        return AcuityLevel.emergent.color.withAlpha(96);
+      case AcuityLevel.urgent:
+        return AcuityLevel.urgent.color.withAlpha(96);
+      case AcuityLevel.lessUrgent:
+        return AcuityLevel.lessUrgent.color.withAlpha(96);
+      case AcuityLevel.notUrgent:
+        return AcuityLevel.notUrgent.color.withAlpha(96);
+    }
+  }
+}
+
+extension AcuityLevelIcon on AcuityLevel {
+  IconData get iconData {
+    switch (this) {
+      case AcuityLevel.resuscitate:
+        return Symbols.emergency;
+      case AcuityLevel.emergent:
+        return Symbols.circle_rounded;
+      case AcuityLevel.urgent:
+        return Symbols.circle_rounded;
+      case AcuityLevel.lessUrgent:
+        return Symbols.circle_rounded;
+      case AcuityLevel.notUrgent:
+        return Symbols.circle_rounded;
+    }
+  }
+}
+
+extension AcuityeLevelFontColor on AcuityLevel {
+  Color get fontColor {
+    switch (this) {
+      case AcuityLevel.resuscitate:
+        return AcuityLevel.resuscitate.color;
+      case AcuityLevel.emergent:
+        return AcuityLevel.emergent.color;
+      case AcuityLevel.urgent:
+        return Color(0xFF000000);
+      case AcuityLevel.lessUrgent:
+        return AcuityLevel.lessUrgent.color;
+      case AcuityLevel.notUrgent:
+        return Color(0xFF080808);
+    }
+  }
+}
+
+extension AcuityLevelFontStyle on AcuityLevel {
+  TextStyle get textStyle {
+    switch (this) {
+      case AcuityLevel.resuscitate:
+      case AcuityLevel.emergent:
+      case AcuityLevel.urgent:
+      case AcuityLevel.lessUrgent:
+      case AcuityLevel.notUrgent:
+        return TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: fontColor);
     }
   }
 }

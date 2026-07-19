@@ -4,7 +4,7 @@ import 'dart:ui';
 
 import 'package:triage/classes/database_manager.dart';
 import 'package:triage/classes/date_time_utilities.dart';
-import 'package:triage/classes/patient_sentiment.dart';
+import 'package:triage/classes/patient_pain.dart';
 
 import 'body_zone.dart';
 
@@ -44,7 +44,7 @@ enum Nature { stinging, penetrating, dull, throbbing, achy, nagging, gnawing, sh
 
 class BodyMarker {
   final Offset offset;
-  final Sentiment emoji;
+  final PainLevel emoji;
   final AnatomyZoneMaps zoneMap;
   final String name;
   final String medicalName;
@@ -84,7 +84,7 @@ class BodyMarker {
   ) {
     return BodyMarker(
       offset: offset,
-      emoji: Sentiment.stressed,
+      emoji: PainLevel.severe,
       name: name,
       medicalName: medicalName,
       zoneMap: zoneMap,
@@ -111,7 +111,7 @@ class BodyMarker {
       medicalName: zoneFromJson.latin,
       descriptions: descriptionChips,
       severity: VerbalSeverity.values[severityIndex],
-      emoji: Sentiment.values[emojiIndex],
+      emoji: PainLevel.values[emojiIndex],
       frequency: Frequency.values[frequencyIndex],
       nature: Nature.values[natureIndex],
       improvesWhen: improvesWhenChips,

@@ -5,11 +5,11 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/action.dart';
 import 'package:triage/screens/add_patients_wheel.dart';
 import 'package:triage/screens/time_scroller.dart';
+import 'package:triage/screens/user_screen.dart';
 import '../app_theme.dart';
 import '../classes/database_manager.dart';
 import '../classes/patient.dart';
 import '../widgets/emergency_qr.dart';
-import '../widgets/user_card.dart';
 import 'prescription_screen.dart';
 import 'staff_screen.dart';
 import 'medical_profile_screen.dart';
@@ -61,8 +61,8 @@ class HomeScreenState extends State<HomeScreen> {
     final patient = patients[patientIndex];
     final List<PatientAction> actions = PatientActionFactory.instance.getActionsForPatient(patient.patientUuid);
     return [
-      UserCard(
-        householdMember: patient,
+      UserScreen(
+        user: patient,
         onVitalsUpdate: (p) => updatePatient(patientIndex: patientIndex, patient: p),
         onMemberUpdate: (p) => updatePatient(patientIndex: patientIndex, patient: p),
       ),
