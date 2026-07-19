@@ -143,10 +143,7 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
           ),
           GetMedicationType(onTypeSelected: (val) => setState(() => _type = val)),
           GetMedicationDosage(controller: widget.dosageController, onAddDosage: (val) => setState(() => _dosage = val)),
-          GetMedicationFrequency(
-            controller: widget.frequencyController,
-            onAddFrequency: (val) => setState(() => _frequency = val),
-          ),
+          GetMedicationFrequency(controller: widget.frequencyController),
           GetMedicationShape(onShapeSelect: (val) => setState(() => _shape = val)),
         ],
       ),

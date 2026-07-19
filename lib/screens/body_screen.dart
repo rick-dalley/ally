@@ -197,8 +197,9 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
                                 // Show the Modal
                                 showModalBottomSheet(
                                   context: context,
+                                  useSafeArea: true,
                                   isScrollControlled: true,
-                                  constraints: BoxConstraints(maxHeight: mq.size.height * 0.45),
+                                  // constraints: BoxConstraints(maxHeight: mq.size.height * 0.45),
                                   builder: (context) => BodyMarkerModal(
                                     initialMarker: newMarker,
                                     onSave: (updatedMarker) {

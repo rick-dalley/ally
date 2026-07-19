@@ -1,6 +1,26 @@
-enum AboType { a, b, ab, o }
+import 'listable.dart';
 
-extension ABOTypeLabel on AboType {
+enum AboType implements Listable {
+  a,
+  b,
+  ab,
+  o;
+
+  @override
+  String get description {
+    switch (this) {
+      case AboType.a:
+        return "Type A";
+      case AboType.b:
+        return "Type B";
+      case AboType.ab:
+        return "Type AB";
+      case AboType.o:
+        return "Type O";
+    }
+  }
+
+  @override
   String get label {
     switch (this) {
       case AboType.a:
@@ -15,9 +35,10 @@ extension ABOTypeLabel on AboType {
   }
 }
 
-enum RhFactor { positive, negative }
+enum RhFactor implements Listable {
+  positive,
+  negative;
 
-extension RHFactorSmallLabel on RhFactor {
   String get symbol {
     switch (this) {
       case RhFactor.positive:
@@ -26,15 +47,24 @@ extension RHFactorSmallLabel on RhFactor {
         return "-";
     }
   }
-}
 
-extension RHFactorLabel on RhFactor {
+  @override
   String get label {
     switch (this) {
       case RhFactor.positive:
         return "positive";
       case RhFactor.negative:
         return "negative";
+    }
+  }
+
+  @override
+  String get description {
+    switch (this) {
+      case RhFactor.positive:
+        return "RH Positive";
+      case RhFactor.negative:
+        return "RH Negative";
     }
   }
 }

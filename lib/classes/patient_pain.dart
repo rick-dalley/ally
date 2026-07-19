@@ -1,9 +1,124 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
-enum PainLevel { none, mild, distracting, limiting, incapacitating, severe }
+import '../app_theme.dart';
+import 'flyable.dart';
+import 'listable.dart';
 
-extension PainLevelColor on PainLevel {
+enum Frequency implements Flyable {
+  cyclical,
+  chronic,
+  acute;
+
+  @override
+  Color get color => AppTheme.carbonLabelFontColor;
+
+  @override
+  String get description {
+    switch (this) {
+      case Frequency.cyclical:
+        return "The pain comes and goes";
+      case Frequency.chronic:
+        return "The pain is nagging and continuous";
+      case Frequency.acute:
+        return "The pain is strong and intense";
+    }
+  }
+
+  @override
+  IconData get icon {
+    switch (this) {
+      case Frequency.cyclical:
+        return Symbols.cycle;
+      case Frequency.chronic:
+        return Symbols.all_inclusive;
+      case Frequency.acute:
+        return Symbols.explosion;
+    }
+  }
+
+  @override
+  String get label {
+    switch (this) {
+      case Frequency.cyclical:
+        return "Cyclical";
+      case Frequency.chronic:
+        return "Chronic";
+      case Frequency.acute:
+        return "Acute";
+    }
+  }
+
+  @override
+  Color get onPrimary => AppColors.grey.all[0];
+}
+
+enum PainType implements Listable {
+  stinging,
+  penetrating,
+  dull,
+  throbbing,
+  achy,
+  nagging,
+  gnawing,
+  sharp;
+
+  @override
+  // TODO: implement description
+  String get description {
+    switch (this) {
+      case PainType.stinging:
+        return "Stinging";
+      case PainType.penetrating:
+        return "Penetrating";
+      case PainType.dull:
+        return "Dull";
+      case PainType.throbbing:
+        return "Throbbing";
+      case PainType.achy:
+        return "Achy";
+      case PainType.nagging:
+        return "Nagging";
+      case PainType.gnawing:
+        return "Gnawing";
+      case PainType.sharp:
+        return "Sharp";
+    }
+  }
+
+  @override
+  // TODO: implement label
+  String get label {
+    switch (this) {
+      case PainType.stinging:
+        return "Stinging";
+      case PainType.penetrating:
+        return "Penetrating";
+      case PainType.dull:
+        return "Dull";
+      case PainType.throbbing:
+        return "Throbbing";
+      case PainType.achy:
+        return "Achy";
+      case PainType.nagging:
+        return "Nagging";
+      case PainType.gnawing:
+        return "Gnawing";
+      case PainType.sharp:
+        return "Sharp";
+    }
+  }
+}
+
+enum PainLevel implements Flyable {
+  none,
+  mild,
+  distracting,
+  limiting,
+  incapacitating,
+  severe;
+
+  @override
   Color get color {
     switch (this) {
       case PainLevel.none:
@@ -20,25 +135,63 @@ extension PainLevelColor on PainLevel {
         return Colors.red.shade900;
     }
   }
-}
 
-extension PainDescription on PainLevel {
+  @override
   String get description {
     switch (this) {
       case PainLevel.none:
-        return "Thriving: High energy, positive outlook, fully engaged.";
+        return "No pain. I feel normal.";
       case PainLevel.mild:
-        return "Stable: At ease, no discomfort, functioning well.";
+        return "Noticeable, but I can do daily activities.";
       case PainLevel.distracting:
-        return "Baseline: Neither distressed nor particularly uplifted.";
+        return "Distressing/distracting, but can do daily activities.";
       case PainLevel.limiting:
-        return "Mild Distress: Persistent discomfort or minor anxiety.";
+        return "Limiting. Cannot do daily activities.";
       case PainLevel.incapacitating:
-        return "Low Mood: Withdrawn, lethargic, or lacking motivation.";
+        return "Unable to function.";
       case PainLevel.severe:
-        return "Acute Distress: High anxiety, overwhelmed, requires attention.";
+        return "Severe. As bad as it gets.";
     }
   }
+
+  @override
+  IconData get icon {
+    switch (this) {
+      case PainLevel.none:
+        return Symbols.sentiment_calm;
+      case PainLevel.mild:
+        return Symbols.sentiment_content;
+      case PainLevel.distracting:
+        return Symbols.sentiment_neutral;
+      case PainLevel.limiting:
+        return Symbols.sentiment_dissatisfied;
+      case PainLevel.incapacitating:
+        return Symbols.sentiment_sad;
+      case PainLevel.severe:
+        return Symbols.sentiment_stressed;
+    }
+  }
+
+  @override
+  String get label {
+    switch (this) {
+      case PainLevel.none:
+        return "None";
+      case PainLevel.mild:
+        return "Noticeable";
+      case PainLevel.distracting:
+        return "Distracting";
+      case PainLevel.limiting:
+        return "Limiting";
+      case PainLevel.incapacitating:
+        return "Incapacitating";
+      case PainLevel.severe:
+        return "Unbearable";
+    }
+  }
+
+  @override
+  Color get onPrimary => AppColors.grey.all[0];
 }
 
 enum TextPain { noPain, worstPainEver }
@@ -78,25 +231,122 @@ final List<String> disabledVeteransPainScaleDescriptions = [
   "10: As bad as it could be. Nothing else matters.",
 ];
 
-Map<PainLevel, PatientPain> pains = {
-  PainLevel.none: PatientPain(iconData: Symbols.sentiment_calm, color: PainLevel.none.color, diameter: 32),
-  PainLevel.mild: PatientPain(iconData: Symbols.sentiment_content, color: PainLevel.mild.color, diameter: 32),
-  PainLevel.distracting: PatientPain(
-    iconData: Symbols.sentiment_neutral,
-    color: PainLevel.distracting.color,
-    diameter: 32,
-  ),
-  PainLevel.limiting: PatientPain(
-    iconData: Symbols.sentiment_dissatisfied,
-    color: PainLevel.limiting.color,
-    diameter: 32,
-  ),
-  PainLevel.incapacitating: PatientPain(
-    iconData: Symbols.sentiment_sad,
-    color: PainLevel.incapacitating.color,
-    diameter: 32,
-  ),
-  PainLevel.severe: PatientPain(iconData: Symbols.sentiment_stressed, color: PainLevel.severe.color, diameter: 32),
-};
+enum DetailedPainLevel implements Flyable {
+  none,
+  mild,
+  minor,
+  distracting,
+  moderate,
+  moderatelyStrong,
+  difficult,
+  strong,
+  interfering,
+  unbearable,
+  debilitating;
 
-Map<TextPain, String> painScaleDescriptionMap = {TextPain.noPain: "", TextPain.worstPainEver: "worst pain ever"};
+  @override
+  // TODO: implement color
+  Color get color {
+    switch (this) {
+      case DetailedPainLevel.none:
+      case DetailedPainLevel.mild:
+        return PainLevel.none.color;
+      case DetailedPainLevel.minor:
+      case DetailedPainLevel.distracting:
+        return PainLevel.mild.color;
+      case DetailedPainLevel.moderate:
+      case DetailedPainLevel.moderatelyStrong:
+      case DetailedPainLevel.difficult:
+        return PainLevel.distracting.color;
+      case DetailedPainLevel.strong:
+      case DetailedPainLevel.interfering:
+        return PainLevel.limiting.color;
+      case DetailedPainLevel.unbearable:
+      case DetailedPainLevel.debilitating:
+        return PainLevel.severe.color;
+    }
+  }
+
+  @override
+  // TODO: implement description
+  String get description {
+    switch (this) {
+      case DetailedPainLevel.none:
+        return "Pain free.";
+      case DetailedPainLevel.mild:
+        return "Very mild, barely noticeable; you don't think about it most of the time.";
+      case DetailedPainLevel.minor:
+        return "Minor pain, annoying; may have occasional sharp twinges.";
+      case DetailedPainLevel.distracting:
+        return "Noticeable and distracting; however, you can adapt and get used to it.";
+      case DetailedPainLevel.moderate:
+        return "Moderate pain; you can ignore it for periods of time if deeply involved in an activity, but it is still distracting";
+      case DetailedPainLevel.moderatelyStrong:
+        return "Moderately strong pain; cannot be ignored for more than a few minutes, but you can still work or socialize with effort";
+      case DetailedPainLevel.difficult:
+        return "Interferes with normal daily activities; you have difficulty concentrating";
+      case DetailedPainLevel.strong:
+        return "Strong pain; prevents you from doing normal daily activities";
+      case DetailedPainLevel.interfering:
+        return "Very strong pain; it is hard to do anything at all";
+      case DetailedPainLevel.unbearable:
+        return "Very hard to tolerate; you cannot carry on a conversation";
+      case DetailedPainLevel.debilitating:
+        return "Worst pain possible";
+    }
+  }
+
+  @override
+  // TODO: implement icon
+  IconData get icon {
+    switch (this) {
+      case DetailedPainLevel.none:
+      case DetailedPainLevel.mild:
+        return PainLevel.none.icon;
+      case DetailedPainLevel.minor:
+      case DetailedPainLevel.distracting:
+        return PainLevel.mild.icon;
+      case DetailedPainLevel.moderate:
+      case DetailedPainLevel.moderatelyStrong:
+      case DetailedPainLevel.difficult:
+        return PainLevel.distracting.icon;
+      case DetailedPainLevel.strong:
+      case DetailedPainLevel.interfering:
+        return PainLevel.limiting.icon;
+      case DetailedPainLevel.unbearable:
+      case DetailedPainLevel.debilitating:
+        return PainLevel.severe.icon;
+    }
+  }
+
+  @override
+  String get label {
+    switch (this) {
+      case DetailedPainLevel.none:
+        return "None";
+      case DetailedPainLevel.mild:
+        return "Mild";
+      case DetailedPainLevel.minor:
+        return "Minor";
+      case DetailedPainLevel.distracting:
+        return "Distracting";
+      case DetailedPainLevel.moderate:
+        return "Moderate";
+      case DetailedPainLevel.moderatelyStrong:
+        return "Moderately Strong";
+      case DetailedPainLevel.difficult:
+        return "Difficult";
+      case DetailedPainLevel.strong:
+        return "Strong";
+      case DetailedPainLevel.interfering:
+        return "interfering";
+      case DetailedPainLevel.unbearable:
+        return "Unbearable";
+      case DetailedPainLevel.debilitating:
+        return "Debilitating";
+    }
+  }
+
+  @override
+  Color get onPrimary => AppColors.grey.all[0];
+}

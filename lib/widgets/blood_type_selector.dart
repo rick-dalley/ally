@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/widgets/carbon_style_button.dart';
 import 'package:triage/widgets/carbon_style_dropdown.dart';
-
 import '../classes/blood_type.dart';
+import '../classes/listable.dart';
 
 class BloodTypeSelector extends StatelessWidget {
-  final AboType? selectedAbo;
-  final RhFactor? selectedRh;
-  final ValueChanged<AboType?> onAboChanged;
-  final ValueChanged<RhFactor?> onRhChanged;
+  final AboType selectedAbo;
+  final RhFactor selectedRh;
+  final ValueChanged<Listable> onAboChanged;
+  final ValueChanged<Listable> onRhChanged;
 
   const BloodTypeSelector({
     super.key,
@@ -71,16 +71,22 @@ class BloodTypeSelector extends StatelessWidget {
   Widget _buildDropdown(BuildContext context) {
     return CarbonDropdown<AboType>(
       label: "ABO Group",
-      items: AboType.values.map((type) => DropdownMenuItem(value: type, child: Text(type.label))).toList(),
+      placeholder: "Select A, B, AB or O",
+      helperText: "Select your blood type",
+      items: AboType.values,
       onChanged: onAboChanged,
+      value: AboType.o,
     );
   }
 
   Widget _buildRhDropdown(BuildContext context) {
     return CarbonDropdown<RhFactor>(
       label: "RH Factor",
-      items: RhFactor.values.map((factor) => DropdownMenuItem(value: factor, child: Text(factor.label))).toList(),
+      placeholder: "Select +/-",
+      helperText: "Select whether your blood type is RH positive or negative",
+      items: RhFactor.values,
       onChanged: onRhChanged,
+      value: RhFactor.positive,
     );
   }
 }

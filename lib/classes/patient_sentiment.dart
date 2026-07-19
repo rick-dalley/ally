@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../app_theme.dart';
-import 'flyout_base.dart';
+import 'flyable.dart';
 
 enum Sentiment implements Flyable {
   angry,

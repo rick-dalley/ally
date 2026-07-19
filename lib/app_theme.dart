@@ -123,13 +123,17 @@ class AppTheme {
     color: carbonLabelFontColor,
   );
 
-  static TextStyle carbonTextStyle = TextStyle(fontWeight: FontWeight.w400, fontSize: 16, color: carbonLabelFontColor);
-  static TextStyle carbonTinyTextStyle = TextStyle(
+  static TextStyle carbonTextStyle = GoogleFonts.ibmPlexSans(
+    fontWeight: FontWeight.w400,
+    fontSize: 16,
+    color: carbonLabelFontColor,
+  );
+  static TextStyle carbonTinyTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
     fontSize: 12,
     color: carbonLabelFontColor,
   );
-  static TextStyle carbonTinyTextStyleOnPrimary = TextStyle(
+  static TextStyle carbonTinyTextStyleOnPrimary = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
     fontSize: 12,
     color: AppColors.grey.all[0],

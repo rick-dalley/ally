@@ -1,33 +1,116 @@
-import 'dart:convert';
+import 'listable.dart';
 
-import 'package:flutter/services.dart';
+enum FrequencyCodes implements Listable {
+  quaqueDie,
+  bisInDie,
+  anteCibum,
+  postCibum,
+  proReNata,
+  quaqueAnteMeridiem,
+  quaquePostMeridiem,
+  quaqueHoraSomni,
+  quaterInDie,
+  terInDie;
 
-class FrequencyCode {
-  final String code;
-  final String latinRoot;
-  final String english;
-
-  FrequencyCode({required this.code, required this.latinRoot, required this.english});
-
-  factory FrequencyCode.fromJson(Map<String, dynamic> json) {
-    return FrequencyCode(
-      code: json['Code'] as String,
-      latinRoot: json['LatinRoot'] as String,
-      english: json['English'] as String,
-    );
+  String get latin {
+    switch (this) {
+      case quaqueDie:
+        return "Quaque die";
+      case bisInDie:
+        return "Bis in die";
+      case terInDie:
+        return "Ter in die";
+      case quaterInDie:
+        return "Quater in die";
+      case quaqueHoraSomni:
+        return "Quaque hora somni";
+      case quaqueAnteMeridiem:
+        return "Quaque ante meridiem";
+      case quaquePostMeridiem:
+        return "Quaque post meridiem";
+      case proReNata:
+        return "Pro re nata";
+      case anteCibum:
+        return "Ante cibum";
+      case postCibum:
+        return "Post cibum";
+    }
   }
-}
 
-class FrequencyCodeService {
-  static List<FrequencyCode>? _cachedCodes;
+  @override
+  String get description {
+    switch (this) {
+      case quaqueDie:
+        return "Once every 24 hours";
+      case bisInDie:
+        return "Once every 12 hours";
+      case terInDie:
+        return "Once every 8 hours";
+      case quaterInDie:
+        return "Once every 6 hours";
+      case FrequencyCodes.anteCibum:
+        return "Before meals, as directed";
+      case FrequencyCodes.postCibum:
+        return "After meals, as directed";
+      case FrequencyCodes.proReNata:
+        return "As you need";
+      case FrequencyCodes.quaqueAnteMeridiem:
+        return "Once each morning";
+      case FrequencyCodes.quaquePostMeridiem:
+        return "Once each evening ";
+      case FrequencyCodes.quaqueHoraSomni:
+        return "Once each evening before going to bed";
+    }
+  }
 
-  static Future<List<FrequencyCode>> getCodes() async {
-    if (_cachedCodes != null) return _cachedCodes!;
+  @override
+  String get label {
+    switch (this) {
+      case quaqueDie:
+        return "Once a day";
+      case bisInDie:
+        return "Twice a day";
+      case terInDie:
+        return "Three times a day";
+      case quaterInDie:
+        return "Four times a day";
+      case quaqueHoraSomni:
+        return "Every night at bedtime";
+      case quaqueAnteMeridiem:
+        return "Every morning";
+      case quaquePostMeridiem:
+        return "Every evening";
+      case proReNata:
+        return "As needed";
+      case anteCibum:
+        return "Before meals";
+      case postCibum:
+        return "After meals";
+    }
+  }
 
-    final String response = await rootBundle.loadString('assets/codes/frequency_codes.json');
-    final List<dynamic> data = json.decode(response);
-
-    _cachedCodes = data.map((item) => FrequencyCode.fromJson(item)).toList();
-    return _cachedCodes!;
+  String get code {
+    switch (this) {
+      case quaqueDie:
+        return "QD";
+      case bisInDie:
+        return "BID";
+      case terInDie:
+        return "TID";
+      case quaterInDie:
+        return "QID";
+      case quaqueHoraSomni:
+        return "QHS";
+      case quaqueAnteMeridiem:
+        return "QAM";
+      case quaquePostMeridiem:
+        return "QPM";
+      case proReNata:
+        return "PRN";
+      case anteCibum:
+        return "AC";
+      case postCibum:
+        return "PC";
+    }
   }
 }

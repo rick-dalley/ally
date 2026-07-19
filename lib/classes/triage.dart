@@ -1,73 +1,6 @@
-import 'package:flutter/cupertino.dart';
 import 'package:triage/classes/patient_pain.dart';
 
 import 'acuity.dart';
-
-enum Severity {
-  none,
-  mild,
-  minor,
-  distracting,
-  moderate,
-  moderatelyStrong,
-  difficult,
-  strong,
-  interfering,
-  unbearable,
-  debilitating,
-}
-
-extension SeveritySymbol on Severity {
-  IconData get asIcon {
-    switch (this) {
-      case Severity.none:
-      case Severity.mild:
-        return pains[PainLevel.none]!.iconData;
-      case Severity.minor:
-      case Severity.distracting:
-        return pains[PainLevel.mild]!.iconData;
-      case Severity.moderate:
-      case Severity.moderatelyStrong:
-      case Severity.difficult:
-        return pains[PainLevel.distracting]!.iconData;
-      case Severity.strong:
-      case Severity.interfering:
-        return pains[PainLevel.limiting]!.iconData;
-      case Severity.unbearable:
-      case Severity.debilitating:
-        return pains[PainLevel.severe]!.iconData;
-    }
-  }
-}
-
-extension SeverityDescription on Severity {
-  String get asString {
-    switch (this) {
-      case Severity.none:
-        return "Pain free.";
-      case Severity.mild:
-        return "Very mild, barely noticeable; you don't think about it most of the time.";
-      case Severity.minor:
-        return "Minor pain, annoying; may have occasional sharp twinges.";
-      case Severity.distracting:
-        return "Noticeable and distracting; however, you can adapt and get used to it.";
-      case Severity.moderate:
-        return "Moderate pain; you can ignore it for periods of time if deeply involved in an activity, but it is still distracting";
-      case Severity.moderatelyStrong:
-        return "Moderately strong pain; cannot be ignored for more than a few minutes, but you can still work or socialize with effort";
-      case Severity.difficult:
-        return "Interferes with normal daily activities; you have difficulty concentrating";
-      case Severity.strong:
-        return "Strong pain; prevents you from doing normal daily activities";
-      case Severity.interfering:
-        return "Very strong pain; it is hard to do anything at all";
-      case Severity.unbearable:
-        return "Very hard to tolerate; you cannot carry on a conversation";
-      case Severity.debilitating:
-        return "Worst pain possible";
-    }
-  }
-}
 
 enum OldCarts { onset, location, duration, characteristic, aggravator, reliever, timing, severity }
 
@@ -147,9 +80,9 @@ extension RequiresData on AssessmentType {
 }
 
 class TriageAssessmentResult {
-  final Severity? toxidromeSeverity;
-  final Severity? psychosisSeverity;
-  final Severity? suicideRiskSeverity;
+  final DetailedPainLevel? toxidromeSeverity;
+  final DetailedPainLevel? psychosisSeverity;
+  final DetailedPainLevel? suicideRiskSeverity;
   final bool isMissingCritical;
 
   TriageAssessmentResult({
@@ -161,10 +94,10 @@ class TriageAssessmentResult {
 
   // Calculate the highest common denominator
   AcuityLevel get overallAcuity {
-    if (isMissingCritical || suicideRiskSeverity == Severity.unbearable) {
+    if (isMissingCritical || suicideRiskSeverity == DetailedPainLevel.unbearable) {
       return AcuityLevel.resuscitate; // Highest level
     }
-    if (psychosisSeverity == Severity.unbearable || toxidromeSeverity == Severity.unbearable) {
+    if (psychosisSeverity == DetailedPainLevel.unbearable || toxidromeSeverity == DetailedPainLevel.unbearable) {
       return AcuityLevel.urgent;
     }
     return AcuityLevel.notUrgent;

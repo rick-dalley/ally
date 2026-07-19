@@ -10,10 +10,10 @@ import 'package:triage/widgets/flyout_widget.dart';
 import 'package:triage/widgets/vitals_history.dart';
 import '../app_theme.dart';
 import '../classes/action.dart';
-import '../classes/blood_type.dart';
 import '../classes/carbon_style_constants.dart';
 import '../classes/database_manager.dart';
-import '../classes/flyout_base.dart';
+import '../classes/flyable.dart';
+import '../classes/listable.dart';
 import '../classes/medication_services.dart';
 import '../classes/patient.dart';
 import '../classes/patient_pain.dart';
@@ -128,12 +128,12 @@ class UserScreenState extends State<UserScreen> {
     );
   }
 
-  void onAboChanged(AboType? abo) {
+  void onAboChanged(Listable abo) {
     // setState(() {
     //   Database().updateBloodType(patient.patientUuid, abo);
     // });
   }
-  void onRhChanged(RhFactor? rh) {
+  void onRhChanged(Listable rh) {
     // setState(() {
     //   Database().updateBloodType(patient.patientUuid, abo);
     // });

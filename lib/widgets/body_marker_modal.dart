@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:triage/app_theme.dart';
 import 'package:triage/classes/patient_pain.dart';
+import 'package:triage/widgets/carbon_style_dropdown.dart';
 
 import '../classes/body_markers.dart';
+import '../classes/listable.dart';
 
 class BodyMarkerModal extends StatefulWidget {
   final BodyMarker initialMarker;
@@ -31,93 +34,95 @@ class _BodyMarkerModalState extends State<BodyMarkerModal> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(_currentMarker.name.toUpperCase()),
+            Text(_currentMarker.name.toUpperCase(), style: AppTheme.carbonTextStyle),
+            const SizedBox(height: 16),
+
             Row(
               children: [
                 IconButton(
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  icon: pains[PainLevel.none]!.getIcon(),
+                  icon: Icon(PainLevel.none.icon),
                 ),
                 IconButton(
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  icon: pains[PainLevel.mild]!.getIcon(),
+                  icon: Icon(PainLevel.mild.icon),
                 ),
                 IconButton(
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  icon: pains[PainLevel.distracting]!.getIcon(),
+                  icon: Icon(PainLevel.distracting.icon),
                 ),
                 IconButton(
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  icon: pains[PainLevel.limiting]!.getIcon(),
+                  icon: Icon(PainLevel.limiting.icon),
                 ),
                 IconButton(
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  icon: pains[PainLevel.incapacitating]!.getIcon(),
+                  icon: Icon(PainLevel.incapacitating.icon),
                 ),
                 IconButton(
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  icon: pains[PainLevel.severe]!.getIcon(),
+                  icon: Icon(PainLevel.severe.icon),
                 ),
               ],
             ),
+            const SizedBox(height: 16),
 
-            // Text("Edit ${widget.initialMarker.bodyZone?.name}", style: Theme.of(context).textTheme.titleLarge),
-            DropdownButton<VerbalSeverity>(
-              isExpanded: true,
-              value: _currentMarker.severity,
-              // Increase itemHeight to accommodate two lines of text
-              itemHeight: 70,
-              items: VerbalSeverity.values
-                  .map(
-                    (s) => DropdownMenuItem(
-                      value: s,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(s.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                          Text(
-                            severityExplanations[s]!,
-                            style: Theme.of(context).textTheme.bodySmall,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 2, // Ensures the text wraps
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (val) => setState(() => _currentMarker = _updateMarker(severity: val)),
+            // onChanged: ,
+            CarbonButton2LineDropDown<DetailedPainLevel>(
+              label: "Pain Level",
+              placeholder: "Select the Pain Level",
+              helperText: "Choose the level of pain that you are feeling",
+              onChanged: (Listable val) {
+                final level = val as DetailedPainLevel;
+                setState(() {
+                  _currentMarker = _updateMarker(severity: level);
+                });
+              },
+              value: DetailedPainLevel.none,
+              items: DetailedPainLevel.values,
             ),
-
+            const SizedBox(height: 16),
             // Frequency
-            DropdownButton<Frequency>(
-              isExpanded: true,
-              hint: const Text("Select Frequency"),
-              value: _currentMarker.frequency, // Ensure your BodyMarker class has this field
-              items: Frequency.values.map((f) => DropdownMenuItem(value: f, child: Text(f.name))).toList(),
-              onChanged: (val) => setState(() => _currentMarker = _updateMarker(frequency: val)),
+            CarbonDropdown<Frequency>(
+              label: "Frequency",
+              helperText: "Select how often this pain occurs",
+              placeholder: "Select the frequency",
+              items: Frequency.values,
+              value: Frequency.cyclical,
+              onChanged: (Listable val) {
+                setState(() {
+                  final Frequency frequency = val as Frequency;
+                  _currentMarker = _updateMarker(frequency: frequency);
+                });
+              },
             ),
+            const SizedBox(height: 16),
 
             // Nature
-            DropdownButton<Nature>(
-              isExpanded: true,
-              hint: const Text("Select Nature"),
-              value: _currentMarker.nature, // Ensure your BodyMarker class has this field
-              items: Nature.values.map((n) => DropdownMenuItem(value: n, child: Text(n.name))).toList(),
-              onChanged: (val) => setState(() => _currentMarker = _updateMarker(nature: val)),
+            CarbonDropdown(
+              label: "Type",
+              helperText: "A description of how it feels",
+              placeholder: "Select Pain Type",
+              items: PainType.values,
+              value: PainType.achy,
+              onChanged: (Listable val) {
+                setState(() {
+                  PainType painType = val as PainType;
+                  _currentMarker = _updateMarker(painType: painType);
+                });
+              },
             ),
 
             const Spacer(),
@@ -135,14 +140,14 @@ class _BodyMarkerModalState extends State<BodyMarkerModal> {
   }
 
   // Helper to maintain immutability while updating state
-  BodyMarker _updateMarker({VerbalSeverity? severity, Frequency? frequency, Nature? nature}) {
+  BodyMarker _updateMarker({DetailedPainLevel? severity, Frequency? frequency, PainType? painType}) {
     return BodyMarker(
       offset: _currentMarker.offset,
       emoji: _currentMarker.emoji,
       name: _currentMarker.name,
       medicalName: _currentMarker.medicalName,
       zoneMap: _currentMarker.zoneMap,
-      severity: severity ?? _currentMarker.severity,
+      severity: severity,
       group: _currentMarker.group,
     );
   }

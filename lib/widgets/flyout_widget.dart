@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../app_theme.dart';
 import '../classes/carbon_style_constants.dart';
-import '../classes/flyout_base.dart';
+import '../classes/flyable.dart';
 
 class FlyOutItemWidget extends StatelessWidget {
   final Flyable item;

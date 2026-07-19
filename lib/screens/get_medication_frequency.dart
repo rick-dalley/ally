@@ -5,13 +5,12 @@ import 'package:triage/classes/carbon_style_constants.dart';
 import 'package:triage/classes/frequency_codes.dart';
 import 'package:triage/widgets/carbon_style_dropdown.dart';
 import 'package:triage/widgets/carbon_style_full_button.dart';
-import '../classes/medication_services.dart';
+import '../classes/listable.dart';
 
 class GetMedicationFrequency extends StatefulWidget {
   final TextEditingController controller;
-  final Function(Frequency) onAddFrequency;
 
-  const GetMedicationFrequency({super.key, required this.controller, required this.onAddFrequency});
+  const GetMedicationFrequency({super.key, required this.controller});
 
   @override
   State<GetMedicationFrequency> createState() => _GetMedicationFrequencyState();
@@ -23,7 +22,6 @@ class _GetMedicationFrequencyState extends State<GetMedicationFrequency> {
   DateTime? end;
   DateTime? specificTime;
   String? latinRecurrence;
-  List<FrequencyCode> frequencyCodes = [];
 
   bool get _shouldRecommendAlert => specificTime != null;
 
@@ -32,21 +30,6 @@ class _GetMedicationFrequencyState extends State<GetMedicationFrequency> {
     super.initState();
     start = DateTime.now();
     end = start?.add(const Duration(days: 30));
-    _loadCodes(); // Call a separate method
-  }
-
-  // Separate method to handle async work
-  Future<void> _loadCodes() async {
-    final codes = await FrequencyCodeService.getCodes();
-    if (mounted) {
-      setState(() => frequencyCodes = codes);
-    }
-  }
-
-  void _update() {
-    widget.onAddFrequency(
-      Frequency(alert: _alert, start: start, end: end, specificTime: specificTime, latinRecurrence: latinRecurrence),
-    );
   }
 
   @override
@@ -56,36 +39,24 @@ class _GetMedicationFrequencyState extends State<GetMedicationFrequency> {
         color: AppColors.grey.all[0],
         child: Column(
           children: [
-            Text("Frequency", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400)),
+            Text("Frequency", style: AppTheme.carbonTextStyle),
             Text("Set the time and frequency that you must take this medication"),
             SizedBox(height: CarbonSpacing.wide.height),
             // Using a conditional to prevent build errors before data arrives
-            frequencyCodes.isEmpty
-                ? const CircularProgressIndicator()
-                : CarbonDropdown(
-                    label: "Recurrence",
-                    helperText:
-                        "Check the code for frequency on the label of you medication, or choose it if you know it",
-                    items: frequencyCodes.map((f) {
-                      return DropdownMenuItem<String>(
-                        value: f.code,
-                        child: SizedBox(
-                          // Set a width or use MediaQuery to dynamically constrain it
-                          // relative to the screen width, or just wrap in a Container
-                          width: MediaQuery.of(context).size.width * 0.7,
-                          child: Text(
-                            "${f.code} - ${f.english}",
-                            overflow: TextOverflow.ellipsis, // Ensures text cuts off cleanly
-                            maxLines: 1, // Optional: keeps it to one line
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (val) {
-                      setState(() => latinRecurrence = val);
-                      _update();
-                    },
-                  ),
+            //
+            CarbonDropdown(
+              label: "Cadence",
+              helperText: "Check the code for frequency on the label of you medication, or choose it if you know it",
+              placeholder: "Select the frequency",
+              items: FrequencyCodes.values,
+              value: FrequencyCodes.quaqueDie,
+              onChanged: (Listable val) {
+                setState(() {
+                  FrequencyCodes frequencyCode = val as FrequencyCodes;
+                  latinRecurrence = frequencyCode.latin;
+                });
+              },
+            ),
             SizedBox(height: CarbonSpacing.wide.height),
             Row(
               children: [
@@ -145,7 +116,6 @@ class _GetMedicationFrequencyState extends State<GetMedicationFrequency> {
                 value: _alert,
                 onChanged: (val) {
                   setState(() => _alert = val);
-                  _update();
                 },
               ),
             ),
@@ -161,7 +131,6 @@ class _GetMedicationFrequencyState extends State<GetMedicationFrequency> {
       setState(() {
         specificTime = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, time.hour, time.minute);
       });
-      _update();
     }
   }
 }
