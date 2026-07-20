@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:triage/classes/blood_type.dart';
 import 'package:triage/classes/metric_value.dart';
+import 'package:triage/classes/patient_action.dart';
 import 'package:triage/classes/vitals.dart';
 import 'package:triage/screens/patient_timeline_screen.dart';
 import 'package:triage/widgets/blood_type_selector.dart';
@@ -9,7 +11,6 @@ import 'package:triage/widgets/current_metrics.dart';
 import 'package:triage/widgets/flyout_widget.dart';
 import 'package:triage/widgets/vitals_history.dart';
 import '../app_theme.dart';
-import '../classes/action.dart';
 import '../classes/carbon_style_constants.dart';
 import '../classes/database_manager.dart';
 import '../classes/flyable.dart';
@@ -47,10 +48,15 @@ class UserScreen extends StatefulWidget {
 class UserScreenState extends State<UserScreen> {
   late PatientController patientController;
   late PainLevel pain;
+  late AboType aboType;
+  late RhFactor rhFactor;
+  late Flyable sentiment = Sentiment.happy;
   bool _isExpanded = false;
   @override
   void initState() {
     super.initState();
+    aboType = widget.user.bloodType.abo;
+    rhFactor = widget.user.bloodType.rh;
     patientController = PatientController(widget.user);
     pain = widget.user.pain;
   }
@@ -116,7 +122,7 @@ class UserScreenState extends State<UserScreen> {
 
   Future<void> showTimeLineScreen(BuildContext context, String uuid, String patientName) async {
     // Assuming this returns a List or an empty list
-    final actions = PatientActionFactory.instance.getActionsForPatient(uuid);
+    final actions = patientActions;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -128,16 +134,25 @@ class UserScreenState extends State<UserScreen> {
     );
   }
 
-  void onAboChanged(Listable abo) {
-    // setState(() {
-    //   Database().updateBloodType(patient.patientUuid, abo);
-    // });
+  void onMoodChanged(Sentiment mood) {
+    setState(() {
+      sentiment = mood;
+    });
+    DatabaseManager().trackMoodChange(widget.user.patientUuid, mood.index);
   }
+
+  void onAboChanged(Listable abo) {
+    setState(() {
+      aboType = abo as AboType;
+      DatabaseManager().updateAboType(widget.user.patientUuid, abo.index);
+    });
+  }
+
   void onRhChanged(Listable rh) {
-    // setState(() {
-    //   Database().updateBloodType(patient.patientUuid, abo);
-    // });
-    //
+    setState(() {
+      rhFactor = rh as RhFactor;
+    });
+    DatabaseManager().updateRhFactor(widget.user.patientUuid, rhFactor.index);
   }
 
   @override
@@ -148,8 +163,8 @@ class UserScreenState extends State<UserScreen> {
       height: widget.user.height,
       heightUom: widget.user.heightUoM,
     );
+    BloodType bloodType = BloodType(abo: aboType, rh: rhFactor);
     String bmiLabel = bmi == 0 ? "Calculate" : bmi.toStringAsFixed(1);
-    Flyable sentiment = Sentiment.happy;
     return ListenableBuilder(
       key: ValueKey(patientController.patient.acuityLevel),
       listenable: patientController,
@@ -180,42 +195,28 @@ class UserScreenState extends State<UserScreen> {
                 const SizedBox(height: 32),
                 Container(
                   // color: AppTheme.surfaceColor,
-                  decoration: BoxDecoration(
-                    color: AppTheme.lightTheme.scaffoldBackgroundColor,
-                    borderRadius: BorderRadius.zero,
-                  ),
+                  decoration: BoxDecoration(color: AppTheme.carbonWhite, borderRadius: BorderRadius.zero),
                   // padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
                   child: Stack(
                     clipBehavior: Clip.none, // Allows the widget to draw outside its bounds
                     alignment: Alignment.centerRight,
                     children: [
-                      // 1. The layout flow (Name + BloodType)
+                      Row(children: [SizedBox(height: 64)]),
                       Row(
                         children: [
-                          Flexible(
-                            flex: 2,
-                            child: CarbonStyle2xlButton(
-                              topLabel: "Symptoms",
-                              label: "I'm hurting",
-                              icon: Symbols.symptoms,
-                              onTap: () {
-                                showSymptomsValidator(patient);
-                              },
-                              style: CarbonButtonStyle.primary,
-                            ),
-                          ),
                           const SizedBox(width: 16),
-                          Text("My mood is", style: AppTheme.carbonGhostButtonTextStyle),
+                          Text("My mood today is ${sentiment.label}", style: AppTheme.carbonGhostButtonTextStyle),
                         ],
                       ),
                       Positioned(
                         right: 0,
                         child: FlyOutWidget(
                           children: Sentiment.values,
-                          style: CarbonButtonStyle.ghost,
+                          style: CarbonButtonStyle.tertiary,
                           onSelected: (Flyable item) {
                             setState(() {
-                              sentiment = item;
+                              Sentiment newSentiment = item as Sentiment;
+                              sentiment = newSentiment;
                             });
                           },
                           selectedItem: sentiment.index,
@@ -228,6 +229,17 @@ class UserScreenState extends State<UserScreen> {
                 Column(
                   mainAxisSize: MainAxisSize.min, // Prevents Column from taking infinite height
                   children: [
+                    CarbonStyle2xlButton(
+                      topLabel: "Symptoms",
+                      label: "Identify A New Symptom",
+                      width: 320,
+                      icon: Symbols.symptoms,
+                      onTap: () {
+                        showSymptomsValidator(patient);
+                      },
+                      style: CarbonButtonStyle.primary,
+                    ),
+
                     SizedBox(
                       child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [const SizedBox(width: 24)]),
                     ),
@@ -245,8 +257,8 @@ class UserScreenState extends State<UserScreen> {
                       children: [
                         CarbonStyle2xlButton(
                           topLabel: "Blood Type:",
-                          label: patient.bloodType.label,
-                          style: CarbonButtonStyle.ghost,
+                          label: bloodType.label,
+                          style: CarbonButtonStyle.tertiary,
                           onTap: () {
                             showBloodTypModal(context: context, patient: patient);
                           },
@@ -256,7 +268,7 @@ class UserScreenState extends State<UserScreen> {
                         CarbonStyle2xlButton(
                           topLabel: "Body Mass Index:",
                           label: bmiLabel,
-                          style: CarbonButtonStyle.ghost,
+                          style: CarbonButtonStyle.tertiary,
                           onTap: () {
                             showMetricsEntryDialog(context: context, user: widget.user);
                           },

@@ -1,28 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../app_theme.dart';
 import '../classes/carbon_style_constants.dart';
 import '../classes/flyable.dart';
 
 class FlyOutItemWidget extends StatelessWidget {
-  final Flyable item;
+  final Flyable flyableItem;
+  final CarbonButtonStyle? style;
   final double? size;
-  final bool? isPrimary;
   final double? borderWidth;
-  const FlyOutItemWidget({super.key, required this.item, this.size, this.isPrimary, this.borderWidth});
+
+  const FlyOutItemWidget({super.key, required this.flyableItem, this.size, this.borderWidth, this.style});
 
   @override
   Widget build(BuildContext context) {
     double dim = size ?? CarbonButtonSize.large.height;
     double bWidth = borderWidth ?? 2;
     double iconDim = dim - bWidth;
-    bool primary = isPrimary ?? false;
-
+    CarbonButtonStyle buttonStyle = style ?? CarbonButtonStyle.ghost;
+    Color color = AppTheme.carbonButtonGhostFontColor;
+    Color backgroundColor = AppTheme.carbonButtonGhostColor;
+    Color borderColor = AppTheme.carbonButtonBorderGhostColor;
+    switch (buttonStyle) {
+      case CarbonButtonStyle.danger:
+        color = AppTheme.carbonButtonDangerFontColor;
+        backgroundColor = AppTheme.carbonButtonDangerColor;
+        borderColor = AppTheme.carbonButtonBorderDangerColor;
+      case CarbonButtonStyle.ghost:
+        color = AppTheme.carbonButtonGhostFontColor;
+        backgroundColor = AppTheme.carbonButtonGhostColor;
+        borderColor = AppTheme.carbonButtonBorderGhostColor;
+      case CarbonButtonStyle.primary:
+        color = AppTheme.carbonButtonPrimaryFontColor;
+        backgroundColor = AppTheme.carbonButtonPrimaryColor;
+        borderColor = AppTheme.carbonButtonBorderPrimaryColor;
+      case CarbonButtonStyle.secondary:
+        color = AppTheme.carbonButtonSecondaryFontColor;
+        backgroundColor = AppTheme.carbonButtonSecondaryColor;
+        borderColor = AppTheme.carbonButtonBorderSecondaryColor;
+      case CarbonButtonStyle.tertiary:
+        color = AppTheme.carbonButtonTertiaryFontColor;
+        backgroundColor = AppTheme.carbonButtonTertiaryColor;
+        borderColor = AppTheme.carbonButtonBorderTertiaryColor;
+    }
     // Wrap the entire visual area in the GestureDetector here
     return Container(
-      color: primary ? item.color : item.onPrimary,
+      color: backgroundColor,
       width: dim,
       height: dim,
-      child: Icon(item.icon, size: iconDim, color: primary ? item.onPrimary : item.color),
+      child: Icon(flyableItem.icon, size: iconDim, color: color),
     );
   }
 }
@@ -47,15 +73,16 @@ class FlyOutWidget extends StatefulWidget {
 
 class FlyOutWidgetState extends State<FlyOutWidget> {
   bool _isExpanded = false;
-
+  late CarbonButtonStyle buttonStyle;
   late List<FlyOutItemWidget> flyoutWidgets;
   late FlyOutItemWidget selectedFlyOutWidget;
   @override
   void initState() {
     super.initState();
     flyoutWidgets = [];
+    buttonStyle = widget.style ?? CarbonButtonStyle.ghost;
     for (Flyable child in widget.children) {
-      flyoutWidgets.add(FlyOutItemWidget(item: child, isPrimary: widget.style == CarbonButtonStyle.primary));
+      flyoutWidgets.add(FlyOutItemWidget(flyableItem: child, style: buttonStyle));
       selectedFlyOutWidget = flyoutWidgets[0];
     }
   }
@@ -96,7 +123,7 @@ class FlyOutWidgetState extends State<FlyOutWidget> {
         GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () {
-            widget.onSelected(itemWidget.item);
+            widget.onSelected(itemWidget.flyableItem);
             setState(() {
               _isExpanded = false;
               selectedFlyOutWidget = itemWidget;
@@ -115,11 +142,7 @@ class FlyOutWidgetState extends State<FlyOutWidget> {
       duration: Duration(milliseconds: 300),
       curve: Curves.easeInOut,
       padding: EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: AppColors.grey.all[0],
-        borderRadius: BorderRadius.zero,
-        boxShadow: [BoxShadow(color: AppColors.grey.all[6], blurRadius: 2)],
-      ),
+      decoration: BoxDecoration(color: AppTheme.carbonButtonTertiaryColor, borderRadius: BorderRadius.zero),
       child: _isExpanded
           ? Container(
               // This forces the Wrap to only be as wide as the parent allows,
@@ -191,7 +214,11 @@ class DetailedItemModal extends StatelessWidget {
                       children: [
                         Text(
                           item.label,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                          style: GoogleFonts.ibmPlexSans(
+                            color: AppTheme.carbonButtonTertiaryFontColor,
+                            fontWeight: FontWeight.w400,
+                            fontSize: CarbonButtonSize.medium.fontSize,
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(item.description, style: Theme.of(context).textTheme.bodyMedium),

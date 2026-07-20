@@ -26,7 +26,7 @@ extension CarbonSpacingWidth on CarbonSpacing {
   }
 }
 
-enum CarbonButtonStyle { ghost, primary }
+enum CarbonButtonStyle { danger, ghost, primary, secondary, tertiary }
 
 enum CarbonButtonSize { extraSmall, small, medium, large, largeBold, extraLarge, extraExtraLarge }
 
@@ -76,9 +76,9 @@ extension CarbonButtonFontSize on CarbonButtonSize {
     switch (this) {
       case CarbonButtonSize.extraSmall:
       case CarbonButtonSize.small:
-        return 14;
+        return 12;
       case CarbonButtonSize.medium:
-        return 16;
+        return 14;
       case CarbonButtonSize.large:
         return 18;
       case CarbonButtonSize.largeBold:

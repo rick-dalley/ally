@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
-import '../classes/action.dart';
-import '../classes/date_time_utilities.dart';
-import '../widgets/timeline_widget.dart';
+import '../classes/patient_action.dart';
 
 class PatientTimelineScreen extends StatefulWidget {
   final List<PatientAction> actions;
@@ -16,8 +14,6 @@ class PatientTimelineScreen extends StatefulWidget {
 }
 
 class PatientTimelineScreenState extends State<PatientTimelineScreen> {
-
-
   @override
   Widget build(BuildContext context) {
     final double notchPadding = MediaQuery.of(context).padding.top > 0 ? MediaQuery.of(context).padding.top : 47.0;
@@ -25,7 +21,7 @@ class PatientTimelineScreenState extends State<PatientTimelineScreen> {
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(padding: MediaQuery.of(context).padding.copyWith(top: notchPadding)),
       child: Scaffold(
-        backgroundColor: AppTheme.clinicalWhite,
+        backgroundColor: AppTheme.carbonScaffoldColor,
         appBar: AppBar(
           title: Text("History of ${widget.patientName}", style: const TextStyle(fontSize: 18)),
 
@@ -34,19 +30,13 @@ class PatientTimelineScreenState extends State<PatientTimelineScreen> {
             icon: const Icon(Icons.close), // or Icons.arrow_back
             onPressed: () => Navigator.pop(context),
           ),
-          backgroundColor: AppTheme.clinicalWhite,
+          backgroundColor: AppTheme.carbonButtonTertiaryColor,
           elevation: 0,
         ),
         body: Column(
           children: [
             Expanded(
-              child: TimeLineWidget(
-                actions: widget.actions,
-                startTime: DTUtilities.aYearAgo(),
-                endTime: DateTime.now(),
-                timelineColor:Colors.black26,
-
-              ),
+              child: Card(color: AppTheme.carbonWhite, child: Text("Placeholder for Timeline Widget")),
             ),
           ],
         ),
@@ -54,3 +44,10 @@ class PatientTimelineScreenState extends State<PatientTimelineScreen> {
     );
   }
 }
+
+//TimeLineWidget(
+//                 actions: widget.actions,
+//                 startTime: DTUtilities.aYearAgo(),
+//                 endTime: DateTime.now(),
+//                 timelineColor: AppColors.grey.all[5],
+//               ),

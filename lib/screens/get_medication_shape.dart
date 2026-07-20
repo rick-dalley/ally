@@ -39,7 +39,7 @@ class GetMedicationShape extends StatelessWidget {
                       onTap: () => onShapeSelect(shape),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: AppTheme.clinicalWhite,
+                          color: AppTheme.carbonWhite,
                           border: Border.all(
                             color: isSelected ? AppColors.peacockBlue : AppTheme.carbonFieldBorder,
                             width: 1,

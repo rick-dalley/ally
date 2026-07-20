@@ -39,7 +39,7 @@ class StaffScreenState extends State<StaffScreen> {
               ),
             )
           : ListView.builder(
-              padding: const EdgeInsets.only(top: 8, bottom: 80),
+              padding: const EdgeInsets.only(top: 8, bottom: 90),
               // Added top padding for breathing room
               itemCount: staffKeys.length,
               itemBuilder: (context, index) {
@@ -55,10 +55,10 @@ class StaffScreenState extends State<StaffScreen> {
             Navigator.push(context, MaterialPageRoute(builder: (context) => const AddCareProviderScreen()));
           },
           // Signals scanning capability
-          backgroundColor: AppColors.peacockBlue,
-          foregroundColor: AppTheme.clinicalWhite,
-          // New dedicated screen
-          child: const Icon(Symbols.person_add, size: 36),
+          backgroundColor: AppColors.oceanBlue,
+          foregroundColor: AppColors.grey.all[0],
+          shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
+          child: const Icon(Symbols.person_add, size: 32),
         ),
       ),
     );

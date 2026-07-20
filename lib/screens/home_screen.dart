@@ -1,8 +1,7 @@
 import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/classes/action.dart';
+import 'package:triage/classes/patient_action.dart';
 import 'package:triage/screens/add_patients_wheel.dart';
 import 'package:triage/screens/time_scroller.dart';
 import 'package:triage/screens/user_screen.dart';
@@ -59,7 +58,10 @@ class HomeScreenState extends State<HomeScreen> {
 
   List<Widget> _getPages(int patientIndex) {
     final patient = patients[patientIndex];
-    final List<PatientAction> actions = PatientActionFactory.instance.getActionsForPatient(patient.patientUuid);
+    final List<PatientAction> actions = patientActions;
+    final startTime = actions.first.occurred.toUtc();
+    final endTime = actions.last.until;
+
     return [
       UserScreen(
         user: patient,
@@ -70,11 +72,7 @@ class HomeScreenState extends State<HomeScreen> {
       MedicalProfileScreen(householdMember: patient),
       PrescriptionScreen(patient: patient),
       EmergencyQRCodeView(householdMember: patient),
-      TimelineScrollerWidget(
-        actions: actions,
-        startTime: actions.first.occurred.toUtc(),
-        endTime: DateTime.now().toUtc(),
-      ),
+      TimelineScrollerWidget(actions: actions, startTime: startTime, endTime: endTime),
     ];
   }
 

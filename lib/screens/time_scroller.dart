@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:ui' as ui;
 import '../app_theme.dart';
-import '../classes/action.dart';
+import '../classes/patient_action.dart';
 
 class TherapyPeriod {
   final DateTime startDate;
@@ -135,6 +135,7 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.sizeOf(context).width;
     return Stack(
       children: [
         SingleChildScrollView(
@@ -143,7 +144,7 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
             padding: const EdgeInsets.symmetric(vertical: 250),
             child: SizedBox(
               height: 2000,
-              width: double.infinity,
+              width: screenWidth,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
@@ -257,7 +258,7 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
                   children: [
                     Text(DateFormat('MMM d, HH:mm').format(action.occurred)),
                     Container(width: 1, height: 20, color: Colors.grey, margin: EdgeInsets.symmetric(horizontal: 10)),
-                    Text(action.getName(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(action.label, style: const TextStyle(fontWeight: FontWeight.bold)),
                   ],
                 ),
               );
@@ -350,7 +351,7 @@ class TimeLinePainter extends CustomPainter {
     for (var action in actions) {
       final double y = calculateY(action.occurred, size.height);
 
-      if (activeAction != null && action.id == activeAction!.id) {
+      if (activeAction != null && action.actionType == activeAction!.actionType) {
         canvas.drawCircle(Offset(axisX, y), 8, Paint()..color = Colors.orange.withValues(alpha: 0.3));
       }
       canvas.drawCircle(Offset(axisX, y), 4, Paint()..color = Colors.orange);

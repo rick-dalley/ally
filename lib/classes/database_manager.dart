@@ -96,6 +96,48 @@ class DatabaseManager {
     }
   }
 
+  Future<void> updateAboType(String patientUuid, int aboType) async {}
+  Future<void> updateRhFactor(String patientUuid, int rhFactor) async {}
+  Future<bool> trackMoodChange(String patientUuid, int mood) async {
+    final db = await database;
+
+    await db.transaction((txn) async {
+      // 1. Get the latest mood
+      final List<Map<String, dynamic>> latest = await txn.query(
+        'patient_mood',
+        where: 'patient_uuid = ?',
+        whereArgs: [patientUuid],
+        orderBy: 'start_date DESC',
+        limit: 1,
+      );
+
+      final now = DateTime.now().toUtc().toIso8601String();
+
+      if (latest.isNotEmpty) {
+        final lastMood = latest.first;
+        final lastMoodValue = lastMood['mood'] as int;
+
+        // 2. If it's different, close the old one
+        if (lastMoodValue != mood) {
+          await txn.update('patient_mood', {'end_date': now}, where: 'id = ?', whereArgs: [lastMood['id']]);
+
+          // 3. Insert the new one
+          await txn.insert('patient_mood', {
+            'patient_uuid': patientUuid,
+            'mood': mood,
+            'start_date': now,
+            'end_date': null, // Open-ended
+          });
+        }
+        // Else: mood is the same, do nothing (as you requested)
+      } else {
+        // 4. First time ever logging? Just insert.
+        await txn.insert('patient_mood', {'patient_uuid': patientUuid, 'mood': mood, 'start_date': now});
+      }
+    });
+    return true;
+  }
+
   Future<List<Map<String, dynamic>>> getPatientVaccinations(String patientUuid) async {
     final db = await database;
     dynamic result = await db.query(

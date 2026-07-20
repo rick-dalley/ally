@@ -112,7 +112,10 @@ class Patient {
     CurrentVitalsRecord vitalsRecord = CurrentVitalsRecord.fromPatientJson(item);
     int painIndex = Random().nextInt(5);
     PainLevel pain = PainLevel.values[painIndex];
-
+    int rawRhFactor = item["rh_factor"] ?? 0;
+    RhFactor rhFactor = RhFactor.values[rawRhFactor];
+    int rawAboType = item["abo_type"] ?? 0;
+    AboType aboType = AboType.values[rawAboType];
     return Patient(
       patientUuid: item['patient_uuid'],
       //'02039325-2425-4bf3-bf85-1ec81a797e25',
@@ -187,6 +190,7 @@ class Patient {
       narrativeHint: item['narrative_hint'] ?? "", //'Maecenas ut massa ...
       pain: pain,
       eyeColor: "brown", //item["eye_color"],
+      bloodType: BloodType(abo: aboType, rh: rhFactor),
     );
   }
   factory Patient.copy({required Patient patient}) {

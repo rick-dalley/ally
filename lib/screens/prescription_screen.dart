@@ -349,22 +349,20 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     final name = "${widget.patient.firstName} ${widget.patient.lastName}";
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+
       appBar: AppBar(
         title: Align(
           alignment: AlignmentGeometry.centerLeft,
-          child: Text(
-            "Medications: $name",
-            style: TextStyle(color: AppTheme.lightTheme.primaryColorDark, fontWeight: FontWeight.w400, fontSize: 20),
-          ),
+          child: Text("Medications: $name", style: AppTheme.carbonTextStyle),
         ),
         actions: [
           TextButton(
             onPressed: _isLoading ? null : _confirmAndSave,
-            child: Text("SAVE", style: TextStyle(color: AppColors.grey.all[0])),
+            child: Text("SAVE", style: AppTheme.carbonPrimaryButtonTextStyle),
           ),
         ],
-        backgroundColor: AppTheme.clinicalWhite, // Your Navy brand color
-        foregroundColor: AppColors.peacockBlue,
+        backgroundColor: AppTheme.carbonScaffoldColor, // Your Navy brand color
+        foregroundColor: AppTheme.carbonPrimary,
       ),
       // The Floating Action Button replaces the top form
       floatingActionButton: Padding(
@@ -372,14 +370,9 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
         child: FloatingActionButton(
           key: Key("FAB_NewMedication"),
           onPressed: () => showAddMedicationSheet(),
-          shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
-          backgroundColor: AppTheme.lightTheme.primaryColorDark,
-          foregroundColor: AppTheme.lightTheme.primaryColorLight,
-          // label: const Text("ADD", style: TextStyle(fontWeight: FontWeight.w400, fontSize: 20)),
           child: const Icon(Symbols.add, size: 32),
         ),
       ),
-
       body: Column(
         children: [
           _buildStatusBanner(),

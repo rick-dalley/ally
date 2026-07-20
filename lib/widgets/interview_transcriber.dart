@@ -83,7 +83,7 @@ class _InterviewModalState extends State<InterviewModal> {
               shape: BoxShape.circle,
               border: Border.all(color: _isRecording ? Colors.red : AppColors.peacockBlue, width: 2),
             ),
-            child: Icon(_isRecording ? Icons.pause : Icons.mic, size: 32, color: AppTheme.clinicalWhite),
+            child: Icon(_isRecording ? Icons.pause : Icons.mic, size: 32, color: AppTheme.carbonButtonPrimaryFontColor),
           ),
         ),
 
@@ -118,7 +118,9 @@ class _InterviewModalState extends State<InterviewModal> {
             expands: true,
             decoration: InputDecoration(
               hintText: hint,
-              fillColor: isLive ? AppColors.peacockBlue.withAlpha(32) : AppTheme.clinicalWhite,
+              fillColor: isLive
+                  ? AppTheme.carbonButtonPrimaryColor.withAlpha(32)
+                  : AppTheme.carbonButtonPrimaryFontColor,
               filled: true,
               border: const OutlineInputBorder(),
             ),

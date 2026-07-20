@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:material_symbols_icons/symbols.dart';
 
 class AppColors {
   AppColors._(); // Private constructor prevents instantiation
@@ -93,18 +92,40 @@ class GreyDepth {
 }
 
 class AppTheme {
-  static const Color darkSlate = Color(0xFF1E1E1E);
-  static const Color clinicalWhite = Color(0xFFF8F9FA);
-
-  static Color cancelButtonBackGround = AppColors.grey.all[3];
+  static Color carbonWhite = Color(0xFFFFFFFF);
+  static Color carbonPrimary = AppColors.oceanBlue;
+  static Color carbonRed = Color(0xFFFF1010);
+  static Color carbonGrey = AppColors.grey.all[5];
   static Color carbonFieldBorder = AppColors.grey.all[4];
   static Color carbonFieldColor = AppColors.grey.all[2];
   static Color carbonFieldBackgroundColor = AppColors.grey.all[2];
   static Color carbonSeparator = AppColors.grey.all[3];
   static Color carbonLabelFontColor = AppColors.grey.all[5];
   static Color carbonFieldFontColor = AppColors.grey.all[6];
+  static Color carbonHeaderFontColor = AppColors.grey.all[6];
   static Color carbonPlaceHolderFontColor = AppColors.grey.all[4];
-  static Color carbonErrorFontColor = Color(0xFFDA1E28);
+  static Color carbonModalColor = AppColors.grey.all[1];
+  static Color carbonScaffoldColor = carbonWhite.withValues(alpha: 0.2);
+  // face color
+  static Color carbonButtonPrimaryColor = carbonPrimary;
+  static Color carbonButtonSecondaryColor = carbonGrey;
+  static Color carbonButtonTertiaryColor = carbonWhite;
+  static Color carbonButtonGhostColor = carbonWhite;
+  static Color carbonButtonDangerColor = carbonRed;
+
+  //border color
+  static Color carbonButtonBorderPrimaryColor = carbonPrimary;
+  static Color carbonButtonBorderSecondaryColor = carbonGrey;
+  static Color carbonButtonBorderTertiaryColor = carbonPrimary;
+  static Color carbonButtonBorderGhostColor = carbonWhite;
+  static Color carbonButtonBorderDangerColor = carbonRed;
+
+  //font color
+  static Color carbonButtonPrimaryFontColor = carbonWhite;
+  static Color carbonButtonSecondaryFontColor = carbonWhite;
+  static Color carbonButtonTertiaryFontColor = carbonPrimary;
+  static Color carbonButtonGhostFontColor = carbonPrimary;
+  static Color carbonButtonDangerFontColor = carbonWhite;
 
   static TextStyle carbonHeadingTextStyle = TextStyle(
     fontWeight: FontWeight.w400,
@@ -122,22 +143,29 @@ class AppTheme {
     fontSize: 20,
     color: carbonLabelFontColor,
   );
-
+  static TextStyle carbonExpressiveTextStyle = GoogleFonts.ibmPlexSans(
+    fontWeight: FontWeight.w400,
+    fontSize: 20,
+    color: carbonHeaderFontColor,
+  );
   static TextStyle carbonTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
-    fontSize: 16,
+    fontSize: 14,
     color: carbonLabelFontColor,
   );
+
   static TextStyle carbonTinyTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
-    fontSize: 12,
+    fontSize: 10,
     color: carbonLabelFontColor,
   );
+
   static TextStyle carbonTinyTextStyleOnPrimary = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
-    fontSize: 12,
+    fontSize: 10,
     color: AppColors.grey.all[0],
   );
+
   // Hospital Monitor Vitals Palette
   static const Color vitalsBP = Color(0xFFFFB300);
   static const Color vitalsOxygen = Color(0xFF82B1FF);
@@ -172,26 +200,35 @@ class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         titleTextStyle: TextStyle(color: defaultFontColor, fontSize: 20, fontWeight: FontWeight.w400),
-        iconTheme: IconThemeData(color: AppColors.peacockBlue),
+        iconTheme: IconThemeData(color: carbonButtonPrimaryColor),
       ),
 
       // FAB remains consistent but pops against the white
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: AppColors.oceanBlue,
-        foregroundColor: defaultInverseFontColor,
+        backgroundColor: carbonButtonPrimaryColor,
+        foregroundColor: carbonButtonPrimaryFontColor,
+        shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
       ),
 
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.peacockBlue,
-          foregroundColor: defaultInverseFontColor,
-          minimumSize: const Size.fromHeight(55), // Standardized height for easy hit-targets
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.1),
+          backgroundColor: carbonButtonPrimaryColor,
+          foregroundColor: carbonButtonPrimaryFontColor,
+          minimumSize: const Size.fromHeight(56), // Standardized height for easy hit-targets
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, letterSpacing: 1.1),
           elevation: 2, // Subtle lift to distinguish from the background
         ),
       ),
-
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          backgroundColor: AppColors.oceanBlue,
+          foregroundColor: AppColors.grey.all[0],
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, letterSpacing: 1.1),
+          elevation: 2, // Subtle lift to distinguish from the background
+        ),
+      ),
       // Text fields that look "Interactive" but clean
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -208,7 +245,7 @@ class AppTheme {
     return ThemeData(
       brightness: Brightness.dark,
       scaffoldBackgroundColor: AppColors.greyDepth,
-      cardColor: darkSlate,
+      cardColor: carbonGrey,
 
       colorScheme: ColorScheme.dark(
         primary: AppColors.peacockBlue,
@@ -239,63 +276,4 @@ class AppTheme {
       ),
     );
   }
-
-  static Map<String, IconData> eventIcons = {
-    "ED_ARRIV": Symbols.check_in_out,
-    "ED_AMBUL": Symbols.ambulance,
-    "ED_POLIC": Symbols.local_police,
-    "ED_INTAK": Symbols.medical_information,
-    "ID_ANONY": Symbols.person_off,
-    "ID_MERGE": Symbols.person_check,
-    "TR_START": Symbols.stethoscope,
-    "TR_COMPL": Symbols.stethoscope_check,
-    "TR_REASS": Symbols.stethoscope_arrow,
-    "DC_LWBS": Symbols.run_circle,
-    "ED_ALLOC": Symbols.short_stay,
-    "MD_ASSES": Symbols.medical_mask,
-    "VT_LOGGD": Symbols.vital_signs,
-    "CL_NOTES": Symbols.clinical_notes,
-    "ED_RELOC": Symbols.moving_beds,
-    "LB_ORDER": Symbols.fluid_balance,
-    "LB_DRAWN": Symbols.labs,
-    "LB_HEMOL": Symbols.hematology,
-    "LB_RESUL": Symbols.lab_profile,
-    "IM_ORDER": Symbols.skeleton,
-    "IM_START": Symbols.radiology,
-    "IM_REJCT": Symbols.radiology, //add an xbadge
-    "IM_INTER": Symbols.radiology, //add a magnifying glass
-    "MD_ADMIN": Symbols.admin_meds,
-    "PR_PERFM": Symbols.procedure,
-    "BL_TRANS": Symbols.fluid,
-    "MH_DETAIN": Symbols.psychiatry_sharp,
-    "RE_START": Symbols.shield_lock,
-    "RE_TERMN": Symbols.shield,
-    "IS_OLATN": Symbols.safety_divider,
-    "PO_POWER": Symbols.balance,
-    "SEC_INCI": Symbols.admin_panel_settings,
-    "CS_REQU": Symbols.person_add,
-    "CS_ARRIV": Symbols.person,
-    "CS_DECIS": Symbols.person_check,
-    "DP_DECIS": Symbols.arrow_split,
-    "WD_REQU": Symbols.contact_support,
-    "WD_ALLOC": Symbols.ward,
-    "WD_REPOR": Symbols.assignment,
-    "ED_BOARD": Symbols.short_stay,
-    "ED_DEPAR": Symbols.moving_beds,
-    "OR_TRANS": Symbols.surgical,
-    "IC_TRANS": Symbols.diversity_1,
-    "WD_ARRIV": Symbols.inpatient,
-    "DC_INSTR": Symbols.developer_guide,
-    "DC_CLEAR": Symbols.door_open,
-    "DC_COMPL": Symbols.home,
-    "DC_AMA": Symbols.person_cancel,
-    "DC_ELOPD": Symbols.luggage,
-    "DC_SHEL": Symbols.night_shelter,
-    "DC_EXTRN": Symbols.local_police,
-    "HSP_TRNS": Symbols.local_hospital,
-    "DC_PASTR": Symbols.family_home,
-    "PT_DECEAS": Symbols.deceased,
-    "DC_CORON": Symbols.deceased,
-    "UNKNWN": Symbols.unknown_document,
-  };
 }

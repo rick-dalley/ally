@@ -41,7 +41,7 @@ class _ConfigureConditionDialogState extends State<ConfigureConditionDialog> {
     final double fixedDialogWidth = availableWidth - 64;
 
     return Dialog(
-      backgroundColor: AppTheme.clinicalWhite,
+      backgroundColor: AppTheme.carbonModalColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       clipBehavior: Clip.antiAlias,
       child: SizedBox(
@@ -132,7 +132,7 @@ class _ConfigureConditionDialogState extends State<ConfigureConditionDialog> {
                         padding: const EdgeInsets.all(12),
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          color: AppTheme.clinicalWhite,
+                          color: AppTheme.carbonModalColor,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -166,7 +166,7 @@ class _ConfigureConditionDialogState extends State<ConfigureConditionDialog> {
                           padding: const EdgeInsets.all(12),
                           width: double.infinity,
                           decoration: BoxDecoration(
-                            color: AppTheme.clinicalWhite,
+                            color: AppTheme.carbonModalColor,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -189,7 +189,7 @@ class _ConfigureConditionDialogState extends State<ConfigureConditionDialog> {
                       maxLines: 3,
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: AppTheme.clinicalWhite,
+                        fillColor: AppTheme.carbonModalColor,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
                       ),
                     ),

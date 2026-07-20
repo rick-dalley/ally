@@ -64,9 +64,9 @@ class CarbonNumberInput extends StatelessWidget {
                     border: UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.carbonFieldBorder, width: 1)),
                     focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: accentColor, width: 1)),
                     errorBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: AppTheme.carbonErrorFontColor, width: 1),
+                      borderSide: BorderSide(color: AppTheme.carbonButtonDangerFontColor, width: 1),
                     ),
-                    errorStyle: GoogleFonts.ibmPlexSans(color: AppTheme.carbonErrorFontColor),
+                    errorStyle: GoogleFonts.ibmPlexSans(color: AppTheme.carbonButtonBorderDangerColor),
                     suffixIcon: Row(
                       mainAxisSize: MainAxisSize.min, // Vital: Keeps the row from expanding to fill the field
                       children: [

@@ -147,8 +147,6 @@ class FamilyRosterState extends State<FamilyRoster> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _launchIntakeScreen(context),
         // Signals scanning capability
-        backgroundColor: AppColors.peacockBlue,
-        foregroundColor: AppTheme.clinicalWhite,
         shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
         // New dedicated screen
         icon: Icon(Symbols.frame_person_sharp, size: 24),

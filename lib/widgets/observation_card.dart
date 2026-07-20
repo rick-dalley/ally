@@ -43,7 +43,7 @@ class ObservationCard extends StatelessWidget {
               style: const TextStyle(fontSize: 11, fontStyle: FontStyle.italic, color: AppColors.greyDepth),
             ),
             const Padding(padding: EdgeInsets.symmetric(vertical: 8.0), child: Divider(height: 1, thickness: 0.5)),
-            Text(note.content, style: const TextStyle(fontSize: 14, height: 1.45, color: AppTheme.darkSlate)),
+            Text(note.content, style: AppTheme.carbonTextStyle),
           ],
         ),
       ),

@@ -81,16 +81,18 @@ class CarbonSearchFieldState extends State<CarbonSearchField> {
                       borderSide: BorderSide(color: AppColors.peacockBlue, width: 2),
                     ),
                     errorBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: AppTheme.carbonErrorFontColor, width: 2),
+                      borderSide: BorderSide(color: AppTheme.carbonButtonDangerFontColor, width: 2),
                     ),
                     errorText: widget.errorText,
-                    errorStyle: GoogleFonts.ibmPlexSans(color: AppTheme.carbonErrorFontColor),
+                    errorStyle: GoogleFonts.ibmPlexSans(color: AppTheme.carbonButtonBorderDangerColor),
 
                     // Prefix: intentional search trapping
                     prefixIcon: IconButton(
                       icon: Icon(
                         Symbols.search,
-                        color: widget.controller.text.isNotEmpty ? AppColors.peacockBlue : AppTheme.carbonFieldBorder,
+                        color: widget.controller.text.isNotEmpty
+                            ? AppTheme.carbonButtonPrimaryColor
+                            : AppTheme.carbonButtonSecondaryColor,
                       ),
                       onPressed: () {
                         if (widget.onSearch != null) {

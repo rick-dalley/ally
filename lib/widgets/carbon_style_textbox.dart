@@ -90,9 +90,11 @@ class CarbonStateText extends State<CarbonTextEdit> {
             contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
             border: UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.carbonFieldBorder, width: 1)),
             focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: accentColor, width: 2)),
-            errorBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.carbonErrorFontColor, width: 2)),
+            errorBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: AppTheme.carbonButtonDangerFontColor, width: 2),
+            ),
             errorText: widget.errorText,
-            errorStyle: GoogleFonts.ibmPlexSans(color: AppTheme.carbonErrorFontColor),
+            errorStyle: GoogleFonts.ibmPlexSans(color: AppTheme.carbonButtonDangerFontColor),
           ),
         ),
         // Helper Text

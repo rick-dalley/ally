@@ -125,7 +125,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
       context: context,
       isScrollControlled: true, // Allows the sheet to take full height
       useSafeArea: true, // Respects the device notch and safe areas
-      backgroundColor: AppTheme.clinicalWhite,
+      backgroundColor: AppTheme.carbonModalColor,
       // Set to zero for the strict, sharp-cornered Carbon aesthetic
       shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
       builder: (context) {
@@ -159,7 +159,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
       context: context,
       isScrollControlled: true, // Allows the sheet to take full height
       useSafeArea: true, // Respects the device notch and safe areas
-      backgroundColor: AppTheme.clinicalWhite,
+      backgroundColor: AppTheme.carbonModalColor,
       // Set to zero for the strict, sharp-cornered Carbon aesthetic
       shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
       builder: (context) {
@@ -193,7 +193,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
       context: context,
       isScrollControlled: true, // Allows the sheet to take full height
       useSafeArea: true, // Respects the device notch and safe areas
-      backgroundColor: AppTheme.clinicalWhite,
+      backgroundColor: AppTheme.carbonModalColor,
       // Set to zero for the strict, sharp-cornered Carbon aesthetic
       shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
       builder: (context) {
@@ -226,7 +226,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
       context: context,
       isScrollControlled: true, // Allows the sheet to take full height
       useSafeArea: true, // Respects the device notch and safe areas
-      backgroundColor: AppTheme.clinicalWhite,
+      backgroundColor: AppTheme.carbonModalColor,
       // Set to zero for the strict, sharp-cornered Carbon aesthetic
       shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
       builder: (context) {
@@ -271,15 +271,15 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
       context: context,
       isScrollControlled: true,
       // Ensure the background is consistent with your theme
-      backgroundColor: AppTheme.clinicalWhite,
+      backgroundColor: AppTheme.carbonModalColor,
       // Explicitly set to zero to override the default Material rounding
       shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
       builder: (context) {
         return Container(
           // Constrain height if it's not a full-screen sheet
           height: MediaQuery.of(context).size.height * 0.9,
-          decoration: const BoxDecoration(
-            color: AppTheme.clinicalWhite,
+          decoration: BoxDecoration(
+            color: AppTheme.carbonModalColor,
             borderRadius: BorderRadius.zero, // Sharp corners
           ),
           child: Column(

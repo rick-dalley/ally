@@ -103,7 +103,7 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
               child: CarbonCompactButton(
                 icon: Symbols.cancel,
                 label: "Cancel",
-                color: AppTheme.darkSlate,
+                color: AppTheme.carbonButtonSecondaryColor,
                 onTap: () {
                   Navigator.pop(context);
                 },
@@ -113,7 +113,7 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
               child: CarbonCompactButton(
                 label: "Done",
                 icon: Symbols.save,
-                color: AppColors.peacockBlue,
+                color: AppTheme.carbonButtonBorderPrimaryColor,
                 onTap: () {
                   _saveMedication();
                   Navigator.pop(context);

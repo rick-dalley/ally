@@ -67,25 +67,25 @@ enum FrequencyCodes implements Listable {
   String get label {
     switch (this) {
       case quaqueDie:
-        return "Once a day";
+        return "Daily (QD)";
       case bisInDie:
-        return "Twice a day";
+        return "Twice a day (BD)";
       case terInDie:
-        return "Three times a day";
+        return "Three times a day (TD)";
       case quaterInDie:
-        return "Four times a day";
+        return "Four times a day (QID)";
       case quaqueHoraSomni:
-        return "Every night at bedtime";
+        return "Nightly at bedtime (QHS)";
       case quaqueAnteMeridiem:
-        return "Every morning";
+        return "Mornings (QAM)";
       case quaquePostMeridiem:
-        return "Every evening";
+        return "Nightly (QPM)";
       case proReNata:
-        return "As needed";
+        return "As needed (PR)";
       case anteCibum:
-        return "Before meals";
+        return "Before meals (AC)";
       case postCibum:
-        return "After meals";
+        return "After meals (PC)";
     }
   }
 
@@ -112,5 +112,32 @@ enum FrequencyCodes implements Listable {
       case postCibum:
         return "PC";
     }
+  }
+
+  static String getFrequencyLabel(String code) {
+    FrequencyCodes frequencyCode = FrequencyCodes.quaqueDie;
+    switch (code) {
+      case "QD":
+        return quaqueDie.label;
+      case "BID":
+        return bisInDie.label;
+      case "TID":
+        return terInDie.label;
+      case "QID":
+        return quaterInDie.label;
+      case "QHS":
+        return quaqueHoraSomni.label;
+      case "QAM":
+        return quaqueAnteMeridiem.label;
+      case "QPM":
+        return quaquePostMeridiem.label;
+      case "PRN":
+        return proReNata.label;
+      case "AC":
+        return anteCibum.label;
+      case "PC":
+        return postCibum.label;
+    }
+    return frequencyCode.label;
   }
 }

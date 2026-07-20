@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:triage/app_theme.dart';
 import '../classes/carbon_style_constants.dart';
 
@@ -23,9 +24,35 @@ class CarbonStyle2xlButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    CarbonButtonStyle buttonStyle = CarbonButtonStyle.primary;
+    Color carbonBorderColor = AppTheme.carbonButtonBorderPrimaryColor;
+    Color carbonFontColor = AppTheme.carbonButtonPrimaryFontColor;
+    Color carbonButtonColor = AppTheme.carbonButtonPrimaryColor;
+    TextStyle textStyle = AppTheme.carbonPrimaryButtonTextStyle;
+    switch (buttonStyle) {
+      case CarbonButtonStyle.danger:
+        carbonBorderColor = AppTheme.carbonButtonBorderDangerColor;
+        carbonFontColor = AppTheme.carbonButtonDangerFontColor;
+        carbonButtonColor = AppTheme.carbonButtonDangerColor;
+      case CarbonButtonStyle.ghost:
+        carbonBorderColor = AppTheme.carbonButtonBorderGhostColor;
+        carbonFontColor = AppTheme.carbonButtonGhostFontColor;
+        carbonButtonColor = AppTheme.carbonButtonGhostColor;
+      case CarbonButtonStyle.primary:
+        carbonBorderColor = AppTheme.carbonButtonBorderPrimaryColor;
+        carbonFontColor = AppTheme.carbonButtonPrimaryFontColor;
+        carbonButtonColor = AppTheme.carbonButtonPrimaryColor;
+      case CarbonButtonStyle.secondary:
+        carbonBorderColor = AppTheme.carbonButtonBorderSecondaryColor;
+        carbonFontColor = AppTheme.carbonButtonSecondaryFontColor;
+        carbonButtonColor = AppTheme.carbonButtonSecondaryColor;
+      case CarbonButtonStyle.tertiary:
+        carbonBorderColor = AppTheme.carbonButtonBorderTertiaryColor;
+        carbonFontColor = AppTheme.carbonButtonTertiaryFontColor;
+        carbonButtonColor = AppTheme.carbonButtonTertiaryColor;
+    }
     String lbl = label ?? "";
     String tpLbl = topLabel ?? "";
-    CarbonButtonStyle cbs = style ?? CarbonButtonStyle.primary;
     final double w = width ?? 184;
     final double h = height ?? CarbonButtonSize.extraExtraLarge.height;
     return InkWell(
@@ -35,11 +62,9 @@ class CarbonStyle2xlButton extends StatelessWidget {
         height: h,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: cbs == CarbonButtonStyle.ghost ? AppColors.grey.all[1] : AppTheme.lightTheme.primaryColor,
+          color: carbonButtonColor,
           borderRadius: BorderRadius.zero,
-          border: Border.all(
-            color: cbs == CarbonButtonStyle.ghost ? AppTheme.carbonFieldBorder : AppTheme.lightTheme.primaryColor,
-          ),
+          border: Border.all(color: carbonBorderColor),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -50,24 +75,24 @@ class CarbonStyle2xlButton extends StatelessWidget {
               children: [
                 Text(
                   tpLbl,
-                  style: cbs == CarbonButtonStyle.ghost
-                      ? AppTheme.carbonTinyTextStyle
-                      : AppTheme.carbonTinyTextStyleOnPrimary,
+                  style: GoogleFonts.ibmPlexSans(
+                    color: carbonFontColor,
+                    fontSize: CarbonButtonSize.small.fontSize,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
                 Text(
                   lbl,
-                  style: cbs == CarbonButtonStyle.ghost
-                      ? AppTheme.carbonGhostButtonTextStyle
-                      : AppTheme.carbonPrimaryButtonTextStyle,
+                  style: GoogleFonts.ibmPlexSans(
+                    color: carbonFontColor,
+                    fontSize: CarbonButtonSize.large.fontSize,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
               ],
             ),
             Spacer(), // Gap between text and icon
-            Icon(
-              icon,
-              color: cbs == CarbonButtonStyle.ghost ? AppTheme.carbonLabelFontColor : AppColors.grey.all[0],
-              size: 24,
-            ),
+            Icon(icon, color: carbonFontColor, size: 24),
           ],
         ),
       ),

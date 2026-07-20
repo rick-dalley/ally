@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import '../app_theme.dart';
+import '../classes/frequency_codes.dart';
 import '../classes/medication_services.dart';
 import 'interaction_chip.dart';
 
@@ -89,7 +91,7 @@ class _MedicationCardState extends State<MedicationCard> {
                 height: 40,
                 // This is the magic property that applies the color
                 colorFilter: const ColorFilter.mode(
-                  Colors.orangeAccent, // Your desired color
+                  AppColors.oceanBlue, // Your desired color
                   BlendMode.srcIn, // This keeps the alpha (transparency) of your SVG
                 ),
               ),
@@ -107,7 +109,7 @@ class _MedicationCardState extends State<MedicationCard> {
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(16, 12, 0, 0),
-                        child: Text(medicationName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400)),
+                        child: Text(medicationName.toUpperCase(), style: AppTheme.carbonExpressiveTextStyle),
                       ),
                     ),
                     IconButton(onPressed: widget.onDelete, icon: const Icon(Symbols.close)),
@@ -118,7 +120,10 @@ class _MedicationCardState extends State<MedicationCard> {
                   key: ValueKey("tile_$medicationId"),
                   shape: const Border(),
                   collapsedShape: const Border(),
-                  title: Text("Dose: ${widget.medData['dose'] ?? 'N/A'} — Freq: ${widget.medData['freq'] ?? 'N/A'}"),
+                  title: Text(
+                    "Dose: ${widget.medData['dose'] ?? 'N/A'} —  ${FrequencyCodes.getFrequencyLabel(widget.medData['freq'])}",
+                    style: AppTheme.carbonTextStyle,
+                  ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

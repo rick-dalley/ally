@@ -180,7 +180,7 @@ class QuestionnairesScreenState extends State<QuestionnairesScreen> {
         snap: false,
         builder: (context, scrollController) {
           return Container(
-            decoration: const BoxDecoration(color: AppTheme.clinicalWhite, borderRadius: BorderRadius.zero),
+            decoration: BoxDecoration(color: AppTheme.cardBorder, borderRadius: BorderRadius.zero),
             child: Column(
               children: [
                 const SizedBox(height: 12),

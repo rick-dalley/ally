@@ -45,7 +45,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/assessment/
-    - assets/codes/
     - assets/conditions/
     - assets/drugs/
     - assets/images/

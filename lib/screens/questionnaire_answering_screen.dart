@@ -172,7 +172,7 @@ class QuestionnaireAnsweringScreenState extends State<QuestionnaireAnsweringScre
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-      color: AppTheme.clinicalWhite,
+      color: AppTheme.carbonModalColor,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         // Shrink-wrap header content cleanly

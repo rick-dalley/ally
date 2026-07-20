@@ -10,12 +10,14 @@ class CarbonButton extends StatelessWidget {
   final IconData? icon;
   final MainAxisAlignment alignment;
   final Color? color;
+  final Color? fontColor;
   final CarbonButtonSize? size;
   const CarbonButton({
     super.key,
     required this.label,
     required this.onPressed,
     this.color,
+    this.fontColor,
     this.isSecondary = false,
     this.icon,
     this.alignment = MainAxisAlignment.start,
@@ -25,12 +27,13 @@ class CarbonButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Define the icon and text widgets
-    final buttonColor = color ?? AppTheme.lightTheme.primaryColorDark;
+    final btnClr = color ?? AppTheme.carbonButtonPrimaryColor;
+    final fontClr = fontColor ?? AppTheme.carbonButtonPrimaryFontColor;
     final size = this.size ?? CarbonButtonSize.medium;
     final iconWidget = icon != null ? Icon(icon, size: 20) : null;
     final textWidget = Text(
       label,
-      style: GoogleFonts.ibmPlexSans(fontSize: size.fontSize, fontWeight: FontWeight.w400, letterSpacing: 0.16),
+      style: GoogleFonts.ibmPlexSans(fontSize: size.fontSize, fontWeight: FontWeight.w400, letterSpacing: 0.14),
     );
     // Determine the list of children based on alignment
     // For 'Right' alignment, we place text first, then icon
@@ -45,8 +48,8 @@ class CarbonButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: isSecondary ? AppTheme.cancelButtonBackGround : buttonColor,
-          foregroundColor: isSecondary ? Colors.black : AppColors.grey.all[0],
+          backgroundColor: isSecondary ? AppTheme.carbonButtonSecondaryColor : btnClr,
+          foregroundColor: isSecondary ? AppTheme.carbonButtonSecondaryFontColor : fontClr,
           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
           padding: const EdgeInsets.symmetric(horizontal: 16),
           elevation: 0,

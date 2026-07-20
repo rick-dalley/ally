@@ -261,8 +261,8 @@ class _PhysicalHealthAssessmentState extends State<PhysicalHealthAssessment> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.clinicalWhite,
-                border: Border(top: BorderSide(color: Colors.grey.shade800, width: 0.5)),
+                color: AppTheme.carbonButtonTertiaryColor,
+                border: Border(top: BorderSide(color: AppColors.grey.all[5], width: 0.5)),
               ),
               child: SafeArea(
                 top: false,
@@ -271,13 +271,13 @@ class _PhysicalHealthAssessmentState extends State<PhysicalHealthAssessment> {
                   height: 50,
                   child: ElevatedButton(
                     onPressed: _saveAssessment,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.peacockBlue,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
                     child: Text(
                       "SAVE ASSESSMENT",
-                      style: TextStyle(color: AppColors.grey.all[0], fontWeight: FontWeight.bold, fontSize: 15),
+                      style: TextStyle(
+                        color: AppTheme.carbonButtonPrimaryFontColor,
+                        fontWeight: FontWeight.w400,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
                 ),

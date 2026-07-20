@@ -31,10 +31,7 @@ class AcuityWidget extends StatelessWidget {
                         style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.2),
                       ),
                       Spacer(),
-                      Text(
-                        "${acuity.interventionWindow} minutes",
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.darkSlate),
-                      ),
+                      Text("${acuity.interventionWindow} minutes", style: AppTheme.carbonTextStyle),
                     ],
                   ),
                   const SizedBox(height: 24),
