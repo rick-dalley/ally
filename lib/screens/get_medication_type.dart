@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:triage/widgets/carbon_separator.dart';
 import '../app_theme.dart';
-import '../classes/carbon_style_constants.dart';
+import '../classes/carbon_theme_constants.dart';
 import '../classes/medication_services.dart';
 
 class GetMedicationType extends StatefulWidget {
@@ -55,5 +56,5 @@ class _GetMedicationTypeState extends State<GetMedicationType> {
     );
   }
 
-  static Widget get carbonSeparator => Divider(height: 1, thickness: 1, color: CarbonTheme.carbonSeparator);
+  static Widget get carbonSeparator => CarbonSeparator();
 }

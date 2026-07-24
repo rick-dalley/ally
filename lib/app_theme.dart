@@ -17,17 +17,16 @@ class AppTheme {
   static final Color chipBorder = AppColors.grey.all[3];
   static final Color dividerColor = AppColors.greyDepth;
   static final Color surfaceColor = Colors.white;
-  static final Color defaultFontColor = AppColors.grey.all[5];
-  static final Color defaultInverseFontColor = surfaceColor;
-  static final Color primaryColor = AppTheme.primaryColor;
+  static final Color defaultFontColor = Color(0xFF1F2020);
+  static final Color primaryColor = AppColors.energeticPurple;
   static final Color onPrimaryColor = Colors.white;
-  static final Color secondaryColor = AppColors.grey[4];
+  static final Color secondaryColor = AppColors.grey[5];
   static final Color onSecondaryColor = Colors.white;
   static final Color tertiaryColor = Colors.white;
   static final Color onTertiaryColor = primaryColor;
   static final Color scaffoldBackgroundColor = canvasColor;
   static final Color appBarBackgroundColor = surfaceColor;
-  static final Color defaultHintColor = AppColors.grey.all[4];
+  static final Color defaultHintColor = AppColors.grey.all[5];
 
   static TextStyle defaultTextStyle = TextStyle(
     fontWeight: FontWeight.w400,
@@ -39,17 +38,14 @@ class AppTheme {
     fontSize: 16,
     color: AppTheme.defaultFontColor,
   );
-  static TextStyle defaultTinyTextStyle = TextStyle(
-    fontWeight: FontWeight.w400,
-    fontSize: 10,
-    color: AppTheme.defaultFontColor,
-  );
+
   static TextStyle defaultItalicsTextStyle = TextStyle(
     fontWeight: FontWeight.w400,
     fontSize: 14,
     fontStyle: FontStyle.italic,
     color: AppTheme.defaultFontColor,
   );
+
   static TextStyle defaultHeadingStyle = TextStyle(
     fontWeight: FontWeight.w600,
     fontSize: 16,
@@ -58,7 +54,7 @@ class AppTheme {
 
   static TextStyle defaultHintStyle = TextStyle(
     fontWeight: FontWeight.w400,
-    fontSize: 14,
+    fontSize: 12,
     color: AppTheme.defaultHintColor,
   );
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:triage/classes/carbon_color_constants.dart';
 import '../app_theme.dart';
-import '../classes/carbon_style_constants.dart';
+import '../classes/carbon_theme_constants.dart';
 
 class CarbonActionTile extends StatelessWidget {
   final VoidCallback onTap;
@@ -24,7 +25,7 @@ class CarbonActionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Size size = iconSize ?? Size(24, 24);
-    Color activeColor = iconColor ?? CarbonTheme.carbonPrimary;
+    Color activeColor = iconColor ?? carbonColorIconPrimary;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Card(

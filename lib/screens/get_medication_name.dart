@@ -5,7 +5,7 @@ import 'package:triage/widgets/carbon_style_search_field.dart';
 
 import '../app_theme.dart';
 import '../classes/app_colors.dart';
-import '../classes/carbon_style_constants.dart';
+import '../classes/carbon_theme_constants.dart';
 import '../widgets/carbon_style_full_button.dart';
 import '../widgets/text_scanner.dart';
 

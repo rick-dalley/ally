@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../classes/carbon_style_constants.dart';
+import '../classes/carbon_color_constants.dart';
+import '../classes/carbon_theme_constants.dart';
 
 class CarbonNumberInput extends StatelessWidget {
   final String label;
@@ -32,22 +33,22 @@ class CarbonNumberInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color fillColor = this.fillColor ?? CarbonTheme.carbonFieldBackgroundColor;
-    Color accentColor = this.accentColor ?? CarbonTheme.carbonPrimary;
+    Color fillColor = this.fillColor ?? carbonColorField;
+    Color accentColor = this.accentColor ?? carbonColorButtonPrimary;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 4.0, bottom: 8.0),
-          child: Text(label, style: GoogleFonts.ibmPlexSans(fontSize: 12, color: CarbonTheme.carbonFieldBorder)),
+          child: Text(label, style: CarbonTheme.carbonLabelTextStyle),
         ),
         // Unified Container for Input + Stepper
         Container(
           height: 40,
           decoration: BoxDecoration(
-            color: CarbonTheme.carbonFieldBorder,
-            border: Border(bottom: BorderSide(color: CarbonTheme.carbonFieldBorder, width: 0)),
+            color: carbonColorField,
+            border: Border(bottom: BorderSide(color: carbonColorBorderInteractive, width: 0)),
           ),
           child: Row(
             children: [
@@ -58,16 +59,12 @@ class CarbonNumberInput extends StatelessWidget {
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: fillColor,
-                    hintStyle: GoogleFonts.ibmPlexSans(color: CarbonTheme.carbonPlaceHolderFontColor),
+                    hintStyle: CarbonTheme.carbonHintTextStyle,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
-                    border: UnderlineInputBorder(
-                      borderSide: BorderSide(color: CarbonTheme.carbonFieldBorder, width: 1),
-                    ),
+                    border: UnderlineInputBorder(borderSide: BorderSide(color: carbonColorBorderInteractive, width: 1)),
                     focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: accentColor, width: 1)),
-                    errorBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: CarbonTheme.carbonButtonDangerFontColor, width: 1),
-                    ),
-                    errorStyle: GoogleFonts.ibmPlexSans(color: CarbonTheme.carbonButtonBorderDangerColor),
+                    errorBorder: UnderlineInputBorder(borderSide: BorderSide(color: carbonColorButtonDanger, width: 1)),
+                    errorStyle: GoogleFonts.ibmPlexSans(color: carbonColorButtonOnDanger),
                     suffixIcon: Row(
                       mainAxisSize: MainAxisSize.min, // Vital: Keeps the row from expanding to fill the field
                       children: [
@@ -99,10 +96,7 @@ class CarbonNumberInput extends StatelessWidget {
         if (helperText != null)
           Padding(
             padding: const EdgeInsets.only(top: 8.0, left: 4.0),
-            child: Text(
-              helperText!,
-              style: GoogleFonts.ibmPlexSans(fontSize: 12, color: CarbonTheme.carbonFieldBorder),
-            ),
+            child: Text(helperText!, style: GoogleFonts.ibmPlexSans(fontSize: 12, color: carbonColorBorderInteractive)),
           ),
       ],
     );

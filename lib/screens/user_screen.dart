@@ -6,12 +6,12 @@ import 'package:triage/classes/patient_action.dart';
 import 'package:triage/classes/vitals.dart';
 import 'package:triage/screens/patient_timeline_screen.dart';
 import 'package:triage/widgets/blood_type_selector.dart';
-import 'package:triage/widgets/carbon_style_2XL_button.dart';
+import 'package:triage/widgets/carbon_style_two_xl_button.dart';
 import 'package:triage/widgets/current_metrics.dart';
 import 'package:triage/widgets/carbon_flyout_widget.dart';
 import 'package:triage/widgets/vitals_history.dart';
 import '../app_theme.dart';
-import '../classes/carbon_style_constants.dart';
+import '../classes/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
 import '../classes/flyable.dart';
 import '../classes/listable.dart';
@@ -210,7 +210,7 @@ class UserScreenState extends State<UserScreen> {
                       ),
                       Positioned(
                         right: 0,
-                        child: FlyOutWidget(
+                        child: CarbonFlyOutWidget(
                           children: Sentiment.values,
                           style: CarbonButtonStyle.tertiary,
                           onSelected: (Flyable item) {

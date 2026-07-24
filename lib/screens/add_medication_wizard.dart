@@ -8,7 +8,7 @@ import 'package:triage/screens/get_medication_type.dart';
 import 'package:triage/widgets/carbon_button_compact.dart';
 
 import '../app_theme.dart';
-import '../classes/carbon_style_constants.dart';
+import '../classes/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
 import '../classes/medication_services.dart';
 

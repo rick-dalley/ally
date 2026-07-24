@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import '../classes/carbon_style_constants.dart';
+import 'package:triage/classes/carbon_color_constants.dart';
+import '../classes/carbon_theme_constants.dart';
 
 class CarbonSearchField extends StatefulWidget {
   final TextEditingController controller;
@@ -54,10 +55,7 @@ class CarbonSearchFieldState extends State<CarbonSearchField> {
             alignment: Alignment.centerLeft,
             child: Padding(
               padding: const EdgeInsets.only(left: 0, bottom: 0.0),
-              child: Text(
-                widget.label!,
-                style: GoogleFonts.ibmPlexSans(fontSize: 12, color: CarbonTheme.carbonLabelFontColor),
-              ),
+              child: Text(widget.label!, style: CarbonTheme.carbonLabelTextStyle),
             ),
           ),
         Padding(
@@ -72,29 +70,27 @@ class CarbonSearchFieldState extends State<CarbonSearchField> {
                   },
 
                   decoration: InputDecoration(
-                    fillColor: CarbonTheme.carbonFieldBackgroundColor,
+                    fillColor: carbonColorField,
                     filled: true,
                     hintText: widget.hintText ?? "Enter a value to search",
-                    hintStyle: GoogleFonts.ibmPlexSans(color: CarbonTheme.carbonPlaceHolderFontColor),
-                    border: UnderlineInputBorder(
-                      borderSide: BorderSide(color: CarbonTheme.carbonFieldBorder, width: 1),
-                    ),
+                    hintStyle: CarbonTheme.carbonHintTextStyle,
+                    border: UnderlineInputBorder(borderSide: BorderSide(color: carbonColorBorderInteractive, width: 1)),
                     focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: CarbonTheme.carbonPrimary, width: 2),
+                      borderSide: BorderSide(color: carbonColorBorderStrong01, width: 2),
                     ),
                     errorBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: CarbonTheme.carbonButtonDangerFontColor, width: 2),
+                      borderSide: BorderSide(color: carbonColorBorderStrong01, width: 2),
                     ),
                     errorText: widget.errorText,
-                    errorStyle: GoogleFonts.ibmPlexSans(color: CarbonTheme.carbonButtonBorderDangerColor),
+                    errorStyle: GoogleFonts.ibmPlexSans(color: carbonColorButtonDanger),
 
                     // Prefix: intentional search trapping
                     prefixIcon: IconButton(
                       icon: Icon(
                         Symbols.search,
                         color: widget.controller.text.isNotEmpty
-                            ? CarbonTheme.carbonButtonPrimaryColor
-                            : CarbonTheme.carbonButtonSecondaryColor,
+                            ? carbonColorButtonPrimary
+                            : carbonColorButtonSecondary,
                       ),
                       onPressed: () {
                         if (widget.onSearch != null) {
@@ -124,10 +120,7 @@ class CarbonSearchFieldState extends State<CarbonSearchField> {
             alignment: Alignment.centerLeft,
             child: Padding(
               padding: const EdgeInsets.only(left: 0, bottom: 0.0),
-              child: Text(
-                widget.promptText!,
-                style: GoogleFonts.ibmPlexSans(fontSize: 12, color: CarbonTheme.carbonFieldBorder),
-              ),
+              child: Text(widget.promptText!, style: CarbonTheme.carbonLabelTextStyle),
             ),
           ),
         const SizedBox(height: 16),

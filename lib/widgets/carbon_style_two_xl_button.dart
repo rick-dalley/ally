@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../classes/carbon_style_constants.dart';
+import 'package:triage/classes/carbon_color_constants.dart';
+import '../classes/carbon_theme_constants.dart';
 
 class CarbonStyle2xlButton extends StatelessWidget {
   final IconData icon;
@@ -24,31 +25,31 @@ class CarbonStyle2xlButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     CarbonButtonStyle buttonStyle = CarbonButtonStyle.primary;
-    Color carbonBorderColor = CarbonTheme.carbonButtonBorderPrimaryColor;
-    Color carbonFontColor = CarbonTheme.carbonButtonPrimaryFontColor;
-    Color carbonButtonColor = CarbonTheme.carbonButtonPrimaryColor;
+    Color carbonBorderColor = carbonColorButtonPrimary;
+    Color carbonFontColor = carbonColorButtonOnPrimary;
+    Color carbonButtonColor = carbonColorButtonPrimary;
     TextStyle textStyle = CarbonTheme.carbonPrimaryButtonTextStyle;
     switch (buttonStyle) {
       case CarbonButtonStyle.danger:
-        carbonBorderColor = CarbonTheme.carbonButtonBorderDangerColor;
-        carbonFontColor = CarbonTheme.carbonButtonDangerFontColor;
-        carbonButtonColor = CarbonTheme.carbonButtonDangerColor;
+        carbonBorderColor = carbonColorButtonDanger;
+        carbonFontColor = carbonColorButtonOnDanger;
+        carbonButtonColor = carbonColorButtonDanger;
       case CarbonButtonStyle.ghost:
-        carbonBorderColor = CarbonTheme.carbonButtonBorderGhostColor;
-        carbonFontColor = CarbonTheme.carbonButtonGhostFontColor;
-        carbonButtonColor = CarbonTheme.carbonButtonGhostColor;
+        carbonBorderColor = carbonColorButtonGhost;
+        carbonFontColor = carbonColorButtonOnGhost;
+        carbonButtonColor = carbonColorButtonGhost;
       case CarbonButtonStyle.primary:
-        carbonBorderColor = CarbonTheme.carbonButtonBorderPrimaryColor;
-        carbonFontColor = CarbonTheme.carbonButtonPrimaryFontColor;
-        carbonButtonColor = CarbonTheme.carbonButtonPrimaryColor;
+        carbonBorderColor = carbonColorButtonPrimary;
+        carbonFontColor = carbonColorButtonOnPrimary;
+        carbonButtonColor = carbonColorButtonPrimary;
       case CarbonButtonStyle.secondary:
-        carbonBorderColor = CarbonTheme.carbonButtonBorderSecondaryColor;
-        carbonFontColor = CarbonTheme.carbonButtonSecondaryFontColor;
-        carbonButtonColor = CarbonTheme.carbonButtonSecondaryColor;
+        carbonBorderColor = carbonColorButtonSecondary;
+        carbonFontColor = carbonColorButtonOnSecondary;
+        carbonButtonColor = carbonColorButtonSecondary;
       case CarbonButtonStyle.tertiary:
-        carbonBorderColor = CarbonTheme.carbonButtonBorderTertiaryColor;
-        carbonFontColor = CarbonTheme.carbonButtonTertiaryFontColor;
-        carbonButtonColor = CarbonTheme.carbonButtonTertiaryColor;
+        carbonBorderColor = carbonColorButtonTertiary;
+        carbonFontColor = carbonColorButtonSecondary;
+        carbonButtonColor = carbonColorButtonTertiary;
     }
     String lbl = label ?? "";
     String tpLbl = topLabel ?? "";

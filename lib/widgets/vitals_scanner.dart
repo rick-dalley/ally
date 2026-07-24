@@ -276,7 +276,7 @@ class _ScannerOverlay extends StatelessWidget {
       margin: const EdgeInsets.all(40),
       child: Stack(
         children: [
-          Positioned(top: 10, left: 10, child: Text(deviceBrand, style: AppTheme.defaultTinyTextStyle)),
+          Positioned(top: 10, left: 10, child: Text(deviceBrand, style: AppTheme.defaultHintStyle)),
           Center(child: Icon(Icons.add, color: AppTheme.onPrimaryColor, size: 40)),
         ],
       ),

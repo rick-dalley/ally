@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../classes/carbon_style_constants.dart';
+import '../classes/carbon_theme_constants.dart';
 import '../classes/listable.dart';
 
 class CarbonDropdown<T extends Listable> extends StatelessWidget {
@@ -29,7 +29,7 @@ class CarbonDropdown<T extends Listable> extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(bottom: 8.0),
-          child: Text(label, style: CarbonTheme.carbonTinyTextStyle),
+          child: Text(label, style: CarbonTheme.carbonLabelTextStyle),
         ),
         DropdownButtonFormField<Listable>(
           initialValue: value,
@@ -43,7 +43,7 @@ class CarbonDropdown<T extends Listable> extends StatelessWidget {
           icon: const Icon(Icons.expand_more, color: Color(0xFF525252)),
           decoration: InputDecoration(
             hintText: placeholder,
-            hintStyle: CarbonTheme.carbonTinyTextStyle,
+            hintStyle: CarbonTheme.carbonLabelTextStyle,
             filled: true,
             fillColor: const Color(0xFFF4F4F4),
             contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 14),

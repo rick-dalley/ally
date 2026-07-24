@@ -328,7 +328,7 @@ class TimeLinePainter extends CustomPainter {
       final double y = calculateY(currentTime, size.height);
 
       final TextPainter tp = TextPainter(
-        text: TextSpan(text: _formatByInterval(currentTime, interval), style: AppTheme.defaultTinyTextStyle),
+        text: TextSpan(text: _formatByInterval(currentTime, interval), style: AppTheme.defaultHintStyle),
         textDirection: ui.TextDirection.ltr,
       )..layout();
       tp.paint(canvas, Offset(20, y - 5));

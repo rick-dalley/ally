@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../app_theme.dart';
-import 'app_colors.dart';
+import 'carbon_color_constants.dart';
 
 enum CarbonSpacing { narrow, medium, wide }
 
@@ -95,46 +95,10 @@ extension CarbonButtonFontSize on CarbonButtonSize {
 }
 
 class CarbonTheme {
-  static Color carbonWhite = Color(0xFFFFFFFF);
-  static Color carbonPrimary = AppTheme.primaryColor;
-  static Color carbonOnPrimary = carbonWhite;
-  static Color carbonRed = Color(0xFFFF1010);
-  static Color carbonGrey = AppColors.grey.all[5];
-  static Color carbonFieldBorder = AppColors.grey.all[4];
-  static Color carbonFieldColor = AppColors.grey.all[2];
-  static Color carbonFieldBackgroundColor = AppColors.grey.all[2];
-  static Color carbonSeparator = AppColors.grey.all[3];
-  static Color carbonLabelFontColor = AppColors.grey.all[5];
-  static Color carbonFieldFontColor = AppColors.grey.all[6];
-  static Color carbonHeaderFontColor = AppColors.grey.all[6];
-  static Color carbonPlaceHolderFontColor = AppColors.grey.all[4];
-  static Color carbonModalColor = AppColors.grey.all[1];
-  static Color carbonScaffoldColor = carbonWhite.withValues(alpha: 0.2);
-  // face color
-  static Color carbonButtonPrimaryColor = carbonPrimary;
-  static Color carbonButtonSecondaryColor = carbonGrey;
-  static Color carbonButtonTertiaryColor = carbonWhite;
-  static Color carbonButtonGhostColor = carbonWhite;
-  static Color carbonButtonDangerColor = carbonRed;
-
-  //border color
-  static Color carbonButtonBorderPrimaryColor = carbonPrimary;
-  static Color carbonButtonBorderSecondaryColor = carbonGrey;
-  static Color carbonButtonBorderTertiaryColor = carbonPrimary;
-  static Color carbonButtonBorderGhostColor = carbonWhite;
-  static Color carbonButtonBorderDangerColor = carbonRed;
-
-  //font color
-  static Color carbonButtonPrimaryFontColor = carbonWhite;
-  static Color carbonButtonSecondaryFontColor = carbonWhite;
-  static Color carbonButtonTertiaryFontColor = carbonPrimary;
-  static Color carbonButtonGhostFontColor = carbonPrimary;
-  static Color carbonButtonDangerFontColor = carbonWhite;
-
   static TextStyle carbonHeadingTextStyle = TextStyle(
     fontWeight: FontWeight.w400,
     fontSize: 20,
-    color: carbonLabelFontColor,
+    color: carbonColorTextPrimary,
   );
 
   static TextStyle carbonPrimaryButtonTextStyle = TextStyle(
@@ -145,29 +109,57 @@ class CarbonTheme {
   static TextStyle carbonGhostButtonTextStyle = TextStyle(
     fontWeight: FontWeight.w400,
     fontSize: 20,
-    color: carbonLabelFontColor,
+    color: carbonColorButtonGhost,
   );
   static TextStyle? carbonExpressiveTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
     fontSize: 20,
-    color: carbonHeaderFontColor,
+    color: AppTheme.primaryColor,
   );
 
   static TextStyle? carbonTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
     fontSize: 14,
-    color: carbonLabelFontColor,
+    color: carbonColorTextPrimary,
   );
 
-  static TextStyle? carbonTinyTextStyle = GoogleFonts.ibmPlexSans(
+  static TextStyle? carbonLabelTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
-    fontSize: 10,
-    color: carbonLabelFontColor,
+    fontSize: 12,
+    color: carbonColorTextSecondary,
   );
 
-  static TextStyle? carbonTinyTextStyleOnPrimary = GoogleFonts.ibmPlexSans(
+  static TextStyle? carbonFieldTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
-    fontSize: 10,
-    color: AppTheme.onPrimaryColor,
+    fontSize: 14,
+    color: carbonColorTextPrimary,
+  );
+  static TextStyle? dangerTextStyle = GoogleFonts.ibmPlexSans(
+    fontWeight: FontWeight.w400,
+    fontSize: 14,
+    color: carbonColorButtonOnDanger,
+  );
+  static TextStyle? carbonLabelOnPrimary = GoogleFonts.ibmPlexSans(
+    fontWeight: FontWeight.w400,
+    fontSize: 12,
+    color: carbonColorTextSecondary,
+  );
+
+  static TextStyle? carbonHelperTextStyle = GoogleFonts.ibmPlexSans(
+    fontWeight: FontWeight.w400,
+    fontSize: 12,
+    color: carbonColorTextHelper,
+  );
+
+  static TextStyle? carbonHintTextStyle = GoogleFonts.ibmPlexSans(
+    fontWeight: FontWeight.w400,
+    fontSize: 12,
+    color: carbonColorTextHelper,
+  );
+
+  static TextStyle? carbonPlaceholderTextStyle = GoogleFonts.ibmPlexSans(
+    fontWeight: FontWeight.w400,
+    fontSize: 12,
+    color: carbonColorTextPlaceholder,
   );
 }

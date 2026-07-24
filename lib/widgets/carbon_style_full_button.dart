@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../classes/carbon_style_constants.dart';
+import '../classes/carbon_theme_constants.dart';
 
 class CarbonFullButton extends StatefulWidget {
   final String label;
