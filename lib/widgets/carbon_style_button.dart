@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../app_theme.dart';
 import '../classes/carbon_style_constants.dart';
 
 class CarbonButton extends StatelessWidget {
@@ -27,8 +26,8 @@ class CarbonButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Define the icon and text widgets
-    final btnClr = color ?? AppTheme.carbonButtonPrimaryColor;
-    final fontClr = fontColor ?? AppTheme.carbonButtonPrimaryFontColor;
+    final btnClr = color ?? CarbonTheme.carbonButtonPrimaryColor;
+    final fontClr = fontColor ?? CarbonTheme.carbonButtonPrimaryFontColor;
     final size = this.size ?? CarbonButtonSize.medium;
     final iconWidget = icon != null ? Icon(icon, size: 20) : null;
     final textWidget = Text(
@@ -48,8 +47,8 @@ class CarbonButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: isSecondary ? AppTheme.carbonButtonSecondaryColor : btnClr,
-          foregroundColor: isSecondary ? AppTheme.carbonButtonSecondaryFontColor : fontClr,
+          backgroundColor: isSecondary ? CarbonTheme.carbonButtonSecondaryColor : btnClr,
+          foregroundColor: isSecondary ? CarbonTheme.carbonButtonSecondaryFontColor : fontClr,
           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
           padding: const EdgeInsets.symmetric(horizontal: 16),
           elevation: 0,

@@ -17,7 +17,7 @@ class ObservationCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      color: AppColors.grey.all[0],
+      color: AppTheme.onPrimaryColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
         side: BorderSide(color: AppTheme.cardBorder, width: 1),
@@ -34,16 +34,13 @@ class ObservationCard extends StatelessWidget {
                   note.authorName,
                   style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey),
                 ),
-                Text(timeStr, style: TextStyle(fontSize: 12, color: AppColors.ocean.all[5])),
+                Text(timeStr, style: TextStyle(fontSize: 12, color: AppTheme.primaryColor)),
               ],
             ),
             const SizedBox(height: 2),
-            Text(
-              note.authorRole,
-              style: const TextStyle(fontSize: 11, fontStyle: FontStyle.italic, color: AppColors.greyDepth),
-            ),
+            Text(note.authorRole, style: AppTheme.defaultItalicsTextStyle),
             const Padding(padding: EdgeInsets.symmetric(vertical: 8.0), child: Divider(height: 1, thickness: 0.5)),
-            Text(note.content, style: AppTheme.carbonTextStyle),
+            Text(note.content, style: AppTheme.defaultTextStyle),
           ],
         ),
       ),

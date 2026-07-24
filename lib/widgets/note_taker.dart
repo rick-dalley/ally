@@ -84,7 +84,7 @@ class NoteTakerState extends State<NoteTaker> {
       builder: (context, localScrollController) {
         return Container(
           decoration: BoxDecoration(
-            color: AppColors.grey.all[0],
+            color: AppTheme.onPrimaryColor,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
@@ -105,12 +105,12 @@ class NoteTakerState extends State<NoteTaker> {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
-                        color: _isListening ? Colors.red : AppColors.grey.all[0],
+                        color: _isListening ? Colors.red : AppTheme.onPrimaryColor,
                       ),
                     ),
                     Text(
                       widget.currentNote == null ? "New Observation" : "Edit Observation",
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.greyDepth),
+                      style: AppTheme.defaultExpressiveTextStyle,
                     ),
                     TextButton(
                       onPressed: () {
@@ -127,10 +127,7 @@ class NoteTakerState extends State<NoteTaker> {
                         }
                         Navigator.pop(context); // Dismiss editor sheet view
                       },
-                      child: const Text(
-                        "Done",
-                        style: TextStyle(color: AppColors.peacockBlue, fontWeight: FontWeight.bold, fontSize: 15),
-                      ),
+                      child: Text("Done", style: AppTheme.defaultExpressiveTextStyle),
                     ),
                   ],
                 ),
@@ -149,10 +146,10 @@ class NoteTakerState extends State<NoteTaker> {
                       minLines: null,
                       autofocus: true,
                       keyboardType: TextInputType.multiline,
-                      style: const TextStyle(fontSize: 16, height: 1.5, color: AppColors.greyDepth),
-                      decoration: const InputDecoration(
+                      style: AppTheme.defaultExpressiveTextStyle,
+                      decoration: InputDecoration(
                         hintText: "Start typing observation notes or behavioral records...",
-                        hintStyle: TextStyle(color: Colors.grey),
+                        hintStyle: AppTheme.defaultHintStyle,
                         border: InputBorder.none, // Clean writing pad paper appearance
                       ),
                     ),

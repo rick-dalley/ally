@@ -34,11 +34,11 @@ class _VitalsDashboardState extends State<VitalsDashboard> {
         padding: const EdgeInsets.symmetric(horizontal: 4),
         child: TextField(
           controller: controller,
-          style: TextStyle(color: AppColors.grey.all[0], fontSize: 14),
+          style: TextStyle(color: AppTheme.onPrimaryColor, fontSize: 14),
           decoration: InputDecoration(
             labelText: label,
-            labelStyle: TextStyle(color: AppColors.grey.all[0], fontSize: 12),
-            border: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.grey.all[0])),
+            labelStyle: TextStyle(color: AppTheme.onPrimaryColor, fontSize: 12),
+            border: UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.onPrimaryColor)),
           ),
           keyboardType: TextInputType.number,
         ),

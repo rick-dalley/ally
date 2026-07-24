@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../app_theme.dart';
+import '../classes/carbon_style_constants.dart';
 
 class CarbonTextEdit extends StatefulWidget {
   final String label;
@@ -32,7 +33,7 @@ class CarbonTextEdit extends StatefulWidget {
 
 class CarbonStateText extends State<CarbonTextEdit> {
   late Color fillColor = widget.fillColor ?? Color(0xFFF4F4F4);
-  late Color accentColor = widget.accentColor ?? AppColors.peacockBlue;
+  late Color accentColor = widget.accentColor ?? AppTheme.primaryColor;
   late TextEditingController _controller;
   late TextInputType _keyboard;
   @override
@@ -73,7 +74,7 @@ class CarbonStateText extends State<CarbonTextEdit> {
             widget.label,
             style: GoogleFonts.ibmPlexSans(
               fontSize: 12,
-              color: AppTheme.carbonLabelFontColor,
+              color: CarbonTheme.carbonLabelFontColor,
               fontWeight: FontWeight.w400,
             ),
           ),
@@ -86,15 +87,15 @@ class CarbonStateText extends State<CarbonTextEdit> {
             filled: true,
             fillColor: fillColor,
             hintText: widget.placeHolderText,
-            hintStyle: GoogleFonts.ibmPlexSans(color: AppTheme.carbonPlaceHolderFontColor),
+            hintStyle: GoogleFonts.ibmPlexSans(color: CarbonTheme.carbonPlaceHolderFontColor),
             contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
-            border: UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.carbonFieldBorder, width: 1)),
+            border: UnderlineInputBorder(borderSide: BorderSide(color: CarbonTheme.carbonFieldBorder, width: 1)),
             focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: accentColor, width: 2)),
             errorBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: AppTheme.carbonButtonDangerFontColor, width: 2),
+              borderSide: BorderSide(color: CarbonTheme.carbonButtonDangerFontColor, width: 2),
             ),
             errorText: widget.errorText,
-            errorStyle: GoogleFonts.ibmPlexSans(color: AppTheme.carbonButtonDangerFontColor),
+            errorStyle: GoogleFonts.ibmPlexSans(color: CarbonTheme.carbonButtonDangerFontColor),
           ),
         ),
         // Helper Text
@@ -103,7 +104,7 @@ class CarbonStateText extends State<CarbonTextEdit> {
             padding: const EdgeInsets.only(top: 8.0, bottom: 16),
             child: Text(
               widget.helperText!,
-              style: GoogleFonts.ibmPlexSans(fontSize: 12, color: AppTheme.carbonFieldBorder),
+              style: GoogleFonts.ibmPlexSans(fontSize: 12, color: CarbonTheme.carbonFieldBorder),
             ),
           ),
         SizedBox(height: 4),

@@ -17,52 +17,52 @@ Map<String, MedicalCategory> categoryIcons = {
   "Cardiovascular": MedicalCategory(
     iconData: Symbols.cardiology,
     color: Color(0xFFBA0000),
-    textColor: AppColors.grey.all[0],
+    textColor: AppTheme.onPrimaryColor,
   ),
   "Dermatological": MedicalCategory(
     iconData: Symbols.dermatology,
     color: Color(0xFFBA5D00),
-    textColor: AppColors.grey.all[0],
+    textColor: AppTheme.onPrimaryColor,
   ),
   "Gastrointestinal": MedicalCategory(
     iconData: Symbols.gastroenterology,
     color: Color(0xFF64008C),
-    textColor: AppColors.grey.all[0],
+    textColor: AppTheme.onPrimaryColor,
   ),
   "Infectious and Immunological": MedicalCategory(
     iconData: Symbols.microbiology,
     color: Color(0xFFBA8002),
-    textColor: AppColors.grey.all[0],
+    textColor: AppTheme.onPrimaryColor,
   ),
   "Mental and Behavioral Health": MedicalCategory(
     iconData: Symbols.psychiatry,
     color: Color(0xFF187303),
-    textColor: AppColors.grey.all[0],
+    textColor: AppTheme.onPrimaryColor,
   ),
   "Metabolic & Endocrine": MedicalCategory(
     iconData: Symbols.metabolism,
     color: Color(0xFF730350),
-    textColor: AppColors.grey.all[0],
+    textColor: AppTheme.onPrimaryColor,
   ),
   "Musculoskeletal": MedicalCategory(
     iconData: Symbols.orthopedics,
     color: Color(0xFF636363),
-    textColor: AppColors.grey.all[0],
+    textColor: AppTheme.onPrimaryColor,
   ),
   "Neurological": MedicalCategory(
     iconData: Symbols.neurology,
     color: Color(0xFF215A8A),
-    textColor: AppColors.grey.all[0],
+    textColor: AppTheme.onPrimaryColor,
   ),
   "Respiratory": MedicalCategory(
     iconData: Symbols.pulmonology,
     color: Color(0xFF0298BA),
-    textColor: AppColors.grey.all[0],
+    textColor: AppTheme.onPrimaryColor,
   ),
   "Urological and Reproductive": MedicalCategory(
     iconData: Symbols.urology,
     color: Color(0xFF8A346C),
-    textColor: AppColors.grey.all[0],
+    textColor: AppTheme.onPrimaryColor,
   ),
 };
 
@@ -129,9 +129,9 @@ class _PhysicalHealthAssessmentState extends State<PhysicalHealthAssessment> {
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               padding: !hasActiveConditions ? EdgeInsets.zero : const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: !hasActiveConditions ? Colors.transparent : AppColors.foam.all[0],
+                color: !hasActiveConditions ? Colors.transparent : AppTheme.primaryColor,
                 borderRadius: BorderRadius.circular(12),
-                border: !hasActiveConditions ? null : Border.all(color: AppColors.foam.all[0], width: 1),
+                border: !hasActiveConditions ? null : Border.all(color: AppTheme.onPrimaryColor, width: 1),
               ),
               child: !hasActiveConditions
                   ? const SizedBox.shrink()
@@ -139,15 +139,15 @@ class _PhysicalHealthAssessmentState extends State<PhysicalHealthAssessment> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
-                          children: const [
-                            Icon(Icons.assignment_late_outlined, size: 16, color: AppColors.foamGreen),
+                          children: [
+                            Icon(Icons.assignment_late_outlined, size: 16, color: AppTheme.onPrimaryColor),
                             SizedBox(width: 6),
                             Text(
                               "PATIENT ACTIVE PROFILE SUMMARY",
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
-                                color: AppColors.foamGreen,
+                                color: AppTheme.primaryColor,
                                 letterSpacing: 0.5,
                               ),
                             ),
@@ -248,7 +248,7 @@ class _PhysicalHealthAssessmentState extends State<PhysicalHealthAssessment> {
                     decoration: InputDecoration(
                       hintText: "Enter any conditions not listed above...",
                       filled: true,
-                      fillColor: AppColors.grey.all[0],
+                      fillColor: AppTheme.onPrimaryColor,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                   ),
@@ -261,8 +261,8 @@ class _PhysicalHealthAssessmentState extends State<PhysicalHealthAssessment> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.carbonButtonTertiaryColor,
-                border: Border(top: BorderSide(color: AppColors.grey.all[5], width: 0.5)),
+                color: AppTheme.tertiaryColor,
+                border: Border(top: BorderSide(color: AppTheme.tertiaryColor, width: 0.5)),
               ),
               child: SafeArea(
                 top: false,
@@ -273,11 +273,7 @@ class _PhysicalHealthAssessmentState extends State<PhysicalHealthAssessment> {
                     onPressed: _saveAssessment,
                     child: Text(
                       "SAVE ASSESSMENT",
-                      style: TextStyle(
-                        color: AppTheme.carbonButtonPrimaryFontColor,
-                        fontWeight: FontWeight.w400,
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: AppTheme.onPrimaryColor, fontWeight: FontWeight.w400, fontSize: 14),
                     ),
                   ),
                 ),
@@ -317,7 +313,7 @@ class _PhysicalHealthAssessmentState extends State<PhysicalHealthAssessment> {
               label: Text(condition.name),
               // 1. Customize the Text Style and Font Color
               labelStyle: TextStyle(
-                color: isSelected ? AppColors.grey.all[0] : categoryIcon.color,
+                color: isSelected ? AppTheme.onPrimaryColor : categoryIcon.color,
                 fontWeight: FontWeight.w500,
                 fontSize: 14,
               ),

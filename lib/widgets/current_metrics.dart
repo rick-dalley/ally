@@ -24,7 +24,7 @@ class CurrentMetrics extends StatelessWidget {
     // Adding 30px to account for the label height to prevent overflow
     const double labelBuffer = 30.0;
     final double totalHeight = barHeight + labelBuffer;
-    final Color specifiedBackgroundColor = backgroundColor ?? AppColors.grey.all[0];
+    final Color specifiedBackgroundColor = backgroundColor ?? AppTheme.onPrimaryColor;
     return InkWell(
       onTap: onTap,
       child: Column(

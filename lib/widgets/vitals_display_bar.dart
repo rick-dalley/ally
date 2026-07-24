@@ -39,9 +39,9 @@ class VitalsBar extends StatelessWidget {
               child: Ink(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: AppTheme.carbonGrey,
+                  color: AppTheme.tertiaryColor,
                   borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
-                  border: Border.all(color: AppColors.grey.all[0], width: 0.5),
+                  border: Border.all(color: AppTheme.onPrimaryColor, width: 0.5),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -63,10 +63,10 @@ class VitalsBar extends StatelessWidget {
             child: Ink(
               width: 54,
               decoration: BoxDecoration(
-                color: AppColors.foamGreen,
+                color: AppTheme.primaryColor,
                 borderRadius: const BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
               ),
-              child: Icon(Icons.add, color: AppColors.grey.all[0], size: 28),
+              child: Icon(Icons.add, color: AppTheme.onPrimaryColor, size: 28),
             ),
           ),
         ],

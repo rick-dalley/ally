@@ -90,8 +90,8 @@ class _MedicationCardState extends State<MedicationCard> {
                 width: 40,
                 height: 40,
                 // This is the magic property that applies the color
-                colorFilter: const ColorFilter.mode(
-                  AppColors.oceanBlue, // Your desired color
+                colorFilter: ColorFilter.mode(
+                  AppTheme.primaryColor, // Your desired color
                   BlendMode.srcIn, // This keeps the alpha (transparency) of your SVG
                 ),
               ),
@@ -109,7 +109,7 @@ class _MedicationCardState extends State<MedicationCard> {
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(16, 12, 0, 0),
-                        child: Text(medicationName.toUpperCase(), style: AppTheme.carbonExpressiveTextStyle),
+                        child: Text(medicationName.toUpperCase(), style: AppTheme.defaultHeadingStyle),
                       ),
                     ),
                     IconButton(onPressed: widget.onDelete, icon: const Icon(Symbols.close)),
@@ -122,7 +122,7 @@ class _MedicationCardState extends State<MedicationCard> {
                   collapsedShape: const Border(),
                   title: Text(
                     "Dose: ${widget.medData['dose'] ?? 'N/A'} —  ${FrequencyCodes.getFrequencyLabel(widget.medData['freq'])}",
-                    style: AppTheme.carbonTextStyle,
+                    style: AppTheme.defaultTextStyle,
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

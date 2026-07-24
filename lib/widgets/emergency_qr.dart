@@ -25,20 +25,20 @@ class EmergencyQRCodeView extends StatelessWidget {
     final String qrPayload = jsonEncode(emergencyData);
     return Scaffold(
       extendBodyBehindAppBar: false,
-      backgroundColor: AppTheme.lightTheme.primaryColorDark,
-      appBar: AppBar(title: const Text("Emergency Passport"), backgroundColor: AppTheme.lightTheme.primaryColorDark),
+      backgroundColor: AppTheme.primaryColor,
+      appBar: AppBar(title: const Text("Emergency Passport"), backgroundColor: AppTheme.primaryColor),
       body: SafeArea(
         // This ensures the content respects notches and system UI
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text("Show this to emergency staff", style: TextStyle(fontSize: 18, color: AppColors.grey.all[0])),
+              Text("Show this to emergency staff", style: TextStyle(fontSize: 18, color: AppTheme.onPrimaryColor)),
               const SizedBox(height: 20),
               Container(
                 width: 300,
                 height: 300,
-                color: AppColors.grey.all[0],
+                color: AppTheme.onPrimaryColor,
                 child: QrImageView(data: qrPayload, version: QrVersions.auto, size: 300.0),
               ),
             ],

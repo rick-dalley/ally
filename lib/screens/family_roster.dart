@@ -54,7 +54,7 @@ class FamilyRosterState extends State<FamilyRoster> {
       context: context,
       shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
       isScrollControlled: true,
-      backgroundColor: AppColors.grey.all[0],
+      backgroundColor: AppTheme.surfaceColor,
       useSafeArea: true,
       builder: (context) => MedicalProfileScreen(householdMember: householdMember),
     );
@@ -98,9 +98,9 @@ class FamilyRosterState extends State<FamilyRoster> {
           ),
           Expanded(
             child: filteredPatients.isEmpty
-                ? const Center(
+                ? Center(
                     child: CircularProgressIndicator(
-                      color: AppColors.peacockBlue, // Navy indicator for a "smart" feel
+                      color: AppTheme.primaryColor, // Navy indicator for a "smart" feel
                     ),
                   )
                 : ListView.builder(

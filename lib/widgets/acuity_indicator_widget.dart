@@ -27,7 +27,7 @@ class AcuityStyle {
 Map<AcuityLevel, AcuityStyle> acuityStyles = {
   AcuityLevel.resuscitate: AcuityStyle(
     color: Color(0xFF0F62FE),
-    iconColor: AppColors.grey.all[0],
+    iconColor: AppTheme.onPrimaryColor,
     backgroundColor: Color(0xFFF4F8FF),
     icon: Symbols.emergency,
     weight: 700,
@@ -35,7 +35,7 @@ Map<AcuityLevel, AcuityStyle> acuityStyles = {
   ),
   AcuityLevel.emergent: AcuityStyle(
     color: Color(0xFFDA1E28),
-    iconColor: AppColors.grey.all[0],
+    iconColor: AppTheme.onPrimaryColor,
     backgroundColor: Color(0xFFFFF1F1),
     icon: Symbols.emergency,
     weight: 600,
@@ -43,7 +43,7 @@ Map<AcuityLevel, AcuityStyle> acuityStyles = {
   ),
   AcuityLevel.urgent: AcuityStyle(
     color: Color(0xFFFA4D56),
-    iconColor: AppColors.grey.all[0],
+    iconColor: AppTheme.onPrimaryColor,
     backgroundColor: Color(0xFFFFF8F2),
     icon: Symbols.emergency,
     weight: 500,
@@ -51,7 +51,7 @@ Map<AcuityLevel, AcuityStyle> acuityStyles = {
   ),
   AcuityLevel.lessUrgent: AcuityStyle(
     color: Color(0xFF755D00),
-    iconColor: AppColors.grey.all[0],
+    iconColor: AppTheme.onPrimaryColor,
     backgroundColor: Color(0xFFFFFDE0),
     icon: Symbols.emergency,
     weight: 400,
@@ -59,8 +59,8 @@ Map<AcuityLevel, AcuityStyle> acuityStyles = {
   ),
   AcuityLevel.notUrgent: AcuityStyle(
     color: Colors.black45,
-    iconColor: AppColors.grey.all[0],
-    backgroundColor: AppColors.grey.all[0],
+    iconColor: AppTheme.onPrimaryColor,
+    backgroundColor: AppTheme.onPrimaryColor,
     icon: Symbols.emergency,
     weight: 200,
     fill: false,
@@ -68,9 +68,9 @@ Map<AcuityLevel, AcuityStyle> acuityStyles = {
 };
 AcuityStyle blankAcuityStyle = AcuityStyle(
   color: Colors.grey,
-  iconColor: AppColors.grey.all[0],
+  iconColor: AppTheme.onPrimaryColor,
   icon: Symbols.help,
-  backgroundColor: AppColors.grey.all[0],
+  backgroundColor: AppTheme.onPrimaryColor,
   weight: 200,
   fill: false,
 );

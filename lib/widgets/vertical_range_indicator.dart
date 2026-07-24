@@ -25,7 +25,7 @@ class VerticalRangeIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color specifiedBackgroundColor = backgroundColor ?? AppColors.grey.all[0];
+    final Color specifiedBackgroundColor = backgroundColor ?? AppTheme.onPrimaryColor;
     // 1. Determine if we are out of bounds for the ripple
     double margin = height * 0.25;
     double paintAreaHeight = height - (2 * margin);

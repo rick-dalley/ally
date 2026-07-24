@@ -50,15 +50,15 @@ class _StartupScreenState extends State<StartupScreen> with SingleTickerProvider
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.carbonScaffoldColor, // Consistent with your clinical aesthetic
+      backgroundColor: AppTheme.scaffoldBackgroundColor, // Consistent with your clinical aesthetic
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               "CWICare",
               style: TextStyle(
-                color: AppColors.peacockBlue,
+                color: AppTheme.primaryColor,
                 fontSize: 32,
                 fontWeight: FontWeight.w900,
                 letterSpacing: 4,
@@ -71,7 +71,7 @@ class _StartupScreenState extends State<StartupScreen> with SingleTickerProvider
                 child: Text(
                   "PARTNER",
                   style: TextStyle(
-                    color: AppColors.foamGreen, // Your brand action color
+                    color: AppTheme.primaryColor, // Your brand action color
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 8,

@@ -103,7 +103,7 @@ class _VitalsTrendGraphState extends State<VitalsTrendGraph> {
       label: Text(
         label,
         style: TextStyle(
-          color: active ? AppColors.grey.all[0] : Colors.black,
+          color: active ? AppTheme.onPrimaryColor : Colors.black,
           fontSize: 14,
           fontWeight: FontWeight.bold,
         ),

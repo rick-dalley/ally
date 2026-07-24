@@ -85,7 +85,7 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.grey.all[0],
+      backgroundColor: AppTheme.scaffoldBackgroundColor,
       bottomNavigationBar: Padding(
         padding: EdgeInsets.all(CarbonSpacing.wide.width),
         child: Row(
@@ -95,7 +95,7 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
                 child: CarbonCompactButton(
                   icon: Symbols.chevron_backward,
                   label: "Back",
-                  color: AppColors.peacockBlue,
+                  color: AppTheme.primaryColor,
                   onTap: _goBack,
                 ),
               ),
@@ -103,7 +103,7 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
               child: CarbonCompactButton(
                 icon: Symbols.cancel,
                 label: "Cancel",
-                color: AppTheme.carbonButtonSecondaryColor,
+                color: AppTheme.secondaryColor,
                 onTap: () {
                   Navigator.pop(context);
                 },
@@ -113,7 +113,7 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
               child: CarbonCompactButton(
                 label: "Done",
                 icon: Symbols.save,
-                color: AppTheme.carbonButtonBorderPrimaryColor,
+                color: AppTheme.primaryColor,
                 onTap: () {
                   _saveMedication();
                   Navigator.pop(context);
@@ -123,7 +123,7 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
             Expanded(
               child: CarbonCompactButton(
                 icon: _currentStep == 4 ? Symbols.trophy : Symbols.navigate_next,
-                color: AppColors.peacockBlue,
+                color: AppTheme.primaryColor,
                 label: _currentStep == 4 ? "FINISH" : WizardSteps.values[_currentStep + 1].label,
                 onTap: _goNext,
               ),

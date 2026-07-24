@@ -279,7 +279,7 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
           ),
         ),
         bottomNavigationBar: Container(
-          color: AppColors.grey.all[0],
+          color: AppTheme.surfaceColor,
           padding: EdgeInsets.all(16),
           child: Row(
             children: [
@@ -287,7 +287,7 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
                 icon: Icon(
                   Symbols.accessibility,
                   size: anatomyMapTapped == AnatomyMapTapped.body ? 36 : 30,
-                  color: anatomyMapTapped == AnatomyMapTapped.body ? AppColors.peacockBlue : Colors.black,
+                  color: anatomyMapTapped == AnatomyMapTapped.body ? AppTheme.primaryColor : Colors.black,
                 ),
                 onPressed: () {
                   setState(() {
@@ -304,7 +304,7 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
                 icon: Icon(
                   Symbols.front_hand,
                   size: anatomyMapTapped == AnatomyMapTapped.rightHand ? 36 : 30,
-                  color: anatomyMapTapped == AnatomyMapTapped.rightHand ? AppColors.peacockBlue : Colors.black,
+                  color: anatomyMapTapped == AnatomyMapTapped.rightHand ? AppTheme.primaryColor : Colors.black,
                 ),
                 onPressed: () {
                   setState(() {
@@ -324,7 +324,7 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
                   child: Icon(
                     Symbols.front_hand,
                     size: anatomyMapTapped == AnatomyMapTapped.leftHand ? 36 : 30,
-                    color: anatomyMapTapped == AnatomyMapTapped.leftHand ? AppColors.peacockBlue : Colors.black,
+                    color: anatomyMapTapped == AnatomyMapTapped.leftHand ? AppTheme.primaryColor : Colors.black,
                   ),
                 ),
                 onPressed: () {
@@ -344,7 +344,7 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
                   child: Icon(
                     Symbols.barefoot,
                     size: anatomyMapTapped == AnatomyMapTapped.rightFoot ? 36 : 30,
-                    color: anatomyMapTapped == AnatomyMapTapped.rightFoot ? AppColors.peacockBlue : Colors.black,
+                    color: anatomyMapTapped == AnatomyMapTapped.rightFoot ? AppTheme.primaryColor : Colors.black,
                   ),
                 ),
                 onPressed: () {
@@ -365,7 +365,7 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
                   child: Icon(
                     Symbols.barefoot,
                     size: anatomyMapTapped == AnatomyMapTapped.leftFoot ? 36 : 30,
-                    color: anatomyMapTapped == AnatomyMapTapped.leftFoot ? AppColors.peacockBlue : Colors.black,
+                    color: anatomyMapTapped == AnatomyMapTapped.leftFoot ? AppTheme.primaryColor : Colors.black,
                   ),
                 ),
                 onPressed: () {
@@ -383,7 +383,7 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
                 icon: Icon(
                   Symbols.face,
                   size: anatomyMapTapped == AnatomyMapTapped.face ? 36 : 30,
-                  color: anatomyMapTapped == AnatomyMapTapped.face ? AppColors.peacockBlue : Colors.black,
+                  color: anatomyMapTapped == AnatomyMapTapped.face ? AppTheme.primaryColor : Colors.black,
                 ),
                 onPressed: () {
                   setState(() {

@@ -34,7 +34,7 @@ class _BodyMarkerModalState extends State<BodyMarkerModal> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(_currentMarker.name.toUpperCase(), style: AppTheme.carbonTextStyle),
+            Text(_currentMarker.name.toUpperCase(), style: AppTheme.defaultTextStyle),
             const SizedBox(height: 16),
 
             Row(

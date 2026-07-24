@@ -11,7 +11,7 @@ enum Frequency implements Flyable {
   acute;
 
   @override
-  Color get color => AppTheme.carbonLabelFontColor;
+  Color get color => AppTheme.defaultFontColor;
 
   @override
   String get description {
@@ -50,7 +50,7 @@ enum Frequency implements Flyable {
   }
 
   @override
-  Color get onPrimary => AppColors.grey.all[0];
+  Color get onPrimary => AppTheme.onPrimaryColor;
 }
 
 enum PainType implements Listable {
@@ -191,7 +191,7 @@ enum PainLevel implements Flyable {
   }
 
   @override
-  Color get onPrimary => AppColors.grey.all[0];
+  Color get onPrimary => AppTheme.onPrimaryColor;
 }
 
 enum TextPain { noPain, worstPainEver }
@@ -348,5 +348,5 @@ enum DetailedPainLevel implements Flyable {
   }
 
   @override
-  Color get onPrimary => AppColors.grey.all[0];
+  Color get onPrimary => AppTheme.onPrimaryColor;
 }

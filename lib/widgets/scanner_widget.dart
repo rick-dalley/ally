@@ -128,7 +128,7 @@ class ScannerCardSlotState extends State<ScannerCardSlot> {
         decoration: BoxDecoration(
           color: Colors.grey.shade900,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: widget.isScanning ? Colors.cyanAccent : AppColors.grey.all[0], width: 2),
+          border: Border.all(color: widget.isScanning ? Colors.cyanAccent : AppTheme.onPrimaryColor, width: 2),
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(10),
@@ -150,12 +150,12 @@ class ScannerCardSlotState extends State<ScannerCardSlot> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.add_a_photo_outlined, color: AppColors.grey.all[0], size: 32),
+                        Icon(Icons.add_a_photo_outlined, color: AppTheme.onPrimaryColor, size: 32),
                         const SizedBox(height: 8),
                         Text(
                           widget.label,
                           style: TextStyle(
-                            color: AppColors.grey.all[0],
+                            color: AppTheme.onPrimaryColor,
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.2,

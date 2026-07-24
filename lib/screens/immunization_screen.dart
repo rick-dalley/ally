@@ -90,7 +90,7 @@ class ImmunizationScreenState extends State<ImmunizationScreen> {
           alignment: AlignmentGeometry.centerLeft,
           child: Text(
             "Immunization Schedule",
-            style: TextStyle(color: AppTheme.lightTheme.primaryColorDark, fontSize: 24, fontWeight: FontWeight.w400),
+            style: TextStyle(color: AppTheme.primaryColor, fontSize: 24, fontWeight: FontWeight.w400),
           ),
         ),
         backgroundColor: AppTheme.lightTheme.canvasColor,

@@ -21,7 +21,7 @@ class PatientTimelineScreenState extends State<PatientTimelineScreen> {
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(padding: MediaQuery.of(context).padding.copyWith(top: notchPadding)),
       child: Scaffold(
-        backgroundColor: AppTheme.carbonScaffoldColor,
+        backgroundColor: AppTheme.scaffoldBackgroundColor,
         appBar: AppBar(
           title: Text("History of ${widget.patientName}", style: const TextStyle(fontSize: 18)),
 
@@ -30,13 +30,13 @@ class PatientTimelineScreenState extends State<PatientTimelineScreen> {
             icon: const Icon(Icons.close), // or Icons.arrow_back
             onPressed: () => Navigator.pop(context),
           ),
-          backgroundColor: AppTheme.carbonButtonTertiaryColor,
+          backgroundColor: AppTheme.tertiaryColor,
           elevation: 0,
         ),
         body: Column(
           children: [
             Expanded(
-              child: Card(color: AppTheme.carbonWhite, child: Text("Placeholder for Timeline Widget")),
+              child: Card(color: AppTheme.onPrimaryColor, child: Text("Placeholder for Timeline Widget")),
             ),
           ],
         ),

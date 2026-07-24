@@ -144,7 +144,7 @@ class _ObservationScreenState extends State<ObservationScreen> {
                 Row(children: const [Spacer()]),
 
                 const Text("Clinical Observations", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                Text("${_filtered.length} Notes", style: const TextStyle(fontSize: 13, color: AppColors.greyDepth)),
+                Text("${_filtered.length} Notes", style: TextStyle(fontSize: 13, color: AppTheme.defaultFontColor)),
                 const SizedBox(height: 12),
               ],
             ),
@@ -159,7 +159,7 @@ class _ObservationScreenState extends State<ObservationScreen> {
                   )
                 : _filtered.isEmpty
                 ? Center(
-                    child: Text("Enter an observation or note.", style: TextStyle(color: AppColors.greyDepth)),
+                    child: Text("Enter an observation or note.", style: TextStyle(color: AppTheme.defaultHintColor)),
                   )
                 : ListView.builder(
                     // Core unified scroll hooks to eliminate skipping or snapping bugs
@@ -177,7 +177,7 @@ class _ObservationScreenState extends State<ObservationScreen> {
                           color: Colors.red.shade800,
                           alignment: Alignment.centerRight,
                           padding: const EdgeInsets.only(right: 20.0),
-                          child: Icon(Icons.delete_sweep, color: AppColors.grey.all[0], size: 26),
+                          child: Icon(Icons.delete_sweep, color: AppTheme.onPrimaryColor, size: 26),
                         ),
 
                         // Fires immediately when the swipe animation completes
@@ -211,7 +211,7 @@ class _ObservationScreenState extends State<ObservationScreen> {
                         hintText: "Search observations...",
                         prefixIcon: const Icon(Icons.search, size: 20),
                         filled: true,
-                        fillColor: AppColors.grey.all[0],
+                        fillColor: AppTheme.onPrimaryColor,
                         contentPadding: const EdgeInsets.symmetric(vertical: 0),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -224,9 +224,9 @@ class _ObservationScreenState extends State<ObservationScreen> {
                   const SizedBox(width: 8),
                   // Microphone Button with White Circular Background
                   Container(
-                    decoration: BoxDecoration(color: AppColors.grey.all[0], shape: BoxShape.circle),
+                    decoration: BoxDecoration(color: AppTheme.onPrimaryColor, shape: BoxShape.circle),
                     child: IconButton(
-                      icon: const Icon(Icons.mic_none_outlined, color: AppColors.greyDepth, size: 26),
+                      icon: Icon(Icons.mic_none_outlined, color: AppTheme.tertiaryColor, size: 26),
                       tooltip: "Dictate Observation",
                       // Open workspace and explicitly pass a custom flag to start recording immediately
                       onPressed: () => _openNoteWorkspace(context, null, true),
@@ -236,9 +236,9 @@ class _ObservationScreenState extends State<ObservationScreen> {
                   const SizedBox(width: 8), // Cleaned up to an even 8px gap between buttons
                   // Edit Button with White Circular Background
                   Container(
-                    decoration: BoxDecoration(color: AppColors.grey.all[0], shape: BoxShape.circle),
+                    decoration: BoxDecoration(color: AppTheme.onPrimaryColor, shape: BoxShape.circle),
                     child: IconButton(
-                      icon: const Icon(Icons.edit_outlined, color: AppColors.greyDepth, size: 26),
+                      icon: Icon(Icons.edit_outlined, color: AppTheme.tertiaryColor, size: 26),
                       tooltip: "New Observation",
                       onPressed: () => _openNoteWorkspace(context, null, false),
                     ),

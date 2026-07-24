@@ -80,10 +80,10 @@ class StaffIdCard extends StatelessWidget {
                       children: [
                         Text(
                           "University Hospital - ${staffMember?.department}",
-                          style: TextStyle(color: AppColors.grey.all[0], fontWeight: FontWeight.bold),
+                          style: TextStyle(color: AppTheme.onPrimaryColor, fontWeight: FontWeight.bold),
                         ),
                         SizedBox(width: 16),
-                        Icon(staffMember?.icon, color: AppColors.grey.all[0], size: 24),
+                        Icon(staffMember?.icon, color: AppTheme.onPrimaryColor, size: 24),
                       ],
                     ),
                   ),

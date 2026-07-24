@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../app_theme.dart';
+import 'app_colors.dart';
 import 'flyable.dart';
 
 enum Sentiment implements Flyable {
@@ -24,7 +25,7 @@ enum Sentiment implements Flyable {
 
   @override
   Color get onPrimary {
-    return AppColors.grey.all[0];
+    return AppTheme.onPrimaryColor;
   }
 
   @override

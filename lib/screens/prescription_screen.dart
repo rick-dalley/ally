@@ -41,12 +41,12 @@ final Map<BannerType, BannerData> banners = {
     icon: Icons.check_circle_outline,
   ),
   BannerType.none: BannerData(
-    color: AppTheme.lightTheme.primaryColorDark,
+    color: AppTheme.primaryColor,
     message: "No Interactions Detected",
     icon: Symbols.verified,
   ),
   BannerType.unknown: BannerData(
-    color: AppColors.grey.all[3],
+    color: AppTheme.tertiaryColor,
     message: "Not yet checked",
     icon: Symbols.unknown_document,
   ),
@@ -229,7 +229,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
               label: "Check Again",
               onPressed: _runSafetyAudit,
               icon: Symbols.fact_check,
-              color: AppTheme.lightTheme.primaryColorDark,
+              color: AppTheme.primaryColor,
             ),
           ),
         ],
@@ -353,16 +353,16 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
       appBar: AppBar(
         title: Align(
           alignment: AlignmentGeometry.centerLeft,
-          child: Text("Medications: $name", style: AppTheme.carbonTextStyle),
+          child: Text("Medications: $name", style: AppTheme.defaultTextStyle),
         ),
         actions: [
           TextButton(
             onPressed: _isLoading ? null : _confirmAndSave,
-            child: Text("SAVE", style: AppTheme.carbonPrimaryButtonTextStyle),
+            child: Text("SAVE", style: AppTheme.defaultTextStyle),
           ),
         ],
-        backgroundColor: AppTheme.carbonScaffoldColor, // Your Navy brand color
-        foregroundColor: AppTheme.carbonPrimary,
+        backgroundColor: AppTheme.scaffoldBackgroundColor, // Your Navy brand color
+        foregroundColor: AppTheme.primaryColor,
       ),
       // The Floating Action Button replaces the top form
       floatingActionButton: Padding(

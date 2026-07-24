@@ -14,6 +14,6 @@ class TestsScreen extends StatefulWidget {
 class TestsScreenState extends State<TestsScreen> {
   @override
   Widget build(BuildContext context) {
-    return Container(color: AppTheme.lightTheme.primaryColorLight);
+    return Container(color: AppTheme.primaryColor);
   }
 }

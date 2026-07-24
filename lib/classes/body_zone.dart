@@ -116,7 +116,7 @@ class PolygonPainter extends CustomPainter {
       final textPainter = TextPainter(
         text: TextSpan(
           text: zone.name,
-          style: TextStyle(fontSize: 10, color: AppColors.grey.all[0]),
+          style: TextStyle(fontSize: 10, color: AppTheme.onPrimaryColor),
         ),
         textDirection: TextDirection.ltr,
       )..layout();

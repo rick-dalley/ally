@@ -8,7 +8,7 @@ import 'package:triage/screens/patient_timeline_screen.dart';
 import 'package:triage/widgets/blood_type_selector.dart';
 import 'package:triage/widgets/carbon_style_2XL_button.dart';
 import 'package:triage/widgets/current_metrics.dart';
-import 'package:triage/widgets/flyout_widget.dart';
+import 'package:triage/widgets/carbon_flyout_widget.dart';
 import 'package:triage/widgets/vitals_history.dart';
 import '../app_theme.dart';
 import '../classes/carbon_style_constants.dart';
@@ -191,11 +191,11 @@ class UserScreenState extends State<UserScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Replace your existing Container child: Row(...) block with this:
-                Text(patient.firstName, style: AppTheme.carbonHeadingTextStyle),
+                Text(patient.firstName, style: AppTheme.defaultHeadingStyle),
                 const SizedBox(height: 32),
                 Container(
                   // color: AppTheme.surfaceColor,
-                  decoration: BoxDecoration(color: AppTheme.carbonWhite, borderRadius: BorderRadius.zero),
+                  decoration: BoxDecoration(color: AppTheme.onPrimaryColor, borderRadius: BorderRadius.zero),
                   // padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
                   child: Stack(
                     clipBehavior: Clip.none, // Allows the widget to draw outside its bounds
@@ -205,7 +205,7 @@ class UserScreenState extends State<UserScreen> {
                       Row(
                         children: [
                           const SizedBox(width: 16),
-                          Text("My mood today is ${sentiment.label}", style: AppTheme.carbonGhostButtonTextStyle),
+                          Text("My mood today is ${sentiment.label}", style: AppTheme.defaultTextStyle),
                         ],
                       ),
                       Positioned(
@@ -374,7 +374,7 @@ class UserScreenState extends State<UserScreen> {
       barrierDismissible: true,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: Text('Update Patient Metrics', style: AppTheme.carbonHeadingTextStyle),
+          title: Text('Update Patient Metrics', style: AppTheme.defaultHeadingStyle),
           shape: ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
           content: SizedBox(
             width: 400,

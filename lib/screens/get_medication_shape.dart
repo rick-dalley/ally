@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../app_theme.dart';
+import '../classes/app_colors.dart';
 import '../classes/medication_services.dart';
 
 class GetMedicationShape extends StatelessWidget {
@@ -14,7 +15,7 @@ class GetMedicationShape extends StatelessWidget {
     MedicationShapes? selectedShape = shape;
 
     return Scaffold(
-      backgroundColor: AppColors.grey.all[0],
+      backgroundColor: AppTheme.onPrimaryColor,
       body: LayoutBuilder(
         builder: (context, constraints) {
           bool isPortrait = constraints.maxWidth < constraints.maxHeight;
@@ -39,9 +40,9 @@ class GetMedicationShape extends StatelessWidget {
                       onTap: () => onShapeSelect(shape),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: AppTheme.carbonWhite,
+                          color: AppTheme.tertiaryColor,
                           border: Border.all(
-                            color: isSelected ? AppColors.peacockBlue : AppTheme.carbonFieldBorder,
+                            color: isSelected ? AppTheme.primaryColor : AppTheme.tertiaryColor,
                             width: 1,
                           ),
                         ),
@@ -53,7 +54,7 @@ class GetMedicationShape extends StatelessWidget {
                                 padding: const EdgeInsets.all(8.0),
                                 child: SvgPicture.asset(
                                   "assets/images/pills/${shape.svg}",
-                                  colorFilter: ColorFilter.mode(AppColors.foamGreen, BlendMode.srcIn),
+                                  colorFilter: ColorFilter.mode(AppColors.darkMustard, BlendMode.srcIn),
                                 ),
                               ),
                             ),
@@ -61,7 +62,7 @@ class GetMedicationShape extends StatelessWidget {
                               padding: const EdgeInsets.only(bottom: 8.0),
                               child: Text(
                                 shape.name.toUpperCase(),
-                                style: TextStyle(fontSize: 18, color: AppTheme.carbonLabelFontColor),
+                                style: TextStyle(fontSize: 18, color: AppTheme.defaultFontColor),
                                 textAlign: TextAlign.center,
                                 overflow: TextOverflow.ellipsis,
                               ),

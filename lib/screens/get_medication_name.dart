@@ -4,6 +4,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/widgets/carbon_style_search_field.dart';
 
 import '../app_theme.dart';
+import '../classes/app_colors.dart';
 import '../classes/carbon_style_constants.dart';
 import '../widgets/carbon_style_full_button.dart';
 import '../widgets/text_scanner.dart';
@@ -46,7 +47,7 @@ class GetMedicationNameState extends State<GetMedicationName> {
             alignment: Alignment.centerLeft,
             child: Text(
               "San the bar code on the pill bottle",
-              style: TextStyle(fontSize: 16, color: AppTheme.carbonLabelFontColor),
+              style: TextStyle(fontSize: 16, color: AppTheme.defaultFontColor),
             ),
           ),
           const SizedBox(height: 24),
@@ -57,14 +58,14 @@ class GetMedicationNameState extends State<GetMedicationName> {
               Navigator.pop(context); // Close modal
               _startBarcodeScanner();
             },
-            color: AppColors.peacockBlue,
+            color: AppTheme.primaryColor,
             icon: Symbols.barcode_scanner,
           ),
 
           const SizedBox(height: 24),
           Align(
             alignment: Alignment.centerLeft,
-            child: Text("Or enter it manually", style: TextStyle(fontSize: 16, color: AppTheme.carbonLabelFontColor)),
+            child: Text("Or enter it manually", style: TextStyle(fontSize: 16, color: AppTheme.defaultFontColor)),
           ),
           const SizedBox(height: 24),
 
@@ -82,7 +83,7 @@ class GetMedicationNameState extends State<GetMedicationName> {
             "assets/images/pills.svg",
             width: 96,
             height: 96,
-            colorFilter: ColorFilter.mode(AppColors.foamGreen, BlendMode.srcIn),
+            colorFilter: ColorFilter.mode(AppColors.darkMustard, BlendMode.srcIn),
           ),
 
           const SizedBox(height: 20),
@@ -171,7 +172,7 @@ class _BarcodeScannerModal extends StatelessWidget {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text("CANCEL", style: TextStyle(color: AppColors.grey.all[0])),
+            child: Text("CANCEL", style: TextStyle(color: AppTheme.onPrimaryColor)),
           ),
           const SizedBox(height: 20),
         ],

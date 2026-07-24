@@ -41,7 +41,7 @@ class _ConfigureConditionDialogState extends State<ConfigureConditionDialog> {
     final double fixedDialogWidth = availableWidth - 64;
 
     return Dialog(
-      backgroundColor: AppTheme.carbonModalColor,
+      backgroundColor: AppTheme.surfaceColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       clipBehavior: Clip.antiAlias,
       child: SizedBox(
@@ -131,10 +131,7 @@ class _ConfigureConditionDialogState extends State<ConfigureConditionDialog> {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: AppTheme.carbonModalColor,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                        decoration: BoxDecoration(color: AppTheme.surfaceColor, borderRadius: BorderRadius.circular(8)),
                         child: Text(
                           "${_onset.year}-${_onset.month.toString().padLeft(2, '0')}-${_onset.day.toString().padLeft(2, '0')}",
                         ),
@@ -166,7 +163,7 @@ class _ConfigureConditionDialogState extends State<ConfigureConditionDialog> {
                           padding: const EdgeInsets.all(12),
                           width: double.infinity,
                           decoration: BoxDecoration(
-                            color: AppTheme.carbonModalColor,
+                            color: AppTheme.surfaceColor,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -179,17 +176,14 @@ class _ConfigureConditionDialogState extends State<ConfigureConditionDialog> {
                     ],
 
                     const SizedBox(height: 16),
-                    const Text(
-                      "TREATMENT NOTES",
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.greyDepth),
-                    ),
+                    Text("TREATMENT NOTES", style: AppTheme.defaultTextStyle),
                     const SizedBox(height: 6),
                     TextField(
                       controller: _notesController,
                       maxLines: 3,
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: AppTheme.carbonModalColor,
+                        fillColor: AppTheme.surfaceColor,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
                       ),
                     ),
@@ -204,7 +198,7 @@ class _ConfigureConditionDialogState extends State<ConfigureConditionDialog> {
                   height: 48,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.peacockBlue,
+                      backgroundColor: AppTheme.primaryColor,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                     onPressed: () async {
@@ -227,7 +221,7 @@ class _ConfigureConditionDialogState extends State<ConfigureConditionDialog> {
                     },
                     child: Text(
                       "Confirm Changes",
-                      style: TextStyle(color: AppColors.grey.all[0], fontWeight: FontWeight.bold),
+                      style: TextStyle(color: AppTheme.onPrimaryColor, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),

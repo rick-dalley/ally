@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../app_theme.dart';
+import '../classes/carbon_style_constants.dart';
 
 class CarbonSelectionTile extends StatelessWidget {
   final VoidCallback onTap;
@@ -18,13 +19,13 @@ class CarbonSelectionTile extends StatelessWidget {
           borderRadius: BorderRadius.zero,
           side: BorderSide(
             // Subtle border changes color when task is done
-            color: AppTheme.carbonFieldBorder,
+            color: CarbonTheme.carbonFieldBorder,
             width: 1,
           ),
         ),
         child: ListTile(
           leading: icon != null
-              ? _buildDynamicIcon(isCompleted: true, icon: icon!, activeColor: AppColors.peacockBlue)
+              ? _buildDynamicIcon(isCompleted: true, icon: icon!, activeColor: AppTheme.primaryColor)
               : null,
           title: Text(title),
           subtitle: Text(subTitle ?? ""),
@@ -36,5 +37,5 @@ class CarbonSelectionTile extends StatelessWidget {
 }
 
 Widget _buildDynamicIcon({required bool isCompleted, required IconData icon, required Color activeColor}) {
-  return Icon(icon, color: isCompleted ? activeColor : AppColors.greyDepth, size: 24);
+  return Icon(icon, color: isCompleted ? activeColor : CarbonTheme.carbonButtonTertiaryColor, size: 24);
 }

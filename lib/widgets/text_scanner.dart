@@ -114,7 +114,7 @@ class _TextScannerState extends State<TextScanner> with WidgetsBindingObserver {
 
     if (!_isPermissionGranted) {
       return Center(
-        child: Text("Camera permission required", style: TextStyle(color: AppColors.grey.all[0])),
+        child: Text("Camera permission required", style: TextStyle(color: AppTheme.onPrimaryColor)),
       );
     }
 

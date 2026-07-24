@@ -26,19 +26,13 @@ class AcuityWidget extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Text(
-                        "INTERVENTION WINDOW",
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.2),
-                      ),
+                      Text("INTERVENTION WINDOW", style: AppTheme.defaultTextStyle),
                       Spacer(),
-                      Text("${acuity.interventionWindow} minutes", style: AppTheme.carbonTextStyle),
+                      Text("${acuity.interventionWindow} minutes", style: AppTheme.defaultTextStyle),
                     ],
                   ),
                   const SizedBox(height: 24),
-                  const Text(
-                    "CLINICAL PICTURE",
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.2),
-                  ),
+                  Text("CLINICAL PICTURE", style: AppTheme.defaultTextStyle),
                   const SizedBox(height: 6),
                   Text(
                     acuity.clinicalPicture,

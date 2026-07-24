@@ -33,9 +33,9 @@ class StaffScreenState extends State<StaffScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       backgroundColor: Colors.transparent,
       body: staffKeys.isEmpty
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(
-                color: AppColors.peacockBlue, // Navy indicator for a "smart" feel
+                color: AppTheme.primaryColor, // Navy indicator for a "smart" feel
               ),
             )
           : ListView.builder(
@@ -55,8 +55,8 @@ class StaffScreenState extends State<StaffScreen> {
             Navigator.push(context, MaterialPageRoute(builder: (context) => const AddCareProviderScreen()));
           },
           // Signals scanning capability
-          backgroundColor: AppColors.oceanBlue,
-          foregroundColor: AppColors.grey.all[0],
+          backgroundColor: AppTheme.primaryColor,
+          foregroundColor: AppTheme.onPrimaryColor,
           shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
           child: const Icon(Symbols.person_add, size: 32),
         ),

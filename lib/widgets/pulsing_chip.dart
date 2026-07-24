@@ -30,7 +30,7 @@ class PulsingChip extends StatefulWidget {
 }
 
 class PulsingChipState extends State<PulsingChip> {
-  late Color iconColor = widget.iconColor ?? AppTheme.lightTheme.primaryColor;
+  late Color iconColor = widget.iconColor ?? AppTheme.primaryColor;
   late Color textColor = widget.textColor ?? AppTheme.lightTheme.disabledColor;
   late Color backgroundColor = widget.backgroundColor ?? AppTheme.lightTheme.canvasColor;
   late String text = widget.text ?? "";

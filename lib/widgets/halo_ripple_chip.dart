@@ -30,10 +30,7 @@ class HaloRippleChipState extends State<HaloRippleChip> with SingleTickerProvide
   @override
   void initState() {
     super.initState();
-    _pulseController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    );
+    _pulseController = AnimationController(duration: const Duration(milliseconds: 1500), vsync: this);
 
     _pulseAnimation = CurvedAnimation(parent: _pulseController, curve: Curves.easeOut);
 
@@ -62,7 +59,7 @@ class HaloRippleChipState extends State<HaloRippleChip> with SingleTickerProvide
   @override
   Widget build(BuildContext context) {
     // Resolve themes cleanly inside the build loop to prevent stale widget properties
-    final resolvedColor = widget.color ?? AppTheme.lightTheme.primaryColor;
+    final resolvedColor = widget.color ?? AppTheme.primaryColor;
     const double iconContainerSize = 48.0; // Anchors the ripple bounds explicitly
 
     return Row(
@@ -76,33 +73,23 @@ class HaloRippleChipState extends State<HaloRippleChip> with SingleTickerProvide
           child: Center(
             child: widget.animate
                 ? HaloRipple(
-              iconData: widget.iconData,
-              pulseAnimation: _pulseAnimation,
-              themeColor: resolvedColor,
-              baseRadius: 40.0,
-            )
+                    iconData: widget.iconData,
+                    pulseAnimation: _pulseAnimation,
+                    themeColor: resolvedColor,
+                    baseRadius: 40.0,
+                  )
                 : Icon(
-              widget.iconData,
-              size: 30,
-              color: resolvedColor,
-              shadows: [
-                Shadow(
-                  color: Colors.black.withAlpha(64),
-                  offset: const Offset(2, 2),
-                  blurRadius: 4.0,
-                ),
-              ],
-            ),
+                    widget.iconData,
+                    size: 30,
+                    color: resolvedColor,
+                    shadows: [Shadow(color: Colors.black.withAlpha(64), offset: const Offset(2, 2), blurRadius: 4.0)],
+                  ),
           ),
         ),
         const SizedBox(width: 8), // Clean spacing padding
         Text(
           widget.text,
-          style: TextStyle(
-            fontSize: 16,
-            color: resolvedColor,
-            fontWeight: FontWeight.w500,
-          ),
+          style: TextStyle(fontSize: 16, color: resolvedColor, fontWeight: FontWeight.w500),
         ),
       ],
     );

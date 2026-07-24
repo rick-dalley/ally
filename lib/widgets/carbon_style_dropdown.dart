@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../app_theme.dart';
+import '../classes/carbon_style_constants.dart';
 import '../classes/listable.dart';
 
 class CarbonDropdown<T extends Listable> extends StatelessWidget {
@@ -29,7 +29,7 @@ class CarbonDropdown<T extends Listable> extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(bottom: 8.0),
-          child: Text(label, style: AppTheme.carbonTinyTextStyle),
+          child: Text(label, style: CarbonTheme.carbonTinyTextStyle),
         ),
         DropdownButtonFormField<Listable>(
           initialValue: value,
@@ -37,13 +37,13 @@ class CarbonDropdown<T extends Listable> extends StatelessWidget {
             for (Listable val in items)
               DropdownMenuItem(
                 value: val,
-                child: Text(val.label, style: AppTheme.carbonTextStyle),
+                child: Text(val.label, style: CarbonTheme.carbonTextStyle),
               ),
           ],
           icon: const Icon(Icons.expand_more, color: Color(0xFF525252)),
           decoration: InputDecoration(
             hintText: placeholder,
-            hintStyle: AppTheme.carbonTinyTextStyle,
+            hintStyle: CarbonTheme.carbonTinyTextStyle,
             filled: true,
             fillColor: const Color(0xFFF4F4F4),
             contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 14),
@@ -62,7 +62,7 @@ class CarbonDropdown<T extends Listable> extends StatelessWidget {
         if (helperText != null && errorText == null)
           Padding(
             padding: const EdgeInsets.only(top: 8.0),
-            child: Text(helperText!, style: AppTheme.carbonTextStyle),
+            child: Text(helperText!, style: CarbonTheme.carbonTextStyle),
           ),
       ],
     );
@@ -103,7 +103,7 @@ class CarbonButton2LineDropDown<T extends Listable> extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(val.label, style: AppTheme.carbonTextStyle),
+                Text(val.label, style: CarbonTheme.carbonTextStyle),
                 Text(
                   val.description,
                   style: Theme.of(context).textTheme.bodySmall,

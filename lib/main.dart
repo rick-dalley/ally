@@ -75,16 +75,16 @@ class LuminescaHomeState extends State<LuminescaHome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.carbonWhite,
+      backgroundColor: AppTheme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.carbonWhite,
+        backgroundColor: AppTheme.appBarBackgroundColor,
         title: RichText(
           text: TextSpan(
             style: GoogleFonts.inclusiveSans(fontSize: 20, letterSpacing: 0.5),
             children: [
-              const TextSpan(
+              TextSpan(
                 text: 'CWICare',
-                style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.oceanBlue, letterSpacing: 1.2),
+                style: TextStyle(fontWeight: FontWeight.w700, color: AppTheme.primaryColor, letterSpacing: 1.2),
               ),
               const TextSpan(
                 text: ' — ',
@@ -92,7 +92,7 @@ class LuminescaHomeState extends State<LuminescaHome> {
               ),
               TextSpan(
                 text: 'Partner',
-                style: TextStyle(fontWeight: FontWeight.w400, color: AppColors.peacockBlue),
+                style: TextStyle(fontWeight: FontWeight.w400, color: AppTheme.primaryColor),
               ),
             ],
           ),

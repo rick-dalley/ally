@@ -47,7 +47,7 @@ class QuestionnaireTile extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         shape: ContinuousRectangleBorder(
           borderRadius: BorderRadius.zero,
-          side: BorderSide(color: isCompleted ? AppColors.foamGreen : AppTheme.cardBorder, width: 1.5),
+          side: BorderSide(color: isCompleted ? AppTheme.primaryColor : AppTheme.cardBorder, width: 1.5),
         ),
         child: IntrinsicHeight(
           child: Row(
@@ -65,7 +65,7 @@ class QuestionnaireTile extends StatelessWidget {
       child: Center(
         child: Icon(
           isCompleted ? Symbols.ballot : Symbols.ballot_sharp,
-          color: isCompleted ? AppColors.foamGreen : AppColors.greyDepth,
+          color: isCompleted ? AppTheme.primaryColor : AppTheme.lightTheme.colorScheme.secondary,
           size: 32,
         ),
       ),
@@ -104,7 +104,7 @@ class QuestionnaireTile extends StatelessWidget {
   Widget _buildInfoSection(BuildContext context) {
     return InkWell(
       onTap: () => _showInfoModal(context),
-      child: const SizedBox(width: 50, child: Icon(Symbols.info, color: AppColors.greyDepth, size: 24)),
+      child: SizedBox(width: 50, child: Icon(Symbols.info, color: AppTheme.tertiaryColor, size: 24)),
     );
   }
 

@@ -27,8 +27,8 @@ class AvatarActionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeColor = color ?? AppTheme.lightTheme.primaryColor;
-    final style = textStyle ?? TextStyle(fontSize: 14, color: AppTheme.carbonFieldFontColor);
+    final themeColor = color ?? AppTheme.primaryColor;
+    final style = textStyle ?? AppTheme.defaultTextStyle;
 
     return InkWell(
       onTap: () => onTap(value),
@@ -42,7 +42,7 @@ class AvatarActionWidget extends StatelessWidget {
               color: themeColor,
               borderRadius: BorderRadius.circular(width * 0.5 + 4), // Circular avatar
             ),
-            child: Center(child: avatar ?? Icon(Symbols.person_rounded, color: AppColors.grey.all[0])),
+            child: Center(child: avatar ?? Icon(Symbols.person_rounded, color: AppTheme.onPrimaryColor)),
           ),
           if (label != null) ...[const SizedBox(height: 8), Text(label!, style: style)],
         ],

@@ -14,7 +14,7 @@ class GetMedicationType extends StatefulWidget {
 
 class _GetMedicationTypeState extends State<GetMedicationType> {
   MedicationTypes? _selectedType;
-  final selectedColor = AppColors.oceanBlue;
+  final selectedColor = AppTheme.primaryColor;
   // Helper to format enum values into display strings
   String _formatType(MedicationTypes type) {
     return type.name[0].toUpperCase() + type.name.substring(1);
@@ -44,7 +44,7 @@ class _GetMedicationTypeState extends State<GetMedicationType> {
               title: Text(
                 _formatType(type),
                 style: TextStyle(
-                  color: (_selectedType == type) ? selectedColor : AppTheme.carbonFieldFontColor,
+                  color: (_selectedType == type) ? selectedColor : AppTheme.defaultFontColor,
                   fontWeight: (_selectedType == type) ? FontWeight.bold : FontWeight.normal,
                 ),
               ),
@@ -55,5 +55,5 @@ class _GetMedicationTypeState extends State<GetMedicationType> {
     );
   }
 
-  static Widget get carbonSeparator => Divider(height: 1, thickness: 1, color: AppTheme.carbonSeparator);
+  static Widget get carbonSeparator => Divider(height: 1, thickness: 1, color: CarbonTheme.carbonSeparator);
 }

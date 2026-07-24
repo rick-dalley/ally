@@ -36,7 +36,7 @@ class VaccineCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 16.0), // Carbon spacing token
       decoration: BoxDecoration(
-        color: AppColors.grey.all[0],
+        color: AppTheme.onPrimaryColor,
         border: Border.all(color: const Color(0xFFE0E0E0)), // Gray 20 equivalent
       ),
       padding: const EdgeInsets.all(16.0),

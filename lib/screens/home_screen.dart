@@ -171,7 +171,7 @@ class HomeScreenState extends State<HomeScreen> {
       // Add padding/margin inside the container to make it a pill or square
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: isSelected ? AppTheme.lightTheme.primaryColorDark : Colors.transparent,
+        color: isSelected ? AppTheme.primaryColor : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
       ),
       child: InkWell(
@@ -180,7 +180,7 @@ class HomeScreenState extends State<HomeScreen> {
           icon,
           size: 32,
           // If selected, force white; otherwise use the dark primary color
-          color: isSelected ? AppColors.grey.all[0] : AppTheme.lightTheme.primaryColorDark,
+          color: isSelected ? AppTheme.onPrimaryColor : AppTheme.primaryColor,
         ),
       ),
     );
@@ -195,9 +195,9 @@ class HomeScreenState extends State<HomeScreen> {
       // Adjust padding to keep it circular/balanced compared to icon buttons
       padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
-        color: isSelected ? AppTheme.lightTheme.primaryColorDark : Colors.transparent,
+        color: isSelected ? AppTheme.primaryColor : Colors.transparent,
         shape: BoxShape.circle, // Keeps the selection highlight circular
-        border: Border.all(color: isSelected ? AppColors.oceanBlue : Colors.transparent, width: 4),
+        border: Border.all(color: isSelected ? AppTheme.primaryColor : Colors.transparent, width: 4),
       ),
       child: InkWell(
         customBorder: const CircleBorder(), // Ensures the ripple effect is circular

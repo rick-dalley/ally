@@ -222,7 +222,7 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
                     alignment: Alignment.centerRight,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Text(time, style: TextStyle(color: AppColors.oceanBlue, fontSize: 20)),
+                      child: Text(time, style: TextStyle(color: AppTheme.primaryColor, fontSize: 20)),
                     ),
                   ),
                 ),
@@ -230,7 +230,7 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
                   children: List.generate(
                     80,
                     (i) => Expanded(
-                      child: Container(height: 1, color: i % 2 == 0 ? AppColors.oceanBlue : Colors.transparent),
+                      child: Container(height: 1, color: i % 2 == 0 ? AppTheme.primaryColor : Colors.transparent),
                     ),
                   ),
                 ),
@@ -250,7 +250,7 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
               return Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.grey.all[0],
+                  color: AppTheme.onPrimaryColor,
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
                 ),
@@ -271,7 +271,7 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
           right: 0,
           child: Container(
             padding: const EdgeInsets.all(16),
-            color: AppColors.grey.all[0].withValues(alpha: 0.25),
+            color: AppTheme.onPrimaryColor.withValues(alpha: 0.25),
             child: HorizontalMiniMap(
               controller: _scrollController,
               totalTimelineHeight: 2000.0,
@@ -328,10 +328,7 @@ class TimeLinePainter extends CustomPainter {
       final double y = calculateY(currentTime, size.height);
 
       final TextPainter tp = TextPainter(
-        text: TextSpan(
-          text: _formatByInterval(currentTime, interval),
-          style: TextStyle(color: AppColors.grey.all[6], fontSize: 10),
-        ),
+        text: TextSpan(text: _formatByInterval(currentTime, interval), style: AppTheme.defaultTinyTextStyle),
         textDirection: ui.TextDirection.ltr,
       )..layout();
       tp.paint(canvas, Offset(20, y - 5));
@@ -343,7 +340,7 @@ class TimeLinePainter extends CustomPainter {
       Offset(axisX, 0),
       Offset(axisX, size.height),
       Paint()
-        ..color = AppColors.ocean.all[5]
+        ..color = AppTheme.primaryColor
         ..strokeWidth = 1.0,
     );
 
@@ -512,7 +509,7 @@ class HorizontalMiniMap extends StatelessWidget {
                           padding: const EdgeInsets.all(padding),
                           child: Container(
                             decoration: BoxDecoration(
-                              color: AppTheme.lightTheme.primaryColorLight.withValues(alpha: 0.85),
+                              color: AppTheme.primaryColor.withValues(alpha: 0.85),
                               borderRadius: BorderRadius.zero,
                             ),
                           ),
@@ -561,7 +558,7 @@ class HorizontalMiniMap extends StatelessWidget {
                             width: effectiveHandleWidth,
                             height: widgetHeight,
                             decoration: BoxDecoration(
-                              border: Border.all(color: AppTheme.lightTheme.primaryColorDark, width: 4.0),
+                              border: Border.all(color: AppTheme.primaryColor, width: 4.0),
                               borderRadius: BorderRadius.zero,
                             ),
                             // We add a child that shifts the line inside the thumb
@@ -578,9 +575,7 @@ class HorizontalMiniMap extends StatelessWidget {
                                       top: 0,
                                       bottom: 0,
                                       width: 2, // The width of your line
-                                      child: CustomPaint(
-                                        painter: DashedLinePainter(color: AppTheme.lightTheme.primaryColorDark),
-                                      ),
+                                      child: CustomPaint(painter: DashedLinePainter(color: AppTheme.primaryColor)),
                                     ),
                                   ],
                                 );
@@ -661,7 +656,7 @@ class VerticalMiniMap extends StatelessWidget {
                   right: 2,
                   child: Container(
                     height: handleHeight,
-                    decoration: BoxDecoration(color: AppColors.oceanBlue, borderRadius: BorderRadius.circular(2)),
+                    decoration: BoxDecoration(color: AppTheme.primaryColor, borderRadius: BorderRadius.circular(2)),
                   ),
                 ),
               ],
@@ -713,11 +708,11 @@ class CapsuleSliderBubble extends CustomPainter {
     }
     // 2. Define Styles
     final Paint bubblePaint = Paint()
-      ..color = color ?? AppColors.ocean.all[5].withValues(alpha: 0.85)
+      ..color = color ?? AppTheme.primaryColor.withValues(alpha: 0.85)
       ..style = PaintingStyle.fill;
 
-    final Color effectiveIconColor = iconColor ?? AppColors.grey.all[0].withValues(alpha: 0.65);
-    final Color effectiveLabelColor = labelColor ?? AppColors.grey.all[0];
+    final Color effectiveIconColor = iconColor ?? AppTheme.onPrimaryColor.withValues(alpha: 0.65);
+    final Color effectiveLabelColor = labelColor ?? AppTheme.onPrimaryColor;
 
     // 3. Move the canvas to the calculated sticky position
     canvas.save();

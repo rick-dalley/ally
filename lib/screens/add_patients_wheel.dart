@@ -33,7 +33,7 @@ class AddPatientsWheelState extends State<AddPatientsWheel> {
         // 1. The Blur Layer
         BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(color: AppColors.grey.all[0].withValues(alpha: 0.2)),
+          child: Container(color: AppTheme.surfaceColor.withValues(alpha: 0.2)),
         ),
 
         // 2. The Close Button (The X)
@@ -41,7 +41,7 @@ class AddPatientsWheelState extends State<AddPatientsWheel> {
           top: 50,
           right: 20,
           child: IconButton(
-            icon: Icon(Icons.close, size: 40, color: AppColors.grey.all[0]),
+            icon: Icon(Icons.close, size: 40, color: AppTheme.onPrimaryColor),
             onPressed: widget.onDismiss,
           ),
         ),
@@ -63,7 +63,7 @@ class AddPatientsWheelState extends State<AddPatientsWheel> {
             value: widget.familyMembers[0].patientUuid,
             onTap: (dynamic p1) {},
           ),
-          Text("Add a Family Member to Track", style: TextStyle(color: AppColors.grey.all[0])),
+          Text("Add a Family Member to Track", style: TextStyle(color: AppTheme.onPrimaryColor)),
           AvatarActionWidget(
             onTap: (int p1) {
               launchAddMember();
@@ -79,7 +79,7 @@ class AddPatientsWheelState extends State<AddPatientsWheel> {
             )
           : Text(
               widget.familyMembers[0].initials,
-              style: TextStyle(color: AppColors.grey.all[0], fontWeight: FontWeight.bold),
+              style: TextStyle(color: AppTheme.onPrimaryColor, fontWeight: FontWeight.bold),
             );
       final avatarWidget2 = widget.familyMembers[1].hasCustomAvatar
           ? ClipOval(
@@ -87,7 +87,7 @@ class AddPatientsWheelState extends State<AddPatientsWheel> {
             )
           : Text(
               widget.familyMembers[1].initials,
-              style: TextStyle(color: AppColors.grey.all[0], fontWeight: FontWeight.bold),
+              style: TextStyle(color: AppTheme.onPrimaryColor, fontWeight: FontWeight.bold),
             );
       return Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -131,7 +131,7 @@ class AddPatientsWheelState extends State<AddPatientsWheel> {
           ? ClipOval(child: Image.asset("assets/images/faces/users/${user.name}.png", fit: BoxFit.cover))
           : Text(
               user.initials,
-              style: TextStyle(color: AppColors.grey.all[0], fontWeight: FontWeight.bold),
+              style: TextStyle(color: AppTheme.onPrimaryColor, fontWeight: FontWeight.bold),
             );
 
       items.add(
@@ -187,11 +187,11 @@ class DottedPlaceholder extends StatelessWidget {
       height: 64,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: AppColors.grey.all[0], width: 2, style: BorderStyle.solid),
+        border: Border.all(color: AppTheme.onPrimaryColor, width: 2, style: BorderStyle.solid),
         // Note: For a true dashed border, you'd use a CustomPainter,
         // but a simple dashed-looking border works well for UI.
       ),
-      child: Icon(Icons.add, color: AppColors.grey.all[0]),
+      child: Icon(Icons.add, color: AppTheme.onPrimaryColor),
     );
   }
 }

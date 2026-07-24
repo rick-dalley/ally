@@ -171,24 +171,17 @@ class QuestionnaireAnsweringScreenState extends State<QuestionnaireAnsweringScre
   Widget _buildHeader(String instructionText) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-      color: AppTheme.carbonModalColor,
+      padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+      color: AppTheme.surfaceColor,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         // Shrink-wrap header content cleanly
         children: [
-          Text(
-            widget.template['title'],
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.peacockBlue, fontSize: 22, fontWeight: FontWeight.bold),
-          ),
+          Text(widget.template['title'], textAlign: TextAlign.center, style: AppTheme.defaultHeadingStyle),
           const SizedBox(height: 8),
           const Divider(height: 1),
           const SizedBox(height: 16),
-          Text(
-            instructionText,
-            style: const TextStyle(fontSize: 15, fontStyle: FontStyle.italic, color: Colors.black87),
-          ),
+          Text(instructionText, style: AppTheme.defaultItalicsTextStyle),
         ],
       ),
     );
@@ -294,7 +287,7 @@ class QuestionnaireAnsweringScreenState extends State<QuestionnaireAnsweringScre
                     // Mimics the paper checkbox/radio look
                     Icon(
                       isSelected ? Icons.check_box : Icons.check_box_outline_blank,
-                      color: isSelected ? AppColors.foamGreen : Colors.grey,
+                      color: isSelected ? AppTheme.primaryColor : AppTheme.lightTheme.colorScheme.secondary,
                     ),
                     const SizedBox(width: 12),
                     // The text now has the full width to breathe
