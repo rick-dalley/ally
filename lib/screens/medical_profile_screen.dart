@@ -67,7 +67,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     title: "Existing Medical Conditions",
                     subTitle: "Review & Update",
                     icon: Symbols.diagnosis_sharp,
-                    iconSize: Size(40.0, 40.0),
+                    iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.diagnosis_sharp,
                     onTap: () => _launchPhysicalHealthChecklist(context, widget.householdMember.patientUuid),
                   ),
@@ -75,7 +75,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     title: "Medical Diary",
                     subTitle: "Observations about my health journey",
                     icon: Symbols.clinical_notes_sharp,
-                    iconSize: Size(40.0, 40.0),
+                    iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.clinical_notes_sharp,
                     onTap: () => _launchObservationsModal(context),
                   ),
@@ -83,7 +83,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     title: "Immunizations",
                     subTitle: "Immunization shots recommended in my locality",
                     icon: Symbols.vaccines_sharp,
-                    iconSize: Size(40.0, 40.0),
+                    iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.vaccines_sharp,
                     onTap: () => _launchImmunizationModal(context, widget.householdMember),
                   ),
@@ -91,7 +91,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     title: "Prescriptions",
                     subTitle: "Medications that have been prescribed for you",
                     icon: Symbols.medication_sharp,
-                    iconSize: Size(40.0, 40.0),
+                    iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.medication_sharp,
                     onTap: () => launchMedicationScreen(patient: widget.householdMember),
                   ),
@@ -99,7 +99,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     title: "Tests",
                     subTitle: "Medical testing and lab work",
                     icon: Symbols.lab_panel,
-                    iconSize: Size(40.0, 40.0),
+                    iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.lab_panel,
                     onTap: () => launchTestsScreen(patient: widget.householdMember),
                   ),
@@ -107,7 +107,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     title: "Mental Wellness Questionnaires",
                     subTitle: "Questionnaires to help your care giver assess your current mental health",
                     icon: Symbols.ballot_sharp,
-                    iconSize: Size(40.0, 40.0),
+                    iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.ballot_sharp,
                     onTap: () => launchQuestionnairesScreen(patient: widget.householdMember),
                   ),
@@ -248,7 +248,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
 
             // Content: Expanded to fill the remaining vertical space
             Expanded(
-              child: PhysicalHealthAssessment(
+              child: ExistingMedicalConditionsScreen(
                 patientUuid: patientUuid,
                 // Pass a ScrollController if your assessment needs to manage scrolling
                 scrollController: ScrollController(),

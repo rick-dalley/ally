@@ -95,35 +95,38 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
                 child: CarbonCompactButton(
                   icon: Symbols.chevron_backward,
                   label: "Back",
-                  color: AppTheme.primaryColor,
+                  style: CarbonButtonStyle.primary,
                   onTap: _goBack,
                 ),
               ),
+            const SizedBox(width: 4.0),
             Expanded(
               child: CarbonCompactButton(
                 icon: Symbols.cancel,
                 label: "Cancel",
-                color: AppTheme.secondaryColor,
+                style: CarbonButtonStyle.secondary,
                 onTap: () {
                   Navigator.pop(context);
                 },
               ),
             ),
+            const SizedBox(width: 4.0),
             Expanded(
               child: CarbonCompactButton(
                 label: "Done",
                 icon: Symbols.save,
-                color: AppTheme.primaryColor,
+                style: CarbonButtonStyle.primary,
                 onTap: () {
                   _saveMedication();
                   Navigator.pop(context);
                 },
               ),
             ),
+            const SizedBox(width: 4.0),
             Expanded(
               child: CarbonCompactButton(
                 icon: _currentStep == 4 ? Symbols.trophy : Symbols.navigate_next,
-                color: AppTheme.primaryColor,
+                style: CarbonButtonStyle.primary,
                 label: _currentStep == 4 ? "FINISH" : WizardSteps.values[_currentStep + 1].label,
                 onTap: _goNext,
               ),

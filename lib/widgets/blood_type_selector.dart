@@ -3,6 +3,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/widgets/carbon_style_button.dart';
 import 'package:triage/widgets/carbon_style_dropdown.dart';
 import '../classes/blood_type.dart';
+import '../classes/carbon_theme_constants.dart';
 import '../classes/listable.dart';
 
 class BloodTypeSelector extends StatelessWidget {
@@ -46,8 +47,7 @@ class BloodTypeSelector extends StatelessWidget {
               Expanded(
                 child: CarbonButton(
                   label: "Cancel",
-                  isSecondary: true,
-                  color: Colors.black26,
+                  style: CarbonButtonStyle.secondary,
                   onPressed: () {
                     Navigator.of(context).pop();
                   },

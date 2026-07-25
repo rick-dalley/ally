@@ -71,11 +71,11 @@ class CarbonStateText extends State<CarbonTextEdit> {
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 4.0),
-          child: Text(widget.label, style: CarbonTheme.carbonTextStyle),
+          child: Text(widget.label, style: CarbonTheme.carbonLabelTextStyle),
         ),
         TextField(
           controller: _controller,
-          style: GoogleFonts.ibmPlexSans(fontSize: 16, color: Colors.black),
+          style: CarbonTheme.carbonTextStyle,
           keyboardType: _keyboard,
           decoration: InputDecoration(
             filled: true,
@@ -94,7 +94,7 @@ class CarbonStateText extends State<CarbonTextEdit> {
         if (widget.helperText != null && widget.errorText == null)
           Padding(
             padding: const EdgeInsets.only(top: 8.0, bottom: 16),
-            child: Text(widget.helperText!, style: CarbonTheme.carbonTextStyle),
+            child: Text(widget.helperText!, style: CarbonTheme.carbonHelperTextStyle),
           ),
         SizedBox(height: 4),
       ],

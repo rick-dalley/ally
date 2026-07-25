@@ -6,19 +6,17 @@ class CarbonFullButton extends StatefulWidget {
   final String label;
   final IconData icon;
   final VoidCallback onTap;
-  final Color color;
   final double? width;
   final CarbonButtonSize? size;
-  final FontWeight? fontWeight;
+  final CarbonButtonStyle? style;
   final double? overRideHeight;
   const CarbonFullButton({
     super.key,
     required this.label,
     required this.icon,
     required this.onTap,
-    required this.color,
     this.size,
-    this.fontWeight,
+    this.style,
     this.width,
     this.overRideHeight,
   });
@@ -28,40 +26,44 @@ class CarbonFullButton extends StatefulWidget {
 }
 
 class CarbonFullButtonState extends State<CarbonFullButton> {
-  CarbonButtonSize size = CarbonButtonSize.medium;
-  double height = 0;
+  late CarbonButtonStyle buttonStyle = widget.style ?? CarbonButtonStyle.primary;
+  late CarbonButtonSize buttonSize = widget.size ?? CarbonButtonSize.extraLarge;
+  late double height = widget.overRideHeight ?? buttonSize.fontSize;
   double width = 0;
   FontWeight fontWeight = FontWeight.w400;
-  Color color = Colors.transparent;
+  late Color buttonColor = CarbonTheme.getButtonColor(buttonStyle);
+  late Color borderColor = CarbonTheme.getButtonBorderColor(buttonStyle);
+  late Color fontColor = CarbonTheme.getButtonFontColor(buttonStyle);
   @override
   void initState() {
     super.initState();
-    if (widget.size != null) {
-      size = widget.size!;
-      height = widget.overRideHeight ?? size.height;
-      fontWeight = widget.fontWeight ?? FontWeight.w400;
-      color = widget.color;
-    }
+    buttonStyle = widget.style ?? CarbonButtonStyle.primary;
+    buttonColor = CarbonTheme.getButtonColor(buttonStyle);
+    borderColor = CarbonTheme.getButtonBorderColor(buttonStyle);
+    fontColor = CarbonTheme.getButtonFontColor(buttonStyle);
+    fontWeight = FontWeight.w400;
+    buttonSize = widget.size ?? CarbonButtonSize.extraLarge;
+    height = widget.overRideHeight ?? buttonSize.height;
   }
 
   // Inside build method
   @override
   Widget build(BuildContext context) {
     final double displayWidth = widget.width ?? MediaQuery.of(context).size.width;
-    final double verticalPadding = size.verticalPadding;
+    final double verticalPadding = buttonSize.verticalPadding;
 
     return SizedBox(
       width: displayWidth,
-      height: size.height,
+      height: height,
       child: OutlinedButton(
         onPressed: widget.onTap,
         style: OutlinedButton.styleFrom(
           minimumSize: Size.zero,
           tapTargetSize: MaterialTapTargetSize.shrinkWrap, // Removes extra touch padding
           padding: EdgeInsets.symmetric(vertical: verticalPadding, horizontal: 16),
-          foregroundColor: widget.color,
-          side: BorderSide(color: widget.color, width: 1),
-          backgroundColor: widget.color.withAlpha(20),
+          foregroundColor: fontColor,
+          side: BorderSide(color: borderColor, width: 1),
+          backgroundColor: buttonColor,
           shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
         ),
         child: Row(
@@ -70,10 +72,9 @@ class CarbonFullButtonState extends State<CarbonFullButton> {
               child: Text(
                 widget.label,
                 style: TextStyle(
-                  fontSize: size.fontSize, // Fixed font size as requested
-                  fontWeight: widget.fontWeight ?? FontWeight.w400,
-                  color: widget.color,
-                  letterSpacing: -0.2,
+                  fontSize: buttonSize.fontSize, // Fixed font size as requested
+                  fontWeight: FontWeight.w400,
+                  color: fontColor,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

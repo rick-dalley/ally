@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:triage/widgets/carbon_style_button.dart';
 import '../app_theme.dart';
 import '../classes/assessment_logic.dart';
+import '../classes/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
 import '../generated/l10n.dart';
 import '../widgets/likert_question.dart';
@@ -120,8 +121,7 @@ class QuestionnaireAnsweringScreenState extends State<QuestionnaireAnsweringScre
           Expanded(
             child: CarbonButton(
               onPressed: () => Navigator.of(context).pop(),
-              isSecondary: true,
-              color: Colors.black26,
+              style: CarbonButtonStyle.secondary,
               label: "Close Review",
             ),
           ),

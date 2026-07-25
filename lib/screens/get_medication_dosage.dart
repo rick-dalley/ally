@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../app_theme.dart';
+import '../classes/carbon_theme_constants.dart';
 import '../widgets/carbon_style_number_edit.dart';
 
 class GetMedicationDosage extends StatefulWidget {
@@ -19,7 +20,7 @@ class GetMedicationDosageState extends State<GetMedicationDosage> {
       backgroundColor: AppTheme.onPrimaryColor,
       body: Column(
         children: [
-          Text("Dosage Amount", style: TextStyle(fontWeight: FontWeight.w400, fontSize: 20)),
+          Text("Dosage Amount", style: CarbonTheme.carbonHeadingTextStyle),
           CarbonNumberInput(
             controller: widget.controller,
             label: "Dosage",

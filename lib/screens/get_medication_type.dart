@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:triage/widgets/carbon_separator.dart';
+import 'package:triage/widgets/carbon_style_separators.dart';
 import '../app_theme.dart';
 import '../classes/carbon_theme_constants.dart';
 import '../classes/medication_services.dart';

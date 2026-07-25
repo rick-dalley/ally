@@ -1,36 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../classes/carbon_color_constants.dart';
 import '../classes/carbon_theme_constants.dart';
 
 class CarbonButton extends StatelessWidget {
   final String label;
   final VoidCallback onPressed;
-  final bool isSecondary;
   final IconData? icon;
   final MainAxisAlignment alignment;
-  final Color? color;
-  final Color? fontColor;
+  final CarbonButtonStyle? style;
   final CarbonButtonSize? size;
   const CarbonButton({
     super.key,
     required this.label,
     required this.onPressed,
-    this.color,
-    this.fontColor,
-    this.isSecondary = false,
     this.icon,
-    this.alignment = MainAxisAlignment.start,
     this.size = CarbonButtonSize.medium,
+    this.alignment = MainAxisAlignment.start,
+    this.style = CarbonButtonStyle.primary,
   });
 
   @override
   Widget build(BuildContext context) {
     // Define the icon and text widgets
-    final btnClr = color ?? carbonColorButtonPrimary;
-    final fontClr = fontColor ?? carbonColorButtonOnPrimary;
+    CarbonButtonStyle buttonStyle = style ?? CarbonButtonStyle.primary;
+    final buttonColor = CarbonTheme.getButtonColor(buttonStyle);
+    final textColor = CarbonTheme.getButtonFontColor(buttonStyle);
+    final iconColor = textColor;
+    final borderColor = CarbonTheme.getButtonBorderColor(buttonStyle);
+
     final size = this.size ?? CarbonButtonSize.medium;
-    final iconWidget = icon != null ? Icon(icon, size: 20) : null;
+    final iconWidget = icon != null ? Icon(icon, size: 20, color: iconColor) : null;
     final textWidget = Text(
       label,
       style: GoogleFonts.ibmPlexSans(fontSize: size.fontSize, fontWeight: FontWeight.w400, letterSpacing: 0.14),
@@ -48,9 +47,14 @@ class CarbonButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: isSecondary ? carbonColorButtonSecondary : btnClr,
-          foregroundColor: isSecondary ? carbonColorButtonOnSecondary : fontClr,
+          backgroundColor: buttonColor,
+          foregroundColor: textColor,
           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+          // Add the side property here:
+          side: BorderSide(
+            color: borderColor, // Your border color
+            width: 1.0, // Your border width (optional, defaults to 1.0)
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 16),
           elevation: 0,
         ),

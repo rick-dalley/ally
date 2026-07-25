@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:triage/classes/carbon_theme_constants.dart';
 import 'package:triage/classes/scanned_data.dart';
 import 'package:triage/widgets/carbon_style_textbox.dart';
 import 'package:triage/widgets/scanner_widget.dart';
@@ -91,8 +92,7 @@ class IntakeScreenState extends State<IntakeScreen> {
                     Expanded(
                       child: CarbonButton(
                         label: 'Cancel',
-                        isSecondary: true,
-                        color: Colors.black26,
+                        style: CarbonButtonStyle.secondary,
                         onPressed: () {
                           Navigator.pop(context);
                         },

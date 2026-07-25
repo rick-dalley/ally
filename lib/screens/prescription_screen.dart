@@ -1,4 +1,6 @@
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:triage/classes/carbon_color_constants.dart';
+import 'package:triage/classes/carbon_theme_constants.dart';
 import 'package:triage/screens/add_medication_wizard.dart';
 import 'package:triage/widgets/carbon_style_button.dart';
 import 'package:uuid/uuid.dart';
@@ -81,7 +83,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
   void initState() {
     super.initState();
     _loadMedsForPatient();
-    _runSafetyAudit();
+    runSafetyAudit();
   }
 
   int _countDataSheets() {
@@ -106,7 +108,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
       setState(() {
         // 2. We need to create a mutable copy because db results are read-only
         _meds = dbMeds.map((m) => Map<String, dynamic>.from(m)).toList();
-        _runSafetyAudit();
+        runSafetyAudit();
 
         // 3. Inject your UI-specific state (Severity)
         for (var med in _meds) {
@@ -118,7 +120,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     }
   }
 
-  void _runSafetyAudit() async {
+  void runSafetyAudit() async {
     _dataSheetCount = _countDataSheets();
     // Guard clause: Don't spend processing cycles if the list hasn't loaded yet
     if (_meds.isEmpty || _dataSheetCount < 2) return;
@@ -169,7 +171,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     return Color(int.parse(buffer.toString(), radix: 16));
   }
 
-  void _confirmAndSave() {
+  void confirmAndSave() {
     // 1. Calculate the audit result index
     int auditResultIndex;
 
@@ -184,8 +186,8 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
       auditResultIndex = MedicationSafetyAudit.interactionsNotDetected.index;
     }
 
-    // 2. Return the data map back to the Roster
-    Navigator.pop(context, {'medications': _meds.length, 'medication_safety_audit': auditResultIndex});
+    // Return the data map back to the Roster
+    // Navigator.pop(context, {'medications': _meds.length, 'medication_safety_audit': auditResultIndex});
   }
 
   // Logic-driven Banner Widget
@@ -226,10 +228,10 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             ),
           Expanded(
             child: CarbonButton(
-              label: "Check Again",
-              onPressed: _runSafetyAudit,
+              label: "Check",
+              onPressed: runSafetyAudit,
               icon: Symbols.fact_check,
-              color: AppTheme.primaryColor,
+              style: CarbonButtonStyle.tertiary,
             ),
           ),
         ],
@@ -254,7 +256,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
       if (existingSetId != null) {
         await DatabaseManager().updateMedicationSetId(medId, existingSetId);
         _refreshMedInUI(medId, existingSetId);
-        _runSafetyAudit();
+        runSafetyAudit();
         return;
       }
 
@@ -262,7 +264,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
       final drugDataSheet = await MedicationService.getDrugDataSheet(medName, "", medId);
       if (drugDataSheet != null) {
         _refreshMedInUI(medId, drugDataSheet['set_id']);
-        _runSafetyAudit();
+        runSafetyAudit();
       }
     } catch (e) {
       debugPrint("Background sync failed for $medName: $e");
@@ -349,21 +351,6 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     final name = "${widget.patient.firstName} ${widget.patient.lastName}";
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-
-      appBar: AppBar(
-        title: Align(
-          alignment: AlignmentGeometry.centerLeft,
-          child: Text("Medications: $name", style: AppTheme.defaultTextStyle),
-        ),
-        actions: [
-          TextButton(
-            onPressed: _isLoading ? null : _confirmAndSave,
-            child: Text("SAVE", style: AppTheme.defaultTextStyle),
-          ),
-        ],
-        backgroundColor: AppTheme.scaffoldBackgroundColor, // Your Navy brand color
-        foregroundColor: AppTheme.primaryColor,
-      ),
       // The Floating Action Button replaces the top form
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 90.0),

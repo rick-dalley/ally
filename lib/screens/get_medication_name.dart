@@ -45,27 +45,23 @@ class GetMedicationNameState extends State<GetMedicationName> {
           const SizedBox(height: 24),
           Align(
             alignment: Alignment.centerLeft,
-            child: Text(
-              "San the bar code on the pill bottle",
-              style: TextStyle(fontSize: 16, color: AppTheme.defaultFontColor),
-            ),
+            child: Text("Scan the bar code on the pill bottle", style: CarbonTheme.carbonHintTextStyle),
           ),
           const SizedBox(height: 24),
           CarbonFullButton(
             label: 'SCAN',
-            size: CarbonButtonSize.large,
             onTap: () {
               Navigator.pop(context); // Close modal
               _startBarcodeScanner();
             },
-            color: AppTheme.primaryColor,
+            style: CarbonButtonStyle.tertiary,
             icon: Symbols.barcode_scanner,
           ),
 
           const SizedBox(height: 24),
           Align(
             alignment: Alignment.centerLeft,
-            child: Text("Or enter it manually", style: TextStyle(fontSize: 16, color: AppTheme.defaultFontColor)),
+            child: Text("Or enter it manually", style: CarbonTheme.carbonHintTextStyle),
           ),
           const SizedBox(height: 24),
 

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:triage/classes/carbon_color_constants.dart';
-import '../app_theme.dart';
-import '../classes/carbon_theme_constants.dart';
 
 class CarbonSelectionTile extends StatelessWidget {
   final VoidCallback onTap;
@@ -26,7 +24,7 @@ class CarbonSelectionTile extends StatelessWidget {
         ),
         child: ListTile(
           leading: icon != null
-              ? _buildDynamicIcon(isCompleted: true, icon: icon!, activeColor: AppTheme.primaryColor)
+              ? _buildDynamicIcon(isCompleted: true, icon: icon!, activeColor: carbonColorIconInterActive)
               : null,
           title: Text(title),
           subtitle: Text(subTitle ?? ""),

@@ -62,7 +62,7 @@ class CarbonDropdown<T extends Listable> extends StatelessWidget {
         if (helperText != null && errorText == null)
           Padding(
             padding: const EdgeInsets.only(top: 8.0),
-            child: Text(helperText!, style: CarbonTheme.carbonTextStyle),
+            child: Text(helperText!, style: CarbonTheme.carbonHelperTextStyle),
           ),
       ],
     );

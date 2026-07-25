@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:triage/classes/carbon_color_constants.dart';
+import 'package:triage/classes/carbon_theme_constants.dart';
+import 'package:triage/widgets/carbon_style_separators.dart';
 import '../app_theme.dart';
-import '../classes/carbon_theme_constants.dart';
 
 class CarbonActionTile extends StatelessWidget {
   final VoidCallback onTap;
@@ -24,8 +25,11 @@ class CarbonActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Color borderColor = CarbonTheme.getButtonBorderColor(CarbonButtonStyle.tertiary);
+    Color fontColor = CarbonTheme.getButtonFontColor(CarbonButtonStyle.tertiary);
+    Color buttonColor = CarbonTheme.getButtonColor(CarbonButtonStyle.tertiary);
     Size size = iconSize ?? Size(24, 24);
-    Color activeColor = iconColor ?? carbonColorIconPrimary;
+    Color activeColor = iconColor ?? fontColor;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Card(
@@ -35,11 +39,12 @@ class CarbonActionTile extends StatelessWidget {
           borderRadius: BorderRadius.zero,
           side: BorderSide(
             // Subtle border changes color when task is done
-            color: AppTheme.cardBorder,
+            color: borderColor,
             width: 1,
           ),
         ),
         child: ListTile(
+          contentPadding: EdgeInsetsGeometry.symmetric(horizontal: 16.0, vertical: 16.0),
           leading: Row(
             mainAxisSize: MainAxisSize.min, // Essential: prevents the Row from taking full width
             children: [
@@ -53,20 +58,12 @@ class CarbonActionTile extends StatelessWidget {
                       activeColor: activeColor,
                     )
                   : const SizedBox.shrink(),
-
+              CarbonVerticalSeparator(height: 64.0, width: 1.0),
               // The vertical divider
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Container(
-                  width: 1, // Thickness
-                  height: 40, // Fixed height to make it shorter than the tile
-                  color: AppTheme.dividerColor, // Your preferred divider color
-                ),
-              ),
             ],
           ),
-          title: Text(title),
-          subtitle: Text(subTitle ?? ""),
+          title: Text(title, style: CarbonTheme.carbonTertiaryButtonTextStyle),
+          subtitle: Text(subTitle ?? "", style: CarbonTheme.carbonHintTextStyle),
           onTap: onTap,
         ),
       ),
@@ -81,9 +78,12 @@ Widget _buildDynamicIcon({
   required Color activeColor,
   required Size size,
 }) {
-  return Icon(
-    isCompleted ? solidIcon : outlineIcon,
-    color: isCompleted ? activeColor : AppTheme.tertiaryColor,
-    size: size.width,
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+    child: Icon(
+      isCompleted ? solidIcon : outlineIcon,
+      color: isCompleted ? activeColor : AppTheme.tertiaryColor,
+      size: size.width,
+    ),
   );
 }

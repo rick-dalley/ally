@@ -3,6 +3,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/widgets/carbon_style_textbox.dart';
 import 'package:triage/widgets/vitals_scanner.dart';
 
+import '../classes/carbon_theme_constants.dart';
 import '../widgets/carbon_style_button.dart';
 
 class VitalEntry {
@@ -145,12 +146,7 @@ class VitalsCaptureScreenState extends State<VitalsCaptureScreen> {
             child: Row(
               children: [
                 Expanded(
-                  child: CarbonButton(
-                    onPressed: _submitVitals,
-                    isSecondary: true,
-                    color: Colors.black26,
-                    label: "Cancel",
-                  ),
+                  child: CarbonButton(onPressed: _submitVitals, style: CarbonButtonStyle.secondary, label: "Cancel"),
                 ),
                 Expanded(
                   child: CarbonButton(onPressed: _submitVitals, label: "Save"),

@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:triage/classes/carbon_theme_constants.dart';
 
 class CarbonCompactButton extends StatefulWidget {
   final String label;
   final IconData icon;
   final VoidCallback onTap;
-  final Color color;
   final double? width;
   final double? height;
+  final CarbonButtonStyle? style;
   const CarbonCompactButton({
     super.key,
     required this.label,
     required this.icon,
     required this.onTap,
-    required this.color,
+    this.style,
     this.width,
     this.height,
   });
@@ -22,11 +23,23 @@ class CarbonCompactButton extends StatefulWidget {
 }
 
 class CarbonCompactButtonState extends State<CarbonCompactButton> {
+  late CarbonButtonStyle buttonStyle;
+  late Color buttonColor;
+  late Color borderColor;
+  late Color fontColor;
+  @override
+  void initState() {
+    super.initState();
+    buttonStyle = widget.style ?? CarbonButtonStyle.primary;
+    buttonColor = CarbonTheme.getButtonColor(buttonStyle);
+    borderColor = CarbonTheme.getButtonBorderColor(buttonStyle);
+    fontColor = CarbonTheme.getButtonFontColor(buttonStyle);
+  }
+
   @override
   Widget build(BuildContext context) {
     double availableWidth = MediaQuery.of(context).size.width;
     double width = widget.width ?? availableWidth;
-    Color color = widget.color;
     // Adjusted for margins
     return SizedBox(
       width: width,
@@ -35,9 +48,9 @@ class CarbonCompactButtonState extends State<CarbonCompactButton> {
         style: OutlinedButton.styleFrom(
           minimumSize: const Size(0, 56),
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
-          foregroundColor: color,
-          side: BorderSide(color: color, width: 1),
-          backgroundColor: color.withAlpha(20),
+          foregroundColor: fontColor,
+          side: BorderSide(color: borderColor, width: 1),
+          backgroundColor: buttonColor,
           shape: ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
         ),
         child: Column(
@@ -46,15 +59,7 @@ class CarbonCompactButtonState extends State<CarbonCompactButton> {
           children: [
             Icon(widget.icon, size: 22), // Slightly larger icon
             const SizedBox(height: 4),
-            Text(
-              widget.label,
-              style: const TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.normal,
-                letterSpacing: -0.2, // Tighter letters to prevent overflow
-              ),
-              maxLines: 1,
-            ),
+            Text(widget.label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400), maxLines: 1),
           ],
         ),
       ),

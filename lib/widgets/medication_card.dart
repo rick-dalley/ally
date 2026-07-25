@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:triage/classes/carbon_color_constants.dart';
 import '../app_theme.dart';
+import '../classes/carbon_theme_constants.dart';
 import '../classes/frequency_codes.dart';
 import '../classes/medication_services.dart';
 import 'interaction_chip.dart';
@@ -76,7 +78,8 @@ class _MedicationCardState extends State<MedicationCard> {
 
     return Card(
       margin: const EdgeInsets.all(8),
-      shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
+      shape: Border.all(color: carbonColorBorderSubtle00),
+      shadowColor: Colors.transparent,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -109,7 +112,7 @@ class _MedicationCardState extends State<MedicationCard> {
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(16, 12, 0, 0),
-                        child: Text(medicationName.toUpperCase(), style: AppTheme.defaultHeadingStyle),
+                        child: Text(medicationName.toUpperCase(), style: CarbonTheme.carbonTertiaryButtonTextStyle),
                       ),
                     ),
                     IconButton(onPressed: widget.onDelete, icon: const Icon(Symbols.close)),
@@ -122,7 +125,7 @@ class _MedicationCardState extends State<MedicationCard> {
                   collapsedShape: const Border(),
                   title: Text(
                     "Dose: ${widget.medData['dose'] ?? 'N/A'} —  ${FrequencyCodes.getFrequencyLabel(widget.medData['freq'])}",
-                    style: AppTheme.defaultTextStyle,
+                    style: CarbonTheme.carbonHintTextStyle,
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

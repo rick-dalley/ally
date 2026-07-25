@@ -5,6 +5,7 @@ import 'package:triage/widgets/carbon_style_autocomplete.dart';
 import 'package:triage/widgets/carbon_style_textbox.dart';
 
 import '../app_theme.dart';
+import '../classes/carbon_theme_constants.dart';
 import '../classes/specialities.dart';
 import 'carbon_style_button.dart';
 
@@ -91,7 +92,7 @@ class _AddCareProviderScreenState extends State<AddCareProviderScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: CarbonButton(label: "Cancel", onPressed: () {}, isSecondary: true, color: Colors.black38),
+                    child: CarbonButton(label: "Cancel", onPressed: () {}, style: CarbonButtonStyle.secondary),
                   ),
                   Expanded(
                     child: CarbonButton(label: "Save", icon: Symbols.save, onPressed: () {}),
@@ -129,8 +130,7 @@ class _AddCareProviderScreenState extends State<AddCareProviderScreen> {
             Expanded(
               child: CarbonButton(
                 label: "Cancel",
-                color: Colors.black38,
-                isSecondary: true,
+                style: CarbonButtonStyle.secondary,
                 onPressed: () {
                   Navigator.pop(context);
                 },

@@ -96,7 +96,7 @@ class CarbonNumberInput extends StatelessWidget {
         if (helperText != null)
           Padding(
             padding: const EdgeInsets.only(top: 8.0, left: 4.0),
-            child: Text(helperText!, style: GoogleFonts.ibmPlexSans(fontSize: 12, color: carbonColorBorderInteractive)),
+            child: Text(helperText!, style: CarbonTheme.carbonHelperTextStyle),
           ),
       ],
     );

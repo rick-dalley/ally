@@ -80,16 +80,17 @@ extension CarbonButtonFontSize on CarbonButtonSize {
   double get fontSize {
     switch (this) {
       case CarbonButtonSize.extraSmall:
-      case CarbonButtonSize.small:
-        return 12;
-      case CarbonButtonSize.medium:
         return 14;
-      case CarbonButtonSize.large:
+      case CarbonButtonSize.small:
+        return 16;
+      case CarbonButtonSize.medium:
         return 18;
+      case CarbonButtonSize.large:
       case CarbonButtonSize.largeBold:
       case CarbonButtonSize.extraLarge:
-      case CarbonButtonSize.extraExtraLarge:
         return 20;
+      case CarbonButtonSize.extraExtraLarge:
+        return 22;
     }
   }
 }
@@ -97,69 +98,122 @@ extension CarbonButtonFontSize on CarbonButtonSize {
 class CarbonTheme {
   static TextStyle carbonHeadingTextStyle = TextStyle(
     fontWeight: FontWeight.w400,
-    fontSize: 20,
+    fontSize: CarbonButtonSize.extraExtraLarge.fontSize,
     color: carbonColorTextPrimary,
   );
 
   static TextStyle carbonPrimaryButtonTextStyle = TextStyle(
     fontWeight: FontWeight.w400,
-    fontSize: 20,
+    fontSize: CarbonButtonSize.large.fontSize,
     color: AppTheme.onPrimaryColor,
   );
+
   static TextStyle carbonGhostButtonTextStyle = TextStyle(
     fontWeight: FontWeight.w400,
-    fontSize: 20,
+    fontSize: CarbonButtonSize.large.fontSize,
     color: carbonColorButtonGhost,
   );
+
+  static TextStyle carbonTertiaryButtonTextStyle = TextStyle(
+    fontWeight: FontWeight.w400,
+    fontSize: CarbonButtonSize.large.fontSize,
+    color: carbonColorButtonOnTertiary,
+  );
+
   static TextStyle? carbonExpressiveTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
-    fontSize: 20,
+    fontSize: CarbonButtonSize.extraExtraLarge.fontSize,
     color: AppTheme.primaryColor,
   );
 
   static TextStyle? carbonTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
-    fontSize: 14,
+    fontSize: CarbonButtonSize.medium.fontSize,
     color: carbonColorTextPrimary,
   );
 
   static TextStyle? carbonLabelTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
-    fontSize: 12,
+    fontSize: CarbonButtonSize.small.fontSize,
     color: carbonColorTextSecondary,
   );
 
   static TextStyle? carbonFieldTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
-    fontSize: 14,
+    fontSize: CarbonButtonSize.medium.fontSize,
     color: carbonColorTextPrimary,
   );
   static TextStyle? dangerTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
-    fontSize: 14,
+    fontSize: CarbonButtonSize.medium.fontSize,
     color: carbonColorButtonOnDanger,
   );
   static TextStyle? carbonLabelOnPrimary = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
-    fontSize: 12,
+    fontSize: CarbonButtonSize.medium.fontSize,
     color: carbonColorTextSecondary,
   );
 
   static TextStyle? carbonHelperTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
-    fontSize: 12,
+    fontSize: CarbonButtonSize.small.fontSize,
     color: carbonColorTextHelper,
   );
 
   static TextStyle? carbonHintTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
-    fontSize: 12,
+    fontSize: CarbonButtonSize.small.fontSize,
     color: carbonColorTextHelper,
   );
 
   static TextStyle? carbonPlaceholderTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
-    fontSize: 12,
+    fontSize: CarbonButtonSize.medium.fontSize,
     color: carbonColorTextPlaceholder,
   );
+
+  static Color getButtonColor(CarbonButtonStyle style) {
+    switch (style) {
+      case CarbonButtonStyle.danger:
+        return carbonColorButtonDanger;
+      case CarbonButtonStyle.ghost:
+        return carbonColorButtonGhost;
+      case CarbonButtonStyle.primary:
+        return carbonColorButtonPrimary;
+      case CarbonButtonStyle.secondary:
+        return carbonColorButtonSecondary;
+      case CarbonButtonStyle.tertiary:
+        return carbonColorButtonTertiary;
+    }
+  }
+
+  static Color getButtonFontColor(CarbonButtonStyle style) {
+    switch (style) {
+      case CarbonButtonStyle.danger:
+        return carbonColorButtonOnDanger;
+      case CarbonButtonStyle.ghost:
+        return carbonColorButtonOnGhost;
+      case CarbonButtonStyle.primary:
+        return carbonColorButtonOnPrimary;
+      case CarbonButtonStyle.secondary:
+        return carbonColorButtonOnSecondary;
+      case CarbonButtonStyle.tertiary:
+        return carbonColorButtonOnTertiary;
+    }
+  }
+
+  static Color getButtonBorderColor(CarbonButtonStyle style) {
+    switch (style) {
+      case CarbonButtonStyle.danger:
+        return carbonColorButtonDanger;
+      case CarbonButtonStyle.ghost:
+        return carbonColorButtonGhost;
+      case CarbonButtonStyle.primary:
+        return carbonColorButtonPrimary;
+      case CarbonButtonStyle.secondary:
+        return carbonColorButtonSecondary;
+      case CarbonButtonStyle.tertiary:
+        return carbonColorButtonOnTertiary;
+    }
+  }
 }

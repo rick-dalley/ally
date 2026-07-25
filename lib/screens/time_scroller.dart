@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:triage/classes/carbon_color_constants.dart';
 import 'dart:ui' as ui;
 import '../app_theme.dart';
 import '../classes/patient_action.dart';
@@ -194,7 +195,7 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
                 top: yTop - _scrollController.offset + 250, // 250 is your padding
                 left: xPos,
                 child: CustomPaint(
-                  size: const Size(80, 120),
+                  size: const Size(72, 120),
                   painter: CapsuleSliderBubble(
                     icon: period.icon,
                     label: period.name,
@@ -267,7 +268,7 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
         ),
         Positioned(
           bottom: 90,
-          left: 90,
+          left: 16,
           right: 0,
           child: Container(
             padding: const EdgeInsets.all(16),
@@ -405,7 +406,7 @@ class TherapyPeriodPainter extends CustomPainter {
       final double xPos = 100.0 + (i * 100.0);
 
       // Draw the capsule
-      final rect = RRect.fromRectAndRadius(Rect.fromLTWH(xPos, yTop, 80, height), const Radius.circular(12));
+      final rect = RRect.fromRectAndRadius(Rect.fromLTWH(xPos, yTop, 80, height), const Radius.circular(32));
       canvas.drawRRect(rect, Paint()..color = period.color.withValues(alpha: 0.2));
     }
   }
@@ -473,11 +474,6 @@ class HorizontalMiniMap extends StatelessWidget {
             final double activeTrackWidth = constraints.maxWidth - (padding * 2);
             final double effectiveHandleWidth = handleWidth - (padding * 2);
 
-            // void handleDrag(double localX) {
-            //   if (!controller.hasClients) return;
-            //   final double newProgress = ((localX - padding) / activeTrackWidth).clamp(0.0, 1.0);
-            //   controller.jumpTo(newProgress * maxScroll);
-            // }
             void handleDrag(double localX) {
               if (!controller.hasClients) return;
 
@@ -497,7 +493,7 @@ class HorizontalMiniMap extends StatelessWidget {
               child: Column(
                 children: [
                   Text(_getLabel(scrollProgress), style: const TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
                   Container(
                     height: widgetHeight,
                     width: constraints.maxWidth,
@@ -507,10 +503,18 @@ class HorizontalMiniMap extends StatelessWidget {
                         // Track Background
                         Padding(
                           padding: const EdgeInsets.all(padding),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: AppTheme.primaryColor.withValues(alpha: 0.85),
-                              borderRadius: BorderRadius.zero,
+                          child: ClipRect(
+                            child: BackdropFilter(
+                              filter: ui.ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  // Use white with a low opacity for a translucent white frost,
+                                  // or blend it with your primary color if you prefer a tinted glow.
+                                  color: Colors.white.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.zero,
+                                  border: Border.all(color: carbonColorBorderSubtle00),
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -697,6 +701,7 @@ class CapsuleSliderBubble extends CustomPainter {
     // 1. Calculate Sticky Position
     // The painter calculates its own effective Y based on scrollOffset
     double bubbleY = yTop;
+    double bubbleX = (80 - size.width) * 0.5;
     double viewportTop = scrollOffset - topPadding;
     if (bubbleY > yBottom - 20) return;
     // Pin logic
@@ -716,10 +721,10 @@ class CapsuleSliderBubble extends CustomPainter {
 
     // 3. Move the canvas to the calculated sticky position
     canvas.save();
-    canvas.translate(0, bubbleY - yTop);
+    canvas.translate(bubbleX, bubbleY - yTop);
 
     // 4. Draw Background
-    final RRect backgroundRect = RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(20));
+    final RRect backgroundRect = RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(32));
     canvas.drawRRect(backgroundRect, bubblePaint);
 
     if (icon != null) {
@@ -727,7 +732,7 @@ class CapsuleSliderBubble extends CustomPainter {
         text: TextSpan(
           text: String.fromCharCode(icon!.codePoint),
           style: TextStyle(
-            fontSize: 24,
+            fontSize: 20,
             fontFamily: icon!.fontFamily,
             package: icon!.fontPackage,
             color: effectiveIconColor,
@@ -738,11 +743,11 @@ class CapsuleSliderBubble extends CustomPainter {
 
       // Center icon horizontally, position at top with 8px padding
       final double iconX = (size.width - iconPainter.width) / 2;
-      iconPainter.paint(canvas, Offset(iconX, 8));
+      iconPainter.paint(canvas, Offset(iconX, 16));
     }
 
     if (label != null) {
-      final double maxTextWidth = size.width - 16;
+      final double maxTextWidth = size.width - 8;
 
       final TextPainter labelPainter = TextPainter(
         text: TextSpan(
@@ -754,7 +759,7 @@ class CapsuleSliderBubble extends CustomPainter {
       )..layout(maxWidth: maxTextWidth);
 
       // Positioned below icon (assuming icon takes up ~32px of space)
-      final double labelY = 32;
+      final double labelY = 48;
       final double labelX = (size.width - labelPainter.width) / 2;
 
       labelPainter.paint(canvas, Offset(labelX, labelY));

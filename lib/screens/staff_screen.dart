@@ -29,7 +29,10 @@ class StaffScreenState extends State<StaffScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("My Team"), backgroundColor: AppTheme.lightTheme.canvasColor.withValues(alpha: 0.25)),
+      appBar: AppBar(
+        title: Text("My Health Care Team"),
+        backgroundColor: AppTheme.lightTheme.canvasColor.withValues(alpha: 0.25),
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       backgroundColor: Colors.transparent,
       body: staffKeys.isEmpty

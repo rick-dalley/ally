@@ -39,13 +39,13 @@ class _GetMedicationFrequencyState extends State<GetMedicationFrequency> {
         color: AppTheme.onPrimaryColor,
         child: Column(
           children: [
-            Text("Frequency", style: CarbonTheme.carbonTextStyle),
+            Text("Frequency", style: CarbonTheme.carbonHeadingTextStyle),
             Text("Set the time and frequency that you must take this medication"),
             SizedBox(height: CarbonSpacing.wide.height),
             // Using a conditional to prevent build errors before data arrives
             //
             CarbonDropdown(
-              label: "Cadence",
+              label: "Frequency",
               helperText: "Check the code for frequency on the label of you medication, or choose it if you know it",
               placeholder: "Select the frequency",
               items: FrequencyCodes.values,
@@ -63,7 +63,7 @@ class _GetMedicationFrequencyState extends State<GetMedicationFrequency> {
                 Expanded(
                   child: CarbonFullButton(
                     icon: Symbols.calendar_clock,
-                    color: AppTheme.primaryColor,
+                    style: CarbonButtonStyle.tertiary,
                     label: start != null ? "Start: ${start.toString().split(' ')[0]}" : "Start Date",
                     onTap: () async {
                       final date = await showDatePicker(
@@ -80,7 +80,7 @@ class _GetMedicationFrequencyState extends State<GetMedicationFrequency> {
                 Expanded(
                   child: CarbonFullButton(
                     icon: Symbols.calendar_clock,
-                    color: AppTheme.primaryColor,
+                    style: CarbonButtonStyle.tertiary,
                     label: end != null ? "End: ${end.toString().split(' ')[0]}" : "End Date",
                     onTap: () async {
                       final date = await showDatePicker(
@@ -95,14 +95,18 @@ class _GetMedicationFrequencyState extends State<GetMedicationFrequency> {
                 ),
               ],
             ),
-
+            const SizedBox(height: 16.0),
             ListTile(
-              title: const Text("Specific Time"),
+              title: Text("Time", style: CarbonTheme.carbonLabelTextStyle),
               trailing: IconButton(icon: const Icon(Symbols.schedule), onPressed: _pickTime),
-              subtitle: Text(
-                specificTime != null
-                    ? "Selected: ${specificTime!.hour.toString().padLeft(2, '0')}:${specificTime!.minute.toString().padLeft(2, '0')}"
-                    : "None",
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 8.0, left: 8.0),
+                child: Text(
+                  specificTime != null
+                      ? "Selected: ${specificTime!.hour.toString().padLeft(2, '0')}:${specificTime!.minute.toString().padLeft(2, '0')}"
+                      : "6:00pm",
+                  style: CarbonTheme.carbonTextStyle,
+                ),
               ),
             ),
 

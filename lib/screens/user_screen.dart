@@ -191,8 +191,8 @@ class UserScreenState extends State<UserScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Replace your existing Container child: Row(...) block with this:
-                Text(patient.firstName, style: AppTheme.defaultHeadingStyle),
-                const SizedBox(height: 32),
+                Text(patient.firstName, style: CarbonTheme.carbonHeadingTextStyle),
+                const SizedBox(height: 24),
                 Container(
                   // color: AppTheme.surfaceColor,
                   decoration: BoxDecoration(color: AppTheme.onPrimaryColor, borderRadius: BorderRadius.zero),
@@ -205,7 +205,7 @@ class UserScreenState extends State<UserScreen> {
                       Row(
                         children: [
                           const SizedBox(width: 16),
-                          Text("My mood today is ${sentiment.label}", style: AppTheme.defaultTextStyle),
+                          Text("My mood today is ${sentiment.label}", style: CarbonTheme.carbonTertiaryButtonTextStyle),
                         ],
                       ),
                       Positioned(
@@ -237,7 +237,7 @@ class UserScreenState extends State<UserScreen> {
                       onTap: () {
                         showSymptomsValidator(patient);
                       },
-                      style: CarbonButtonStyle.primary,
+                      style: CarbonButtonStyle.tertiary,
                     ),
 
                     SizedBox(
@@ -256,8 +256,9 @@ class UserScreenState extends State<UserScreen> {
                     Row(
                       children: [
                         CarbonStyle2xlButton(
-                          topLabel: "Blood Type:",
+                          topLabel: "Blood Type",
                           label: bloodType.label,
+                          width: 184,
                           style: CarbonButtonStyle.tertiary,
                           onTap: () {
                             showBloodTypModal(context: context, patient: patient);
@@ -266,8 +267,9 @@ class UserScreenState extends State<UserScreen> {
                         ),
                         Spacer(),
                         CarbonStyle2xlButton(
-                          topLabel: "Body Mass Index:",
+                          topLabel: "Body Mass Index",
                           label: bmiLabel,
+                          width: 184,
                           style: CarbonButtonStyle.tertiary,
                           onTap: () {
                             showMetricsEntryDialog(context: context, user: widget.user);
@@ -276,7 +278,9 @@ class UserScreenState extends State<UserScreen> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 16),
                     CarbonStyleExpander(
+                      text: "Personal Information",
                       onTap: (bool isExpanded) {
                         setState(() {
                           _isExpanded = isExpanded;
@@ -333,11 +337,15 @@ class UserScreenState extends State<UserScreen> {
                       ),
                       SizedBox(height: 16),
                       CarbonTextEdit(label: "CONTACT:", value: patient.contactName),
+                      SizedBox(height: 16),
                       CarbonTextEdit(label: "PHONE:", value: patient.contactPhone),
                       SizedBox(height: 16),
                       CarbonTextEdit(label: "PRIMARY CAREGIVER:", value: patient.familyDoctorName),
+                      SizedBox(height: 16),
                       CarbonTextEdit(label: "PHONE:", value: patient.familyDoctorPhone),
+                      SizedBox(height: 16),
                       CarbonTextEdit(label: "PHARMACY:", value: patient.pharmacyPhone),
+                      SizedBox(height: 16),
                       CarbonTextEdit(label: "FAX:", value: patient.pharmacyFax),
                     ],
                   ),

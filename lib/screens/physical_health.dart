@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:triage/classes/carbon_color_constants.dart';
 import '../app_theme.dart';
+import '../classes/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
 import '../classes/patient_condition.dart';
 import '../widgets/condition_chip.dart';
@@ -66,17 +68,17 @@ Map<String, MedicalCategory> categoryIcons = {
   ),
 };
 
-class PhysicalHealthAssessment extends StatefulWidget {
+class ExistingMedicalConditionsScreen extends StatefulWidget {
   final String patientUuid;
   final ScrollController scrollController;
 
-  const PhysicalHealthAssessment({super.key, required this.patientUuid, required this.scrollController});
+  const ExistingMedicalConditionsScreen({super.key, required this.patientUuid, required this.scrollController});
 
   @override
-  State<PhysicalHealthAssessment> createState() => _PhysicalHealthAssessmentState();
+  State<ExistingMedicalConditionsScreen> createState() => ExistingMedicalConditionsScreenState();
 }
 
-class _PhysicalHealthAssessmentState extends State<PhysicalHealthAssessment> {
+class ExistingMedicalConditionsScreenState extends State<ExistingMedicalConditionsScreen> {
   final TextEditingController _otherController = TextEditingController();
   late Future<Map<String, List<ConditionReference>>> _catalogFuture;
   late Future<List<PatientCondition>> _patientConditions;
@@ -117,7 +119,7 @@ class _PhysicalHealthAssessmentState extends State<PhysicalHealthAssessment> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: const [
-                  Text("Physical Health History", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text("KNOWN MEDICAL CONDITIONS", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -129,9 +131,9 @@ class _PhysicalHealthAssessmentState extends State<PhysicalHealthAssessment> {
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               padding: !hasActiveConditions ? EdgeInsets.zero : const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: !hasActiveConditions ? Colors.transparent : AppTheme.primaryColor,
-                borderRadius: BorderRadius.circular(12),
-                border: !hasActiveConditions ? null : Border.all(color: AppTheme.onPrimaryColor, width: 1),
+                color: !hasActiveConditions ? Colors.transparent : carbonColorField,
+                borderRadius: BorderRadius.zero,
+                border: !hasActiveConditions ? null : Border.all(color: carbonColorBorderStrong01, width: 1),
               ),
               child: !hasActiveConditions
                   ? const SizedBox.shrink()
@@ -142,15 +144,7 @@ class _PhysicalHealthAssessmentState extends State<PhysicalHealthAssessment> {
                           children: [
                             Icon(Icons.assignment_late_outlined, size: 16, color: AppTheme.onPrimaryColor),
                             SizedBox(width: 6),
-                            Text(
-                              "PATIENT ACTIVE PROFILE SUMMARY",
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.primaryColor,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
+                            Text("Conditions that are currently diagnosed", style: CarbonTheme.carbonTextStyle),
                           ],
                         ),
                         const SizedBox(height: 10),
@@ -199,9 +193,9 @@ class _PhysicalHealthAssessmentState extends State<PhysicalHealthAssessment> {
                 physics: const ClampingScrollPhysics(),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 children: [
-                  const Text(
-                    "Select all pre-existing or pre-diagnosed conditions identified during intake.",
-                    style: TextStyle(color: Colors.grey, fontSize: 13),
+                  Text(
+                    "Tap and the conditions below that you currently have, or which you previously experienced.",
+                    style: CarbonTheme.carbonHelperTextStyle,
                   ),
                   const SizedBox(height: 14),
 
@@ -270,11 +264,8 @@ class _PhysicalHealthAssessmentState extends State<PhysicalHealthAssessment> {
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: _saveAssessment,
-                    child: Text(
-                      "SAVE ASSESSMENT",
-                      style: TextStyle(color: AppTheme.onPrimaryColor, fontWeight: FontWeight.w400, fontSize: 14),
-                    ),
+                    onPressed: saveAssessment,
+                    child: Text("DONE", style: CarbonTheme.carbonPrimaryButtonTextStyle),
                   ),
                 ),
               ),
@@ -351,7 +342,7 @@ class _PhysicalHealthAssessmentState extends State<PhysicalHealthAssessment> {
     );
   }
 
-  void _saveAssessment() async {
+  void saveAssessment() async {
     // Your _selectedConditions set continues to hold structural SQLite row IDs cleanly
     Navigator.pop(context);
   }
