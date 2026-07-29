@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:triage/widgets/carbon_style_separators.dart';
 import '../classes/carbon_color_constants.dart';
 import '../classes/carbon_theme_constants.dart';
 
@@ -34,6 +35,7 @@ class CarbonNumberInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Color fillColor = this.fillColor ?? carbonColorField;
+    // Updated to use carbonColorPrimary as requested for the focused state/accent
     Color accentColor = this.accentColor ?? carbonColorButtonPrimary;
 
     return Column(
@@ -52,6 +54,8 @@ class CarbonNumberInput extends StatelessWidget {
           ),
           child: Row(
             children: [
+              // Expanded makes the TextField take up all available horizontal space,
+              // pushing the suffix elements cleanly to the far right.
               Expanded(
                 child: TextField(
                   controller: controller,
@@ -60,35 +64,41 @@ class CarbonNumberInput extends StatelessWidget {
                     filled: true,
                     fillColor: fillColor,
                     hintStyle: CarbonTheme.carbonHintTextStyle,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     border: UnderlineInputBorder(borderSide: BorderSide(color: carbonColorBorderInteractive, width: 1)),
-                    focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: accentColor, width: 1)),
+                    focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: accentColor, width: 2)),
                     errorBorder: UnderlineInputBorder(borderSide: BorderSide(color: carbonColorButtonDanger, width: 1)),
                     errorStyle: GoogleFonts.ibmPlexSans(color: carbonColorButtonOnDanger),
                     suffixIcon: Row(
-                      mainAxisSize: MainAxisSize.min, // Vital: Keeps the row from expanding to fill the field
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        IconButton(
-                          icon: const Icon(Symbols.remove),
-                          onPressed: _decrement,
-                          constraints: const BoxConstraints(), // Removes default padding to fit better
-                          padding: const EdgeInsets.all(8),
+                        const CarbonVerticalSeparator(height: 22),
+                        SizedBox(width: 4),
+                        SizedBox(
+                          width: 32,
+                          child: IconButton(
+                            icon: const Icon(Symbols.remove, size: 18),
+                            onPressed: _decrement,
+                            constraints: const BoxConstraints(),
+                            padding: EdgeInsets.zero,
+                          ),
                         ),
-                        IconButton(
-                          icon: const Icon(Symbols.add),
-                          onPressed: _increment,
-                          constraints: const BoxConstraints(),
-                          padding: const EdgeInsets.all(8),
+                        SizedBox(
+                          width: 32,
+                          child: IconButton(
+                            icon: const Icon(Symbols.add, size: 18),
+                            onPressed: _increment,
+                            constraints: const BoxConstraints(),
+                            padding: EdgeInsets.zero,
+                          ),
                         ),
+                        const SizedBox(width: 4),
                       ],
                     ),
+                    suffixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
                   ),
                 ),
               ),
-              // const VerticalDivider(width: 0.5, color: Color(0xFFC6C6C6)),
-              // _buildStepperButton(icon: Symbols.remove, onTap: _decrement, accentColor: accentColor),
-              // VerticalDivider(width: 0.5, color: AppColors.grey.all[3]),
-              // _buildStepperButton(icon: Symbols.add, onTap: _increment, accentColor: accentColor),
             ],
           ),
         ),
@@ -101,23 +111,4 @@ class CarbonNumberInput extends StatelessWidget {
       ],
     );
   }
-
-  // Widget _buildStepperButton({
-  //   required IconData icon,
-  //   required VoidCallback onTap,
-  //   required Color accentColor,
-  //   bool hasFocus = false,
-  // }) {
-  //   return InkWell(
-  //     onTap: onTap,
-  //     child: Container(
-  //       height: 40,
-  //       decoration: BoxDecoration(
-  //         color: Color(0xFFF4F4F4),
-  //         border: Border(bottom: BorderSide(color: hasFocus ? accentColor : AppTheme.carbonFieldBorder, width: 1)),
-  //       ),
-  //       child: SizedBox(width: 40, child: Icon(icon, size: 16)),
-  //     ),
-  //   );
-  // }
 }

@@ -1,5 +1,6 @@
+import 'dart:developer';
+
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/classes/carbon_color_constants.dart';
 import 'package:triage/classes/carbon_theme_constants.dart';
 import 'package:triage/screens/add_medication_wizard.dart';
 import 'package:triage/widgets/carbon_style_button.dart';
@@ -65,7 +66,6 @@ class PrescriptionScreen extends StatefulWidget {
 
 class _PrescriptionScreenState extends State<PrescriptionScreen> {
   // Mocking the current baseline list
-  bool _isLoading = false;
   bool _hasContraIndications = false;
   final bool _acceptedIndications = false;
   List<Map<String, dynamic>> _meds = [];
@@ -126,7 +126,6 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     if (_meds.isEmpty || _dataSheetCount < 2) return;
 
     setState(() {
-      _isLoading = true;
       _currentConflicts.clear();
     });
 
@@ -157,7 +156,6 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     }
     if (mounted) {
       setState(() {
-        _isLoading = false;
         _auditRun = true;
         _hasContraIndications = _currentConflicts.isNotEmpty;
       });
@@ -169,25 +167,6 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
     buffer.write(hexString.replaceFirst('#', ''));
     return Color(int.parse(buffer.toString(), radix: 16));
-  }
-
-  void confirmAndSave() {
-    // 1. Calculate the audit result index
-    int auditResultIndex;
-
-    if (!_auditRun) {
-      // User didn't trigger the safety check
-      auditResultIndex = MedicationSafetyAudit.auditNotPerformed.index;
-    } else if (_currentConflicts.isNotEmpty) {
-      // Audit ran and found issues
-      auditResultIndex = MedicationSafetyAudit.interactionsDetected.index;
-    } else {
-      // Audit ran and cleared
-      auditResultIndex = MedicationSafetyAudit.interactionsNotDetected.index;
-    }
-
-    // Return the data map back to the Roster
-    // Navigator.pop(context, {'medications': _meds.length, 'medication_safety_audit': auditResultIndex});
   }
 
   // Logic-driven Banner Widget
@@ -317,7 +296,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
         await _startBackgroundSync(medId, medicationName);
       } catch (e) {
         // Handle or log error
-        print("Error saving medication: $e");
+        log("Error saving medication: $e", time: DateTime.now(), name: "Medication");
       }
     }
   }
@@ -348,7 +327,6 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final name = "${widget.patient.firstName} ${widget.patient.lastName}";
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       // The Floating Action Button replaces the top form

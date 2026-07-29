@@ -4,6 +4,7 @@ import 'package:triage/classes/blood_type.dart';
 import 'package:triage/classes/metric_value.dart';
 import 'package:triage/classes/patient_action.dart';
 import 'package:triage/classes/vitals.dart';
+import 'package:triage/screens/metric_dashboard_screen.dart';
 import 'package:triage/screens/patient_timeline_screen.dart';
 import 'package:triage/widgets/blood_type_selector.dart';
 import 'package:triage/widgets/carbon_style_two_xl_button.dart';
@@ -293,7 +294,7 @@ class UserScreenState extends State<UserScreen> {
                 if (_isExpanded)
                   Column(
                     children: [
-                      CarbonTextEdit(
+                      CarbonTextInput(
                         label: 'Provincial Health #:',
                         helperText: "Enter your government issued health identification",
                         value: _formatPHN(patient.phn.toString()),
@@ -302,7 +303,7 @@ class UserScreenState extends State<UserScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           Expanded(
-                            child: CarbonTextEdit(label: "Born:", value: patient.formattedDateOfBirth),
+                            child: CarbonTextInput(label: "Born:", value: patient.formattedDateOfBirth),
                           ),
                           SizedBox(width: 8),
                           Expanded(child: Text("(${patient.age} yrs)")),
@@ -313,7 +314,7 @@ class UserScreenState extends State<UserScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           Expanded(
-                            child: CarbonTextEdit(label: "HEIGHT", value: patient.height.toString()),
+                            child: CarbonTextInput(label: "HEIGHT", value: patient.height.toString()),
                           ),
                           SizedBox(width: 8),
                           Expanded(child: Text("(${patient.heightUoM})")),
@@ -324,7 +325,7 @@ class UserScreenState extends State<UserScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           Expanded(
-                            child: CarbonTextEdit(label: "WEIGHT", value: patient.weight.toString()),
+                            child: CarbonTextInput(label: "WEIGHT", value: patient.weight.toString()),
                           ),
                           SizedBox(width: 8),
                           Expanded(
@@ -336,17 +337,17 @@ class UserScreenState extends State<UserScreen> {
                         ],
                       ),
                       SizedBox(height: 16),
-                      CarbonTextEdit(label: "CONTACT:", value: patient.contactName),
+                      CarbonTextInput(label: "CONTACT:", value: patient.contactName),
                       SizedBox(height: 16),
-                      CarbonTextEdit(label: "PHONE:", value: patient.contactPhone),
+                      CarbonTextInput(label: "PHONE:", value: patient.contactPhone),
                       SizedBox(height: 16),
-                      CarbonTextEdit(label: "PRIMARY CAREGIVER:", value: patient.familyDoctorName),
+                      CarbonTextInput(label: "PRIMARY CAREGIVER:", value: patient.familyDoctorName),
                       SizedBox(height: 16),
-                      CarbonTextEdit(label: "PHONE:", value: patient.familyDoctorPhone),
+                      CarbonTextInput(label: "PHONE:", value: patient.familyDoctorPhone),
                       SizedBox(height: 16),
-                      CarbonTextEdit(label: "PHARMACY:", value: patient.pharmacyPhone),
+                      CarbonTextInput(label: "PHARMACY:", value: patient.pharmacyPhone),
                       SizedBox(height: 16),
-                      CarbonTextEdit(label: "FAX:", value: patient.pharmacyFax),
+                      CarbonTextInput(label: "FAX:", value: patient.pharmacyFax),
                     ],
                   ),
               ],

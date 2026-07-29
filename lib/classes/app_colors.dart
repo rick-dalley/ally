@@ -7,7 +7,7 @@ class AppColors {
   static const Color energeticPurple = Color(0xFF3A1772);
   static const Color electricRose = Color(0xFFD741A7);
   static const Color darkMustard = Color(0xFFDEA54B);
-  static const Color oceanBlue = Color(0xFF5398BE);
+  static const Color neonBlue = Color(0xFF2323FF);
   static const Color greyDepth = Color(0xFF818585);
 
   // Grouped Shades
@@ -17,11 +17,6 @@ class AppColors {
   static const OceanBlue blue = OceanBlue._();
   static const GreyDepth grey = GreyDepth._();
 }
-// const Color ColorA = Color(0xFF3066be);
-// const Color ColorB = Color(0xFF119da4);
-// const Color ColorC = Color(0xFF6d9dc5);
-// const Color ColorD = Color(0xFF80ded9);
-// const Color ColorE = Color(0xFFaeecef);
 
 class EnergeticPurple {
   const EnergeticPurple._();
@@ -68,13 +63,13 @@ class DarkMustard {
 class OceanBlue {
   const OceanBlue._();
   final List<Color> all = const [
-    Color(0xFFBDDFFE),
-    Color(0xFF53BDFD),
-    Color(0xFF1596D2),
-    Color(0xFF5398BE),
-    Color(0xFF064C6D),
-    Color(0xFF022B3F),
-    Color(0xFF01131F),
+    Color(0xFF7979FF),
+    Color(0xFF6464FF),
+    Color(0xFF4E4EFF),
+    Color(0xFF3939FF),
+    Color(0xFF2323FF),
+    Color(0xFF0303FF),
+    Color(0xFF0000E2),
   ];
   Color operator [](int index) => all[index];
 }

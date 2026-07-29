@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/classes/staff.dart';
+import 'package:triage/classes/provider.dart';
 import '../app_theme.dart';
 
 class Address {
@@ -81,7 +81,7 @@ class Appointment {
 
 class AppointmentChip extends StatefulWidget {
   final Appointment? appointment;
-  final StaffMember? staffMember;
+  final Provider? staffMember;
 
   const AppointmentChip({super.key, this.appointment, this.staffMember});
 

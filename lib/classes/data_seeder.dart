@@ -15,8 +15,10 @@ class DataSeeder {
     await _seedPatientData(db);
     await _seedObservations(db);
     await _seedConditionsCatalog(db);
-    await _seedStaff(db);
+    await _seedProviders(db);
     await _seedInteractions(db);
+    await _seedMetricsAndUnits(db);
+
     debugPrint('--- Seeding Complete ---');
   }
 
@@ -47,9 +49,9 @@ class DataSeeder {
     });
   }
 
-  static Future<void> _seedStaff(Database db) async {
+  static Future<void> _seedProviders(Database db) async {
     // 1. Verify if the master table has already been populated
-    final List<Map<String, dynamic>> existingRecords = await db.rawQuery("SELECT COUNT(*) as total FROM staff");
+    final List<Map<String, dynamic>> existingRecords = await db.rawQuery("SELECT COUNT(*) as total FROM provider");
 
     if (existingRecords.first['total'] as int > 0) {
       return; // Catalog is already successfully configured!
@@ -57,22 +59,28 @@ class DataSeeder {
 
     try {
       // 2. Read raw condition data groups from json asset bundle
-      final String jsonString = await rootBundle.loadString('assets/staff/staff.json');
+      final String jsonString = await rootBundle.loadString('assets/providers/providers.json');
       final List<dynamic> data = jsonDecode(jsonString);
 
       Batch batch = db.batch();
       for (var entry in data) {
-        batch.insert('staff', {
-          'id': entry['id'],
+        batch.insert('provider', {
+          'provider_uuid': entry['id'],
+          'patient_uuid': entry['patient_uuid'],
           'first_name': entry['first_name'],
           'last_name': entry['last_name'],
-          'email': entry['email'],
+          'accreditations': entry['accreditations'],
+          'specializations': entry['specializations'],
+          'personal_email': entry['email'],
+          'office_email': entry['office_email'],
           'position': entry['position'],
           'gender': entry['gender'],
           'is_specialist': 0,
-          'on_call': entry['on_call'] ? 1 : 0,
           'pager': entry['pager'],
-          'phone': entry['phone'],
+          'personal_phone': entry['phone'],
+          'office_phone': entry['office_phone'],
+          'started_seeing': entry['started_seeing'],
+          'stopped_seeing': entry['stopped_seeing'],
           'city': entry['city'],
           'street': entry['street'],
           'pr_st': entry['pr_st'],
@@ -82,7 +90,85 @@ class DataSeeder {
 
       await batch.commit(noResult: true);
     } catch (error) {
-      debugPrint("Critical failure in _seedStaff: $error");
+      debugPrint("Critical failure in _seedProviders: $error");
+    }
+  }
+
+  static Future<void> _seedMetricsAndUnits(Database db) async {
+    // 1. Verify if the master tables have already been populated
+    final List<Map<String, dynamic>> existingMetrics = await db.rawQuery("SELECT COUNT(*) as total FROM metric");
+    final List<Map<String, dynamic>> existingUnits = await db.rawQuery("SELECT COUNT(*) as total FROM unit_of_measure");
+
+    if ((existingMetrics.first['total'] as int > 0) || (existingUnits.first['total'] as int > 0)) {
+      return; // Catalogs are already successfully configured!
+    }
+
+    try {
+      // 2. Read raw metrics data groups from json asset bundle
+      final String jsonString = await rootBundle.loadString('assets/metrics/metrics.json');
+      final Map<String, dynamic> rootData = jsonDecode(jsonString);
+      final List<dynamic> categories = rootData['categories'] ?? [];
+
+      Batch unitBatch = db.batch();
+      Batch metricBatch = db.batch();
+
+      // Track inserted units to prevent duplicates since multiple metrics share unit definitions
+      final Set<String> insertedUnitSymbols = {};
+
+      for (var category in categories) {
+        final List<dynamic> metrics = category['metrics'] ?? [];
+        final String categoryName = category['category'] ?? '';
+
+        for (var metric in metrics) {
+          // Insert Metric
+          metricBatch.insert('metric', {
+            'id': metric['id'],
+            'name': metric['name'],
+            'symbol': metric['units_of_measure'] != null && metric['units_of_measure'].isNotEmpty
+                ? metric['units_of_measure'][0]['symbol']
+                : '',
+            'category': categoryName,
+            'safe_upper_limit': metric['safe_upper'],
+            'safe_lower_Limit': metric['safe_lower'],
+            'healthy_upper_limit': metric['healthy_upper'],
+            'health_lower_limit': metric['healthy_lower'],
+          });
+
+          // Parse and Queue Units of Measure
+          final List<dynamic> units = metric['units_of_measure'] ?? [];
+          for (var unit in units) {
+            final String symbol = unit['symbol'] ?? '';
+            if (symbol.isNotEmpty && !insertedUnitSymbols.contains(symbol)) {
+              insertedUnitSymbols.add(symbol);
+
+              final Map<String, dynamic> converters = unit['converters'] ?? {};
+              final bool isMetricUnit =
+                  unit['name'] != null &&
+                  (unit['name'].toString().toLowerCase().contains('metric') ||
+                      symbol == '°C' ||
+                      symbol == 'kg' ||
+                      symbol == 'cm' ||
+                      symbol == 'L' ||
+                      symbol == 'mmol/L' ||
+                      symbol == 'µmol/L' ||
+                      symbol == 'mg/L');
+
+              unitBatch.insert('unit_of_measure', {
+                'name': unit['name'],
+                'symbol': symbol,
+                'is_metric': isMetricUnit ? 1 : 0,
+                'conversion_functions': jsonEncode(converters),
+              }, conflictAlgorithm: ConflictAlgorithm.ignore);
+            }
+          }
+        }
+      }
+
+      // Commit batches
+      await unitBatch.commit(noResult: true);
+      await metricBatch.commit(noResult: true);
+    } catch (error) {
+      debugPrint("Critical failure in _seedMetricsAndUnits: $error");
     }
   }
 

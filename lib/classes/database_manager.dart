@@ -5,14 +5,16 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
-import 'package:triage/classes/date_time_utilities.dart';
 import 'package:triage/classes/patient_condition.dart';
+import 'package:triage/classes/questionnaire.dart';
 import 'package:triage/classes/vitals.dart';
 import 'package:uuid/uuid.dart';
 import 'acuity.dart';
 import 'data_seeder.dart';
 import 'medication_services.dart';
 import 'metric_value.dart';
+
+bool overWrite = false;
 
 class DatabaseManager {
   // Singleton pattern
@@ -43,7 +45,7 @@ class DatabaseManager {
 
     try {
       // Perform the init
-      final db = await _init(overwrite: false);
+      final db = await _init(overwrite: overWrite);
 
       // CRITICAL: Assign _db BEFORE completing the future
       _db = db;
@@ -268,7 +270,7 @@ class DatabaseManager {
     return await db.rawQuery('''
     SELECT p.*, m.*
     FROM patient p
-    LEFT JOIN patient_current_metrics m ON p.patient_uuid = m.patient_uuid
+    LEFT JOIN patient_metrics m ON p.patient_uuid = m.patient_uuid
   ''');
   }
 
@@ -280,7 +282,7 @@ class DatabaseManager {
       '''
     SELECT p.*, m.*
     FROM patient p
-    LEFT JOIN patient_current_metrics m ON p.patient_uuid = m.patient_uuid
+    LEFT JOIN patient_metrics m ON p.patient_uuid = m.patient_uuid
     WHERE p.patient_uuid = ?
   ''',
       [patientUuid],
@@ -521,7 +523,7 @@ class DatabaseManager {
     }
 
     // Instantly map the database row to our strongly typed data model object
-    return MetricValue.fromJson(maps.first);
+    return MetricValue.fromMap(maps.first);
   }
 
   Future<void> deletePatientCondition(int id) async {
@@ -986,27 +988,63 @@ class DatabaseManager {
   //   return (false, "");
   // }
 
-  Future<List<Map<String, dynamic>>> getStaff() async {
+  Future<List<Map<String, dynamic>>> getProviders(String patientUuid) async {
     final db = await database;
 
     // Use a LEFT JOIN to ensure we get the patient even if they have no vitals yet
+    return await db.rawQuery(
+      '''
+    SELECT p.*
+    FROM provider p WHERE patient_uuid = ?
+    ORDER BY p.last_name, p.first_name 
+  ''',
+      [patientUuid],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getAllMetrics() async {
+    final db = await database;
+
     return await db.rawQuery('''
-    SELECT s.*
-    FROM staff s
-    ORDER BY s.last_name, s.first_name
+    SELECT *
+    FROM metric
   ''');
   }
 
-  Future<List<Map<String, dynamic>>> getStaffMember({required String id}) async {
+  Future<List<Map<String, dynamic>>> getTrackedMetrics(String patientUuid) async {
+    final db = await database;
+    return await db.rawQuery(
+      '''
+    SELECT *
+    FROM patient_metric_tracking pmt WHERE
+    pmt.patient_uuid = ?
+  ''',
+      [patientUuid],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getPatientMetricValues(String patientUuid) async {
+    final db = await database;
+    return await db.rawQuery(
+      '''
+    SELECT *
+    FROM patient_metrics pm WHERE
+    pm.patient_uuid = ?
+  ''',
+      [patientUuid],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getProvider({required String id}) async {
     final db = await database;
 
     // Use a LEFT JOIN to ensure we get the patient even if they have no vitals yet
     return await db.rawQuery(
       '''
     SELECT s.*
-    FROM staff s
+    FROM provider p
     WHERE id = ?
-    ORDER BY s.last_name, s.first_name
+    ORDER BY p.last_name, p.first_name
   ''',
       [id],
     );
@@ -1025,20 +1063,4 @@ class DatabaseManager {
     required MedicationShapes shape,
   }) async {}
   Future<void> addFrequency({required String name, required String patientUuid, required Frequency frequency}) async {}
-}
-
-class CompletedQuestionnaire {
-  final bool completed;
-  final DateTime? when;
-
-  const CompletedQuestionnaire({required this.completed, required this.when});
-
-  factory CompletedQuestionnaire.fromJson(Map<String, dynamic> item) {
-    bool isComplete = (item['total'] ?? 0) > 0;
-
-    String? whenCompletedRaw = isComplete ? item['last_modified'] : null;
-    DateTime? whenComplete = whenCompletedRaw != null ? DTUtilities.sqliteToDart(whenCompletedRaw) : null;
-
-    return CompletedQuestionnaire(completed: isComplete, when: whenComplete);
-  }
 }

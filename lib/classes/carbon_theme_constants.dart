@@ -33,6 +33,10 @@ extension CarbonSpacingWidth on CarbonSpacing {
 
 enum CarbonButtonStyle { danger, ghost, primary, secondary, tertiary }
 
+enum CarbonTileStyle { base, clickable, selectable, expandable }
+
+enum CarbonTileFeatureFlags { single, multi, interactive }
+
 enum CarbonButtonSize { extraSmall, small, medium, large, largeBold, extraLarge, extraExtraLarge }
 
 extension CarbonButtonSizeHeight on CarbonButtonSize {
@@ -102,19 +106,19 @@ class CarbonTheme {
     color: carbonColorTextPrimary,
   );
 
-  static TextStyle carbonPrimaryButtonTextStyle = TextStyle(
+  static TextStyle carbonPrimaryButtonTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
     fontSize: CarbonButtonSize.large.fontSize,
     color: AppTheme.onPrimaryColor,
   );
 
-  static TextStyle carbonGhostButtonTextStyle = TextStyle(
+  static TextStyle carbonGhostButtonTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
     fontSize: CarbonButtonSize.large.fontSize,
     color: carbonColorButtonGhost,
   );
 
-  static TextStyle carbonTertiaryButtonTextStyle = TextStyle(
+  static TextStyle carbonTertiaryButtonTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
     fontSize: CarbonButtonSize.large.fontSize,
     color: carbonColorButtonOnTertiary,
@@ -213,6 +217,45 @@ class CarbonTheme {
       case CarbonButtonStyle.secondary:
         return carbonColorButtonSecondary;
       case CarbonButtonStyle.tertiary:
+        return carbonColorButtonOnTertiary;
+    }
+  }
+
+  static Color getTileBorderColor(CarbonTileStyle style, bool selected) {
+    switch (style) {
+      case CarbonTileStyle.base:
+        return carbonColorButtonSecondary;
+      case CarbonTileStyle.clickable:
+        return selected ? carbonColorButtonOnTertiary : carbonColorButtonSecondary;
+      case CarbonTileStyle.selectable:
+        return selected ? carbonColorButtonOnTertiary : carbonColorButtonSecondary;
+      case CarbonTileStyle.expandable:
+        return selected ? carbonColorButtonOnTertiary : carbonColorButtonSecondary;
+    }
+  }
+
+  static Color getTileColor(CarbonTileStyle style) {
+    switch (style) {
+      case CarbonTileStyle.base:
+        return carbonColorButtonTertiary;
+      case CarbonTileStyle.clickable:
+        return carbonColorButtonTertiary;
+      case CarbonTileStyle.selectable:
+        return carbonColorButtonTertiary;
+      case CarbonTileStyle.expandable:
+        return carbonColorButtonTertiary;
+    }
+  }
+
+  static Color getTileFontColor(CarbonTileStyle style) {
+    switch (style) {
+      case CarbonTileStyle.base:
+        return carbonColorButtonOnTertiary;
+      case CarbonTileStyle.clickable:
+        return carbonColorButtonOnTertiary;
+      case CarbonTileStyle.selectable:
+        return carbonColorButtonOnTertiary;
+      case CarbonTileStyle.expandable:
         return carbonColorButtonOnTertiary;
     }
   }

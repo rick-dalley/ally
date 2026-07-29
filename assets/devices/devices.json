@@ -1,0 +1,90 @@
+{
+  "ailment_devices": [
+    {
+      "ailment": "Diabetes & Metabolic",
+      "description": "Conditions involving blood sugar regulation, insulin resistance, and metabolic monitoring.",
+      "devices": [
+        { "name": "Blood Glucose Meter", "description": "Electronic device used to measure blood sugar concentration." },
+        { "name": "Glucose Test Strips", "description": "Disposable chemical strips inserted into a meter for blood samples." },
+        { "name": "Lancing Device & Lancets", "description": "Spring-loaded needle tool used to prick the skin for capillary blood samples." },
+        { "name": "Insulin Syringes / Pen Needles", "description": "Sterile needles and barrels used for subcutaneous insulin administration." },
+        { "name": "Insulin Pens / Pumps", "description": "Devices used to deliver continuous or bolus doses of insulin." },
+        { "name": "Continuous Glucose Monitor (CGM)", "description": "Subcutaneous sensor providing real-time interstitial glucose readings." },
+        { "name": "Ketone Meter & Strips", "description": "Device for measuring blood or urine ketone bodies (crucial for Type 1)." }
+      ]
+    },
+    {
+      "ailment": "Sleep Apnea & Respiratory",
+      "description": "Disorders affecting upper airway collapse during sleep and chronic obstructive pulmonary conditions.",
+      "devices": [
+        { "name": "CPAP / BiPAP Machine", "description": "Flow generator providing pressurized air to keep airways open during sleep." },
+        { "name": "CPAP Mask & Headgear", "description": "Nasal, full-face, or pillow interface securing airflow from the machine." },
+        { "name": "CPAP Heated Humidifier & Tubing", "description": "Water chamber and hose system to condition air and prevent dryness." },
+        { "name": "Pulse Oximeter", "description": "Finger-clip sensor measuring blood oxygen saturation (SpO2) and pulse rate." },
+        { "name": "Peak Flow Meter", "description": "Mechanical device measuring maximum speed of expiration (asthma/COPD tracking)." },
+        { "name": "Nebulizer & Masks", "description": "Compressor system turning liquid medication into an aerosol mist for inhalation." }
+      ]
+    },
+    {
+      "ailment": "Cardiovascular & Circulation",
+      "description": "Hypertension, heart failure, arrhythmias, and clotting risk monitoring.",
+      "devices": [
+        { "name": "Digital Blood Pressure Monitor", "description": "Upper-arm cuff device measuring systolic, diastolic pressure, and heart rate." },
+        { "name": "ECG / EKG Monitor (e.g., Kardia)", "description": "Portable single-lead or multi-lead electrocardiogram for rhythm analysis." },
+        { "name": "Coagulation Meter (INR Monitor)", "description": "Handheld device testing blood clotting times for patients on anticoagulants." },
+        { "name": "Digital Weight Scale", "description": "High-precision scale for daily fluid retention monitoring in heart failure." },
+        { "name": "Compression Stockings", "description": "Medical-grade graduated hosiery for venous return and edema management." }
+      ]
+    },
+    {
+      "ailment": "Rheumatism, Orthopedic & Pain Management",
+      "description": "Arthritis, joint inflammation, chronic pain, and mobility limitations.",
+      "devices": [
+        { "name": "Hot / Cold Therapy Packs", "description": "Reusable gel packs or electric heating pads for joint inflammation and pain relief." },
+        { "name": "TENS Unit", "description": "Transcutaneous electrical nerve stimulation device for managing localized chronic pain." },
+        { "name": "Grip Strength Dynamometer", "description": "Handheld device measuring isometric grip force to track hand arthritis progression." },
+        { "name": "Mobility Aids (Cane, Walker, Rollator)", "description": "Support frames and wheeled walkers to assist with stability and unweighting joints." },
+        { "name": "Orthopedic Braces & Splints", "description": "Stabilizing supports for knees, wrists, ankles, or spine." },
+        { "name": "Long-handled Reachers & Dressing Aids", "description": "Ergonomic tools to minimize joint bending and strain during daily tasks." }
+      ]
+    },
+    {
+      "ailment": "Renal & Urinary Function",
+      "description": "Kidney disease, chronic urinary retention, and fluid balance tracking.",
+      "devices": [
+        { "name": "Urine Collection Hat & Containers", "description": "Graduated receptacles for measuring 24-hour urine output volume." },
+        { "name": "Urinalysis Test Strips", "description": "Multi-parameter dipsticks testing for protein, blood, and specific gravity." },
+        { "name": "Intermittent Urinary Catheters", "description": "Sterile single-use tubes for bladder drainage if retention is present." },
+        { "name": "Digital Precision Scale", "description": "Scale used for rigorous dry-weight and fluid balance tracking." }
+      ]
+    },
+    {
+      "ailment": "Gastrointestinal & Nutritional",
+      "description": "Digestive disorders, hydration therapy, and specialized nutritional needs.",
+      "devices": [
+        { "name": "Kitchen Food Scale", "description": "Precision gram scale for carbohydrate counting and portion control." },
+        { "name": "Enteral Feeding Pump & Bags", "description": "Mechanical pump systems for tube-fed nutrition (if applicable)." },
+        { "name": "Hydration Water Bottle with Volume Markings", "description": "Graduated vessel for tracking strict fluid intake goals." }
+      ]
+    },
+    {
+      "ailment": "Neurological & Mental Wellness",
+      "description": "Migraines, sleep disturbances, cognitive tracking, and mood disorders.",
+      "devices": [
+        { "name": "Migraine Cooling Headband / Ice Cap", "description": "Therapeutic wrap for vasoconstriction and acute headache relief." },
+        { "name": "Sleep Tracking Headband / Mat", "description": "Non-wearable or wearable sensors analyzing sleep architecture and stages." },
+        { "name": "Light Therapy Box", "description": "High-lux therapeutic lamp for seasonal affective management and circadian alignment." }
+      ]
+    },
+    {
+      "ailment": "General Clinical Consumables",
+      "description": "Universal hygiene and safety supplies required across multiple home-care regimes.",
+      "devices": [
+        { "name": "Alcohol Swabs", "description": "Sterile isopropyl alcohol prep pads for skin disinfection prior to injections or testing." },
+        { "name": "Sharps Disposal Container", "description": "Puncture-resistant biohazard container for safe disposal of needles and lancets." },
+        { "name": "Medical Exam Gloves", "description": "Nitrile or latex disposable gloves for sterile or hygienic procedures." },
+        { "name": "Adhesive Bandages & Gauze Pads", "description": "Wound care dressings for puncture sites and minor skin breaks." }
+      ]
+    }
+  ]
+}

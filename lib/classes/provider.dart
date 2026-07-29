@@ -1,12 +1,11 @@
 import 'package:flutter/cupertino.dart';
-import 'package:triage/classes/database_manager.dart';
 import 'package:triage/classes/specialities.dart';
 
 import 'country_codes.dart';
 
 enum DepartmentColors { blue, green, cyan, purple, red, orange, brown, darkPurple, slateGray, indigo, pink }
 
-class StaffMember {
+class Provider {
   final String id;
   final String firstName;
   final String lastName;
@@ -29,7 +28,7 @@ class StaffMember {
   final DepartmentColors color;
   final IconData icon;
 
-  const StaffMember({
+  const Provider({
     required this.id,
     required this.speciality,
     required this.firstName,
@@ -56,17 +55,17 @@ class StaffMember {
     return '$street, $city, $provOrState, $code, $country';
   }
 
-  factory StaffMember.fromJson(Map<String, dynamic> json) {
+  factory Provider.fromJson(Map<String, dynamic> json) {
     String positionRaw = json["position"] ?? "General Practice";
     Specialities speciality = specialities[positionRaw] ?? Specialities.generalPractice;
     String countryName = json["country"] ?? "Canada";
     String countryISO = countryCodes[countryName]?.isoA2 ?? "CA";
-    return StaffMember(
+    return Provider(
       icon: speciality.icon,
-      id: json["id"],
+      id: json["provider_uuid"],
       firstName: json["first_name"],
       lastName: json["last_name"],
-      email: json["email"] ?? "",
+      email: json["personal_email"] ?? "",
       gender: json["gender"],
       position: json["position"],
       hireDate: DateTime.now().subtract(Duration(days: 365)),
@@ -76,7 +75,7 @@ class StaffMember {
       pager: json["pager"] ?? "",
       color: speciality.color,
       department: speciality.name,
-      phone: json["phone"] ?? "",
+      phone: json["personal_phone"] ?? "",
       street: json["street"] ?? "",
       city: json["city"] ?? "",
       provOrState: json["pr_st"] ?? "",
@@ -96,44 +95,8 @@ class StaffMember {
       "gender": gender,
       "position": position,
       "is_specialist": isSpecialist ? 1 : 0,
-      "on_call": onCall ? 1 : 0,
       "pager": pager,
       "phone": phone,
     };
   }
-}
-
-class StaffFactory {
-  // 1. Private constructor
-  StaffFactory._();
-
-  // 2. The single instance
-  static final StaffFactory instance = StaffFactory._();
-
-  // 3. Cached storage
-  Map<String, StaffMember> staff = {};
-  List<String>? _cachedKeys;
-
-  List<String> getStaffKeys() {
-    // Cache the list to avoid heap allocation on every rebuild
-    _cachedKeys ??= staff.keys.toList();
-    return _cachedKeys!;
-  }
-
-  // 4. Initialization method (call this once at app startup)
-  Future<void> initialize() async {
-    dynamic staffData = await DatabaseManager().getStaff();
-    if (staffData == null) {
-      return;
-    }
-    for (var item in staffData) {
-      StaffMember member = StaffMember.fromJson(item);
-      staff[member.id] = member;
-    }
-  }
-
-  // 5. Easy access
-  StaffMember? getStaffMember({required String id}) => staff[id];
-
-  Map<String, StaffMember> get allStaff => Map.unmodifiable(staff);
 }

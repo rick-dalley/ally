@@ -180,7 +180,7 @@ class VitalsCaptureScreenState extends State<VitalsCaptureScreen> {
           // Systolic
           Expanded(
             flex: 1,
-            child: CarbonTextEdit(
+            child: CarbonTextInput(
               controller: _controllers['sys'],
               keyboardType: TextInputType.number,
               helperText: "Systolic",
@@ -193,7 +193,7 @@ class VitalsCaptureScreenState extends State<VitalsCaptureScreen> {
           ),
           // Diastolic
           Expanded(
-            child: CarbonTextEdit(
+            child: CarbonTextInput(
               controller: _controllers['dia'],
               keyboardType: TextInputType.number,
               helperText: "Diastolic",
@@ -212,7 +212,7 @@ class VitalsCaptureScreenState extends State<VitalsCaptureScreen> {
         const SizedBox(width: 16),
         Expanded(
           flex: 2,
-          child: CarbonTextEdit(
+          child: CarbonTextInput(
             controller: _controllers[vital.key],
             keyboardType: TextInputType.numberWithOptions(decimal: true),
             label: vital.label,

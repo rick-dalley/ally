@@ -69,7 +69,6 @@ class _MedicationCardState extends State<MedicationCard> {
 
   @override
   Widget build(BuildContext context) {
-    final bool hasDatasheet = widget.medData['has_local_datasheet'] == 1;
     final String medicationId = widget.medData['id']?.toString() ?? 'unknown';
     final String medicationName = widget.medData['name'] ?? "Unknown Medication";
     final List<InteractionConflict> medicationInteractions = widget.interactions

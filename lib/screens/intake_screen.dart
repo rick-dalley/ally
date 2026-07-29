@@ -79,13 +79,13 @@ class IntakeScreenState extends State<IntakeScreen> {
               padding: const EdgeInsets.all(20.0),
               children: [
                 SizedBox(height: 16.0),
-                CarbonTextEdit(controller: _firstNameController, label: "First Name"),
+                CarbonTextInput(controller: _firstNameController, label: "First Name"),
                 SizedBox(height: 16.0),
-                CarbonTextEdit(controller: _lastNameController, label: "Last Name"),
+                CarbonTextInput(controller: _lastNameController, label: "Last Name"),
                 SizedBox(height: 16.0),
-                CarbonTextEdit(controller: _dobController, label: "Date of Birth (YYYY-MMM-DD)"),
+                CarbonTextInput(controller: _dobController, label: "Date of Birth (YYYY-MMM-DD)"),
                 SizedBox(height: 16.0),
-                CarbonTextEdit(controller: _phnController, label: "PHN", keyboardType: TextInputType.number),
+                CarbonTextInput(controller: _phnController, label: "PHN", keyboardType: TextInputType.number),
                 const SizedBox(height: 24),
                 Row(
                   children: [

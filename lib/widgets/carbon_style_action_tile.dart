@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:triage/classes/carbon_color_constants.dart';
 import 'package:triage/classes/carbon_theme_constants.dart';
 import 'package:triage/widgets/carbon_style_separators.dart';
 import '../app_theme.dart';
@@ -27,9 +26,9 @@ class CarbonActionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     Color borderColor = CarbonTheme.getButtonBorderColor(CarbonButtonStyle.tertiary);
     Color fontColor = CarbonTheme.getButtonFontColor(CarbonButtonStyle.tertiary);
-    Color buttonColor = CarbonTheme.getButtonColor(CarbonButtonStyle.tertiary);
     Size size = iconSize ?? Size(24, 24);
     Color activeColor = iconColor ?? fontColor;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Card(

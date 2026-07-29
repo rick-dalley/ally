@@ -124,7 +124,6 @@ class ImmunizationScreenState extends State<ImmunizationScreen> {
 
                   // Vaccines List
                   ...group.vaccines.map((v) {
-                    final userRecord = _takenVaccines[v.name];
                     return VaccineCard(
                       vaccine: v,
                       onChangedDate: (DateTime when, String vaccineName) {

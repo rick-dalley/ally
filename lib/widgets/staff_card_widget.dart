@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:triage/classes/staff.dart';
+import 'package:triage/classes/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../app_theme.dart';
@@ -7,7 +7,7 @@ import 'appointment_chip.dart';
 
 class StaffIdCard extends StatelessWidget {
   final String photoPath;
-  final StaffMember? staffMember;
+  final Provider? staffMember;
   final int index;
 
   const StaffIdCard({super.key, required this.photoPath, required this.staffMember, required this.index});

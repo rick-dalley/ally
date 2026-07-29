@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:triage/classes/carbon_color_constants.dart';
 import '../classes/carbon_theme_constants.dart';
 
 class CarbonStyle2xlButton extends StatelessWidget {

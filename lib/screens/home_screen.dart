@@ -1,16 +1,17 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:triage/classes/carbon_color_constants.dart';
 import 'package:triage/classes/patient_action.dart';
 import 'package:triage/screens/add_patients_wheel.dart';
+import 'package:triage/screens/metric_dashboard_screen.dart';
 import 'package:triage/screens/time_scroller.dart';
-import 'package:triage/screens/user_screen.dart';
 import '../app_theme.dart';
 import '../classes/database_manager.dart';
 import '../classes/patient.dart';
 import '../widgets/emergency_qr.dart';
 import 'prescription_screen.dart';
-import 'staff_screen.dart';
+import 'providers_screen.dart';
 import 'medical_profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -63,12 +64,13 @@ class HomeScreenState extends State<HomeScreen> {
     final endTime = actions.last.until;
 
     return [
-      UserScreen(
-        user: patient,
-        onVitalsUpdate: (p) => updatePatient(patientIndex: patientIndex, patient: p),
-        onMemberUpdate: (p) => updatePatient(patientIndex: patientIndex, patient: p),
-      ),
-      const StaffScreen(),
+      // UserScreen(
+      //   user: patient,
+      //   onVitalsUpdate: (p) => updatePatient(patientIndex: patientIndex, patient: p),
+      //   onMemberUpdate: (p) => updatePatient(patientIndex: patientIndex, patient: p),
+      // ),
+      MetricsDashboardScreen(user: patient),
+      ProviderRosterScreen(user: patient),
       MedicalProfileScreen(householdMember: patient),
       PrescriptionScreen(patient: patient),
       EmergencyQRCodeView(householdMember: patient),
@@ -171,7 +173,7 @@ class HomeScreenState extends State<HomeScreen> {
       // Add padding/margin inside the container to make it a pill or square
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: isSelected ? AppTheme.primaryColor : Colors.transparent,
+        color: isSelected ? carbonColorButtonPrimary : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
       ),
       child: InkWell(
@@ -180,7 +182,7 @@ class HomeScreenState extends State<HomeScreen> {
           icon,
           size: 32,
           // If selected, force white; otherwise use the dark primary color
-          color: isSelected ? AppTheme.onPrimaryColor : AppTheme.primaryColor,
+          color: isSelected ? carbonColorButtonOnPrimary : carbonColorButtonPrimary,
         ),
       ),
     );

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:triage/classes/carbon_color_constants.dart';
 import '../app_theme.dart';
 import '../classes/carbon_theme_constants.dart';
 
-class CarbonTextEdit extends StatefulWidget {
+class CarbonTextInput extends StatefulWidget {
   final String label;
   final String? errorText;
   final String? placeHolderText;
@@ -15,7 +14,7 @@ class CarbonTextEdit extends StatefulWidget {
   final TextInputType? keyboardType;
   final TextEditingController? controller;
 
-  const CarbonTextEdit({
+  const CarbonTextInput({
     super.key,
     this.controller,
     required this.label,
@@ -32,9 +31,9 @@ class CarbonTextEdit extends StatefulWidget {
   State<StatefulWidget> createState() => CarbonStateText();
 }
 
-class CarbonStateText extends State<CarbonTextEdit> {
+class CarbonStateText extends State<CarbonTextInput> {
   late Color fillColor = widget.fillColor ?? carbonColorField;
-  late Color accentColor = widget.accentColor ?? AppTheme.primaryColor;
+  late Color accentColor = widget.accentColor ?? carbonColorButtonPrimary;
   late TextEditingController _controller;
   late TextInputType _keyboard;
   @override
@@ -47,7 +46,7 @@ class CarbonStateText extends State<CarbonTextEdit> {
   }
 
   @override
-  void didUpdateWidget(covariant CarbonTextEdit oldWidget) {
+  void didUpdateWidget(covariant CarbonTextInput oldWidget) {
     super.didUpdateWidget(oldWidget);
     // Only update the text if the value property actually changes
     if (widget.value != oldWidget.value) {

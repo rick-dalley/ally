@@ -1,0 +1,979 @@
+{
+  "categories": [
+    {
+      "category": "Vitals & General Health",
+      "description": "Standard daily or periodic baseline measurements for overall wellness.",
+      "metrics": [
+        {
+          "id": 1,
+          "name": "Blood Pressure - Systolic",
+          "safe_lower": 90.0,
+          "safe_upper": 140.0,
+          "healthy_lower": 100.0,
+          "healthy_upper": 120.0,
+          "units_of_measure": [
+            {
+              "symbol": "mmHg",
+              "name": "Millimeters of Mercury",
+              "converters": {
+                "kPa": "mmHg_to_kPa"
+              }
+            },
+            {
+              "symbol": "kPa",
+              "name": "Kilopascals",
+              "converters": {
+                "mmHg": "kPa_to_mmHg"
+              }
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "name": "Blood Pressure - Diastolic",
+          "safe_lower": 60.0,
+          "safe_upper": 90.0,
+          "healthy_lower": 60.0,
+          "healthy_upper": 80.0,
+          "units_of_measure": [
+            {
+              "symbol": "mmHg",
+              "name": "Millimeters of Mercury",
+              "converters": {
+                "kPa": "mmHg_to_kPa"
+              }
+            },
+            {
+              "symbol": "kPa",
+              "name": "Kilopascals",
+              "converters": {
+                "mmHg": "kPa_to_mmHg"
+              }
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "name": "Heart Rate",
+          "safe_lower": 50.0,
+          "safe_upper": 120.0,
+          "healthy_lower": 60.0,
+          "healthy_upper": 100.0,
+          "units_of_measure": [
+            {
+              "symbol": "bpm",
+              "name": "Beats per Minute",
+              "converters": {}
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "name": "Resting Heart Rate",
+          "safe_lower": 40.0,
+          "safe_upper": 100.0,
+          "healthy_lower": 60.0,
+          "healthy_upper": 80.0,
+          "units_of_measure": [
+            {
+              "symbol": "bpm",
+              "name": "Beats per Minute",
+              "converters": {}
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "name": "Body Temperature",
+          "safe_lower": 35.0,
+          "safe_upper": 39.0,
+          "healthy_lower": 36.5,
+          "healthy_upper": 37.5,
+          "units_of_measure": [
+            {
+              "symbol": "°C",
+              "name": "Celsius",
+              "converters": {
+                "°F": "celsius_to_fahrenheit"
+              }
+            },
+            {
+              "symbol": "°F",
+              "name": "Fahrenheit",
+              "converters": {
+                "°C": "fahrenheit_to_celsius"
+              }
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "name": "Body Weight",
+          "safe_lower": 30.0,
+          "safe_upper": 300.0,
+          "healthy_lower": 50.0,
+          "healthy_upper": 90.0,
+          "units_of_measure": [
+            {
+              "symbol": "kg",
+              "name": "Kilograms",
+              "converters": {
+                "lbs": "kg_to_lbs"
+              }
+            },
+            {
+              "symbol": "lbs",
+              "name": "Pounds",
+              "converters": {
+                "kg": "lbs_to_kg"
+              }
+            }
+          ]
+        },
+        {
+          "id": 7,
+          "name": "Body Mass Index (BMI)",
+          "safe_lower": 15.0,
+          "safe_upper": 40.0,
+          "healthy_lower": 18.5,
+          "healthy_upper": 24.9,
+          "units_of_measure": [
+            {
+              "symbol": "kg/m²",
+              "name": "Kilograms per Square Meter",
+              "converters": {}
+            }
+          ]
+        },
+        {
+          "id": 8,
+          "name": "Body Fat Percentage",
+          "safe_lower": 5.0,
+          "safe_upper": 45.0,
+          "healthy_lower": 10.0,
+          "healthy_upper": 25.0,
+          "units_of_measure": [
+            {
+              "symbol": "%",
+              "name": "Percentage",
+              "converters": {}
+            }
+          ]
+        },
+        {
+          "id": 9,
+          "name": "Waist Circumference",
+          "safe_lower": 50.0,
+          "safe_upper": 150.0,
+          "healthy_lower": 60.0,
+          "healthy_upper": 102.0,
+          "units_of_measure": [
+            {
+              "symbol": "cm",
+              "name": "Centimeters",
+              "converters": {
+                "in": "cm_to_inches"
+              }
+            },
+            {
+              "symbol": "in",
+              "name": "Inches",
+              "converters": {
+                "cm": "inches_to_cm"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "Sleep Apnea & Respiratory",
+      "description": "Metrics tracking nighttime breathing, oxygen saturation, and pulmonary mechanics.",
+      "metrics": [
+        {
+          "id": 10,
+          "name": "Blood Oxygen Saturation (SpO2)",
+          "safe_lower": 85.0,
+          "safe_upper": 100.0,
+          "healthy_lower": 95.0,
+          "healthy_upper": 100.0,
+          "units_of_measure": [
+            {
+              "symbol": "%",
+              "name": "Percentage",
+              "converters": {}
+            }
+          ]
+        },
+        {
+          "id": 11,
+          "name": "Apnea-Hypopnea Index (AHI)",
+          "safe_lower": 0.0,
+          "safe_upper": 60.0,
+          "healthy_lower": 0.0,
+          "healthy_upper": 5.0,
+          "units_of_measure": [
+            {
+              "symbol": "events/hr",
+              "name": "Events per Hour",
+              "converters": {}
+            }
+          ]
+        },
+        {
+          "id": 12,
+          "name": "Peak Expiratory Flow Rate (PEFR)",
+          "safe_lower": 150.0,
+          "safe_upper": 800.0,
+          "healthy_lower": 400.0,
+          "healthy_upper": 650.0,
+          "units_of_measure": [
+            {
+              "symbol": "L/min",
+              "name": "Liters per Minute",
+              "converters": {}
+            }
+          ]
+        },
+        {
+          "id": 13,
+          "name": "Forced Expiratory Volume in 1 Second (FEV1)",
+          "safe_lower": 1.0,
+          "safe_upper": 6.0,
+          "healthy_lower": 3.0,
+          "healthy_upper": 5.0,
+          "units_of_measure": [
+            {
+              "symbol": "L",
+              "name": "Liters",
+              "converters": {}
+            }
+          ]
+        },
+        {
+          "id": 14,
+          "name": "Respiration Rate",
+          "safe_lower": 8.0,
+          "safe_upper": 30.0,
+          "healthy_lower": 12.0,
+          "healthy_upper": 20.0,
+          "units_of_measure": [
+            {
+              "symbol": "breaths/min",
+              "name": "Breaths per Minute",
+              "converters": {}
+            }
+          ]
+        },
+        {
+          "id": 15,
+          "name": "CPAP Usage Duration",
+          "safe_lower": 0.0,
+          "safe_upper": 14.0,
+          "healthy_lower": 7.0,
+          "healthy_upper": 9.0,
+          "units_of_measure": [
+            {
+              "symbol": "hr",
+              "name": "Hours",
+              "converters": {}
+            }
+          ]
+        },
+        {
+          "id": 16,
+          "name": "CPAP Mask Leak Rate",
+          "safe_lower": 0.0,
+          "safe_upper": 50.0,
+          "healthy_lower": 0.0,
+          "healthy_upper": 24.0,
+          "units_of_measure": [
+            {
+              "symbol": "L/min",
+              "name": "Liters per Minute",
+              "converters": {}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "Diabetes & Metabolic",
+      "description": "Blood glucose, ketone levels, and metabolic parameters.",
+      "metrics": [
+        {
+          "id": 17,
+          "name": "Blood Glucose (Fasting / General)",
+          "safe_lower": 2.8,
+          "safe_upper": 22.0,
+          "healthy_lower": 4.0,
+          "healthy_upper": 5.6,
+          "units_of_measure": [
+            {
+              "symbol": "mmol/L",
+              "name": "Millimoles per Liter",
+              "converters": {
+                "mg/dL": "mmol_to_mgdl"
+              }
+            },
+            {
+              "symbol": "mg/dL",
+              "name": "Milligrams per Deciliter",
+              "converters": {
+                "mmol/L": "mgdl_to_mmol"
+              }
+            }
+          ]
+        },
+        {
+          "id": 18,
+          "name": "Blood Glucose (Postprandial / Post-Meal)",
+          "safe_lower": 3.0,
+          "safe_upper": 16.0,
+          "healthy_lower": 5.0,
+          "healthy_upper": 7.8,
+          "units_of_measure": [
+            {
+              "symbol": "mmol/L",
+              "name": "Millimoles per Liter",
+              "converters": {
+                "mg/dL": "mmol_to_mgdl"
+              }
+            },
+            {
+              "symbol": "mg/dL",
+              "name": "Milligrams per Deciliter",
+              "converters": {
+                "mmol/L": "mgdl_to_mmol"
+              }
+            }
+          ]
+        },
+        {
+          "id": 19,
+          "name": "Estimated Average Glucose (eAG)",
+          "safe_lower": 4.0,
+          "safe_upper": 15.0,
+          "healthy_lower": 4.5,
+          "healthy_upper": 7.0,
+          "units_of_measure": [
+            {
+              "symbol": "mmol/L",
+              "name": "Millimoles per Liter",
+              "converters": {
+                "mg/dL": "mmol_to_mgdl"
+              }
+            },
+            {
+              "symbol": "mg/dL",
+              "name": "Milligrams per Deciliter",
+              "converters": {
+                "mmol/L": "mgdl_to_mmol"
+              }
+            }
+          ]
+        },
+        {
+          "id": 20,
+          "name": "Glycated Hemoglobin (HbA1c)",
+          "safe_lower": 4.0,
+          "safe_upper": 12.0,
+          "healthy_lower": 4.0,
+          "healthy_upper": 5.6,
+          "units_of_measure": [
+            {
+              "symbol": "%",
+              "name": "Percentage",
+              "converters": {}
+            },
+            {
+              "symbol": "mmol/mol",
+              "name": "Millimoles per Mole",
+              "converters": {}
+            }
+          ]
+        },
+        {
+          "id": 21,
+          "name": "Blood Ketones",
+          "safe_lower": 0.0,
+          "safe_upper": 5.0,
+          "healthy_lower": 0.0,
+          "healthy_upper": 0.5,
+          "units_of_measure": [
+            {
+              "symbol": "mmol/L",
+              "name": "Millimoles per Liter",
+              "converters": {}
+            }
+          ]
+        },
+        {
+          "id": 22,
+          "name": "Urine Ketones",
+          "safe_lower": 0.0,
+          "safe_upper": 4.0,
+          "healthy_lower": 0.0,
+          "healthy_upper": 0.0,
+          "units_of_measure": [
+            {
+              "symbol": "mg/dL",
+              "name": "Milligrams per Deciliter",
+              "converters": {}
+            }
+          ]
+        },
+        {
+          "id": 23,
+          "name": "Insulin Dose Logged",
+          "safe_lower": 0.0,
+          "safe_upper": 100.0,
+          "healthy_lower": 0.0,
+          "healthy_upper": 20.0,
+          "units_of_measure": [
+            {
+              "symbol": "units",
+              "name": "Units",
+              "converters": {}
+            }
+          ]
+        },
+        {
+          "id": 24,
+          "name": "Carbohydrate Intake",
+          "safe_lower": 0.0,
+          "safe_upper": 300.0,
+          "healthy_lower": 20.0,
+          "healthy_upper": 250.0,
+          "units_of_measure": [
+            {
+              "symbol": "g",
+              "name": "Grams",
+              "converters": {}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "Cardiovascular & Circulation",
+      "description": "Heart efficiency, rhythm parameters, and circulating markers.",
+      "metrics": [
+        {
+          "id": 25,
+          "name": "Total Cholesterol",
+          "safe_lower": 2.5,
+          "safe_upper": 8.0,
+          "healthy_lower": 3.0,
+          "healthy_upper": 5.1,
+          "units_of_measure": [
+            {
+              "symbol": "mmol/L",
+              "name": "Millimoles per Liter",
+              "converters": {
+                "mg/dL": "cholesterol_mmol_to_mgdl"
+              }
+            },
+            {
+              "symbol": "mg/dL",
+              "name": "Milligrams per Deciliter",
+              "converters": {
+                "mmol/L": "cholesterol_mgdl_to_mmol"
+              }
+            }
+          ]
+        },
+        {
+          "id": 26,
+          "name": "Low-Density Lipoprotein (LDL)",
+          "safe_lower": 1.0,
+          "safe_upper": 5.0,
+          "healthy_lower": 1.5,
+          "healthy_upper": 3.3,
+          "units_of_measure": [
+            {
+              "symbol": "mmol/L",
+              "name": "Millimoles per Liter",
+              "converters": {
+                "mg/dL": "cholesterol_mmol_to_mgdl"
+              }
+            },
+            {
+              "symbol": "mg/dL",
+              "name": "Milligrams per Deciliter",
+              "converters": {
+                "mmol/L": "cholesterol_mgdl_to_mmol"
+              }
+            }
+          ]
+        },
+        {
+          "id": 27,
+          "name": "High-Density Lipoprotein (HDL)",
+          "safe_lower": 0.5,
+          "safe_upper": 3.0,
+          "healthy_lower": 1.0,
+          "healthy_upper": 2.0,
+          "units_of_measure": [
+            {
+              "symbol": "mmol/L",
+              "name": "Millimoles per Liter",
+              "converters": {
+                "mg/dL": "cholesterol_mmol_to_mgdl"
+              }
+            },
+            {
+              "symbol": "mg/dL",
+              "name": "Milligrams per Deciliter",
+              "converters": {
+                "mmol/L": "cholesterol_mgdl_to_mmol"
+              }
+            }
+          ]
+        },
+        {
+          "id": 28,
+          "name": "Triglycerides",
+          "safe_lower": 0.5,
+          "safe_upper": 5.0,
+          "healthy_lower": 0.6,
+          "healthy_upper": 1.7,
+          "units_of_measure": [
+            {
+              "symbol": "mmol/L",
+              "name": "Millimoles per Liter",
+              "converters": {
+                "mg/dL": "triglycerides_mmol_to_mgdl"
+              }
+            },
+            {
+              "symbol": "mg/dL",
+              "name": "Milligrams per Deciliter",
+              "converters": {
+                "mmol/L": "triglycerides_mgdl_to_mmol"
+              }
+            }
+          ]
+        },
+        {
+          "id": 29,
+          "name": "Prothrombin Time / INR",
+          "safe_lower": 0.8,
+          "safe_upper": 5.0,
+          "healthy_lower": 2.0,
+          "healthy_upper": 3.0,
+          "units_of_measure": [
+            {
+              "symbol": "INR",
+              "name": "International Normalized Ratio",
+              "converters": {}
+            }
+          ]
+        },
+        {
+          "id": 30,
+          "name": "Heart Rate Variability (HRV)",
+          "safe_lower": 10.0,
+          "safe_upper": 150.0,
+          "healthy_lower": 40.0,
+          "healthy_upper": 100.0,
+          "units_of_measure": [
+            {
+              "symbol": "ms",
+              "name": "Milliseconds",
+              "converters": {}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "Rheumatism, Orthopedic & Pain Management",
+      "description": "Inflammatory disorders, joint metrics, and functional pain scores.",
+      "metrics": [
+        {
+          "id": 31,
+          "name": "Joint Pain Severity Score",
+          "safe_lower": 0.0,
+          "safe_upper": 10.0,
+          "healthy_lower": 0.0,
+          "healthy_upper": 2.0,
+          "units_of_measure": [
+            {
+              "symbol": "/10",
+              "name": "Visual Analog Scale",
+              "converters": {}
+            }
+          ]
+        },
+        {
+          "id": 32,
+          "name": "Morning Joint Stiffness Duration",
+          "safe_lower": 0.0,
+          "safe_upper": 360.0,
+          "healthy_lower": 0.0,
+          "healthy_upper": 15.0,
+          "units_of_measure": [
+            {
+              "symbol": "min",
+              "name": "Minutes",
+              "converters": {
+                "hr": "minutes_to_hours"
+              }
+            },
+            {
+              "symbol": "hr",
+              "name": "Hours",
+              "converters": {
+                "min": "hours_to_minutes"
+              }
+            }
+          ]
+        },
+        {
+          "id": 33,
+          "name": "C-Reactive Protein (CRP)",
+          "safe_lower": 0.0,
+          "safe_upper": 50.0,
+          "healthy_lower": 0.0,
+          "healthy_upper": 3.0,
+          "units_of_measure": [
+            {
+              "symbol": "mg/L",
+              "name": "Milligrams per Liter",
+              "converters": {}
+            }
+          ]
+        },
+        {
+          "id": 34,
+          "name": "Erythrocyte Sedimentation Rate (ESR)",
+          "safe_lower": 0.0,
+          "safe_upper": 100.0,
+          "healthy_lower": 0.0,
+          "healthy_upper": 20.0,
+          "units_of_measure": [
+            {
+              "symbol": "mm/hr",
+              "name": "Millimeters per Hour",
+              "converters": {}
+            }
+          ]
+        },
+        {
+          "id": 35,
+          "name": "Grip Strength",
+          "safe_lower": 5.0,
+          "safe_upper": 100.0,
+          "healthy_lower": 30.0,
+          "healthy_upper": 60.0,
+          "units_of_measure": [
+            {
+              "symbol": "kg",
+              "name": "Kilograms",
+              "converters": {
+                "lbs": "kg_to_lbs"
+              }
+            },
+            {
+              "symbol": "lbs",
+              "name": "Pounds",
+              "converters": {
+                "kg": "lbs_to_kg"
+              }
+            }
+          ]
+        },
+        {
+          "id": 36,
+          "name": "General Pain Level",
+          "safe_lower": 0.0,
+          "safe_upper": 10.0,
+          "healthy_lower": 0.0,
+          "healthy_upper": 1.0,
+          "units_of_measure": [
+            {
+              "symbol": "/10",
+              "name": "Visual Analog Scale",
+              "converters": {}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "Renal & Urinary Function",
+      "description": "Kidney efficiency, filtration markers, and fluid balance.",
+      "metrics": [
+        {
+          "id": 37,
+          "name": "Serum Creatinine",
+          "safe_lower": 30.0,
+          "safe_upper": 300.0,
+          "healthy_lower": 60.0,
+          "healthy_upper": 110.0,
+          "units_of_measure": [
+            {
+              "symbol": "µmol/L",
+              "name": "Micromoles per Liter",
+              "converters": {
+                "mg/dL": "creatinine_umol_to_mgdl"
+              }
+            },
+            {
+              "symbol": "mg/dL",
+              "name": "Milligrams per Deciliter",
+              "converters": {
+                "µmol/L": "creatinine_mgdl_to_umol"
+              }
+            }
+          ]
+        },
+        {
+          "id": 38,
+          "name": "Estimated Glomerular Filtration Rate (eGFR)",
+          "safe_lower": 15.0,
+          "safe_upper": 150.0,
+          "healthy_lower": 90.0,
+          "healthy_upper": 120.0,
+          "units_of_measure": [
+            {
+              "symbol": "mL/min/1.73m²",
+              "name": "Milliliters per Minute per 1.73m²",
+              "converters": {}
+            }
+          ]
+        },
+        {
+          "id": 39,
+          "name": "Blood Urea Nitrogen (BUN)",
+          "safe_lower": 1.0,
+          "safe_upper": 35.0,
+          "healthy_lower": 2.5,
+          "healthy_upper": 7.1,
+          "units_of_measure": [
+            {
+              "symbol": "mmol/L",
+              "name": "Millimoles per Liter",
+              "converters": {
+                "mg/dL": "bun_mmol_to_mgdl"
+              }
+            },
+            {
+              "symbol": "mg/dL",
+              "name": "Milligrams per Deciliter",
+              "converters": {
+                "mmol/L": "bun_mgdl_to_mmol"
+              }
+            }
+          ]
+        },
+        {
+          "id": 40,
+          "name": "Urine Output Volume",
+          "safe_lower": 200.0,
+          "safe_upper": 4000.0,
+          "healthy_lower": 800.0,
+          "healthy_upper": 2000.0,
+          "units_of_measure": [
+            {
+              "symbol": "mL",
+              "name": "Milliliters",
+              "converters": {
+                "L": "ml_to_liters"
+              }
+            },
+            {
+              "symbol": "L",
+              "name": "Liters",
+              "converters": {
+                "mL": "liters_to_ml"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "Gastrointestinal & Nutritional",
+      "description": "Digestive parameters, hydration balance, and basic nutritional tracking.",
+      "metrics": [
+        {
+          "id": 41,
+          "name": "Water / Fluid Intake",
+          "safe_lower": 0.0,
+          "safe_upper": 8000.0,
+          "healthy_lower": 2000.0,
+          "healthy_upper": 3500.0,
+          "units_of_measure": [
+            {
+              "symbol": "mL",
+              "name": "Milliliters",
+              "converters": {
+                "L": "ml_to_liters",
+                "oz": "ml_to_oz"
+              }
+            },
+            {
+              "symbol": "L",
+              "name": "Liters",
+              "converters": {
+                "mL": "liters_to_ml"
+              }
+            },
+            {
+              "symbol": "oz",
+              "name": "Fluid Ounces",
+              "converters": {
+                "mL": "oz_to_ml"
+              }
+            }
+          ]
+        },
+        {
+          "id": 42,
+          "name": "Daily Caloric Intake",
+          "safe_lower": 500.0,
+          "safe_upper": 6000.0,
+          "healthy_lower": 1500.0,
+          "healthy_upper": 2500.0,
+          "units_of_measure": [
+            {
+              "symbol": "kcal",
+              "name": "Kilocalories",
+              "converters": {}
+            }
+          ]
+        },
+        {
+          "id": 43,
+          "name": "Abdominal Pain Severity",
+          "safe_lower": 0.0,
+          "safe_upper": 10.0,
+          "healthy_lower": 0.0,
+          "healthy_upper": 1.0,
+          "units_of_measure": [
+            {
+              "symbol": "/10",
+              "name": "Visual Analog Scale",
+              "converters": {}
+            }
+          ]
+        },
+        {
+          "id": 44,
+          "name": "Stool Consistency (Bristol Scale)",
+          "safe_lower": 1.0,
+          "safe_upper": 7.0,
+          "healthy_lower": 3.0,
+          "healthy_upper": 5.0,
+          "units_of_measure": [
+            {
+              "symbol": "type",
+              "name": "Bristol Stool Chart Score",
+              "converters": {}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "Neurological & Mental Wellness",
+      "description": "Cognitive performance, mood tracking, sleep quality, and headache severity.",
+      "metrics": [
+        {
+          "id": 45,
+          "name": "Sleep Duration",
+          "safe_lower": 2.0,
+          "safe_upper": 14.0,
+          "healthy_lower": 7.0,
+          "healthy_upper": 9.0,
+          "units_of_measure": [
+            {
+              "symbol": "hr",
+              "name": "Hours",
+              "converters": {
+                "min": "hours_to_minutes"
+              }
+            }
+          ]
+        },
+        {
+          "id": 46,
+          "name": "Sleep Quality Score",
+          "safe_lower": 1.0,
+          "safe_upper": 10.0,
+          "healthy_lower": 7.0,
+          "healthy_upper": 10.0,
+          "units_of_measure": [
+            {
+              "symbol": "/10",
+              "name": "Subjective Scale",
+              "converters": {}
+            }
+          ]
+        },
+        {
+          "id": 47,
+          "name": "Headache / Migraine Severity",
+          "safe_lower": 0.0,
+          "safe_upper": 10.0,
+          "healthy_lower": 0.0,
+          "healthy_upper": 1.0,
+          "units_of_measure": [
+            {
+              "symbol": "/10",
+              "name": "Visual Analog Scale",
+              "converters": {}
+            }
+          ]
+        },
+        {
+          "id": 48,
+          "name": "Daily Mood Score",
+          "safe_lower": 1.0,
+          "safe_upper": 10.0,
+          "healthy_lower": 6.0,
+          "healthy_upper": 10.0,
+          "units_of_measure": [
+            {
+              "symbol": "/10",
+              "name": "Subjective Scale",
+              "converters": {}
+            }
+          ]
+        },
+        {
+          "id": 49,
+          "name": "Stress Level",
+          "safe_lower": 1.0,
+          "safe_upper": 10.0,
+          "healthy_lower": 1.0,
+          "healthy_upper": 4.0,
+          "units_of_measure": [
+            {
+              "symbol": "/10",
+              "name": "Subjective Scale",
+              "converters": {}
+            }
+          ]
+        },
+        {
+          "id": 50,
+          "name": "Cognitive Alertness",
+          "safe_lower": 1.0,
+          "safe_upper": 10.0,
+          "healthy_lower": 7.0,
+          "healthy_upper": 10.0,
+          "units_of_measure": [
+            {
+              "symbol": "/10",
+              "name": "Subjective Scale",
+              "converters": {}
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

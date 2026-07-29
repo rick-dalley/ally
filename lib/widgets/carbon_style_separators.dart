@@ -1,10 +1,9 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../classes/carbon_color_constants.dart';
 
-class CarbonSeparator extends StatelessWidget {
-  const CarbonSeparator({super.key});
+class CarbonHorizontalSeparator extends StatelessWidget {
+  const CarbonHorizontalSeparator({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -13,18 +12,20 @@ class CarbonSeparator extends StatelessWidget {
 }
 
 class CarbonVerticalSeparator extends StatelessWidget {
-  double? width;
-  double? height;
-  CarbonVerticalSeparator({super.key, this.width, this.height});
+  final double? width;
+  final double? height;
+  const CarbonVerticalSeparator({super.key, this.width, this.height});
 
   @override
   Widget build(BuildContext context) {
+    double appliedWidth = width ?? 1.0;
+    double appliedHeight = height ?? 4.0;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 0),
       child: Container(
-        width: width ?? 1.0, // Thickness
-        height: height ?? 40, // Fixed height to make it shorter than the tile
-        color: carbonColorSeparator, // Your preferred divider color
+        width: appliedWidth, // Thickness
+        height: appliedHeight, // Fixed height to make it shorter than the tile
+        color: carbonColorVerticalSeparator, // Your preferred divider color
       ),
     );
   }

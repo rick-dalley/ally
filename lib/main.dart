@@ -4,11 +4,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:triage/classes/acuity.dart';
 import 'package:triage/classes/body_zone.dart';
+import 'package:triage/classes/carbon_color_constants.dart';
 import 'package:triage/classes/database_manager.dart';
 import 'package:triage/screens/home_screen.dart';
 import 'package:triage/screens/start_up.dart';
 import 'classes/drugs.dart';
-import 'classes/staff.dart';
 import 'classes/symptom_evaluation.dart';
 import 'generated/l10n.dart';
 import 'app_theme.dart';
@@ -66,7 +66,6 @@ class LuminescaHomeState extends State<LuminescaHome> {
       DatabaseManager().database,
       AcuityFactory.instance.initialize('assets/assessment/mental_health_acuity.json'),
       TouchImageFactory.instance.initialize('assets/images/touch_points.json'),
-      StaffFactory.instance.initialize(),
       DrugFactory.instance.initialize(),
       SymptomFactory.instance.initialize('assets/assessment/symptoms.json'),
     ]);
@@ -84,7 +83,7 @@ class LuminescaHomeState extends State<LuminescaHome> {
             children: [
               TextSpan(
                 text: 'CWICare',
-                style: TextStyle(fontWeight: FontWeight.w700, color: AppTheme.primaryColor, letterSpacing: 1.2),
+                style: TextStyle(fontWeight: FontWeight.w700, color: carbonColorButtonOnTertiary, letterSpacing: 1.2),
               ),
               const TextSpan(
                 text: ' — ',
@@ -102,10 +101,10 @@ class LuminescaHomeState extends State<LuminescaHome> {
       // and we only animate the loading overlay on top.
       body: Stack(
         children: [
-          // 1. The Roster: Always present and laid out, just hidden by the stack
+          // The Roster: Always present and laid out, just hidden by the stack
           const HomeScreen(),
 
-          // 2. The Loading Overlay: Only exists while loading
+          // The Loading Overlay: Only exists while loading
           FutureBuilder(
             future: _initFuture,
             builder: (context, snapshot) {

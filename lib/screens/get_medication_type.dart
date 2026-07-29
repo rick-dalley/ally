@@ -56,5 +56,5 @@ class _GetMedicationTypeState extends State<GetMedicationType> {
     );
   }
 
-  static Widget get carbonSeparator => CarbonSeparator();
+  static Widget get carbonSeparator => CarbonHorizontalSeparator();
 }

@@ -5,6 +5,7 @@ import '../app_theme.dart';
 import '../classes/assessment_logic.dart';
 import '../classes/database_manager.dart';
 import '../classes/patient.dart';
+import '../classes/questionnaire.dart';
 import '../classes/templates.dart';
 import '../widgets/questionnaire_tile.dart';
 

@@ -120,7 +120,6 @@ class AddPatientsWheelState extends State<AddPatientsWheel> {
 
   Widget buildRadialCircle() {
     List<Widget> items = [];
-    int index = 0;
     // 1. Add your existing members as AvatarActionWidgets
     for (int i = 0; i < widget.familyMembers.length; i++) {
       final user = widget.familyMembers[i];

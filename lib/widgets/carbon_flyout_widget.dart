@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../classes/carbon_theme_constants.dart';
 import '../classes/carbon_color_constants.dart';
 import '../classes/flyable.dart';
@@ -19,37 +18,15 @@ class CarbonFlyOutItemWidget extends StatelessWidget {
     double iconDim = dim - bWidth;
 
     CarbonButtonStyle buttonStyle = style ?? CarbonButtonStyle.ghost;
-    Color color = carbonColorButtonOnGhost;
-    Color backgroundColor = carbonColorButtonGhost;
-    Color borderColor = carbonColorButtonGhost;
-    switch (buttonStyle) {
-      case CarbonButtonStyle.danger:
-        color = carbonColorButtonOnDanger;
-        backgroundColor = carbonColorButtonDanger;
-        borderColor = carbonColorButtonDanger;
-      case CarbonButtonStyle.ghost:
-        color = carbonColorButtonOnGhost;
-        backgroundColor = carbonColorButtonGhost;
-        borderColor = carbonColorButtonGhost;
-      case CarbonButtonStyle.primary:
-        color = carbonColorButtonPrimary;
-        backgroundColor = carbonColorButtonOnPrimary;
-        borderColor = carbonColorButtonPrimary;
-      case CarbonButtonStyle.secondary:
-        color = carbonColorButtonOnSecondary;
-        backgroundColor = carbonColorButtonSecondary;
-        borderColor = carbonColorButtonOnSecondary;
-      case CarbonButtonStyle.tertiary:
-        color = carbonColorButtonOnTertiary;
-        backgroundColor = carbonColorButtonTertiary;
-        borderColor = carbonColorButtonOnTertiary;
-    }
+    Color fontColor = CarbonTheme.getButtonFontColor(buttonStyle);
+    Color backgroundColor = CarbonTheme.getButtonColor(buttonStyle);
+
     // Wrap the entire visual area in the GestureDetector here
     return Container(
       color: backgroundColor,
       width: dim,
       height: dim,
-      child: Icon(flyableItem.icon, size: iconDim, color: color),
+      child: Icon(flyableItem.icon, size: iconDim, color: fontColor),
     );
   }
 }
@@ -214,16 +191,9 @@ class DetailedItemModal extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          item.label,
-                          style: GoogleFonts.ibmPlexSans(
-                            color: carbonColorButtonOnTertiary,
-                            fontWeight: FontWeight.w400,
-                            fontSize: CarbonButtonSize.medium.fontSize,
-                          ),
-                        ),
+                        Text(item.label, style: CarbonTheme.carbonTertiaryButtonTextStyle),
                         const SizedBox(height: 4),
-                        Text(item.description, style: Theme.of(context).textTheme.bodyMedium),
+                        Text(item.description, style: CarbonTheme.carbonTextStyle),
                       ],
                     ),
                   ),

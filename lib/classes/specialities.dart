@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/classes/staff.dart';
+import 'package:triage/classes/provider.dart';
 
 enum Specialities {
   medicine,

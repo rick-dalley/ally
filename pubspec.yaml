@@ -53,13 +53,15 @@ flutter:
     - assets/images/pills/
     - assets/interactions/
     - assets/medications/
+    - assets/metrics/
     - assets/observations/
     - assets/patients/
     - assets/process/
+    - assets/providers/
     - assets/questionnaires/
     - assets/questions/
     - assets/screen_captures/
     - assets/sql/
-    - assets/staff/
+
 flutter_intl:
   enabled: true

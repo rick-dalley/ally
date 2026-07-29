@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:triage/classes/staff.dart';
+import 'package:triage/classes/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SendPainDiagram extends StatefulWidget {
@@ -10,9 +10,9 @@ class SendPainDiagram extends StatefulWidget {
 }
 
 class SendPainDiagramState extends State<SendPainDiagram> {
-  late List<StaffMember> supportTeam;
+  late List<Provider> supportTeam;
   Future<void> sendDoctorEmail({
-    required StaffMember staffMember,
+    required Provider staffMember,
     required String bodyPart,
     required String symptoms,
     required String frequency,

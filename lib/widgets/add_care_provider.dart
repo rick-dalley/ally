@@ -72,7 +72,6 @@ class _AddCareProviderScreenState extends State<AddCareProviderScreen> {
                       helperText: "Select from the available list.",
                       onChanged: (String? val) {
                         // 'val' will be the string the user typed or selected
-                        print("Selected specialty: $val");
 
                         // If you need the underlying enum/value, look it up in your map:
                         // final underlyingValue = specialities[val];
@@ -82,12 +81,12 @@ class _AddCareProviderScreenState extends State<AddCareProviderScreen> {
                 ],
               ),
               const SizedBox(height: 16), // Spacing between the two text fields
-              CarbonTextEdit(label: "First name", helperText: "Enter the first name"),
-              CarbonTextEdit(label: "Last Name", helperText: "Enter the last name"),
-              CarbonTextEdit(label: "Email", helperText: "enter an email in the form name@site.com"),
-              CarbonTextEdit(label: "Other", helperText: "enter the fax, cell or pager number"),
-              CarbonTextEdit(label: "Office Location", helperText: "enter the address of the provider"),
-              CarbonTextEdit(label: "Notes", helperText: "enter anything you want to remember about the provider"),
+              CarbonTextInput(label: "First name", helperText: "Enter the first name"),
+              CarbonTextInput(label: "Last Name", helperText: "Enter the last name"),
+              CarbonTextInput(label: "Email", helperText: "enter an email in the form name@site.com"),
+              CarbonTextInput(label: "Other", helperText: "enter the fax, cell or pager number"),
+              CarbonTextInput(label: "Office Location", helperText: "enter the address of the provider"),
+              CarbonTextInput(label: "Notes", helperText: "enter anything you want to remember about the provider"),
               const SizedBox(height: 24),
               Row(
                 children: [
@@ -119,7 +118,7 @@ class _AddCareProviderScreenState extends State<AddCareProviderScreen> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          CarbonTextEdit(label: "Image URL"),
+          CarbonTextInput(label: "Image URL"),
           const SizedBox(height: 16),
           TextButton(onPressed: _handlePaste, child: const Text("Paste from Clipboard")),
         ],

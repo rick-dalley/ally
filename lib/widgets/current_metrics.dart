@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/widgets/vertical_range_indicator.dart';
-import '../app_theme.dart';
 import '../classes/vitals.dart';
 
 class CurrentMetrics extends StatelessWidget {
@@ -24,7 +23,6 @@ class CurrentMetrics extends StatelessWidget {
     // Adding 30px to account for the label height to prevent overflow
     const double labelBuffer = 30.0;
     final double totalHeight = barHeight + labelBuffer;
-    final Color specifiedBackgroundColor = backgroundColor ?? AppTheme.onPrimaryColor;
     return InkWell(
       onTap: onTap,
       child: Column(
