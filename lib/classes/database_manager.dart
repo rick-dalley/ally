@@ -1002,6 +1002,54 @@ class DatabaseManager {
     );
   }
 
+  Future<void> addPatientMedicalDevice(String deviceId, String patientId) async {
+    final db = await database;
+
+    // Use a LEFT JOIN to ensure we get the patient even if they have no vitals yet
+    await db.rawInsert(
+      '''
+    INSERT INTO patient_device
+    (device_id, patient_uuid) VALUES(?, ?)
+  ''',
+      [deviceId, patientId],
+    );
+  }
+
+  Future<void> deletePatientMedicalDevice(String deviceId, String patientId) async {
+    final db = await database;
+
+    // Use a LEFT JOIN to ensure we get the patient even if they have no vitals yet
+    await db.rawDelete(
+      '''
+    DELETE FROM patient_device
+    WHERE device_id = ? AND patient_uuid = ?
+  ''',
+      [deviceId, patientId],
+    );
+  }
+
+  Future<void> insertTrackingMetric(int metricId, String patientUuid) async {
+    final db = await database;
+    db.rawInsert(
+      '''
+    INSERT INTO patient_metric_tracking
+    (metric_id, patient_uuid) VALUES(?, ?)
+  ''',
+      [metricId, patientUuid],
+    );
+  }
+
+  Future<void> deleteTrackingMetric(int metricId, String patientUuid) async {
+    final db = await database;
+    await db.rawDelete(
+      '''
+    DELETE FROM patient_metric_tracking
+    WHERE metric_id = ? AND patient_uuid = ?
+  ''',
+      [metricId, patientUuid],
+    );
+  }
+
   Future<List<Map<String, dynamic>>> getAllMetrics() async {
     final db = await database;
 

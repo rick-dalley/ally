@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/classes/carbon_color_constants.dart';
 import 'package:triage/classes/database_manager.dart';
+import 'package:triage/widgets/carbon_style_search_field.dart';
 import '../app_theme.dart';
+import '../classes/metric_value.dart';
 import '../classes/patient.dart';
 import '../widgets/metric_tracking_card.dart';
 
@@ -11,80 +12,67 @@ class MetricsDashboardScreen extends StatefulWidget {
   const MetricsDashboardScreen({super.key, required this.user});
 
   @override
-  State<MetricsDashboardScreen> createState() => _MetricsDashboardScreenState();
+  State<MetricsDashboardScreen> createState() => MetricsDashboardScreenState();
 }
 
-class _MetricsDashboardScreenState extends State<MetricsDashboardScreen> {
-  late Future<Map<String, dynamic>> _metricsDataFuture;
+class MetricsDashboardScreenState extends State<MetricsDashboardScreen> {
+  late Future<void> initDataFuture;
+  final TextEditingController searchController = TextEditingController();
+  String searchQuery = '';
+
+  Map<int, Metric> allMetrics = {};
+  Map<int, Metric> trackedMetrics = {};
+  Map<int, Metric> untrackedMetrics = {};
 
   @override
   void initState() {
     super.initState();
-    _loadMetricsData();
-  }
-
-  void _loadMetricsData() {
-    _metricsDataFuture = _fetchAllMetricsData();
-  }
-
-  Future<Map<String, dynamic>> _fetchAllMetricsData() async {
-    final dbManager = DatabaseManager();
-    final userUuid = widget.user.patientUuid;
-
-    // Retrieve and convert queries into growable, modifiable lists
-    final rawMetrics = await dbManager.getAllMetrics();
-    final List<Map<String, dynamic>> allMetrics = rawMetrics.map((e) => Map<String, dynamic>.from(e)).toList();
-
-    final rawTracked = await dbManager.getTrackedMetrics(userUuid);
-    final List<Map<String, dynamic>> trackedMetrics = rawTracked.map((e) => Map<String, dynamic>.from(e)).toList();
-
-    final rawValues = await dbManager.getPatientMetricValues(userUuid);
-    final List<Map<String, dynamic>> allValues = rawValues.map((e) => Map<String, dynamic>.from(e)).toList();
-
-    final Set<String> trackedMetricIds = trackedMetrics.map((m) => (m['metric_id'] ?? m['id']).toString()).toSet();
-
-    // Group values by metric_id for fast hydration upon expansion
-    final Map<String, List<Map<String, dynamic>>> valuesByMetricId = {};
-    for (var valMap in allValues) {
-      final metricId = (valMap['metric_id'] ?? '').toString();
-      if (metricId.isNotEmpty) {
-        valuesByMetricId.putIfAbsent(metricId, () => []).add(valMap);
-      }
-    }
-
-    // Map tracked configuration settings by metric_id
-    final Map<String, Map<String, dynamic>> trackedConfigByMetricId = {};
-    for (var tMap in trackedMetrics) {
-      final metricId = (tMap['metric_id'] ?? tMap['id']).toString();
-      if (metricId.isNotEmpty) {
-        trackedConfigByMetricId[metricId] = tMap;
-      }
-    }
-
-    // Sort cards safely now that allMetrics is a modifiable growable list
-    allMetrics.sort((a, b) {
-      final aId = (a['id'] ?? '').toString();
-      final bId = (b['id'] ?? '').toString();
-      final aTracked = trackedMetricIds.contains(aId) ? 0 : 1;
-      final bTracked = trackedMetricIds.contains(bId) ? 0 : 1;
-      return aTracked.compareTo(bTracked);
+    initDataFuture = loadDataOnce();
+    searchController.addListener(() {
+      setState(() {
+        searchQuery = searchController.text.trim().toLowerCase();
+      });
     });
+  }
 
-    return {
-      'allMetrics': allMetrics,
-      'trackedMetricIds': trackedMetricIds,
-      'valuesByMetricId': valuesByMetricId,
-      'trackedConfigByMetricId': trackedConfigByMetricId,
-    };
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> loadDataOnce() async {
+    final userUuid = widget.user.patientUuid;
+    Metrics metrics = await Metrics.forPatient(userUuid);
+    allMetrics = metrics.all;
+    trackedMetrics = metrics.tracked;
+    untrackedMetrics = metrics.untracked;
+  }
+
+  void handleTrackingChanged(int metricId, bool isTracked) {
+    setState(() {
+      if (isTracked) {
+        final metric = untrackedMetrics.remove(metricId);
+        if (metric != null) {
+          trackedMetrics[metricId] = metric;
+          DatabaseManager().insertTrackingMetric(metricId, widget.user.patientUuid);
+        }
+      } else {
+        final metric = trackedMetrics.remove(metricId);
+        if (metric != null) {
+          untrackedMetrics[metricId] = metric;
+          DatabaseManager().deleteTrackingMetric(metricId, widget.user.patientUuid);
+        }
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Health Metrics"), backgroundColor: carbonColorScaffoldBackground),
       backgroundColor: Colors.transparent,
-      body: FutureBuilder<Map<String, dynamic>>(
-        future: _metricsDataFuture,
+      body: FutureBuilder<void>(
+        future: initDataFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator(color: AppTheme.primaryColor));
@@ -101,38 +89,98 @@ class _MetricsDashboardScreenState extends State<MetricsDashboardScreen> {
             );
           }
 
-          final data = snapshot.data ?? {};
-          final List<Map<String, dynamic>> allMetrics = data['allMetrics'] ?? [];
-          final Set<String> trackedMetricIds = data['trackedMetricIds'] ?? {};
-          final Map<String, List<Map<String, dynamic>>> valuesByMetricId = data['valuesByMetricId'] ?? {};
-          final Map<String, Map<String, dynamic>> trackedConfigByMetricId = data['trackedConfigByMetricId'] ?? {};
-
           if (allMetrics.isEmpty) {
             return Center(
               child: Text("No metric definitions found.", style: TextStyle(color: Colors.grey.shade600)),
             );
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.only(top: 8, bottom: 90),
-            itemCount: allMetrics.length,
-            itemBuilder: (context, index) {
-              final metric = allMetrics[index];
-              final metricId = (metric['id'] ?? '').toString();
-              final isTracked = trackedMetricIds.contains(metricId);
-              final historicalValues = valuesByMetricId[metricId] ?? [];
-              final config = trackedConfigByMetricId[metricId] ?? {};
+          final filteredTrackedList = trackedMetrics.values.where((metric) {
+            if (searchQuery.isEmpty) return true;
 
-              return MetricExpandableCard(
-                title: metric['name'] ?? 'Unknown Metric',
-                description: metric['description'] ?? 'No description provided.',
-                whyItMatters: metric['why_it_matters'] ?? 'Clinically relevant to your health journey baseline.',
-                categoryIcon: Symbols.monitoring,
-                isInitiallyTracked: isTracked,
-                historicalValues: historicalValues,
-                savedConfig: config,
-              );
-            },
+            final name = metric.name.toLowerCase();
+            final description = metric.category.toLowerCase();
+            final searchTerms = metric.searchTerms ?? [];
+
+            if (name.contains(searchQuery) || description.contains(searchQuery)) {
+              return true;
+            }
+
+            return searchTerms.any((term) => term.toLowerCase().contains(searchQuery));
+          }).toList()..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+
+          final filteredUntrackedList = untrackedMetrics.values.where((metric) {
+            if (searchQuery.isEmpty) return true;
+
+            final name = metric.name.toLowerCase();
+            final description = metric.category.toLowerCase();
+            final searchTerms = metric.searchTerms ?? [];
+
+            if (name.contains(searchQuery) || description.contains(searchQuery)) {
+              return true;
+            }
+
+            return searchTerms.any((term) => term.toLowerCase().contains(searchQuery));
+          }).toList()..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                child: CarbonSearchField(controller: searchController),
+              ),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.only(top: 8, bottom: 90),
+                  children: [
+                    if (filteredTrackedList.isNotEmpty) ...[
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                        child: Text(
+                          "Tracked Metrics",
+                          style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.bold, fontSize: 14),
+                        ),
+                      ),
+                      for (final metric in filteredTrackedList)
+                        MetricExpandableCard(
+                          key: ValueKey(metric.id),
+                          title: metric.name,
+                          description: metric.category.isNotEmpty ? metric.category : 'No description provided.',
+                          whyItMatters: 'Clinically relevant to your health journey baseline.',
+                          categoryIcon: Symbols.monitoring,
+                          historicalValues: metric.history.values.map((v) => v.toMap()).toList(),
+                          savedConfig: const {},
+                          onTrackingChanged: (isTracked) {
+                            handleTrackingChanged(metric.id, isTracked);
+                          },
+                        ),
+                    ],
+                    if (filteredUntrackedList.isNotEmpty) ...[
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+                        child: Text(
+                          "Available Metrics",
+                          style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.bold, fontSize: 14),
+                        ),
+                      ),
+                      for (final metric in filteredUntrackedList)
+                        MetricExpandableCard(
+                          key: ValueKey(metric.id),
+                          title: metric.name,
+                          description: metric.category.isNotEmpty ? metric.category : 'No description provided.',
+                          whyItMatters: 'Clinically relevant to your health journey baseline.',
+                          categoryIcon: Symbols.monitoring,
+                          historicalValues: metric.history.values.map((v) => v.toMap()).toList(),
+                          savedConfig: const {},
+                          onTrackingChanged: (isTracked) {
+                            handleTrackingChanged(metric.id, isTracked);
+                          },
+                        ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
           );
         },
       ),

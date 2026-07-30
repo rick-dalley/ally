@@ -26,6 +26,14 @@
                 "mmHg": "kPa_to_mmHg"
               }
             }
+          ],
+          "search_terms": [
+            "blood",
+            "pressure",
+            "systolic",
+            "vitals",
+            "cardiovascular",
+            "hypertension"
           ]
         },
         {
@@ -50,6 +58,14 @@
                 "mmHg": "kPa_to_mmHg"
               }
             }
+          ],
+          "search_terms": [
+            "blood",
+            "pressure",
+            "diastolic",
+            "vitals",
+            "cardiovascular",
+            "hypertension"
           ]
         },
         {
@@ -65,6 +81,14 @@
               "name": "Beats per Minute",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "heart",
+            "rate",
+            "pulse",
+            "bpm",
+            "vitals",
+            "cardiovascular"
           ]
         },
         {
@@ -80,6 +104,15 @@
               "name": "Beats per Minute",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "heart",
+            "rate",
+            "resting",
+            "pulse",
+            "bpm",
+            "vitals",
+            "cardiovascular"
           ]
         },
         {
@@ -104,6 +137,13 @@
                 "°C": "fahrenheit_to_celsius"
               }
             }
+          ],
+          "search_terms": [
+            "body",
+            "temperature",
+            "fever",
+            "thermal",
+            "vitals"
           ]
         },
         {
@@ -128,6 +168,13 @@
                 "kg": "lbs_to_kg"
               }
             }
+          ],
+          "search_terms": [
+            "body",
+            "weight",
+            "mass",
+            "scale",
+            "vitals"
           ]
         },
         {
@@ -143,6 +190,14 @@
               "name": "Kilograms per Square Meter",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "body",
+            "mass",
+            "index",
+            "bmi",
+            "weight",
+            "ratio"
           ]
         },
         {
@@ -158,6 +213,13 @@
               "name": "Percentage",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "body",
+            "fat",
+            "percentage",
+            "composition",
+            "weight"
           ]
         },
         {
@@ -182,6 +244,13 @@
                 "cm": "inches_to_cm"
               }
             }
+          ],
+          "search_terms": [
+            "waist",
+            "circumference",
+            "belly",
+            "abdomen",
+            "measurement"
           ]
         }
       ]
@@ -203,6 +272,14 @@
               "name": "Percentage",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "blood",
+            "oxygen",
+            "saturation",
+            "spo2",
+            "pulmonary",
+            "respiratory"
           ]
         },
         {
@@ -218,6 +295,14 @@
               "name": "Events per Hour",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "apnea",
+            "hypopnea",
+            "ahi",
+            "sleep",
+            "breathing",
+            "respiratory"
           ]
         },
         {
@@ -233,6 +318,15 @@
               "name": "Liters per Minute",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "peak",
+            "expiratory",
+            "flow",
+            "pefr",
+            "lungs",
+            "breathing",
+            "respiratory"
           ]
         },
         {
@@ -248,6 +342,15 @@
               "name": "Liters",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "forced",
+            "expiratory",
+            "volume",
+            "fev1",
+            "lungs",
+            "breathing",
+            "respiratory"
           ]
         },
         {
@@ -263,6 +366,14 @@
               "name": "Breaths per Minute",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "respiration",
+            "rate",
+            "breathing",
+            "breaths",
+            "vitals",
+            "pulmonary"
           ]
         },
         {
@@ -278,6 +389,14 @@
               "name": "Hours",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "cpap",
+            "usage",
+            "duration",
+            "sleep",
+            "apnea",
+            "machine"
           ]
         },
         {
@@ -293,6 +412,14 @@
               "name": "Liters per Minute",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "cpap",
+            "mask",
+            "leak",
+            "rate",
+            "sleep",
+            "apnea"
           ]
         }
       ]
@@ -323,6 +450,14 @@
                 "mmol/L": "mgdl_to_mmol"
               }
             }
+          ],
+          "search_terms": [
+            "blood",
+            "glucose",
+            "sugar",
+            "fasting",
+            "diabetes",
+            "metabolic"
           ]
         },
         {
@@ -347,6 +482,15 @@
                 "mmol/L": "mgdl_to_mmol"
               }
             }
+          ],
+          "search_terms": [
+            "blood",
+            "glucose",
+            "sugar",
+            "postprandial",
+            "meal",
+            "diabetes",
+            "metabolic"
           ]
         },
         {
@@ -371,6 +515,15 @@
                 "mmol/L": "mgdl_to_mmol"
               }
             }
+          ],
+          "search_terms": [
+            "estimated",
+            "average",
+            "glucose",
+            "eag",
+            "sugar",
+            "diabetes",
+            "metabolic"
           ]
         },
         {
@@ -391,6 +544,15 @@
               "name": "Millimoles per Mole",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "glycated",
+            "hemoglobin",
+            "hba1c",
+            "a1c",
+            "blood",
+            "diabetes",
+            "metabolic"
           ]
         },
         {
@@ -406,6 +568,13 @@
               "name": "Millimoles per Liter",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "blood",
+            "ketones",
+            "ketosis",
+            "diabetes",
+            "metabolic"
           ]
         },
         {
@@ -421,6 +590,13 @@
               "name": "Milligrams per Deciliter",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "urine",
+            "ketones",
+            "ketosis",
+            "diabetes",
+            "metabolic"
           ]
         },
         {
@@ -436,6 +612,14 @@
               "name": "Units",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "insulin",
+            "dose",
+            "logged",
+            "medication",
+            "diabetes",
+            "metabolic"
           ]
         },
         {
@@ -451,6 +635,15 @@
               "name": "Grams",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "carbohydrate",
+            "carbs",
+            "intake",
+            "diet",
+            "nutrition",
+            "diabetes",
+            "metabolic"
           ]
         }
       ]
@@ -481,6 +674,14 @@
                 "mmol/L": "cholesterol_mgdl_to_mmol"
               }
             }
+          ],
+          "search_terms": [
+            "total",
+            "cholesterol",
+            "lipids",
+            "blood",
+            "cardiovascular",
+            "heart"
           ]
         },
         {
@@ -505,6 +706,15 @@
                 "mmol/L": "cholesterol_mgdl_to_mmol"
               }
             }
+          ],
+          "search_terms": [
+            "ldl",
+            "low-density",
+            "lipoprotein",
+            "cholesterol",
+            "lipids",
+            "cardiovascular",
+            "heart"
           ]
         },
         {
@@ -529,6 +739,15 @@
                 "mmol/L": "cholesterol_mgdl_to_mmol"
               }
             }
+          ],
+          "search_terms": [
+            "hdl",
+            "high-density",
+            "lipoprotein",
+            "cholesterol",
+            "lipids",
+            "cardiovascular",
+            "heart"
           ]
         },
         {
@@ -553,6 +772,14 @@
                 "mmol/L": "triglycerides_mgdl_to_mmol"
               }
             }
+          ],
+          "search_terms": [
+            "triglycerides",
+            "lipids",
+            "blood",
+            "fat",
+            "cardiovascular",
+            "heart"
           ]
         },
         {
@@ -568,6 +795,15 @@
               "name": "International Normalized Ratio",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "prothrombin",
+            "time",
+            "inr",
+            "blood",
+            "clotting",
+            "coagulation",
+            "cardiovascular"
           ]
         },
         {
@@ -583,6 +819,14 @@
               "name": "Milliseconds",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "heart",
+            "rate",
+            "variability",
+            "hrv",
+            "pulse",
+            "cardiovascular"
           ]
         }
       ]
@@ -604,6 +848,15 @@
               "name": "Visual Analog Scale",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "joint",
+            "pain",
+            "severity",
+            "score",
+            "arthritis",
+            "orthopedic",
+            "rheumatism"
           ]
         },
         {
@@ -628,6 +881,15 @@
                 "min": "hours_to_minutes"
               }
             }
+          ],
+          "search_terms": [
+            "morning",
+            "joint",
+            "stiffness",
+            "duration",
+            "arthritis",
+            "orthopedic",
+            "rheumatism"
           ]
         },
         {
@@ -643,6 +905,14 @@
               "name": "Milligrams per Liter",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "c-reactive",
+            "protein",
+            "crp",
+            "inflammation",
+            "blood",
+            "rheumatism"
           ]
         },
         {
@@ -658,6 +928,15 @@
               "name": "Millimeters per Hour",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "erythrocyte",
+            "sedimentation",
+            "rate",
+            "esr",
+            "inflammation",
+            "blood",
+            "rheumatism"
           ]
         },
         {
@@ -682,6 +961,13 @@
                 "kg": "lbs_to_kg"
               }
             }
+          ],
+          "search_terms": [
+            "grip",
+            "strength",
+            "hand",
+            "orthopedic",
+            "rheumatism"
           ]
         },
         {
@@ -697,6 +983,14 @@
               "name": "Visual Analog Scale",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "general",
+            "pain",
+            "level",
+            "score",
+            "discomfort",
+            "management"
           ]
         }
       ]
@@ -727,6 +1021,14 @@
                 "µmol/L": "creatinine_mgdl_to_umol"
               }
             }
+          ],
+          "search_terms": [
+            "serum",
+            "creatinine",
+            "kidney",
+            "renal",
+            "blood",
+            "filtration"
           ]
         },
         {
@@ -742,6 +1044,15 @@
               "name": "Milliliters per Minute per 1.73m²",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "estimated",
+            "glomerular",
+            "filtration",
+            "rate",
+            "egfr",
+            "kidney",
+            "renal"
           ]
         },
         {
@@ -766,6 +1077,14 @@
                 "mmol/L": "bun_mgdl_to_mmol"
               }
             }
+          ],
+          "search_terms": [
+            "blood",
+            "urea",
+            "nitrogen",
+            "bun",
+            "kidney",
+            "renal"
           ]
         },
         {
@@ -790,6 +1109,14 @@
                 "mL": "liters_to_ml"
               }
             }
+          ],
+          "search_terms": [
+            "urine",
+            "output",
+            "volume",
+            "fluid",
+            "renal",
+            "urinary"
           ]
         }
       ]
@@ -828,6 +1155,14 @@
                 "mL": "oz_to_ml"
               }
             }
+          ],
+          "search_terms": [
+            "water",
+            "fluid",
+            "intake",
+            "hydration",
+            "drinks",
+            "nutrition"
           ]
         },
         {
@@ -843,6 +1178,15 @@
               "name": "Kilocalories",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "daily",
+            "caloric",
+            "intake",
+            "calories",
+            "diet",
+            "food",
+            "nutrition"
           ]
         },
         {
@@ -858,6 +1202,14 @@
               "name": "Visual Analog Scale",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "abdominal",
+            "pain",
+            "severity",
+            "stomach",
+            "gastrointestinal",
+            "digestion"
           ]
         },
         {
@@ -873,6 +1225,15 @@
               "name": "Bristol Stool Chart Score",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "stool",
+            "consistency",
+            "bristol",
+            "scale",
+            "bowel",
+            "movement",
+            "gastrointestinal"
           ]
         }
       ]
@@ -896,6 +1257,14 @@
                 "min": "hours_to_minutes"
               }
             }
+          ],
+          "search_terms": [
+            "sleep",
+            "duration",
+            "hours",
+            "rest",
+            "neurological",
+            "wellness"
           ]
         },
         {
@@ -911,6 +1280,14 @@
               "name": "Subjective Scale",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "sleep",
+            "quality",
+            "score",
+            "rest",
+            "neurological",
+            "wellness"
           ]
         },
         {
@@ -926,6 +1303,14 @@
               "name": "Visual Analog Scale",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "headache",
+            "migraine",
+            "severity",
+            "pain",
+            "head",
+            "neurological"
           ]
         },
         {
@@ -941,6 +1326,14 @@
               "name": "Subjective Scale",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "daily",
+            "mood",
+            "score",
+            "emotional",
+            "mental",
+            "wellness"
           ]
         },
         {
@@ -956,6 +1349,14 @@
               "name": "Subjective Scale",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "stress",
+            "level",
+            "anxiety",
+            "tension",
+            "mental",
+            "wellness"
           ]
         },
         {
@@ -971,6 +1372,15 @@
               "name": "Subjective Scale",
               "converters": {}
             }
+          ],
+          "search_terms": [
+            "alert",
+            "alertness",
+            "thinking",
+            "awake",
+            "cognitive",
+            "awareness",
+            "neurological"
           ]
         }
       ]

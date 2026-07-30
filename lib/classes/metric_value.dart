@@ -1,4 +1,45 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
+import 'package:triage/classes/database_manager.dart';
 import 'package:uuid/uuid.dart';
+
+import 'listable.dart';
+
+enum JourneySupports implements Listable {
+  device,
+  medication,
+  activity,
+  specialist;
+
+  @override
+  String get description {
+    switch (this) {
+      case JourneySupports.device:
+        return "Connected BLE Device";
+      case JourneySupports.medication:
+        return "Associated Medication";
+      case JourneySupports.activity:
+        return "Physical Activity Routine";
+      case JourneySupports.specialist:
+        return "Assigned Care Specialist";
+    }
+  }
+
+  @override
+  String get label {
+    switch (this) {
+      case JourneySupports.device:
+        return "device";
+      case JourneySupports.medication:
+        return "medication";
+      case JourneySupports.activity:
+        return "activity";
+      case JourneySupports.specialist:
+        return "specialist";
+    }
+  }
+}
 
 // Create a reusable instance
 const uuid = Uuid();
@@ -63,44 +104,57 @@ class UnitOfMeasure {
 class Metric {
   final int id;
   final String name;
-  List<UnitOfMeasure> unitsOfMeasure;
+  final String category;
   final double? safeUpperValue;
   final double? safeLowerValue;
   final double? healthyUpperValue;
   final double? healthyLowerValue;
+  final List<String>? searchTerms;
   Map<UUID, MetricValue> history;
+  List<UnitOfMeasure> unitsOfMeasure;
 
   Metric({
     required this.id,
     required this.name,
+    required this.category,
     this.safeLowerValue,
     this.safeUpperValue,
     this.healthyLowerValue,
     this.healthyUpperValue,
+    this.searchTerms,
   }) : history = {},
        unitsOfMeasure = [];
 
-  factory Metric.fromMap(Map<String, dynamic> items) {
-    List<UnitOfMeasure> uoms = [];
+  factory Metric.fromMap(Map<String, dynamic> items, String category) {
+    List<UnitOfMeasure> unitsOfMeasure = [];
+    List<String> searchTerms = [];
+    dynamic rawSearchTerms = items['search_terms'];
     dynamic rawUoMs = items['units_of_measure'];
     if (rawUoMs != null && rawUoMs is List) {
       for (dynamic rawUoM in rawUoMs) {
         if (rawUoM is Map<String, dynamic>) {
           UnitOfMeasure uom = UnitOfMeasure.fromMap(rawUoM);
-          uoms.add(uom);
+          unitsOfMeasure.add(uom);
         }
+      }
+    }
+    if (rawSearchTerms != null && rawSearchTerms is List) {
+      for (String term in rawSearchTerms) {
+        searchTerms.add(term);
       }
     }
 
     Metric metric = Metric(
       id: items['id'] ?? 0,
       name: items['name'] ?? '',
+      category: category,
+      searchTerms: searchTerms,
       safeLowerValue: (items['safe_lower'] as num?)?.toDouble(),
       safeUpperValue: (items['safe_upper'] as num?)?.toDouble(),
       healthyLowerValue: (items['healthy_lower'] as num?)?.toDouble(),
       healthyUpperValue: (items['healthy_upper'] as num?)?.toDouble(),
     );
-    metric.unitsOfMeasure = uoms;
+    metric.unitsOfMeasure = unitsOfMeasure;
     return metric;
   }
 
@@ -157,6 +211,65 @@ class MetricValue {
   }
 }
 
+class Metrics {
+  Map<int, Metric> tracked = {};
+  Map<int, Metric> untracked = {};
+  Map<int, Metric> all = {};
+
+  Metrics();
+
+  /// Asynchronous factory to fully hydrate the Metrics object before returning it
+  static Future<Metrics> forPatient(String patientUuid) async {
+    final metrics = Metrics();
+    await metrics.initialize();
+    await metrics.buildMapsFor(patientUuid);
+    return metrics;
+  }
+
+  Future<void> initialize() async {
+    final rawList = await DatabaseManager().getAllMetrics();
+    all.clear();
+    for (var rawMetric in rawList) {
+      Metric metric = Metric.fromMap(rawMetric, "");
+      all[metric.id] = metric;
+    }
+  }
+
+  Future<void> buildMapsFor(String patientUuid) async {
+    final rawTracked = await DatabaseManager().getTrackedMetrics(patientUuid);
+    tracked.clear();
+    untracked.clear();
+
+    for (Map<String, dynamic> rawMetric in rawTracked) {
+      int metricId = rawMetric['metric_id'] ?? rawMetric['id'];
+      Metric? metric = all[metricId];
+      if (metric != null) {
+        tracked[metric.id] = metric;
+      }
+    }
+
+    all.forEach((k, v) {
+      if (!tracked.containsKey(k)) {
+        untracked[k] = v;
+      }
+    });
+  }
+
+  Future<Map<int, Metric>> getTrackedMetricsFor(String patientUuid, bool refresh) async {
+    if (refresh) {
+      await buildMapsFor(patientUuid);
+    }
+    return tracked;
+  }
+
+  Future<Map<int, Metric>> getUntrackedMetricsFor(String patientUuid, bool refresh) async {
+    if (refresh) {
+      await buildMapsFor(patientUuid);
+    }
+    return untracked;
+  }
+}
+
 class MedicalMath {
   static double calculateBMI({
     required double? weight,
@@ -203,3 +316,62 @@ class ConversionRegistry {
 
   static UnitConverter? get(String name) => registry[name];
 }
+
+class MetricIcon {
+  final IconData iconData;
+  final Color color;
+  MetricIcon({required this.iconData, required this.color});
+}
+
+Map<String, MetricIcon> metricIcons = {
+  "Blood Pressure - Systolic": MetricIcon(iconData: Symbols.blood_pressure, color: Colors.red),
+  "Blood Pressure - Diastolic": MetricIcon(iconData: Symbols.blood_pressure, color: Colors.red),
+  "Heart Rate": MetricIcon(iconData: Symbols.ecg_heart, color: Colors.red),
+  "Resting Heart Rate": MetricIcon(iconData: Symbols.hr_resting, color: Colors.red),
+  "Body Temperature": MetricIcon(iconData: Symbols.body_system, color: Colors.red),
+  "Body Weight": MetricIcon(iconData: Symbols.weight, color: Colors.red),
+  "Body Mass Index (BMI)": MetricIcon(iconData: Symbols.body_fat, color: Colors.red),
+  "Body Fat Percentage": MetricIcon(iconData: Symbols.body_fat, color: Colors.red),
+  "Waist Circumference": MetricIcon(iconData: Symbols.measuring_tape, color: Colors.red),
+  "Blood Oxygen Saturation (SpO2)": MetricIcon(iconData: Symbols.oxygen_saturation, color: Colors.red),
+  "Apnea-Hypopnea Index (AHI)": MetricIcon(iconData: Symbols.sleep_score, color: Colors.red),
+  "Peak Expiratory Flow Rate (PEFR)": MetricIcon(iconData: Symbols.air, color: Colors.red),
+  "Forced Expiratory Volume in 1 Second (FEV1)": MetricIcon(iconData: Symbols.pulmonology, color: Colors.red),
+  "Respiration Rate": MetricIcon(iconData: Symbols.respiratory_rate, color: Colors.red),
+  "CPAP Usage Duration": MetricIcon(iconData: Symbols.air_purifier, color: Colors.red),
+  "CPAP Mask Leak Rate": MetricIcon(iconData: Symbols.leak_add, color: Colors.red),
+  "Estimated Average Glucose (eAG)": MetricIcon(iconData: Symbols.glucose, color: Colors.red),
+  "Blood Glucose (Fasting / General)": MetricIcon(iconData: Symbols.glucose, color: Colors.red),
+  "Blood Glucose (Postprandial / Post-Meal)": MetricIcon(iconData: Symbols.glucose, color: Colors.red),
+  "Glycated Hemoglobin (HbA1c)": MetricIcon(iconData: Symbols.hematology, color: Colors.red),
+  "Blood Ketones": MetricIcon(iconData: Symbols.hematology, color: Colors.red),
+  "Urine Ketones": MetricIcon(iconData: Symbols.urology, color: Colors.red),
+  "Insulin Dose Logged": MetricIcon(iconData: Symbols.glucose, color: Colors.red),
+  "Carbohydrate Intake": MetricIcon(iconData: Symbols.cookie, color: Colors.red),
+  "Total Cholesterol": MetricIcon(iconData: Symbols.lab_panel, color: Colors.red),
+  "Low-Density Lipoprotein (LDL)": MetricIcon(iconData: Symbols.body_fat, color: Colors.red),
+  "High-Density Lipoprotein (HDL)": MetricIcon(iconData: Symbols.body_fat, color: Colors.red),
+  "Triglycerides": MetricIcon(iconData: Symbols.body_fat, color: Colors.red),
+  "Prothrombin Time / INR": MetricIcon(iconData: Symbols.diagnosis, color: Colors.red),
+  "Heart Rate Variability (HRV)": MetricIcon(iconData: Symbols.cardio_load, color: Colors.red),
+  "Joint Pain Severity Score": MetricIcon(iconData: Symbols.rheumatology, color: Colors.red),
+  "Morning Joint Stiffness Duration": MetricIcon(iconData: Symbols.rheumatology, color: Colors.red),
+  "C-Reactive Protein (CRP)": MetricIcon(iconData: Symbols.experiment, color: Colors.red),
+  "Erythrocyte Sedimentation Rate (ESR)": MetricIcon(iconData: Symbols.experiment, color: Colors.red),
+  "Grip Strength": MetricIcon(iconData: Symbols.pan_tool, color: Colors.red),
+  "General Pain Level": MetricIcon(iconData: Symbols.symptoms, color: Colors.red),
+  "Serum Creatinine": MetricIcon(iconData: Symbols.hematology, color: Colors.red),
+  "Estimated Glomerular Filtration Rate (eGFR)": MetricIcon(iconData: Symbols.experiment, color: Colors.red),
+  "Blood Urea Nitrogen (BUN)": MetricIcon(iconData: Symbols.lab_panel, color: Colors.red),
+  "Urine Output Volume": MetricIcon(iconData: Symbols.water_drop, color: Colors.red),
+  "Water / Fluid Intake": MetricIcon(iconData: Symbols.water_bottle, color: Colors.red),
+  "Daily Caloric Intake": MetricIcon(iconData: Symbols.fastfood, color: Colors.red),
+  "Abdominal Pain Severity": MetricIcon(iconData: Symbols.symptoms, color: Colors.red),
+  "Stool Consistency (Bristol Scale)": MetricIcon(iconData: Symbols.total_dissolved_solids, color: Colors.red),
+  "Sleep Duration": MetricIcon(iconData: Symbols.snooze, color: Colors.red),
+  "Sleep Quality Score": MetricIcon(iconData: Symbols.sleep_score, color: Colors.red),
+  "Headache / Migraine Severity": MetricIcon(iconData: Symbols.cognition, color: Colors.red),
+  "Daily Mood Score": MetricIcon(iconData: Symbols.add_reaction, color: Colors.red),
+  "Stress Level": MetricIcon(iconData: Symbols.sentiment_stressed, color: Colors.red),
+  "Cognitive Alertness": MetricIcon(iconData: Symbols.cognition_2, color: Colors.red),
+};

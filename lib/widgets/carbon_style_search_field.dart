@@ -76,7 +76,7 @@ class CarbonSearchFieldState extends State<CarbonSearchField> {
                     hintStyle: CarbonTheme.carbonHintTextStyle,
                     border: UnderlineInputBorder(borderSide: BorderSide(color: carbonColorBorderInteractive, width: 1)),
                     focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: carbonColorBorderStrong01, width: 2),
+                      borderSide: BorderSide(color: carbonColorButtonPrimary, width: 2),
                     ),
                     errorBorder: UnderlineInputBorder(
                       borderSide: BorderSide(color: carbonColorBorderStrong01, width: 2),

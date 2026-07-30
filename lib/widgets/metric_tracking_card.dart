@@ -8,41 +8,7 @@ import 'package:triage/widgets/carbon_style_number_edit.dart';
 import 'package:triage/widgets/carbon_style_textbox.dart';
 import '../app_theme.dart';
 import '../classes/carbon_theme_constants.dart';
-
-enum JourneySupports implements Listable {
-  device,
-  medication,
-  activity,
-  specialist;
-
-  @override
-  String get description {
-    switch (this) {
-      case JourneySupports.device:
-        return "Connected BLE Device";
-      case JourneySupports.medication:
-        return "Associated Medication";
-      case JourneySupports.activity:
-        return "Physical Activity Routine";
-      case JourneySupports.specialist:
-        return "Assigned Care Specialist";
-    }
-  }
-
-  @override
-  String get label {
-    switch (this) {
-      case JourneySupports.device:
-        return "device";
-      case JourneySupports.medication:
-        return "medication";
-      case JourneySupports.activity:
-        return "activity";
-      case JourneySupports.specialist:
-        return "specialist";
-    }
-  }
-}
+import '../classes/metric_value.dart';
 
 class MetricExpandableCard extends StatefulWidget {
   final String title;
@@ -50,6 +16,7 @@ class MetricExpandableCard extends StatefulWidget {
   final String whyItMatters;
   final IconData categoryIcon;
   final bool isInitiallyTracked;
+  final Function(bool) onTrackingChanged;
   final List<Map<String, dynamic>>? historicalValues;
   final Map<String, dynamic>? savedConfig;
   const MetricExpandableCard({
@@ -58,6 +25,7 @@ class MetricExpandableCard extends StatefulWidget {
     required this.description,
     required this.whyItMatters,
     required this.categoryIcon,
+    required this.onTrackingChanged,
     this.isInitiallyTracked = false,
     this.historicalValues,
     this.savedConfig,
@@ -100,6 +68,9 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
 
   @override
   Widget build(BuildContext context) {
+    MetricIcon metricIcon =
+        metricIcons[widget.title] ??
+        MetricIcon(iconData: Symbols.unknown_2, color: CarbonTheme.getButtonColor(CarbonButtonStyle.secondary));
     Color borderColor = CarbonTheme.getTileBorderColor(CarbonTileStyle.expandable, isTracked);
     return Card(
       elevation: 0,
@@ -117,7 +88,7 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
             Row(
               children: [
                 SizedBox(width: 16.0),
-                Icon(widget.categoryIcon, color: AppTheme.primaryColor, size: 24),
+                Icon(metricIcon.iconData, color: metricIcon.color, size: 24),
                 const SizedBox(width: 12),
                 Expanded(child: Text(widget.title, style: CarbonTheme.carbonTextStyle)),
                 if (!isTracked)
@@ -133,6 +104,7 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
                             isExpanded = true;
                             showInfoView = false;
                           }
+                          widget.onTrackingChanged(isTracked);
                         });
                       },
                     ),
@@ -145,9 +117,7 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
               child: Row(
                 children: [
-                  Expanded(
-                    child: Text(widget.description, style: TextStyle(color: Colors.grey.shade700, fontSize: 13)),
-                  ),
+                  Expanded(child: Text(widget.description, style: CarbonTheme.carbonTextStyle)),
                   const SizedBox(width: 8),
                   if (isTrackerActiveButCollapsed())
                     _buildHlcBubblePlaceholder()
@@ -311,7 +281,7 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
           dense: true,
           onChanged: (val) => setState(() => showHealthyLimits = val ?? false),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         CarbonDropdown<JourneySupports>(
           label: 'Link Journey Support',
           items: JourneySupports.values,
