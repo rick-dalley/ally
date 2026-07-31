@@ -42,7 +42,11 @@
     },
     {
       "table": "patient_metric_tracking",
-      "query": "CREATE TABLE IF NOT EXISTS patient_metric_tracking (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_uuid TEXT NOT NULL, metric_id INT NOT NULL, started_tracking DATETIME NOT NULL, stopped_tracking DATETIME, reason TEXT, FOREIGN KEY(patient_uuid) REFERENCES patient(patient_uuid), FOREIGN KEY(metric_id) REFERENCES metric(id));"
+      "query": "CREATE TABLE IF NOT EXISTS patient_metric_tracking (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_uuid TEXT NOT NULL, metric_id INT NOT NULL, started_tracking DATETIME DEFAULT CURRENT_TIMESTAMP, stopped_tracking DATETIME, reason TEXT, FOREIGN KEY(patient_uuid) REFERENCES patient(patient_uuid), FOREIGN KEY(metric_id) REFERENCES metric(id));"
+    },
+    {
+      "table": "patient_metric",
+      "query": "CREATE TABLE IF NOT EXISTS patient_metric (id TEXT PRIMARY KEY NOT NULL, metric_id INTEGER NOT NULL, patient_uuid TEXT NOT NULL, value REAL NOT NULL, measured DATETIME DEFAULT CURRENT_TIMESTAMP, recorded DATETIME DEFAULT CURRENT_TIMESTAMP, unit_of_measure TEXT NOT NULL, is_metric BOOL NOT NULL, FOREIGN KEY(patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE, FOREIGN KEY(metric_id) REFERENCES metric(id) ON DELETE CASCADE);"
     },
     {
       "table": "patient_event",
@@ -51,10 +55,6 @@
     {
       "table": "patient_event",
       "query":"CREATE INDEX idx_patient_event_time ON patient_event(occurred);"
-    },
-    {
-      "table": "patient_metric",
-      "query": "CREATE TABLE IF NOT EXISTS patient_metric (id TEXT PRIMARY KEY NOT NULL, patient_uuid TEXT NOT NULL, value REAL NOT NULL, measured DATETIME DEFAULT CURRENT_TIMESTAMP, recorded DATETIME DEFAULT CURRENT_TIMESTAMP, unit_of_measure TEXT NOT NULL, is_metric BOOL NOT NULL, FOREIGN KEY(patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
     },
     {
       "table": "patient_vaccination",

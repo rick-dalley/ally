@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:triage/classes/carbon_theme_constants.dart';
 import 'package:triage/classes/database_manager.dart';
 import 'package:triage/widgets/carbon_style_search_field.dart';
 import '../app_theme.dart';
@@ -23,7 +24,7 @@ class MetricsDashboardScreenState extends State<MetricsDashboardScreen> {
   Map<int, Metric> allMetrics = {};
   Map<int, Metric> trackedMetrics = {};
   Map<int, Metric> untrackedMetrics = {};
-
+  Map<int, MetricRange> ranges = {};
   @override
   void initState() {
     super.initState();
@@ -47,6 +48,7 @@ class MetricsDashboardScreenState extends State<MetricsDashboardScreen> {
     allMetrics = metrics.all;
     trackedMetrics = metrics.tracked;
     untrackedMetrics = metrics.untracked;
+    ranges = await metrics.getRangesFor(userUuid);
   }
 
   void handleTrackingChanged(int metricId, bool isTracked) {
@@ -136,15 +138,14 @@ class MetricsDashboardScreenState extends State<MetricsDashboardScreen> {
                     if (filteredTrackedList.isNotEmpty) ...[
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                        child: Text(
-                          "Tracked Metrics",
-                          style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.bold, fontSize: 14),
-                        ),
+                        child: Text("Tracked Metrics", style: CarbonTheme.carbonTextStyle),
                       ),
                       for (final metric in filteredTrackedList)
                         MetricExpandableCard(
                           key: ValueKey(metric.id),
-                          title: metric.name,
+                          tracked: true,
+                          metric: metric,
+                          range: ranges[metric.id] ?? MetricRange(id: metric.id, maximum: 0, minimum: 0),
                           description: metric.category.isNotEmpty ? metric.category : 'No description provided.',
                           whyItMatters: 'Clinically relevant to your health journey baseline.',
                           categoryIcon: Symbols.monitoring,
@@ -158,15 +159,13 @@ class MetricsDashboardScreenState extends State<MetricsDashboardScreen> {
                     if (filteredUntrackedList.isNotEmpty) ...[
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-                        child: Text(
-                          "Available Metrics",
-                          style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.bold, fontSize: 14),
-                        ),
+                        child: Text("Available Metrics", style: CarbonTheme.carbonTextStyle),
                       ),
                       for (final metric in filteredUntrackedList)
                         MetricExpandableCard(
                           key: ValueKey(metric.id),
-                          title: metric.name,
+                          tracked: false,
+                          metric: metric,
                           description: metric.category.isNotEmpty ? metric.category : 'No description provided.',
                           whyItMatters: 'Clinically relevant to your health journey baseline.',
                           categoryIcon: Symbols.monitoring,

@@ -124,16 +124,6 @@ class IndicatorPainter extends CustomPainter {
       return size.height - (normalized * size.height);
     }
 
-    // Light Grey Clinical Container (Pill shape)
-    // canvas.drawRRect(
-    //   RRect.fromRectAndRadius(Rect.fromLTWH(centerX - circleRadius, 0, barWidth, size.height), Radius.circular(circleRadius)),
-    //   Paint()..color = Colors.grey.shade300,
-    // );
-    // final borderRect = RRect.fromRectAndRadius(
-    //   Rect.fromLTWH(centerX - circleRadius, 0, barWidth, size.height),
-    //   Radius.circular(circleRadius),
-    // );
-
     // 2. Dark Grey Historical Bar (Pill shape)
     if (hasHistory) {
       final Rect histRect = Rect.fromLTRB(
@@ -173,13 +163,6 @@ class IndicatorPainter extends CustomPainter {
         }
       }
     }
-    // canvas.drawRRect(
-    //   borderRect,
-    //   Paint()
-    //     ..color = Colors.black
-    //     ..style = PaintingStyle.stroke
-    //     ..strokeWidth = 1.0, // Adjust this for thickness
-    // );
 
     // 4. Current Status Dot
     double currentY;

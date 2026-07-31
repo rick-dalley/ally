@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:triage/classes/carbon_color_constants.dart';
-import '../app_theme.dart';
 import '../classes/carbon_theme_constants.dart';
 
 class CarbonTextInput extends StatefulWidget {

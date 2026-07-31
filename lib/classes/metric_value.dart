@@ -1,7 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/database_manager.dart';
+import 'package:triage/classes/date_time_utilities.dart';
 import 'package:uuid/uuid.dart';
 
 import 'listable.dart';
@@ -211,6 +211,30 @@ class MetricValue {
   }
 }
 
+class MetricRange {
+  final int id;
+  late int? count = 0;
+  late double? minimum = 0;
+  late double? latest = 0;
+  late double? maximum = 0;
+  late DateTime? measured;
+
+  MetricRange({required this.id, this.minimum, this.maximum, this.latest, this.measured, this.count});
+
+  factory MetricRange.fromMap(Map<String, dynamic> item) {
+    int rwId = item["metric_id"] as int? ?? 0;
+
+    // Safely parse numbers whether SQLite returns int or double
+    double rwMinimum = (item["min_val"] as num?)?.toDouble() ?? 0.0;
+    double rwMaximum = (item["max_val"] as num?)?.toDouble() ?? 0.0;
+
+    // Safely parse count, ensuring it's an int (handling case where it might be returned as num)
+    int rwCount = (item["count"] as num?)?.toInt() ?? 0;
+
+    return MetricRange(id: rwId, minimum: rwMinimum, maximum: rwMaximum, count: rwCount);
+  }
+}
+
 class Metrics {
   Map<int, Metric> tracked = {};
   Map<int, Metric> untracked = {};
@@ -267,6 +291,37 @@ class Metrics {
       await buildMapsFor(patientUuid);
     }
     return untracked;
+  }
+
+  Future<Map<int, MetricRange>> getRangesFor(String patientUuid) async {
+    dynamic rawRanges = await DatabaseManager().getPatientMetricRanges(patientUuid);
+    dynamic rawRecent = await DatabaseManager().getRecentPatientMetrics(patientUuid);
+    Map<int, MetricRange> range = {};
+    for (dynamic rng in rawRanges) {
+      MetricRange metricRange = MetricRange.fromMap(rng);
+      range[metricRange.id] = metricRange;
+    }
+    for (dynamic recent in rawRecent) {
+      int id = recent['id'];
+      double latest = recent['value'];
+      String rawDate = recent['measured'];
+      DateTime measured = DTUtilities.sqliteToDart(rawDate);
+      if (range[id] != null) {
+        range[id]?.measured = measured;
+        range[id]?.latest = latest;
+      }
+    }
+    return range;
+  }
+
+  Future<List<MetricValue>> getTrackedMetricValuesFor(String patientUuid, int metricId) async {
+    dynamic rawValues = await DatabaseManager().getPatientMetricValuesForMetric(patientUuid, metricId);
+    List<MetricValue> metricValues = [];
+    for (dynamic val in rawValues) {
+      MetricValue mv = MetricValue.fromMap(val);
+      metricValues.add(mv);
+    }
+    return metricValues;
   }
 }
 

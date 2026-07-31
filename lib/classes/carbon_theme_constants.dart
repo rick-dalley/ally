@@ -226,11 +226,11 @@ class CarbonTheme {
       case CarbonTileStyle.base:
         return carbonColorButtonSecondary;
       case CarbonTileStyle.clickable:
-        return selected ? carbonColorButtonOnTertiary : carbonColorButtonSecondary;
+        return selected ? carbonColorBorderSubtleSelected03 : carbonColorBorderSubtle03;
       case CarbonTileStyle.selectable:
-        return selected ? carbonColorButtonOnTertiary : carbonColorButtonSecondary;
+        return selected ? carbonColorBorderSubtleSelected03 : carbonColorBorderSubtle03;
       case CarbonTileStyle.expandable:
-        return selected ? carbonColorButtonOnTertiary : carbonColorButtonSecondary;
+        return selected ? carbonColorBorderSubtleSelected03 : carbonColorBorderSubtle03;
     }
   }
 

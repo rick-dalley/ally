@@ -1071,15 +1071,68 @@ class DatabaseManager {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getPatientMetricValues(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getAllPatientMetricValues(String patientUuid) async {
     final db = await database;
     return await db.rawQuery(
       '''
     SELECT *
-    FROM patient_metrics pm WHERE
+    FROM patient_metric pm WHERE
     pm.patient_uuid = ?
+    ORDER BY pm.metric_id, pm.measured
   ''',
       [patientUuid],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getPatientMetricValuesForMetric(String patientUuid, int metricId) async {
+    final db = await database;
+    return await db.rawQuery(
+      '''
+    SELECT *
+    FROM patient_metric pm WHERE
+    pm.patient_uuid = ?
+    AND pm.metric_id = ?
+    ORDER BY pm.metric_id, pm.measured
+  ''',
+      [patientUuid, metricId],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getPatientMetricRanges(String patientUuid) async {
+    final db = await database;
+    return await db.rawQuery(
+      '''
+    SELECT 
+      t.metric_id, 
+      COALESCE(MIN(pm.value), 0) AS min_val, 
+      COALESCE(MAX(pm.value), 0) AS max_val, 
+      COUNT(pm.value) AS count
+    FROM patient_metric_tracking t
+    LEFT JOIN patient_metric pm ON t.patient_uuid = pm.patient_uuid AND t.metric_id = pm.metric_id
+    WHERE t.patient_uuid = ? 
+    GROUP BY t.metric_id
+    ORDER BY t.metric_id;
+    ''',
+      [patientUuid],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getRecentPatientMetrics(String patientUuid) async {
+    final db = await database;
+    return await db.rawQuery(
+      '''
+    SELECT pm.* 
+    FROM patient_metric pm
+    INNER JOIN (
+      SELECT metric_id, MAX(measured) AS max_measured
+      FROM patient_metric
+      WHERE patient_uuid = ?
+      GROUP BY metric_id
+    ) latest ON pm.metric_id = latest.metric_id AND pm.measured = latest.max_measured
+    WHERE pm.patient_uuid = ?
+    ORDER BY pm.metric_id;
+    ''',
+      [patientUuid, patientUuid],
     );
   }
 

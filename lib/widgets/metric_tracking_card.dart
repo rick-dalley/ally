@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/carbon_color_constants.dart';
-import 'package:triage/classes/listable.dart';
 import 'package:triage/widgets/carbon_style_button.dart';
 import 'package:triage/widgets/carbon_style_dropdown.dart';
 import 'package:triage/widgets/carbon_style_number_edit.dart';
 import 'package:triage/widgets/carbon_style_textbox.dart';
-import '../app_theme.dart';
+import 'package:triage/widgets/high_low_close_capsule.dart';
 import '../classes/carbon_theme_constants.dart';
 import '../classes/metric_value.dart';
 
 class MetricExpandableCard extends StatefulWidget {
-  final String title;
+  final bool tracked;
+  final Metric metric;
+  final MetricRange? range;
   final String description;
   final String whyItMatters;
   final IconData categoryIcon;
@@ -21,7 +22,8 @@ class MetricExpandableCard extends StatefulWidget {
   final Map<String, dynamic>? savedConfig;
   const MetricExpandableCard({
     super.key,
-    required this.title,
+    required this.tracked,
+    required this.metric,
     required this.description,
     required this.whyItMatters,
     required this.categoryIcon,
@@ -29,6 +31,7 @@ class MetricExpandableCard extends StatefulWidget {
     this.isInitiallyTracked = false,
     this.historicalValues,
     this.savedConfig,
+    this.range,
   });
 
   @override
@@ -36,10 +39,9 @@ class MetricExpandableCard extends StatefulWidget {
 }
 
 class MetricExpandableCardState extends State<MetricExpandableCard> {
-  late bool isTracked;
-  bool isExpanded = false;
+  late bool tracked = widget.tracked;
+  bool expanded = false;
   bool showInfoView = false; // true if opened via '?' button
-
   // Form states for tracking details
   final TextEditingController _targetController = TextEditingController();
   final TextEditingController _upperLimitController = TextEditingController();
@@ -49,13 +51,16 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
   String? linkedResource;
   late List<Map<String, dynamic>> history;
   late Map<String, dynamic> config;
-
+  late String title = widget.metric.name;
+  late double usl = widget.metric.safeUpperValue ?? 0.0;
+  late double lsl = widget.metric.safeLowerValue ?? 0.0;
+  late MetricRange range = widget.range ?? MetricRange(id: widget.metric.id);
   @override
   void initState() {
     super.initState();
     history = widget.historicalValues ?? [];
     config = widget.savedConfig ?? {};
-    isTracked = widget.isInitiallyTracked;
+    tracked = widget.isInitiallyTracked;
   }
 
   @override
@@ -69,14 +74,15 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
   @override
   Widget build(BuildContext context) {
     MetricIcon metricIcon =
-        metricIcons[widget.title] ??
+        metricIcons[widget.metric.name] ??
         MetricIcon(iconData: Symbols.unknown_2, color: CarbonTheme.getButtonColor(CarbonButtonStyle.secondary));
-    Color borderColor = CarbonTheme.getTileBorderColor(CarbonTileStyle.expandable, isTracked);
+    Color borderColor = tracked
+        ? CarbonTheme.getTileBorderColor(CarbonTileStyle.selectable, tracked)
+        : carbonColorBorderSubtle03;
     return Card(
-      elevation: 0,
-      shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
       color: carbonColorButtonTertiary,
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      shape: ContinuousRectangleBorder(),
+      margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         decoration: BoxDecoration(border: Border.all(color: borderColor, width: 1)),
@@ -87,26 +93,43 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
             // Top Header Row: Icon on left, Title, Checkbox on far right
             Row(
               children: [
-                SizedBox(width: 16.0),
-                Icon(metricIcon.iconData, color: metricIcon.color, size: 24),
+                SizedBox(width: 16.0, height: 16.0),
+                Icon(
+                  metricIcon.iconData,
+                  color: tracked ? metricIcon.color : metricIcon.color.withValues(alpha: 0.4),
+                  size: 24,
+                ),
                 const SizedBox(width: 12),
-                Expanded(child: Text(widget.title, style: CarbonTheme.carbonTextStyle)),
-                if (!isTracked)
+                Expanded(child: Text(title, style: CarbonTheme.carbonTextStyle)),
+                if (!tracked)
                   Align(
                     alignment: AlignmentGeometry.centerRight,
                     child: Checkbox(
-                      value: isTracked,
+                      value: tracked,
                       shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
                       onChanged: (val) {
                         setState(() {
-                          isTracked = val ?? false;
-                          if (isTracked) {
-                            isExpanded = true;
+                          tracked = val ?? false;
+                          if (tracked) {
+                            expanded = true;
                             showInfoView = false;
                           }
-                          widget.onTrackingChanged(isTracked);
+                          widget.onTrackingChanged(tracked);
                         });
                       },
+                    ),
+                  ),
+                if (tracked)
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: HighLowCloseCapsule(
+                      current: range.latest ?? 0.0,
+                      historicalMin: range.minimum ?? 0.0,
+                      historicalMax: range.maximum ?? 0.0,
+                      clinicalMin: lsl,
+                      clinicalMax: usl,
+                      height: 60,
+                      color: carbonColorPrimary04,
                     ),
                   ),
               ],
@@ -114,39 +137,22 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
 
             // Second Line: Description on left, HLC or '?' bubble on right, and the arrow on the far right
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
               child: Row(
                 children: [
                   Expanded(child: Text(widget.description, style: CarbonTheme.carbonTextStyle)),
-                  const SizedBox(width: 8),
-                  if (isTrackerActiveButCollapsed())
-                    _buildHlcBubblePlaceholder()
-                  else
-                    InkWell(
-                      onTap: () {
-                        setState(() {
-                          isExpanded = true;
-                          showInfoView = true;
-                        });
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade600)),
-                        child: const Text("?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                      ),
-                    ),
                   const SizedBox(width: 4),
                   InkWell(
                     onTap: () {
                       setState(() {
-                        isExpanded = !isExpanded;
-                        if (!isExpanded) showInfoView = false;
+                        expanded = !expanded;
+                        if (!expanded) showInfoView = false;
                       });
                     },
                     child: Padding(
                       padding: const EdgeInsets.all(4.0),
                       child: AnimatedRotation(
-                        turns: isExpanded ? 0.5 : 0.0,
+                        turns: expanded ? 0.5 : 0.0,
                         duration: const Duration(milliseconds: 200),
                         child: const Icon(Symbols.arrow_downward, size: 20),
                       ),
@@ -157,7 +163,7 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
             ),
 
             // Expanded Body Section (Appears below the second line when expanded)
-            if (isExpanded) ...[
+            if (expanded) ...[
               const Padding(padding: EdgeInsets.symmetric(vertical: 8.0), child: Divider(height: 1, thickness: 1)),
               Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -170,19 +176,8 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
     );
   }
 
-  bool isTrackerActiveButCollapsed() {
-    return isTracked && !isExpanded;
-  }
-
-  Widget _buildHlcBubblePlaceholder() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        border: Border.all(color: Colors.grey.shade400),
-      ),
-      child: const Text("H: -- | L: -- | C: --", style: TextStyle(fontSize: 11, color: Colors.grey)),
-    );
+  bool activeButCollapsed() {
+    return tracked && !expanded;
   }
 
   Widget _buildInfoContent() {
@@ -208,7 +203,7 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
             OutlinedButton(
               onPressed: () {
                 setState(() {
-                  isExpanded = false;
+                  expanded = false;
                   showInfoView = false;
                 });
               },
@@ -218,7 +213,7 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
             CarbonButton(
               onPressed: () {
                 setState(() {
-                  isTracked = true;
+                  tracked = true;
                   showInfoView = false;
                 });
               },

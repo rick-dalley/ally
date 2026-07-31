@@ -4,7 +4,6 @@ import 'package:triage/classes/blood_type.dart';
 import 'package:triage/classes/metric_value.dart';
 import 'package:triage/classes/patient_action.dart';
 import 'package:triage/classes/vitals.dart';
-import 'package:triage/screens/metric_dashboard_screen.dart';
 import 'package:triage/screens/patient_timeline_screen.dart';
 import 'package:triage/widgets/blood_type_selector.dart';
 import 'package:triage/widgets/carbon_style_two_xl_button.dart';
