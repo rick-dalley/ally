@@ -1,25 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:triage/widgets/carbon_style_button.dart';
 import 'package:triage/widgets/carbon_style_separators.dart';
 import '../classes/carbon_color_constants.dart';
 import '../classes/carbon_theme_constants.dart';
 
 class CarbonNumberInput extends StatelessWidget {
   final String label;
-  final String? helperText;
+  final String? hint;
+  final String? placeHolderText;
+  final String? suffix;
+  final dynamic value;
   final TextEditingController controller;
   final int step;
   final Color? fillColor;
   final Color? accentColor;
+  final CarbonInputs? inputs;
+  final bool? enabled;
+  final FocusNode? focusNode;
+  final bool? decimals;
   const CarbonNumberInput({
     super.key,
     required this.label,
     required this.controller,
-    this.helperText,
+    this.hint,
+    this.placeHolderText,
+    this.suffix,
     this.step = 1,
     this.fillColor,
     this.accentColor,
+    this.inputs,
+    this.enabled,
+    this.value,
+    this.focusNode,
+    this.decimals,
   });
 
   void _increment() {
@@ -34,10 +49,18 @@ class CarbonNumberInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String controllerText = value == null ? value.toString() : "0";
+    bool isDouble = decimals ?? false;
+    if (value != null && controller.text.isEmpty) {
+      controller.text = value.toString();
+    }
+    CarbonInputs chosenInput = inputs ?? CarbonInputs.medium;
     Color fillColor = this.fillColor ?? carbonColorField;
-    // Updated to use carbonColorPrimary as requested for the focused state/accent
     Color accentColor = this.accentColor ?? carbonColorButtonPrimary;
-
+    bool isEnabled = enabled ?? true;
+    String promptText = placeHolderText ?? "0";
+    String chosenSuffix = suffix ?? "";
+    double separatorHeight = chosenInput.size.height - 16.0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -47,7 +70,7 @@ class CarbonNumberInput extends StatelessWidget {
         ),
         // Unified Container for Input + Stepper
         Container(
-          height: 40,
+          height: chosenInput.size.height,
           decoration: BoxDecoration(
             color: carbonColorField,
             border: Border(bottom: BorderSide(color: carbonColorBorderInteractive, width: 0)),
@@ -59,42 +82,39 @@ class CarbonNumberInput extends StatelessWidget {
               Expanded(
                 child: TextField(
                   controller: controller,
+                  focusNode: focusNode,
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: fillColor,
                     hintStyle: CarbonTheme.carbonHintTextStyle,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    hintText: promptText,
+                    contentPadding: EdgeInsets.all(chosenInput.edgeInsetSize.width),
                     border: UnderlineInputBorder(borderSide: BorderSide(color: carbonColorBorderInteractive, width: 1)),
                     focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: accentColor, width: 2)),
                     errorBorder: UnderlineInputBorder(borderSide: BorderSide(color: carbonColorButtonDanger, width: 1)),
                     errorStyle: GoogleFonts.ibmPlexSans(color: carbonColorButtonOnDanger),
-                    suffixIcon: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const CarbonVerticalSeparator(height: 22),
-                        SizedBox(width: 4),
-                        SizedBox(
-                          width: 32,
-                          child: IconButton(
-                            icon: const Icon(Symbols.remove, size: 18),
-                            onPressed: _decrement,
-                            constraints: const BoxConstraints(),
-                            padding: EdgeInsets.zero,
-                          ),
-                        ),
-                        SizedBox(
-                          width: 32,
-                          child: IconButton(
-                            icon: const Icon(Symbols.add, size: 18),
-                            onPressed: _increment,
-                            constraints: const BoxConstraints(),
-                            padding: EdgeInsets.zero,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                      ],
-                    ),
+                    suffix: Text(chosenSuffix, style: CarbonTheme.carbonTextStyle),
+                    suffixIcon: isEnabled & !isDouble
+                        ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              CarbonVerticalSeparator(height: separatorHeight),
+                              SizedBox(width: 4),
+                              CarbonIconButton(
+                                onPressed: _decrement,
+                                icon: Symbols.remove,
+                                style: CarbonButtonStyle.stepper,
+                              ),
+                              CarbonIconButton(
+                                onPressed: _increment,
+                                icon: Symbols.add,
+                                style: CarbonButtonStyle.stepper,
+                              ),
+                              const SizedBox(width: 4),
+                            ],
+                          )
+                        : null,
                     suffixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
                   ),
                 ),
@@ -103,10 +123,10 @@ class CarbonNumberInput extends StatelessWidget {
           ),
         ),
         // Helper Text Section
-        if (helperText != null)
+        if (hint != null)
           Padding(
             padding: const EdgeInsets.only(top: 8.0, left: 4.0),
-            child: Text(helperText!, style: CarbonTheme.carbonHelperTextStyle),
+            child: Text(hint!, style: CarbonTheme.carbonHelperTextStyle),
           ),
       ],
     );

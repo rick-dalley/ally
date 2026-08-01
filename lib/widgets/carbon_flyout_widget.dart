@@ -13,7 +13,7 @@ class CarbonFlyOutItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double dim = size ?? CarbonButtonSize.medium.height;
+    double dim = size ?? CarbonButtons.medium.height;
     double bWidth = borderWidth ?? 2;
     double iconDim = dim - bWidth;
 

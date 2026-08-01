@@ -30,7 +30,7 @@ class CarbonStyle2xlButton extends StatelessWidget {
     String lbl = label ?? "";
     String tpLbl = topLabel ?? "";
     final double w = width ?? 184;
-    final double h = height ?? CarbonButtonSize.extraExtraLarge.height;
+    final double h = height ?? CarbonButtons.extraExtraLarge.height;
     return InkWell(
       onTap: onTap,
       child: Container(
@@ -53,7 +53,7 @@ class CarbonStyle2xlButton extends StatelessWidget {
                   tpLbl,
                   style: GoogleFonts.ibmPlexSans(
                     color: fontColor,
-                    fontSize: CarbonButtonSize.extraSmall.fontSize,
+                    fontSize: CarbonButtons.extraSmall.fontSize,
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -61,7 +61,7 @@ class CarbonStyle2xlButton extends StatelessWidget {
                   lbl,
                   style: GoogleFonts.ibmPlexSans(
                     color: fontColor,
-                    fontSize: CarbonButtonSize.large.fontSize,
+                    fontSize: CarbonButtons.large.fontSize,
                     fontWeight: FontWeight.w400,
                   ),
                 ),

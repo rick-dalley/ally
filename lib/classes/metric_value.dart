@@ -103,8 +103,12 @@ class UnitOfMeasure {
 
 class Metric {
   final int id;
+  final bool paired;
+  final bool isInteger;
+  final int? pairId;
   final String name;
   final String category;
+  final String? description;
   final double? safeUpperValue;
   final double? safeLowerValue;
   final double? healthyUpperValue;
@@ -117,6 +121,10 @@ class Metric {
     required this.id,
     required this.name,
     required this.category,
+    required this.paired,
+    required this.isInteger,
+    this.pairId,
+    this.description,
     this.safeLowerValue,
     this.safeUpperValue,
     this.healthyLowerValue,
@@ -143,16 +151,22 @@ class Metric {
         searchTerms.add(term);
       }
     }
-
+    int pairedWithId = items['pair_id'] ?? 0;
+    int rawPaired = items['paired'] ?? 0;
+    bool isPaired = pairedWithId != 0 && rawPaired == 1;
+    int rawInteger = items['is_integer'] ?? 0;
     Metric metric = Metric(
       id: items['id'] ?? 0,
       name: items['name'] ?? '',
+      isInteger: rawInteger == 1,
+      paired: isPaired,
+      pairId: pairedWithId,
       category: category,
       searchTerms: searchTerms,
-      safeLowerValue: (items['safe_lower'] as num?)?.toDouble(),
-      safeUpperValue: (items['safe_upper'] as num?)?.toDouble(),
-      healthyLowerValue: (items['healthy_lower'] as num?)?.toDouble(),
-      healthyUpperValue: (items['healthy_upper'] as num?)?.toDouble(),
+      safeLowerValue: (items['safe_lower_limit'] as num?)?.toDouble(),
+      safeUpperValue: (items['safe_upper_limit'] as num?)?.toDouble(),
+      healthyLowerValue: (items['healthy_lower_limit'] as num?)?.toDouble(),
+      healthyUpperValue: (items['healthy_upper_limit'] as num?)?.toDouble(),
     );
     metric.unitsOfMeasure = unitsOfMeasure;
     return metric;
@@ -322,6 +336,14 @@ class Metrics {
       metricValues.add(mv);
     }
     return metricValues;
+  }
+
+  static void trackMetric({required int metricId, required String patientUuid}) async {
+    DatabaseManager().insertTrackingMetric(metricId: metricId, patientUuid: patientUuid);
+  }
+
+  static void stopTrackingMetric({required int metricId, required String patientUuid}) async {
+    DatabaseManager().deleteTrackingMetric(metricId: metricId, patientUuid: patientUuid);
   }
 }
 

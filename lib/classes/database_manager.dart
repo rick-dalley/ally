@@ -1028,7 +1028,7 @@ class DatabaseManager {
     );
   }
 
-  Future<void> insertTrackingMetric(int metricId, String patientUuid) async {
+  Future<void> insertTrackingMetric({required int metricId, required String patientUuid}) async {
     final db = await database;
     db.rawInsert(
       '''
@@ -1039,7 +1039,7 @@ class DatabaseManager {
     );
   }
 
-  Future<void> deleteTrackingMetric(int metricId, String patientUuid) async {
+  Future<void> deleteTrackingMetric({required int metricId, required String patientUuid}) async {
     final db = await database;
     await db.rawDelete(
       '''

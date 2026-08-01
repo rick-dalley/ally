@@ -7,7 +7,7 @@ class CarbonFullButton extends StatefulWidget {
   final IconData icon;
   final VoidCallback onTap;
   final double? width;
-  final CarbonButtonSize? size;
+  final CarbonButtons? size;
   final CarbonButtonStyle? style;
   final double? overRideHeight;
   const CarbonFullButton({
@@ -27,7 +27,7 @@ class CarbonFullButton extends StatefulWidget {
 
 class CarbonFullButtonState extends State<CarbonFullButton> {
   late CarbonButtonStyle buttonStyle = widget.style ?? CarbonButtonStyle.primary;
-  late CarbonButtonSize buttonSize = widget.size ?? CarbonButtonSize.extraLarge;
+  late CarbonButtons buttonSize = widget.size ?? CarbonButtons.extraLarge;
   late double height = widget.overRideHeight ?? buttonSize.fontSize;
   double width = 0;
   FontWeight fontWeight = FontWeight.w400;
@@ -42,7 +42,7 @@ class CarbonFullButtonState extends State<CarbonFullButton> {
     borderColor = CarbonTheme.getButtonBorderColor(buttonStyle);
     fontColor = CarbonTheme.getButtonFontColor(buttonStyle);
     fontWeight = FontWeight.w400;
-    buttonSize = widget.size ?? CarbonButtonSize.extraLarge;
+    buttonSize = widget.size ?? CarbonButtons.extraLarge;
     height = widget.overRideHeight ?? buttonSize.height;
   }
 

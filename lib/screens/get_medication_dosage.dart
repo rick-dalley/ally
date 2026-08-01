@@ -24,7 +24,7 @@ class GetMedicationDosageState extends State<GetMedicationDosage> {
           CarbonNumberInput(
             controller: widget.controller,
             label: "Dosage",
-            helperText: "Enter the amount medication (usually mg)",
+            hint: "Enter the amount medication (usually mg)",
           ),
         ],
       ),

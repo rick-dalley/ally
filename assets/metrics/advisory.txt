@@ -1,0 +1,24 @@
+Key Architectural Elements for a Bulletproof Metric Setup Wizard
+Contextual Definition & Plain-Language Explanation
+
+What it does: Before asking for any numbers, the wizard explains what the vital sign represents in plain language (e.g., "Diastolic pressure is the pressure in your arteries when your heart rests between beats").
+
+Why it matters: Ensures informed user input and drastically reduces configuration errors caused by confusion between systolic and diastolic numbers.
+
+Official Public Health Guidelines & Deep-Link Reference
+
+What it does: Displays the standard baseline reference points (e.g., standard Canadian cardiovascular guidelines or recognized clinical baselines) alongside a direct link to an authoritative public health resource (like Health Canada or the Heart and Stroke Foundation).
+
+Why it matters: Anchors the setup in established public data rather than making it look like your app is inventing or prescribing the targets. (Note: Given your regional context, pointing straight to Canadian health recommendations provides the appropriate baseline).
+
+Mandatory Doctor Consultation Interstitial
+
+What it does: Inserts a required confirmation step or prominent notice: "Always consult your primary care physician or specialist before overriding standard clinical thresholds."
+
+Why it matters: Shifts clinical authority back to where it belongs—the treating physician—and establishes that the user is inputting custom values under professional guidance.
+
+Ironclad Legal Disclaimer & Non-Prescriptive Notice
+
+What it does: A persistent notice or explicit acceptance screen stating clearly: "This application does not provide medical diagnoses, treatment plans, or clinical recommendations. Safety limits are user-configured tracking boundaries only."
+
+Why it matters: Establishes the software strictly as a passive data aggregator and tracking tool, shielding you from claims that the app provided dangerous medical advice.

@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../app_theme.dart';
 import 'carbon_color_constants.dart';
@@ -31,70 +32,164 @@ extension CarbonSpacingWidth on CarbonSpacing {
   }
 }
 
-enum CarbonButtonStyle { danger, ghost, primary, secondary, tertiary }
+enum CarbonButtonStyle { danger, ghost, primary, secondary, tertiary, stepper }
 
 enum CarbonTileStyle { base, clickable, selectable, expandable }
 
 enum CarbonTileFeatureFlags { single, multi, interactive }
 
-enum CarbonButtonSize { extraSmall, small, medium, large, largeBold, extraLarge, extraExtraLarge }
+enum CarbonButtons { extraSmall, small, medium, large, largeBold, extraLarge, extraExtraLarge }
 
-extension CarbonButtonSizeHeight on CarbonButtonSize {
+extension CarbonButtonSizeHeight on CarbonButtons {
   double get height {
     switch (this) {
-      case CarbonButtonSize.extraSmall:
+      case CarbonButtons.extraSmall:
         return 32;
-      case CarbonButtonSize.small:
+      case CarbonButtons.small:
         return 40;
-      case CarbonButtonSize.medium:
+      case CarbonButtons.medium:
         return 48;
-      case CarbonButtonSize.large:
-      case CarbonButtonSize.largeBold:
+      case CarbonButtons.large:
+      case CarbonButtons.largeBold:
         return 56;
-      case CarbonButtonSize.extraLarge:
+      case CarbonButtons.extraLarge:
         return 64;
-      case CarbonButtonSize.extraExtraLarge:
+      case CarbonButtons.extraExtraLarge:
         return 72;
     }
   }
 }
 
-extension CarbonButtonVerticalPadding on CarbonButtonSize {
+enum CarbonIconButtons { extraSmall, small, medium, large, largeBold, extraLarge, extraExtraLarge }
+
+extension CarbonIconButtonSize on CarbonIconButtons {
+  Size get size {
+    switch (this) {
+      case CarbonIconButtons.extraSmall:
+        return Size(32, 32);
+      case CarbonIconButtons.small:
+        return Size(40, 40);
+      case CarbonIconButtons.medium:
+        return Size(48, 48);
+      case CarbonIconButtons.large:
+      case CarbonIconButtons.largeBold:
+        return Size(56, 56);
+      case CarbonIconButtons.extraLarge:
+        return Size(64, 64);
+      case CarbonIconButtons.extraExtraLarge:
+        return Size(72, 72);
+    }
+  }
+}
+
+extension CarbonIconButtonIconSize on CarbonIconButtons {
+  Size get iconSize {
+    switch (this) {
+      case CarbonIconButtons.extraSmall:
+        return Size(12, 12);
+      case CarbonIconButtons.small:
+        return Size(16, 16);
+      case CarbonIconButtons.medium:
+        return Size(24, 24);
+      case CarbonIconButtons.large:
+      case CarbonIconButtons.largeBold:
+        return Size(32, 32);
+      case CarbonIconButtons.extraLarge:
+        return Size(40, 40);
+      case CarbonIconButtons.extraExtraLarge:
+        return Size(48, 48);
+    }
+  }
+}
+
+extension CarbonIconButtonIconPaddingSize on CarbonIconButtons {
+  Size get paddingSize {
+    switch (this) {
+      case CarbonIconButtons.extraSmall:
+      case CarbonIconButtons.small:
+      case CarbonIconButtons.medium:
+      case CarbonIconButtons.large:
+      case CarbonIconButtons.largeBold:
+      case CarbonIconButtons.extraLarge:
+      case CarbonIconButtons.extraExtraLarge:
+        return Size(4, 4);
+    }
+  }
+}
+
+extension CarbonButtonVerticalPadding on CarbonButtons {
   double get verticalPadding {
     switch (this) {
-      case CarbonButtonSize.extraSmall:
+      case CarbonButtons.extraSmall:
         return 4;
-      case CarbonButtonSize.small:
+      case CarbonButtons.small:
         return 6;
-      case CarbonButtonSize.medium:
+      case CarbonButtons.medium:
         return 8;
-      case CarbonButtonSize.large:
+      case CarbonButtons.large:
         return 12;
-      case CarbonButtonSize.largeBold:
+      case CarbonButtons.largeBold:
         return 10;
-      case CarbonButtonSize.extraLarge:
+      case CarbonButtons.extraLarge:
         return 16;
-      case CarbonButtonSize.extraExtraLarge:
+      case CarbonButtons.extraExtraLarge:
         return 24;
     }
   }
 }
 
-extension CarbonButtonFontSize on CarbonButtonSize {
+extension CarbonButtonFontSize on CarbonButtons {
   double get fontSize {
     switch (this) {
-      case CarbonButtonSize.extraSmall:
+      case CarbonButtons.extraSmall:
         return 14;
-      case CarbonButtonSize.small:
+      case CarbonButtons.small:
         return 16;
-      case CarbonButtonSize.medium:
+      case CarbonButtons.medium:
         return 18;
-      case CarbonButtonSize.large:
-      case CarbonButtonSize.largeBold:
-      case CarbonButtonSize.extraLarge:
+      case CarbonButtons.large:
+      case CarbonButtons.largeBold:
+      case CarbonButtons.extraLarge:
         return 20;
-      case CarbonButtonSize.extraExtraLarge:
+      case CarbonButtons.extraExtraLarge:
         return 22;
+    }
+  }
+}
+
+enum CarbonInputs { extraSmall, small, medium, large, largeBold, extraLarge, extraExtraLarge }
+
+extension CarbonInputSize on CarbonInputs {
+  Size get size {
+    switch (this) {
+      case CarbonInputs.extraSmall:
+        return Size(32, 32);
+      case CarbonInputs.small:
+        return Size(40, 40);
+      case CarbonInputs.medium:
+        return Size(48, 48);
+      case CarbonInputs.large:
+      case CarbonInputs.largeBold:
+        return Size(56, 56);
+      case CarbonInputs.extraLarge:
+        return Size(64, 64);
+      case CarbonInputs.extraExtraLarge:
+        return Size(72, 72);
+    }
+  }
+}
+
+extension CarbonInputEdgeInsetSize on CarbonInputs {
+  Size get edgeInsetSize {
+    switch (this) {
+      case CarbonInputs.extraSmall:
+      case CarbonInputs.small:
+      case CarbonInputs.medium:
+      case CarbonInputs.large:
+      case CarbonInputs.largeBold:
+      case CarbonInputs.extraLarge:
+      case CarbonInputs.extraExtraLarge:
+        return Size(12, 12);
     }
   }
 }
@@ -102,77 +197,79 @@ extension CarbonButtonFontSize on CarbonButtonSize {
 class CarbonTheme {
   static TextStyle carbonHeadingTextStyle = TextStyle(
     fontWeight: FontWeight.w400,
-    fontSize: CarbonButtonSize.extraExtraLarge.fontSize,
+    fontSize: CarbonButtons.extraExtraLarge.fontSize,
     color: carbonColorTextPrimary,
   );
 
   static TextStyle carbonPrimaryButtonTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
-    fontSize: CarbonButtonSize.large.fontSize,
-    color: AppTheme.onPrimaryColor,
+    fontSize: CarbonButtons.medium.fontSize,
+    color: carbonColorButtonOnPrimary,
+    backgroundColor: carbonColorButtonPrimary,
   );
 
   static TextStyle carbonGhostButtonTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
-    fontSize: CarbonButtonSize.large.fontSize,
+    fontSize: CarbonButtons.large.fontSize,
     color: carbonColorButtonGhost,
+    backgroundColor: carbonColorButtonTertiary,
   );
 
   static TextStyle carbonTertiaryButtonTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
-    fontSize: CarbonButtonSize.large.fontSize,
+    fontSize: CarbonButtons.medium.fontSize,
     color: carbonColorButtonOnTertiary,
   );
 
   static TextStyle? carbonExpressiveTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
-    fontSize: CarbonButtonSize.extraExtraLarge.fontSize,
+    fontSize: CarbonButtons.extraExtraLarge.fontSize,
     color: AppTheme.primaryColor,
   );
 
   static TextStyle? carbonTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
-    fontSize: CarbonButtonSize.medium.fontSize,
+    fontSize: CarbonButtons.medium.fontSize,
     color: carbonColorTextPrimary,
   );
 
   static TextStyle? carbonLabelTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
-    fontSize: CarbonButtonSize.small.fontSize,
+    fontSize: CarbonButtons.small.fontSize,
     color: carbonColorTextSecondary,
   );
 
   static TextStyle? carbonFieldTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
-    fontSize: CarbonButtonSize.medium.fontSize,
+    fontSize: CarbonButtons.medium.fontSize,
     color: carbonColorTextPrimary,
   );
   static TextStyle? dangerTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
-    fontSize: CarbonButtonSize.medium.fontSize,
+    fontSize: CarbonButtons.medium.fontSize,
     color: carbonColorButtonOnDanger,
   );
   static TextStyle? carbonLabelOnPrimary = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
-    fontSize: CarbonButtonSize.medium.fontSize,
+    fontSize: CarbonButtons.medium.fontSize,
     color: carbonColorTextSecondary,
   );
 
   static TextStyle? carbonHelperTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
-    fontSize: CarbonButtonSize.small.fontSize,
+    fontSize: CarbonButtons.small.fontSize,
     color: carbonColorTextHelper,
   );
 
   static TextStyle? carbonHintTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
-    fontSize: CarbonButtonSize.small.fontSize,
+    fontSize: CarbonButtons.small.fontSize,
     color: carbonColorTextHelper,
   );
 
   static TextStyle? carbonPlaceholderTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
-    fontSize: CarbonButtonSize.medium.fontSize,
+    fontSize: CarbonButtons.medium.fontSize,
     color: carbonColorTextPlaceholder,
   );
 
@@ -188,6 +285,8 @@ class CarbonTheme {
         return carbonColorButtonSecondary;
       case CarbonButtonStyle.tertiary:
         return carbonColorButtonTertiary;
+      case CarbonButtonStyle.stepper:
+        return Color(0x00000000);
     }
   }
 
@@ -203,6 +302,8 @@ class CarbonTheme {
         return carbonColorButtonOnSecondary;
       case CarbonButtonStyle.tertiary:
         return carbonColorButtonOnTertiary;
+      case CarbonButtonStyle.stepper:
+        return carbonColorIconSecondary;
     }
   }
 
@@ -218,6 +319,8 @@ class CarbonTheme {
         return carbonColorButtonSecondary;
       case CarbonButtonStyle.tertiary:
         return carbonColorButtonOnTertiary;
+      case CarbonButtonStyle.stepper:
+        return Color(0x00000000);
     }
   }
 

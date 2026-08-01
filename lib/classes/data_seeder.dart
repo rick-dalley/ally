@@ -121,6 +121,10 @@ class DataSeeder {
 
         for (var metric in metrics) {
           // Insert Metric
+          debugPrint("Processing: ${metric['id']}");
+          int pairId = metric['pair_id'] ?? 0;
+          int isPaired = pairId > 0 ? 1 : 0;
+          bool isInteger = metric['is_integer'];
           metricBatch.insert('metric', {
             'id': metric['id'],
             'name': metric['name'],
@@ -129,9 +133,13 @@ class DataSeeder {
                 : '',
             'category': categoryName,
             'safe_upper_limit': metric['safe_upper'],
-            'safe_lower_Limit': metric['safe_lower'],
+            'safe_lower_limit': metric['safe_lower'],
             'healthy_upper_limit': metric['healthy_upper'],
-            'health_lower_limit': metric['healthy_lower'],
+            'healthy_lower_limit': metric['healthy_lower'],
+            'is_integer': isInteger ? 1 : 0,
+            'description': metric['description'],
+            'paired': isPaired,
+            'pair_id': pairId,
           });
 
           // Parse and Queue Units of Measure

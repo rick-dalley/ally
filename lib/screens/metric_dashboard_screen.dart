@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/carbon_theme_constants.dart';
-import 'package:triage/classes/database_manager.dart';
 import 'package:triage/widgets/carbon_style_search_field.dart';
 import '../app_theme.dart';
 import '../classes/metric_value.dart';
@@ -19,6 +18,7 @@ class MetricsDashboardScreen extends StatefulWidget {
 class MetricsDashboardScreenState extends State<MetricsDashboardScreen> {
   late Future<void> initDataFuture;
   final TextEditingController searchController = TextEditingController();
+  late final userUuid = widget.user.patientUuid;
   String searchQuery = '';
 
   Map<int, Metric> allMetrics = {};
@@ -43,7 +43,6 @@ class MetricsDashboardScreenState extends State<MetricsDashboardScreen> {
   }
 
   Future<void> loadDataOnce() async {
-    final userUuid = widget.user.patientUuid;
     Metrics metrics = await Metrics.forPatient(userUuid);
     allMetrics = metrics.all;
     trackedMetrics = metrics.tracked;
@@ -57,13 +56,13 @@ class MetricsDashboardScreenState extends State<MetricsDashboardScreen> {
         final metric = untrackedMetrics.remove(metricId);
         if (metric != null) {
           trackedMetrics[metricId] = metric;
-          DatabaseManager().insertTrackingMetric(metricId, widget.user.patientUuid);
+          Metrics.trackMetric(metricId: metricId, patientUuid: userUuid);
         }
       } else {
         final metric = trackedMetrics.remove(metricId);
         if (metric != null) {
           untrackedMetrics[metricId] = metric;
-          DatabaseManager().deleteTrackingMetric(metricId, widget.user.patientUuid);
+          Metrics.stopTrackingMetric(metricId: metricId, patientUuid: userUuid);
         }
       }
     });

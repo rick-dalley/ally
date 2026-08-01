@@ -30,7 +30,7 @@
     },
     {
       "table": "metric",
-      "query": "CREATE TABLE IF NOT EXISTS metric (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, symbol TEXT NOT NULL, category TEXT NOT NULL, safe_upper_limit REAL NOT NULL, safe_lower_Limit REAL NOT NULL, healthy_upper_limit REAL NOT NULL, health_lower_limit REAL NOT NULL);"
+      "query": "CREATE TABLE IF NOT EXISTS metric (id INTEGER PRIMARY KEY AUTOINCREMENT, paired INTEGER DEFAULT 0, pair_id INTEGER, name TEXT NOT NULL, description TEXT, is_integer INTEGER, symbol TEXT NOT NULL, category TEXT NOT NULL, safe_upper_limit REAL NOT NULL, safe_lower_limit REAL NOT NULL, healthy_upper_limit REAL NOT NULL, healthy_lower_limit REAL NOT NULL);"
     },
     {
       "table": "unit_of_measure",
