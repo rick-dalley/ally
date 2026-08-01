@@ -108,7 +108,8 @@ class Metric {
   final int? pairId;
   final String name;
   final String category;
-  final String? description;
+  final String description;
+  final String? purpose;
   final double? safeUpperValue;
   final double? safeLowerValue;
   final double? healthyUpperValue;
@@ -123,8 +124,9 @@ class Metric {
     required this.category,
     required this.paired,
     required this.isInteger,
+    required this.description,
+    this.purpose,
     this.pairId,
-    this.description,
     this.safeLowerValue,
     this.safeUpperValue,
     this.healthyLowerValue,
@@ -162,6 +164,8 @@ class Metric {
       paired: isPaired,
       pairId: pairedWithId,
       category: category,
+      description: items['description'] ?? '',
+      purpose: items['purpose'] ?? '',
       searchTerms: searchTerms,
       safeLowerValue: (items['safe_lower_limit'] as num?)?.toDouble(),
       safeUpperValue: (items['safe_upper_limit'] as num?)?.toDouble(),

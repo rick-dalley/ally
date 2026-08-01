@@ -138,6 +138,7 @@ class DataSeeder {
             'healthy_lower_limit': metric['healthy_lower'],
             'is_integer': isInteger ? 1 : 0,
             'description': metric['description'],
+            'purpose': metric['purpose'],
             'paired': isPaired,
             'pair_id': pairId,
           });

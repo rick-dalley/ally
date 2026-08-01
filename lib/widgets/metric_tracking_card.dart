@@ -112,13 +112,15 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      SizedBox(height: 16.0),
                       Align(
                         alignment: AlignmentGeometry.centerLeft,
                         child: Text(title, style: CarbonTheme.carbonTextStyle),
                       ),
+                      SizedBox(height: 8.0),
                       Align(
                         alignment: AlignmentGeometry.centerLeft,
-                        child: Text(widget.description, style: CarbonTheme.carbonTextStyle),
+                        child: Text(widget.description, style: CarbonTheme.carbonLabelTextStyle),
                       ),
                     ],
                   ),
@@ -165,6 +167,7 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
                     Expanded(
                       child: CarbonNumberInput(
                         label: "Latest Reading",
+                        decimals: !widget.metric.isInteger,
                         controller: newValueController,
                         focusNode: newValueControllerFocusNode,
                         hint: "Enter a reading",
