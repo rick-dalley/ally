@@ -145,6 +145,8 @@ class FamilyRosterState extends State<FamilyRoster> {
       ),
 
       floatingActionButton: FloatingActionButton.extended(
+        key: Key("FAB_FamilyRoster"),
+        heroTag: "family_roster",
         onPressed: () => _launchIntakeScreen(context),
         // Signals scanning capability
         shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),

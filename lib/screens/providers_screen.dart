@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
+import 'package:flutter_native_contact_picker/model/contact.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/carbon_color_constants.dart';
 import 'package:triage/classes/database_manager.dart';
 import 'package:triage/classes/provider.dart';
-import 'package:triage/widgets/staff_card_widget.dart';
+import 'package:triage/widgets/carbon_style_button.dart';
+import 'package:triage/widgets/provider_card_widget.dart';
 import '../app_theme.dart';
 import '../classes/patient.dart';
 import '../widgets/add_care_provider.dart';
@@ -78,7 +81,7 @@ class ProviderRosterScreenState extends State<ProviderRosterScreen> {
 
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
-                child: StaffIdCard(photoPath: 'photoPath', staffMember: staffMember, index: index),
+                child: ProviderCard(photoPath: 'photoPath', staffMember: staffMember, index: index),
               );
             },
           );
@@ -88,8 +91,12 @@ class ProviderRosterScreenState extends State<ProviderRosterScreen> {
         padding: const EdgeInsets.only(bottom: 90),
         child: FloatingActionButton(
           key: const Key("FAB_NewCareGiver"),
+          heroTag: "providers_screen",
           onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const AddCareProviderScreen()));
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AddCareProviderScreen(patientUuid: widget.user.patientUuid)),
+            );
           },
           // Signals scanning capability
           backgroundColor: AppTheme.primaryColor,

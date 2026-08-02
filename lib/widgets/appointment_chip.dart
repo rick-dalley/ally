@@ -98,9 +98,9 @@ class AppointmentChipState extends State<AppointmentChip> {
       final staffMember = widget.staffMember;
       if (staffMember != null) {
         who = Who(
-          first: staffMember.firstName,
-          last: staffMember.lastName,
-          phone: [Phone(number: staffMember.phone, isMain: true, phoneType: PhoneTypes.land)],
+          first: staffMember.firstName ?? '',
+          last: staffMember.lastName ?? '',
+          phone: [Phone(number: staffMember.phone ?? '', isMain: true, phoneType: PhoneTypes.land)],
           social: [],
         );
       } else {

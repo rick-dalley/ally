@@ -6,6 +6,7 @@ import 'package:path/path.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:triage/classes/patient_condition.dart';
+import 'package:triage/classes/provider.dart';
 import 'package:triage/classes/questionnaire.dart';
 import 'package:triage/classes/vitals.dart';
 import 'package:uuid/uuid.dart';
@@ -1164,4 +1165,13 @@ class DatabaseManager {
     required MedicationShapes shape,
   }) async {}
   Future<void> addFrequency({required String name, required String patientUuid, required Frequency frequency}) async {}
+
+  Future<void> saveProvider(Provider provider) async {
+    final db = await database;
+
+    // Convert your Provider object to a Map (assuming you have a .toMap() method)
+    final Map<String, dynamic> providerMap = provider.toMap();
+
+    await db.insert('provider', providerMap, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
 }

@@ -1,37 +1,85 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
+import 'package:flutter_native_contact_picker/model/contact.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:triage/classes/database_manager.dart';
 import 'package:triage/widgets/carbon_style_autocomplete.dart';
 import 'package:triage/widgets/carbon_style_textbox.dart';
 
 import '../app_theme.dart';
 import '../classes/carbon_theme_constants.dart';
+import '../classes/metric_value.dart';
+import '../classes/provider.dart';
 import '../classes/specialities.dart';
 import 'carbon_style_button.dart';
 
 class AddCareProviderScreen extends StatefulWidget {
-  const AddCareProviderScreen({super.key});
+  final String patientUuid;
+  const AddCareProviderScreen({super.key, required this.patientUuid});
 
   @override
-  State<AddCareProviderScreen> createState() => _AddCareProviderScreenState();
+  State<AddCareProviderScreen> createState() => AddCareProviderScreenState();
 }
 
-class _AddCareProviderScreenState extends State<AddCareProviderScreen> {
-  String? _imageUrl;
+class AddCareProviderScreenState extends State<AddCareProviderScreen> {
+  String? imageUrl;
+  late String patientUuid = widget.patientUuid;
+  late Provider provider = Provider(id: uuid.toString(), patientUuid: patientUuid);
+  late TextEditingController firstNameController = TextEditingController();
+  late TextEditingController lastNameController = TextEditingController();
+  late TextEditingController emailController = TextEditingController();
+  late TextEditingController phoneController = TextEditingController();
+  late TextEditingController cityController = TextEditingController();
+  late TextEditingController postalCodeController = TextEditingController();
+  late TextEditingController stateController = TextEditingController();
+  late TextEditingController streetController = TextEditingController();
+  late TextEditingController specialtyController = TextEditingController();
+  late TextEditingController departmentController = TextEditingController();
 
-  Future<void> _handlePaste() async {
+  Future<void> handlePaste() async {
     final data = await Clipboard.getData(Clipboard.kTextPlain);
     if (data?.text != null && data!.text!.startsWith('http')) {
-      setState(() => _imageUrl = data.text);
+      setState(() => imageUrl = data.text);
+      provider.patientUuid = widget.patientUuid;
+      provider.image = NetworkImage(imageUrl!);
+      provider.firstName = provider.firstName ?? '';
+      provider.lastName = provider.lastName ?? '';
+      provider.save();
     }
   }
 
-  // Inside your Build method's Column:
+  final FlutterNativeContactPicker _contactPicker = FlutterNativeContactPicker();
+  // Call this when the user taps "Select Doctor from Contacts"
+  Future<void> showContactPicker() async {
+    try {
+      Contact? contact = await _contactPicker.selectContact();
+
+      if (contact != null) {
+        provider = Provider.fromContact(contact, patientUuid);
+        firstNameController.text = provider.firstName ?? '';
+        lastNameController.text = provider.lastName ?? '';
+        phoneController.text = provider.phone ?? '';
+        provider.save();
+        // Do what you need with the selected doctor's info here
+      }
+    } catch (e) {}
+  }
 
   @override
-  Widget build(BuildContext context) {
+  build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Add New Caregiver")),
+      appBar: AppBar(
+        title: const Text("Add New Caregiver"),
+        actions: [
+          CarbonIconButton(
+            onPressed: () {
+              showContactPicker();
+            },
+            icon: Symbols.import_contacts,
+          ),
+        ],
+      ),
       backgroundColor: AppTheme.onPrimaryColor,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -43,7 +91,7 @@ class _AddCareProviderScreenState extends State<AddCareProviderScreen> {
                 children: [
                   GestureDetector(
                     onTap: () {
-                      showDialog(context: context, builder: (_) => _imageInputDialog());
+                      showDialog(context: context, builder: (_) => imageInputDialog());
                     },
                     child: Container(
                       width: 120,
@@ -52,11 +100,11 @@ class _AddCareProviderScreenState extends State<AddCareProviderScreen> {
                         color: const Color(0xFFF4F4F4),
                         border: Border.all(color: const Color(0xFF525252)),
                         borderRadius: BorderRadius.circular(4),
-                        image: _imageUrl != null
-                            ? DecorationImage(image: NetworkImage(_imageUrl!), fit: BoxFit.cover)
+                        image: imageUrl != null
+                            ? DecorationImage(image: NetworkImage(imageUrl!), fit: BoxFit.cover)
                             : null,
                       ),
-                      child: _imageUrl == null
+                      child: imageUrl == null
                           ? const Icon(Icons.add_a_photo, size: 30, color: Color(0xFF525252))
                           : null,
                     ),
@@ -81,11 +129,19 @@ class _AddCareProviderScreenState extends State<AddCareProviderScreen> {
                 ],
               ),
               const SizedBox(height: 16), // Spacing between the two text fields
-              CarbonTextInput(label: "First name", helperText: "Enter the first name"),
-              CarbonTextInput(label: "Last Name", helperText: "Enter the last name"),
-              CarbonTextInput(label: "Email", helperText: "enter an email in the form name@site.com"),
+              CarbonTextInput(label: "First name", helperText: "Enter the first name", controller: firstNameController),
+              CarbonTextInput(label: "Last Name", helperText: "Enter the last name", controller: lastNameController),
+              CarbonTextInput(
+                label: "Email",
+                helperText: "enter an email in the form name@site.com",
+                controller: emailController,
+              ),
               CarbonTextInput(label: "Other", helperText: "enter the fax, cell or pager number"),
-              CarbonTextInput(label: "Office Location", helperText: "enter the address of the provider"),
+              CarbonTextInput(
+                label: "Office Location",
+                helperText: "enter the address of the provider",
+                controller: streetController,
+              ),
               CarbonTextInput(label: "Notes", helperText: "enter anything you want to remember about the provider"),
               const SizedBox(height: 24),
               Row(
@@ -106,7 +162,7 @@ class _AddCareProviderScreenState extends State<AddCareProviderScreen> {
     );
   }
 
-  Widget _imageInputDialog() {
+  Widget imageInputDialog() {
     TextEditingController controller = TextEditingController();
     return AlertDialog(
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
@@ -120,7 +176,7 @@ class _AddCareProviderScreenState extends State<AddCareProviderScreen> {
         children: [
           CarbonTextInput(label: "Image URL"),
           const SizedBox(height: 16),
-          TextButton(onPressed: _handlePaste, child: const Text("Paste from Clipboard")),
+          TextButton(onPressed: handlePaste, child: const Text("Paste from Clipboard")),
         ],
       ),
       actions: [
@@ -138,7 +194,7 @@ class _AddCareProviderScreenState extends State<AddCareProviderScreen> {
             Expanded(
               child: CarbonButton(
                 onPressed: () {
-                  setState(() => _imageUrl = controller.text);
+                  setState(() => imageUrl = controller.text);
                   Navigator.pop(context);
                 },
                 label: "Save",

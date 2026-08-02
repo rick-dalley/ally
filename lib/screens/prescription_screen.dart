@@ -333,7 +333,8 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 90.0),
         child: FloatingActionButton(
-          key: Key("FAB_NewMedication"),
+          key: Key("FAB_NewPrescription"),
+          heroTag: "prescription_screen",
           onPressed: () => showAddMedicationSheet(),
           child: const Icon(Symbols.add, size: 32),
         ),

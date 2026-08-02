@@ -5,12 +5,12 @@ import 'package:url_launcher/url_launcher.dart';
 import '../app_theme.dart';
 import 'appointment_chip.dart';
 
-class StaffIdCard extends StatelessWidget {
+class ProviderCard extends StatelessWidget {
   final String photoPath;
   final Provider? staffMember;
   final int index;
 
-  const StaffIdCard({super.key, required this.photoPath, required this.staffMember, required this.index});
+  const ProviderCard({super.key, required this.photoPath, required this.staffMember, required this.index});
   Future<void> openMap(String address) async {
     // Encode the address for a URL
     final String encodedAddress = Uri.encodeComponent(address);
@@ -27,38 +27,6 @@ class StaffIdCard extends StatelessWidget {
   Widget build(BuildContext context) {
     String pager = staffMember?.pager ?? "";
     String name = "${staffMember?.firstName} ${staffMember?.lastName}";
-    Map<DepartmentColors, Color> departmentColorList = {
-      DepartmentColors.blue: Colors.blue,
-      DepartmentColors.green: Colors.green,
-      DepartmentColors.cyan: Colors.cyan,
-      DepartmentColors.purple: Colors.purple,
-      DepartmentColors.red: Colors.red,
-      DepartmentColors.darkPurple: Colors.deepPurple,
-      DepartmentColors.orange: Colors.deepOrange,
-      DepartmentColors.slateGray: Colors.blueGrey,
-      DepartmentColors.brown: Colors.brown,
-      DepartmentColors.indigo: Colors.indigo,
-      DepartmentColors.pink: Colors.pink,
-    };
-
-    Map<int, String> photos = {
-      0: "assets/images/faces/staff/dr_face_1.png",
-      1: "assets/images/faces/staff/dr_face_2.png",
-      2: "assets/images/faces/staff/emerg_face_1.png",
-      3: "assets/images/faces/staff/emerg_face_2.png",
-      4: "assets/images/faces/staff/nurse_face_1.png",
-      5: "assets/images/faces/staff/nurse_face_2.png",
-      6: "assets/images/faces/staff/police_face_1.png",
-      7: "assets/images/faces/staff/police_face_2.png",
-      8: "assets/images/faces/staff/psych_face_1.png",
-      9: "assets/images/faces/staff/psych_face_2.png",
-      10: "assets/images/faces/staff/psych_nurse_1.png",
-      11: "assets/images/faces/staff/psych_nurse_2.png",
-      12: "assets/images/faces/staff/prof_face_1.png",
-      13: "assets/images/faces/staff/prof_face_2.png",
-      14: "assets/images/faces/staff/prof_yng_1.png",
-      15: "assets/images/faces/staff/prof_old_1.png",
-    };
 
     return Card(
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
@@ -73,7 +41,7 @@ class StaffIdCard extends StatelessWidget {
                   Container(
                     height: 48.0,
                     width: double.infinity,
-                    color: departmentColorList[staffMember?.color],
+                    color: staffMember?.color?.color,
                     alignment: Alignment.center, // This centers the Row within the Container
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center, // This centers the children inside the Row
@@ -103,7 +71,7 @@ class StaffIdCard extends StatelessWidget {
                                 border: Border.all(color: const Color(0xFF525252), width: 1.0),
                                 borderRadius: BorderRadius.zero,
                               ),
-                              child: Image.asset(photos[index % 16]!, fit: BoxFit.cover),
+                              child: Image.asset(DepartmentColors.values[index % 10].photoUrl, fit: BoxFit.cover),
                             ),
                             const SizedBox(height: 8), // Add some breathing room
                             // Use a fixed size or just wrap the content
@@ -120,7 +88,7 @@ class StaffIdCard extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                              Text(staffMember!.position, style: const TextStyle(color: Colors.grey)),
+                              Text(staffMember!.position ?? '', style: const TextStyle(color: Colors.grey)),
                               const SizedBox(height: 8),
                               InkWell(
                                 onTap: () async {
@@ -137,7 +105,7 @@ class StaffIdCard extends StatelessWidget {
                                   }
                                 },
                                 child: Text(
-                                  staffMember!.email,
+                                  staffMember!.email ?? '',
                                   style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
                                 ),
                               ),

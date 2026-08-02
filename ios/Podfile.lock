@@ -2,6 +2,8 @@ PODS:
   - camera_avfoundation (0.0.1):
     - Flutter
   - Flutter (1.0.0)
+  - flutter_native_contact_picker (0.0.1):
+    - Flutter
   - google_mlkit_barcode_scanning (0.15.0):
     - Flutter
     - google_mlkit_commons
@@ -83,6 +85,7 @@ PODS:
 DEPENDENCIES:
   - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
   - Flutter (from `Flutter`)
+  - flutter_native_contact_picker (from `.symlinks/plugins/flutter_native_contact_picker/ios`)
   - google_mlkit_barcode_scanning (from `.symlinks/plugins/google_mlkit_barcode_scanning/ios`)
   - google_mlkit_commons (from `.symlinks/plugins/google_mlkit_commons/ios`)
   - google_mlkit_text_recognition (from `.symlinks/plugins/google_mlkit_text_recognition/ios`)
@@ -112,6 +115,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/camera_avfoundation/ios"
   Flutter:
     :path: Flutter
+  flutter_native_contact_picker:
+    :path: ".symlinks/plugins/flutter_native_contact_picker/ios"
   google_mlkit_barcode_scanning:
     :path: ".symlinks/plugins/google_mlkit_barcode_scanning/ios"
   google_mlkit_commons:
@@ -130,6 +135,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   camera_avfoundation: 769d252259fa21e39ada7399c9dc9c0921af8165
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  flutter_native_contact_picker: 390f08cc44058386ee91499f05360d647dddfc66
   google_mlkit_barcode_scanning: ec258a9f08c16d43ed3c4f76e4f1f436ffa899df
   google_mlkit_commons: 75b2579ccf522fe01d42e689babda04c4510ba2f
   google_mlkit_text_recognition: 4d510169638309ef7ed2aff1971b620e8d785d6e
