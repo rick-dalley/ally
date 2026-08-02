@@ -274,7 +274,7 @@ class CarbonTheme {
   static TextStyle? carbonLabelOnPrimary = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
     fontSize: CarbonButtons.medium.fontSize,
-    color: carbonColorTextSecondary,
+    color: carbonColorButtonOnPrimary,
   );
 
   static TextStyle? carbonHelperTextStyle = GoogleFonts.ibmPlexSans(
@@ -313,6 +313,23 @@ class CarbonTheme {
   }
 
   static Color getButtonFontColor(CarbonButtonStyle style) {
+    switch (style) {
+      case CarbonButtonStyle.danger:
+        return carbonColorButtonOnDanger;
+      case CarbonButtonStyle.ghost:
+        return carbonColorButtonOnGhost;
+      case CarbonButtonStyle.primary:
+        return carbonColorButtonOnPrimary;
+      case CarbonButtonStyle.secondary:
+        return carbonColorButtonOnSecondary;
+      case CarbonButtonStyle.tertiary:
+        return carbonColorButtonOnTertiary;
+      case CarbonButtonStyle.stepper:
+        return carbonColorIconSecondary;
+    }
+  }
+
+  static Color getButtonIconColor(CarbonButtonStyle style) {
     switch (style) {
       case CarbonButtonStyle.danger:
         return carbonColorButtonOnDanger;

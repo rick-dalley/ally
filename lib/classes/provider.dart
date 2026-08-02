@@ -122,8 +122,14 @@ class Provider {
     );
   }
 
-  void save() {
-    DatabaseManager().saveProvider(this);
+  Future<void> save() async {
+    firstName ??= '';
+    lastName ??= '';
+    await DatabaseManager().saveProvider(this);
+  }
+
+  Future<void> delete() async {
+    await DatabaseManager().deleteProvider(providerUuid: id);
   }
 
   void copy(Provider? provider) {

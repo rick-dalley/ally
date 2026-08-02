@@ -85,7 +85,7 @@ class CarbonIconButton extends StatelessWidget {
     // Define the icon and text widgets
     CarbonButtonStyle buttonStyle = style ?? CarbonButtonStyle.primary;
     final buttonColor = CarbonTheme.getButtonColor(buttonStyle);
-    final iconColor = CarbonTheme.getButtonFontColor(buttonStyle);
+    final iconColor = CarbonTheme.getButtonIconColor(buttonStyle);
     final borderColor = CarbonTheme.getButtonBorderColor(buttonStyle);
     carbonIconButton ?? CarbonIconButtons.medium.size;
     final Size size = carbonIconButton!.size;
@@ -134,9 +134,9 @@ class CarbonAcceptButton extends StatelessWidget {
     // Define the icon and text widgets
     CarbonButtonStyle buttonStyle = style ?? CarbonButtonStyle.primary;
     final buttonColor = CarbonTheme.getButtonColor(buttonStyle);
-    final textColor = CarbonTheme.getButtonFontColor(buttonStyle);
-    final iconColor = textColor;
-    final borderColor = CarbonTheme.getButtonBorderColor(buttonStyle);
+    // final textColor = CarbonTheme.getButtonFontColor(buttonStyle);
+    // final iconColor = CarbonTheme.getButtonIconColor(buttonStyle);
+    // final borderColor = CarbonTheme.getButtonBorderColor(buttonStyle);
 
     final size = this.size ?? CarbonButtons.medium;
 

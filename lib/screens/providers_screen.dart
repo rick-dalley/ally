@@ -8,6 +8,7 @@ import 'package:triage/widgets/provider_card_widget.dart';
 import '../app_theme.dart';
 import '../classes/patient.dart';
 import '../widgets/add_care_provider.dart';
+import '../widgets/carbon_style_button.dart';
 
 class ProviderRosterScreen extends StatefulWidget {
   final Patient user;
@@ -28,18 +29,30 @@ class ProviderRosterScreenState extends State<ProviderRosterScreen> {
 
   void loadStaffKeys() {
     // DatabaseManager is a singleton, so this is safe and fast
-    providers = DatabaseManager().getProviders(widget.user.patientUuid);
+    setState(() {
+      providers = DatabaseManager().getProviders(widget.user.patientUuid);
+    });
   }
 
   void handleCardUpdated(String providerUuid) {
     loadStaffKeys();
   }
 
+  void handleCardDeleted(Provider provider) {
+    provider.delete();
+    loadStaffKeys();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("My Health Care Team"), backgroundColor: carbonColorScaffoldBackground),
+      appBar: AppBar(
+        title: const Text("My Health Care Team"),
+        backgroundColor: carbonColorScaffoldBackground,
+        actions: [CarbonIconButton(icon: Symbols.search, onPressed: () {})],
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+
       backgroundColor: Colors.transparent,
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: providers,
@@ -86,6 +99,7 @@ class ProviderRosterScreenState extends State<ProviderRosterScreen> {
                   user: widget.user,
                   index: index,
                   onCardUpdated: handleCardUpdated,
+                  onDeleteCard: handleCardDeleted,
                 ),
               );
             },

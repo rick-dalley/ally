@@ -1179,6 +1179,17 @@ class DatabaseManager {
   }) async {}
   Future<void> addFrequency({required String name, required String patientUuid, required Frequency frequency}) async {}
 
+  Future<void> deleteProvider({required String providerUuid}) async {
+    final db = await database;
+    await db.rawDelete(
+      '''
+    DELETE FROM provider
+    WHERE provider_uuid = ? 
+  ''',
+      [providerUuid],
+    );
+  }
+
   Future<void> saveProvider(Provider provider) async {
     final db = await database;
 

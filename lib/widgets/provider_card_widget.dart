@@ -1,11 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
+import 'package:triage/classes/carbon_color_constants.dart';
+import 'package:triage/classes/carbon_theme_constants.dart';
 import 'package:triage/classes/provider.dart';
-import 'package:triage/classes/specialities.dart';
 import 'package:triage/widgets/avatar_picker.dart';
+import 'package:triage/widgets/carbon_style_button.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../app_theme.dart';
 import '../classes/metric_value.dart';
 import '../classes/patient.dart';
 import 'appointment_chip.dart';
@@ -15,7 +17,15 @@ class ProviderCard extends StatefulWidget {
   final Provider? provider;
   final int index;
   final Function(String uuid)? onCardUpdated;
-  const ProviderCard({super.key, required this.provider, required this.user, required this.index, this.onCardUpdated});
+  final Function(Provider provider)? onDeleteCard;
+  const ProviderCard({
+    super.key,
+    required this.provider,
+    required this.user,
+    required this.index,
+    this.onCardUpdated,
+    this.onDeleteCard,
+  });
 
   @override
   State<StatefulWidget> createState() => ProviderCardState();
@@ -45,9 +55,16 @@ class ProviderCardState extends State<ProviderCard> {
     });
   }
 
+  void handleDelete() {
+    if (widget.onDeleteCard != null) {
+      widget.onDeleteCard!(provider);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     String pager = provider.pager ?? "";
+    String qualifications = "${provider.specialities ?? 'General'} - ${provider.department ?? 'Family Medicine'}";
     String name = "${provider.firstName} ${provider.lastName}";
 
     return Card(
@@ -61,17 +78,15 @@ class ProviderCardState extends State<ProviderCard> {
             Container(
               height: 48.0,
               width: double.infinity,
-              color: provider.color?.color,
+              color: carbonColorButtonPrimary, //provider.color?.color,
               alignment: Alignment.center, // This centers the Row within the Container
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center, // This centers the children inside the Row
+                mainAxisSize: MainAxisSize.max,
                 children: [
-                  Text(
-                    "University Hospital - ${provider.department}",
-                    style: TextStyle(color: AppTheme.onPrimaryColor, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(width: 16),
-                  Icon(provider.icon, color: AppTheme.onPrimaryColor, size: 24),
+                  Icon(Symbols.medication, color: carbonColorButtonPrimary, size: 24),
+                  Expanded(child: Text(qualifications, style: CarbonTheme.carbonLabelOnPrimary)),
+                  CarbonIconButton(onPressed: handleDelete, icon: Symbols.close),
                 ],
               ),
             ),
