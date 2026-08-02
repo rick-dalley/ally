@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:triage/classes/carbon_theme_constants.dart';
+import '../classes/carbon_color_constants.dart';
+import '../classes/listable.dart';
 
 class CarbonAutocomplete extends StatelessWidget {
   final String label;
-  final List<String> options;
+  final List<Listable> options;
   final String? placeholder;
   final String? helperText;
   final Function(String)? onChanged;
@@ -24,17 +26,20 @@ class CarbonAutocomplete extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(bottom: 8.0),
-          child: Text(label, style: GoogleFonts.ibmPlexSans(fontSize: 12, color: const Color(0xFF525252))),
+          child: Text(label, style: CarbonTheme.carbonLabelTextStyle),
         ),
-        Autocomplete<String>(
+        Autocomplete<Listable>(
+          displayStringForOption: (Listable option) => option.label,
           optionsBuilder: (TextEditingValue textEditingValue) {
             if (textEditingValue.text.isEmpty) {
-              return const Iterable<String>.empty();
+              return const Iterable<Listable>.empty();
             }
-            return options.where((String option) => option.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+            String searchTerm = textEditingValue.text.toLowerCase();
+
+            return options.where((option) => option.label.toLowerCase().contains(searchTerm));
           },
-          onSelected: (String selection) {
-            if (onChanged != null) onChanged!(selection);
+          onSelected: (Listable selection) {
+            if (onChanged != null) onChanged!(selection.label);
           },
           fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
             // Listen to every keystroke to support free-form entry
@@ -45,15 +50,17 @@ class CarbonAutocomplete extends StatelessWidget {
             return TextField(
               controller: controller,
               focusNode: focusNode,
-              style: GoogleFonts.ibmPlexSans(fontSize: 16, color: Colors.black),
+              style: CarbonTheme.carbonLabelTextStyle,
               decoration: InputDecoration(
                 hintText: placeholder,
-                hintStyle: GoogleFonts.ibmPlexSans(color: const Color(0xFFA8A8A8)),
+                hintStyle: CarbonTheme.carbonHelperTextStyle,
                 filled: true,
                 fillColor: const Color(0xFFF4F4F4),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 14),
                 border: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF525252), width: 1)),
-                focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF0F62FE), width: 2)),
+                focusedBorder: const UnderlineInputBorder(
+                  borderSide: BorderSide(color: carbonColorButtonPrimary, width: 2),
+                ),
               ),
             );
           },
@@ -74,8 +81,8 @@ class CarbonAutocomplete extends StatelessWidget {
                         onTap: () => onSelected(option),
                         child: Container(
                           padding: const EdgeInsets.all(8),
-                          color: const Color(0xFFF4F4F4),
-                          child: Text(option, style: GoogleFonts.ibmPlexSans(fontSize: 16)),
+                          color: carbonColorLayer03,
+                          child: Text(option.label, style: CarbonTheme.carbonLabelTextStyle),
                         ),
                       );
                     },
@@ -88,7 +95,7 @@ class CarbonAutocomplete extends StatelessWidget {
         if (helperText != null)
           Padding(
             padding: const EdgeInsets.only(top: 8.0),
-            child: Text(helperText!, style: GoogleFonts.ibmPlexSans(fontSize: 12, color: const Color(0xFF525252))),
+            child: Text(helperText!, style: CarbonTheme.carbonHelperTextStyle),
           ),
       ],
     );

@@ -15,8 +15,8 @@ class CarbonTextInput extends StatefulWidget {
 
   const CarbonTextInput({
     super.key,
-    this.controller,
     required this.label,
+    this.controller,
     this.value,
     this.fillColor,
     this.accentColor,
@@ -33,15 +33,14 @@ class CarbonTextInput extends StatefulWidget {
 class CarbonStateText extends State<CarbonTextInput> {
   late Color fillColor = widget.fillColor ?? carbonColorField;
   late Color accentColor = widget.accentColor ?? carbonColorButtonPrimary;
-  late TextEditingController _controller;
-  late TextInputType _keyboard;
+  late TextInputType keyboard;
+  late TextEditingController controller;
   @override
   void initState() {
     super.initState();
     // Use the provided controller if it exists, otherwise create one
-    _controller = widget.controller ?? TextEditingController();
-    _controller.text = widget.value ?? "";
-    _keyboard = widget.keyboardType ?? TextInputType.text;
+    keyboard = widget.keyboardType ?? TextInputType.text;
+    controller = widget.controller ?? TextEditingController();
   }
 
   @override
@@ -49,7 +48,7 @@ class CarbonStateText extends State<CarbonTextInput> {
     super.didUpdateWidget(oldWidget);
     // Only update the text if the value property actually changes
     if (widget.value != oldWidget.value) {
-      _controller.text = widget.value ?? "";
+      controller.text = widget.value ?? "";
     }
   }
 
@@ -57,7 +56,7 @@ class CarbonStateText extends State<CarbonTextInput> {
   void dispose() {
     // Only dispose if we created the controller ourselves
     if (widget.controller == null) {
-      _controller.dispose();
+      controller.dispose();
     }
     super.dispose();
   }
@@ -72,9 +71,9 @@ class CarbonStateText extends State<CarbonTextInput> {
           child: Text(widget.label, style: CarbonTheme.carbonLabelTextStyle),
         ),
         TextField(
-          controller: _controller,
+          controller: controller,
           style: CarbonTheme.carbonTextStyle,
-          keyboardType: _keyboard,
+          keyboardType: keyboard,
           decoration: InputDecoration(
             filled: true,
             fillColor: fillColor,

@@ -1137,6 +1137,20 @@ class DatabaseManager {
     );
   }
 
+  Future<List<Map<String, dynamic>>> getProvidersFor({required String patientUuid}) async {
+    final db = await database;
+
+    // Use a LEFT JOIN to ensure we get the patient even if they have no vitals yet
+    return await db.rawQuery(
+      '''
+    SELECT s.*
+    FROM provider p
+    WHERE patient_uuid = ?
+  ''',
+      [patientUuid],
+    );
+  }
+
   Future<List<Map<String, dynamic>>> getProvider({required String id}) async {
     final db = await database;
 
@@ -1145,8 +1159,7 @@ class DatabaseManager {
       '''
     SELECT s.*
     FROM provider p
-    WHERE id = ?
-    ORDER BY p.last_name, p.first_name
+    WHERE provider_uuid = ?
   ''',
       [id],
     );

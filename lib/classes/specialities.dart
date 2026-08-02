@@ -1,8 +1,41 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/classes/provider.dart';
+import 'package:triage/classes/listable.dart';
 
-enum Specialities {
+enum DepartmentColors { blue, green, cyan, purple, red, orange, brown, darkPurple, slateGray, indigo, pink, grey }
+
+extension DepartmentColorsColor on DepartmentColors {
+  Color get color {
+    switch (this) {
+      case DepartmentColors.blue:
+        return Colors.blue;
+      case DepartmentColors.green:
+        return Colors.green;
+      case DepartmentColors.cyan:
+        return Colors.cyan;
+      case DepartmentColors.purple:
+        return Colors.purple;
+      case DepartmentColors.red:
+        return Colors.red;
+      case DepartmentColors.orange:
+        return Colors.deepOrange;
+      case DepartmentColors.brown:
+        return Colors.brown;
+      case DepartmentColors.darkPurple:
+        return Colors.deepPurple;
+      case DepartmentColors.slateGray:
+        return Colors.blueGrey;
+      case DepartmentColors.indigo:
+        return Colors.indigo;
+      case DepartmentColors.pink:
+        return Colors.pink;
+      case DepartmentColors.grey:
+        return Colors.grey;
+    }
+  }
+}
+
+enum Specialities implements Listable {
   medicine,
   audiology,
   cardiology,
@@ -41,82 +74,10 @@ enum Specialities {
   sonography,
   emergency,
   pharmacology,
-}
+  other;
 
-Map<String, Specialities> specialities = {
-  "Audiologist": Specialities.audiology,
-  "Cardiologist": Specialities.cardiology,
-  "Pulmonologist": Specialities.pulmonology,
-  "Oncologist": Specialities.oncology,
-  "Pediatrician": Specialities.pediatrics,
-  "Immunologist": Specialities.immunology,
-  "Respirologist": Specialities.respirology,
-  "Respiratory Nurse": Specialities.respirology,
-  "Neurologist": Specialities.neurology,
-  "Psychiatrist": Specialities.psychiatry,
-  "Geriatric Psychiatrist": Specialities.psychiatry,
-  "Psychiatric Nurse": Specialities.psychiatry,
-  "Gynecologist": Specialities.gynecology,
-  "Obstetrician": Specialities.obstetrics,
-  "Medical Doctor": Specialities.generalPractice,
-  "Medical Professional": Specialities.medicine,
-  "Endocrinologist": Specialities.endocrinology,
-  "Gastroenterologist": Specialities.gastroenterology,
-  "Ophthalmologist": Specialities.ophthalmology,
-  "Orthopedist": Specialities.orthopedics,
-  "Physical Therapist": Specialities.physicalTherapy,
-  "Podiatrist": Specialities.podiatry,
-  "Rheumatologist": Specialities.rheumatology,
-  "Urologist": Specialities.urology,
-  "Dermatologist": Specialities.dermatology,
-  "Audiologists": Specialities.audiology,
-  "Cardiologists": Specialities.cardiology,
-  "Pulmonologists": Specialities.pulmonology,
-  "Oncologists": Specialities.oncology,
-  "Oncology Nurse": Specialities.oncology,
-  "Oncologist Nurse": Specialities.oncology,
-  "Pediatricians": Specialities.pediatrics,
-  "Professional": Specialities.medicine,
-  "Physician": Specialities.generalPractice,
-  "Attending Physician": Specialities.generalPractice,
-  "Podiatrists": Specialities.podiatry,
-  "Rheumatologists": Specialities.rheumatology,
-  "Phlebotomist": Specialities.phlebotomy,
-  "Intensivist": Specialities.intensiveCare,
-  "Psychometrist": Specialities.psychometry,
-  "Clinical Psychologist": Specialities.psychometry,
-  "Psychologist": Specialities.psychometry,
-  "Surgeon": Specialities.surgery,
-  "Surgical Technologist": Specialities.surgery,
-  "Operating Room Nurse": Specialities.surgery,
-  "Radiologist": Specialities.imaging,
-  "Radiology Technician": Specialities.imaging,
-  "Radiation Technologist": Specialities.imaging,
-  "Medical Laboratory Technologist": Specialities.medicalLab,
-  "Anesthesiologist": Specialities.anesthesiology,
-  "Biomedical Engineer": Specialities.biomedicalEngineering,
-  "Biomechanical Engineer": Specialities.biomedicalEngineering,
-  "Certified Nurse-MidWife": Specialities.neonatology,
-  "Neonatologist": Specialities.neonatology,
-  "Neonatal Nurse": Specialities.neonatology,
-  "Neonatal ICU Nurse": Specialities.neonatology,
-  "Infectious Disease Specialist": Specialities.infectiousDisease,
-  "Microbiologist": Specialities.microBiology,
-  "Nutritionist": Specialities.nutrition,
-  "Sonographist": Specialities.sonography,
-  "Diagnostic Medical Sonographer": Specialities.sonography,
-  "Emergency Medicine Physician": Specialities.emergency,
-  "Emergency Medicine Nurse": Specialities.emergency,
-  "Emergency Physician": Specialities.emergency,
-  "Emergency Nurse": Specialities.emergency,
-  "Pharmacist": Specialities.pharmacology,
-  "Pharmacy Technician": Specialities.pharmacology,
-  "Pharmacologist": Specialities.pharmacology,
-  "Clinical Pharmacist": Specialities.pharmacology,
-};
-
-extension SpecialtyName on Specialities {
-  String get name {
+  @override
+  String get description {
     switch (this) {
       case Specialities.medicine:
         return "Professional";
@@ -194,94 +155,95 @@ extension SpecialtyName on Specialities {
         return "Emergency";
       case Specialities.pharmacology:
         return "Pharmacology";
+      case Specialities.other:
+        return "Other";
     }
   }
-}
 
-extension SpecialtyDesignation on Specialities {
-  String get designation {
+  @override
+  String get label {
     switch (this) {
-      case Specialities.cardiology:
-        return "Cardiologist";
-      case Specialities.pulmonology:
-        return "Pulmonologist";
-      case Specialities.oncology:
-        return "Oncologist";
-      case Specialities.pediatrics:
-        return "Pediatrician";
-      case Specialities.immunology:
-        return "Immunologist";
-      case Specialities.respirology:
-        return "Respirologist";
-      case Specialities.neurology:
-        return "Neurologist";
-      case Specialities.obstetricsAndGynecology:
-        return "Gynecologist";
-      case Specialities.psychiatry:
-        return "Psychiatrist";
-      case Specialities.gynecology:
-        return "Gynecologist";
-      case Specialities.obstetrics:
-        return "Obstetrician";
-      case Specialities.generalPractice:
-        return "Medical Doctor";
       case Specialities.medicine:
-        return "Medical Professional";
+        return "Professional";
+      case Specialities.cardiology:
+        return "Cardiology";
+      case Specialities.pulmonology:
+        return "Pulmonology";
+      case Specialities.oncology:
+        return "Oncology";
+      case Specialities.pediatrics:
+        return "Pediatrics";
+      case Specialities.immunology:
+        return "Immunology";
+      case Specialities.respirology:
+        return "Respirology";
+      case Specialities.neurology:
+        return "Neurology";
+      case Specialities.obstetricsAndGynecology:
+        return "Obstetrics And Gynecology";
+      case Specialities.psychiatry:
+        return "Psychiatry";
+      case Specialities.gynecology:
+        return "Gynecology";
+      case Specialities.obstetrics:
+        return "Obstetrics";
       case Specialities.endocrinology:
-        return "Endocrinologist";
+        return "Endocrinology";
+      case Specialities.generalPractice:
+        return "General Practice";
       case Specialities.gastroenterology:
-        return "Gastroenterologist";
+        return "Gastroenterology";
       case Specialities.ophthalmology:
-        return "Ophthalmologist";
+        return "Ophthalmology";
       case Specialities.orthopedics:
-        return "Orthopedist";
+        return "Orthopedics";
       case Specialities.physicalTherapy:
-        return "Physical Therapist";
+        return "Physical Therapy";
       case Specialities.podiatry:
-        return "Podiatrist";
+        return "Podiatry";
       case Specialities.rheumatology:
-        return "Rheumatologist";
+        return "Rheumatology";
       case Specialities.urology:
-        return "Urologist";
+        return "Urology";
       case Specialities.dermatology:
-        return "Dermatologist";
+        return "Dermatology";
       case Specialities.audiology:
-        return "Audiologist";
+        return "Audiology";
       case Specialities.phlebotomy:
-        return "Phlebotomist";
+        return "Phlebotomy";
       case Specialities.intensiveCare:
-        return "Intensivist";
+        return "Intensive Care";
       case Specialities.psychometry:
-        return "Psychometrist";
+        return "Psychometry";
       case Specialities.surgery:
-        return "Surgeon";
+        return "Surgery";
       case Specialities.imaging:
-        return "Radiologist";
+        return "Imaging";
       case Specialities.medicalLab:
-        return "Medical Lab Technologist";
+        return "Medical Lab";
       case Specialities.anesthesiology:
-        return "Anesthesiologist";
+        return "Anesthesiology";
       case Specialities.biomedicalEngineering:
-        return "Biomedical Engineer";
+        return "Biomedical Engineering";
       case Specialities.neonatology:
-        return "Neonatologist";
+        return "Neonatal Care";
       case Specialities.infectiousDisease:
-        return "Infectious Disease Specialist";
+        return "Infectious Disease";
       case Specialities.microBiology:
-        return "Microbiologist";
+        return "Microbiology";
       case Specialities.nutrition:
-        return "Nutritionist";
+        return "Nutrition";
       case Specialities.sonography:
-        return "Sonographist";
+        return "Sonography";
       case Specialities.emergency:
         return "Emergency";
       case Specialities.pharmacology:
-        return "Pharmacist";
+        return "Pharmacology";
+      case Specialities.other:
+        return "Other";
     }
   }
-}
 
-extension SpecialtyIcon on Specialities {
   IconData get icon {
     switch (this) {
       case Specialities.cardiology:
@@ -360,11 +322,11 @@ extension SpecialtyIcon on Specialities {
         return Symbols.emergency;
       case Specialities.pharmacology:
         return Symbols.medication;
+      case Specialities.other:
+        return Symbols.unknown_2;
     }
   }
-}
 
-extension SpecializationColor on Specialities {
   DepartmentColors get color {
     switch (this) {
       case Specialities.emergency:
@@ -415,6 +377,8 @@ extension SpecializationColor on Specialities {
       case Specialities.pharmacology:
       case Specialities.oncology:
         return DepartmentColors.indigo;
+      case Specialities.other:
+        return DepartmentColors.grey;
     }
   }
 }

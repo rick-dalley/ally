@@ -34,6 +34,7 @@ dependencies:
   cached_network_image: ^3.3.1
   flutter_svg: ^2.0.0
   flutter_native_contact_picker: ^0.0.11
+  image_picker: ^1.2.2
 
 dev_dependencies:
   flutter_test:

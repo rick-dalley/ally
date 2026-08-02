@@ -60,6 +60,28 @@ extension CarbonButtonSizeHeight on CarbonButtons {
   }
 }
 
+enum CarbonIcons { extraSmall, small, medium, large, largeBold, extraLarge, extraExtraLarge }
+
+extension CarbonIconSixe on CarbonIcons {
+  Size get size {
+    switch (this) {
+      case CarbonIcons.extraSmall:
+        return Size(12, 12);
+      case CarbonIcons.small:
+        return Size(16, 16);
+      case CarbonIcons.medium:
+        return Size(24, 24);
+      case CarbonIcons.large:
+      case CarbonIcons.largeBold:
+        return Size(32, 32);
+      case CarbonIcons.extraLarge:
+        return Size(40, 40);
+      case CarbonIcons.extraExtraLarge:
+        return Size(48, 48);
+    }
+  }
+}
+
 enum CarbonIconButtons { extraSmall, small, medium, large, largeBold, extraLarge, extraExtraLarge }
 
 extension CarbonIconButtonSize on CarbonIconButtons {

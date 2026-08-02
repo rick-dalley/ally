@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
-import 'package:flutter_native_contact_picker/model/contact.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/carbon_color_constants.dart';
+import 'package:triage/classes/carbon_theme_constants.dart';
 import 'package:triage/classes/database_manager.dart';
 import 'package:triage/classes/provider.dart';
-import 'package:triage/widgets/carbon_style_button.dart';
 import 'package:triage/widgets/provider_card_widget.dart';
 import '../app_theme.dart';
 import '../classes/patient.dart';
@@ -25,12 +23,16 @@ class ProviderRosterScreenState extends State<ProviderRosterScreen> {
   @override
   void initState() {
     super.initState();
-    _loadStaffKeys();
+    loadStaffKeys();
   }
 
-  void _loadStaffKeys() {
+  void loadStaffKeys() {
     // DatabaseManager is a singleton, so this is safe and fast
     providers = DatabaseManager().getProviders(widget.user.patientUuid);
+  }
+
+  void handleCardUpdated(String providerUuid) {
+    loadStaffKeys();
   }
 
   @override
@@ -66,9 +68,7 @@ class ProviderRosterScreenState extends State<ProviderRosterScreen> {
           final providerList = snapshot.data ?? [];
 
           if (providerList.isEmpty) {
-            return Center(
-              child: Text("No care providers found.", style: TextStyle(color: Colors.grey.shade600)),
-            );
+            return Center(child: Text("No care providers found.", style: CarbonTheme.carbonLabelTextStyle));
           }
 
           return ListView.builder(
@@ -77,11 +77,16 @@ class ProviderRosterScreenState extends State<ProviderRosterScreen> {
             itemCount: providerList.length,
             itemBuilder: (context, index) {
               final providerMap = providerList[index];
-              final Provider staffMember = Provider.fromJson(providerMap);
+              final Provider provider = Provider.fromJson(providerMap);
 
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
-                child: ProviderCard(photoPath: 'photoPath', staffMember: staffMember, index: index),
+                child: ProviderCard(
+                  provider: provider,
+                  user: widget.user,
+                  index: index,
+                  onCardUpdated: handleCardUpdated,
+                ),
               );
             },
           );

@@ -22,7 +22,7 @@
     },
     {
       "table": "provider",
-      "query": "CREATE TABLE IF NOT EXISTS provider (provider_uuid TEXT PRIMARY KEY NOT NULL, patient_uuid TEXT NOT NULL, first_name TEXT NOT NULL, last_name TEXT NOT NULL,  gender TEXT, position TEXT, is_specialist INTEGER DEFAULT 0, pager TEXT, city TEXT, street TEXT, pr_st TEXT, code TEXT, country TEXT, accreditations TEXT, specializations TEXT, facility TEXT, office_phone TEXT, office_email TEXT, personal_phone TEXT, personal_email TEXT, started_seeing DATETIME, stopped_seeing DATETIME, purpose TEXT, FOREIGN KEY(patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
+      "query": "CREATE TABLE IF NOT EXISTS provider (provider_uuid TEXT PRIMARY KEY NOT NULL, patient_uuid TEXT NOT NULL, first_name TEXT NOT NULL, last_name TEXT NOT NULL,  avatar BLOB, gender TEXT, position TEXT, is_specialist INTEGER DEFAULT 0, pager TEXT, city TEXT, street TEXT, pr_st TEXT, code TEXT, country TEXT, accreditations TEXT, specializations TEXT, facility TEXT, office_phone TEXT, office_email TEXT, personal_phone TEXT, personal_email TEXT, started_seeing DATETIME, stopped_seeing DATETIME, purpose TEXT, FOREIGN KEY(patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
     },
     {
       "table": "device",
