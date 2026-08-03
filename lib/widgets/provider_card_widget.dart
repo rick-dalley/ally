@@ -16,7 +16,7 @@ class ProviderCard extends StatefulWidget {
   final Patient user;
   final Provider? provider;
   final int index;
-  final Function(String uuid)? onCardUpdated;
+  final Function(Provider provider)? onCardUpdated;
   final Function(Provider provider)? onDeleteCard;
   const ProviderCard({
     super.key,
@@ -50,7 +50,7 @@ class ProviderCardState extends State<ProviderCard> {
       provider.image = image;
       provider.save();
       if (widget.onCardUpdated != null) {
-        widget.onCardUpdated!(provider.id);
+        widget.onCardUpdated!(provider);
       }
     });
   }
@@ -103,7 +103,7 @@ class ProviderCardState extends State<ProviderCard> {
                         width: 184,
                         height: 184,
                         decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFF525252), width: 1.0),
+                          border: Border.all(color: carbonColorBorderSubtle03, width: 1.0),
                           borderRadius: BorderRadius.zero,
                         ),
                         child: AvatarPicker(onPicked: handleAvatarPicked, rawImage: provider.image),

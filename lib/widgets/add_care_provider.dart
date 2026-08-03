@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
 import 'package:flutter_native_contact_picker/model/contact.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:triage/classes/carbon_color_constants.dart';
 import 'package:triage/widgets/avatar_picker.dart';
 import 'package:triage/widgets/carbon_style_autocomplete.dart';
 import 'package:triage/widgets/carbon_style_textbox.dart';
@@ -66,6 +67,7 @@ class AddCareProviderScreenState extends State<AddCareProviderScreen> {
   build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: BackButton(onPressed: () => Navigator.pop(context, provider)),
         title: const Text("Add New Caregiver"),
         actions: [
           CarbonIconButton(
@@ -76,7 +78,7 @@ class AddCareProviderScreenState extends State<AddCareProviderScreen> {
           ),
         ],
       ),
-      backgroundColor: AppTheme.onPrimaryColor,
+      backgroundColor: carbonColorScaffoldBackground,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -96,64 +98,73 @@ class AddCareProviderScreenState extends State<AddCareProviderScreen> {
                       helperText: "Select from the available list.",
                       onChanged: (String? val) {
                         provider.specialities = val;
+                        provider.save();
                       },
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 16), // Spacing between the two text fields
-              CarbonTextInput(label: "First name", helperText: "Enter the first name", controller: firstNameController),
-              CarbonTextInput(label: "Last Name", helperText: "Enter the last name", controller: lastNameController),
+              CarbonTextInput(
+                label: "First name",
+                helperText: "Enter the first name",
+                controller: firstNameController,
+                onChanged: (String value) {
+                  provider.save();
+                },
+              ),
+              CarbonTextInput(
+                label: "Last Name",
+                helperText: "Enter the last name",
+                controller: lastNameController,
+                onChanged: (String value) {
+                  provider.save();
+                },
+              ),
               const SizedBox(height: 8.0),
               CarbonTextInput(
                 label: "Office Phone",
                 helperText: "Enter the main office phone number",
                 controller: phoneController,
                 keyboardType: TextInputType.phone,
+                onChanged: (String value) {
+                  provider.save();
+                },
               ),
               CarbonTextInput(
                 label: "Other Phone",
                 helperText: "Enter the fax, cell or pager number",
                 controller: phoneController,
                 keyboardType: TextInputType.phone,
+                onChanged: (String value) {
+                  provider.save();
+                },
               ),
               CarbonTextInput(
                 label: "Office eMail",
                 helperText: "enter an email in the form name@site.com",
                 controller: emailController,
                 keyboardType: TextInputType.emailAddress,
+                onChanged: (String value) {
+                  provider.save();
+                },
               ),
               CarbonTextInput(
                 label: "Office Location",
                 helperText: "enter the address of the provider",
                 controller: streetController,
                 keyboardType: TextInputType.streetAddress,
+                onChanged: (String value) {
+                  provider.save();
+                },
               ),
-              CarbonTextInput(label: "Notes", helperText: "Enter anything you want to remember about the provider"),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: CarbonButton(label: "Cancel", onPressed: () {}, style: CarbonButtonStyle.secondary),
-                  ),
-                  Expanded(
-                    child: CarbonButton(
-                      label: "Save",
-                      icon: Symbols.save,
-                      onPressed: () {
-                        provider.phone = phoneController.text;
-                        provider.email = emailController.text;
-                        provider.firstName = firstNameController.text;
-                        provider.lastName = lastNameController.text;
-                        provider.street = streetController.text;
-                        provider.department = departmentController.text;
-                        provider.specialities = specialtyController.text;
-                      },
-                    ),
-                  ),
-                ],
+              CarbonTextInput(
+                label: "Notes",
+                helperText: "Enter anything you want to remember about the provider",
+                onChanged: (String value) {
+                  provider.save();
+                },
               ),
-              const SizedBox(height: 24),
             ],
           ),
         ),

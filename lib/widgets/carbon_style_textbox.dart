@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:triage/classes/carbon_color_constants.dart';
 import '../classes/carbon_theme_constants.dart';
@@ -10,6 +12,7 @@ class CarbonTextInput extends StatefulWidget {
   final String? value;
   final Color? fillColor;
   final Color? accentColor;
+  final Function(String)? onChanged;
   final TextInputType? keyboardType;
   final TextEditingController? controller;
 
@@ -24,6 +27,7 @@ class CarbonTextInput extends StatefulWidget {
     this.placeHolderText,
     this.errorText,
     this.keyboardType,
+    this.onChanged,
   });
 
   @override
@@ -35,12 +39,15 @@ class CarbonStateText extends State<CarbonTextInput> {
   late Color accentColor = widget.accentColor ?? carbonColorButtonPrimary;
   late TextInputType keyboard;
   late TextEditingController controller;
+  Timer? debounceTimer;
+
   @override
   void initState() {
     super.initState();
     // Use the provided controller if it exists, otherwise create one
     keyboard = widget.keyboardType ?? TextInputType.text;
     controller = widget.controller ?? TextEditingController();
+    controller.addListener(onTextChanged);
   }
 
   @override
@@ -58,7 +65,20 @@ class CarbonStateText extends State<CarbonTextInput> {
     if (widget.controller == null) {
       controller.dispose();
     }
+    debounceTimer?.cancel();
     super.dispose();
+  }
+
+  void onTextChanged() {
+    // Cancel the previous timer if the user is still typing
+    if (debounceTimer?.isActive ?? false) debounceTimer!.cancel();
+
+    // Wait 500ms after the last keystroke before saving
+    debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      if (widget.onChanged != null) {
+        widget.onChanged!(controller.text);
+      }
+    });
   }
 
   @override
