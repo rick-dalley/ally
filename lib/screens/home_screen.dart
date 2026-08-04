@@ -71,7 +71,7 @@ class HomeScreenState extends State<HomeScreen> {
       // ),
       MetricsDashboardScreen(user: patient),
       ProviderRosterScreen(user: patient),
-      MedicalProfileScreen(householdMember: patient),
+      MedicalProfileScreen(user: patient),
       PrescriptionScreen(patient: patient),
       EmergencyQRCodeView(householdMember: patient),
       TimelineScrollerWidget(actions: actions, startTime: startTime, endTime: endTime),

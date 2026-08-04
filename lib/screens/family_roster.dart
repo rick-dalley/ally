@@ -56,7 +56,7 @@ class FamilyRosterState extends State<FamilyRoster> {
       isScrollControlled: true,
       backgroundColor: AppTheme.surfaceColor,
       useSafeArea: true,
-      builder: (context) => MedicalProfileScreen(householdMember: householdMember),
+      builder: (context) => MedicalProfileScreen(user: householdMember),
     );
   }
 

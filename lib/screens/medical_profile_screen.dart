@@ -12,9 +12,9 @@ import 'immunization_screen.dart';
 import 'observation.dart';
 
 class MedicalProfileScreen extends StatefulWidget {
-  final Patient householdMember;
+  final Patient user;
 
-  const MedicalProfileScreen({super.key, required this.householdMember});
+  const MedicalProfileScreen({super.key, required this.user});
 
   @override
   State<MedicalProfileScreen> createState() => MedicalProfileScreenState();
@@ -69,7 +69,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     icon: Symbols.diagnosis_sharp,
                     iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.diagnosis_sharp,
-                    onTap: () => _launchPhysicalHealthChecklist(context, widget.householdMember.patientUuid),
+                    onTap: () => _launchPhysicalHealthChecklist(context, widget.user.patientUuid),
                   ),
                   CarbonActionTile(
                     title: "Medical Diary",
@@ -85,7 +85,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     icon: Symbols.vaccines_sharp,
                     iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.vaccines_sharp,
-                    onTap: () => _launchImmunizationModal(context, widget.householdMember),
+                    onTap: () => _launchImmunizationModal(context, widget.user),
                   ),
                   CarbonActionTile(
                     title: "Prescriptions",
@@ -93,7 +93,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     icon: Symbols.medication_sharp,
                     iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.medication_sharp,
-                    onTap: () => launchMedicationScreen(patient: widget.householdMember),
+                    onTap: () => launchMedicationScreen(patient: widget.user),
                   ),
                   CarbonActionTile(
                     title: "Tests",
@@ -101,7 +101,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     icon: Symbols.lab_panel,
                     iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.lab_panel,
-                    onTap: () => launchTestsScreen(patient: widget.householdMember),
+                    onTap: () => launchTestsScreen(patient: widget.user),
                   ),
                   CarbonActionTile(
                     title: "Mental Wellness Questionnaires",
@@ -109,7 +109,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     icon: Symbols.ballot_sharp,
                     iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.ballot_sharp,
-                    onTap: () => launchQuestionnairesScreen(patient: widget.householdMember),
+                    onTap: () => launchQuestionnairesScreen(patient: widget.user),
                   ),
                 ],
               ),
@@ -214,7 +214,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
             ),
 
             // Content: Expanded to fill the remaining vertical space
-            Expanded(child: QuestionnairesScreen(patient: widget.householdMember)),
+            Expanded(child: QuestionnairesScreen(patient: widget.user)),
           ],
         );
       },
@@ -308,7 +308,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                 ),
               ),
               const SizedBox(height: 4),
-              Expanded(child: ObservationScreen(patientUuid: widget.householdMember.patientUuid)),
+              Expanded(child: ObservationScreen(patientUuid: widget.user.patientUuid)),
             ],
           ),
         );

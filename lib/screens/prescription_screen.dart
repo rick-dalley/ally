@@ -49,12 +49,17 @@ class PrescriptionScreenState extends State<PrescriptionScreen> {
 
   Future<void> loadMedsForPatient() async {
     try {
-      // Call the database instead of the JSON asset
       List<Map<String, dynamic>> prescription = await MedicationService.getPrescriptionFor(widget.patient.patientUuid);
+
+      final tempMap = <String, Medication>{};
       for (Map<String, dynamic> medicationData in prescription) {
         Medication medication = Medication.fromMap(medicationData, widget.patient.patientUuid);
-        medications[medication.id] = medication;
+        tempMap[medication.id] = medication;
       }
+
+      setState(() {
+        medications = tempMap;
+      });
     } catch (e) {
       debugPrint("Error loading medications from DB: $e");
     }
@@ -218,8 +223,8 @@ class InteractionsWidgetState extends State<InteractionsWidget> {
   late bool hasPrecautions;
   late bool hasAcceptedIndications;
   late List<InteractionConflict> conflicts;
-
-  int get dataSheetCount {
+  late int dataSheetCount = 0;
+  int getDataSheetCount() {
     int count = 0;
     if (medications.isNotEmpty) {
       for (dynamic m in medications.values) {
@@ -277,10 +282,20 @@ class InteractionsWidgetState extends State<InteractionsWidget> {
     super.initState();
     conflicts = [];
     medications = widget.medications;
+    dataSheetCount = getDataSheetCount();
     audited = false;
     hasContraIndications = false;
     hasPrecautions = false;
     hasAcceptedIndications = false;
+  }
+
+  @override
+  void didUpdateWidget(covariant InteractionsWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    setState(() {
+      medications = widget.medications;
+      dataSheetCount = getDataSheetCount();
+    });
   }
 
   final Map<BannerType, BannerData> banners = {
