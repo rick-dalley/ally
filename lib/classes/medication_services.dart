@@ -1,7 +1,11 @@
 import 'dart:convert';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:triage/classes/contactable.dart';
+import 'package:triage/classes/phone.dart';
+import 'package:triage/classes/uuid.dart';
 
+import 'address.dart';
 import 'database_manager.dart';
 
 enum MedicationShapes {
@@ -243,40 +247,78 @@ class InteractionConflict {
   String toString() => 'Conflict: $primaryMedName <-> $conflictingMedName on $interaction';
 }
 
-class Medication {
-  final String setId;
-  final String genericName;
-  final String? imageUrl;
-  final String brandName;
-  final bool hasLocalDataSheet;
-  final Map<String, String> datasheetSections;
-  final bool hasInteractionAlert;
+class Pharmacy implements Contactable {
+  final Address address;
+  const Pharmacy({required this.address});
+  @override
+  String get email => '';
 
+  @override
+  Phone get phone => Phone(number: '', isMain: false, phoneType: PhoneTypes.cell);
+}
+
+class Dosage {}
+
+class Medication {
+  final String id;
+  final String patientUuid;
+  final String name;
+  String? setId;
+  String? severity;
+  String? genericName;
+  String? imageUrl;
+  String? brandName;
+  bool hasLocalDataSheet;
+  Uint8List? imageBits;
+  Map<String, String>? datasheetSections;
+  bool hasInteractionAlert;
+  bool hasInteractions;
+  bool isSyncing;
+  Dosage? dose;
+  Frequency? frequency;
   Medication({
-    required this.setId,
+    required this.id,
+    required this.name,
+    this.setId,
+    this.severity,
+    required this.patientUuid,
     required this.genericName,
-    required this.brandName,
-    required this.hasLocalDataSheet,
-    required this.datasheetSections,
+    this.brandName,
+    this.hasLocalDataSheet = false,
+    this.datasheetSections,
+    this.imageBits,
     this.imageUrl,
+    this.dose,
+    this.frequency,
     this.hasInteractionAlert = false,
+    this.hasInteractions = false,
+    this.isSyncing = false,
   });
 
-  factory Medication.fromFdaJson(Map<String, dynamic> json, {String classString = "", bool alert = false}) {
-    final openFda = json['openfda'] ?? {};
+  factory Medication.fromMap(Map<String, dynamic> map, String patient, {String classString = "", bool alert = false}) {
+    final openFda = map['openfda'] ?? {};
 
     String getSection(String key) {
-      List<dynamic>? section = json[key];
+      List<dynamic>? section = map[key];
       return (section != null && section.isNotEmpty) ? section.join('\n\n') : "";
     }
 
+    String? medicationId = map['id'];
+    medicationId = medicationId ?? uuid.toString();
+    String? rawPatientUuid = map['patient_uuid'];
+    rawPatientUuid = rawPatientUuid ?? patient;
+    String? rawSeverity = map["severity"] ?? "Neutral";
     return Medication(
-      setId: json['set_id'] ?? '',
+      id: medicationId,
+      patientUuid: rawPatientUuid,
+      setId: map['set_id'] ?? '',
+      name: map['name'],
       genericName: (openFda['generic_name'] as List?)?.first ?? 'Unknown Medication',
       brandName: (openFda['brand_name'] as List?)?.first ?? '',
-      imageUrl: json['image_uri'],
-      hasLocalDataSheet: json['has_local_dataset'] == 1,
+      imageUrl: map['image_uri'],
+      hasLocalDataSheet: map['has_local_dataset'] == 1,
       hasInteractionAlert: alert,
+      severity: rawSeverity,
       datasheetSections: {
         'Boxed Warning': getSection('boxed_warning'),
         'Indications': getSection('indications_and_usage'),
@@ -290,7 +332,8 @@ class Medication {
   }
 
   String get interactionsText {
-    return (datasheetSections['Interactions'] ?? "").toLowerCase();
+    String text = datasheetSections?['Interactions'] ?? "";
+    return text.toLowerCase();
   }
 
   // Helper for your bilateral scan logic
@@ -311,10 +354,14 @@ class MedicationService {
     }
   }
 
+  static Future<List<Map<String, dynamic>>> getPrescriptionFor(String patientUuid) async {
+    List<Map<String, dynamic>> prescription = await DatabaseManager().getMedicationsForPatient(patientUuid);
+    return prescription;
+  }
+
   static Future<Map<String, dynamic>?> getDrugDataSheet(String medicationId, String name, String setId) async {
     final db = DatabaseManager();
 
-    // --- 1. THE SYNC CHECK ---
     // Check if we already have the datasheet row in the local DB.
     Map<String, dynamic>? localData = setId.isNotEmpty ? await db.getStoredDatasheet(setId) : null;
 
@@ -341,7 +388,7 @@ class MedicationService {
           final String? rxcui = _extractRxcui(result);
           String classTags = "";
           if (rxcui != null && rxcui.isNotEmpty) {
-            classTags = await fetchClassesByRxcui(rxcui);
+            classTags = await fetchClassesByRxCUI(rxcui);
           }
           if (classTags.isEmpty) {
             classTags = await fetchClassesFromRxNav(name);
@@ -421,7 +468,7 @@ class MedicationService {
     return "";
   }
 
-  static Future<String> fetchClassesByRxcui(String rxcui) async {
+  static Future<String> fetchClassesByRxCUI(String rxcui) async {
     if (rxcui.isEmpty) return "";
     final url = Uri.parse("https://rxnav.nlm.nih.gov/REST/rxclass/class/byRxcui.json?rxcui=$rxcui");
     try {

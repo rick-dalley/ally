@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/carbon_color_constants.dart';
 import 'package:triage/classes/carbon_theme_constants.dart';
+import 'package:triage/classes/phone.dart';
 import 'package:triage/classes/provider.dart';
 import 'package:triage/widgets/avatar_picker.dart';
 import 'package:triage/widgets/carbon_style_button.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-import '../classes/metric_value.dart';
 import '../classes/patient.dart';
+import '../classes/uuid.dart';
 import 'appointment_chip.dart';
 
 class ProviderCard extends StatefulWidget {
@@ -63,10 +63,14 @@ class ProviderCardState extends State<ProviderCard> {
 
   @override
   Widget build(BuildContext context) {
-    String pager = provider.pager ?? "";
+    String pager = provider.getPhone(phoneType: PhoneTypes.pager);
     String qualifications = "${provider.specialities ?? 'General'} - ${provider.department ?? 'Family Medicine'}";
     String name = "${provider.firstName} ${provider.lastName}";
-
+    Phone? phone = provider.getAvailablePhone(preferred: PhoneTypes.office);
+    String phoneInformation = '';
+    if (phone != null) {
+      phoneInformation = 'Ph:${phone.number} (${phone.phoneType.label})';
+    }
     return Card(
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       elevation: 4,
@@ -144,7 +148,7 @@ class ProviderCardState extends State<ProviderCard> {
                             style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
                           ),
                         ),
-                        Text("Ph: ${provider.phone}"),
+                        Text(phoneInformation, style: CarbonTheme.carbonLabelTextStyle),
                         if (pager.isNotEmpty) Text("Pg: $pager"),
                         const SizedBox(height: 8),
                         // Placeholder for Barcode/QR
@@ -152,7 +156,10 @@ class ProviderCardState extends State<ProviderCard> {
                           children: [
                             InkWell(
                               onTap: () {
-                                openMap(provider.address);
+                                if (provider.address != null) {
+                                  String? fullAddress = provider.address!.full;
+                                  openMap(fullAddress);
+                                }
                               },
                               child: Container(
                                 padding: EdgeInsets.all(8.0),
@@ -161,9 +168,9 @@ class ProviderCardState extends State<ProviderCard> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text("Address", style: const TextStyle(color: Colors.grey)),
-                                    Text("${provider.street}"),
-                                    Text("${provider.city}"),
-                                    Text("${provider.provOrState}"),
+                                    Text("${provider.address?.street}"),
+                                    Text("${provider.address?.city}"),
+                                    Text("${provider.address?.provOrState}"),
                                   ],
                                 ),
                               ),

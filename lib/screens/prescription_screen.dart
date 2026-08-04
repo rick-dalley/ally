@@ -1,10 +1,7 @@
-import 'dart:developer';
-
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/carbon_theme_constants.dart';
 import 'package:triage/screens/add_medication_wizard.dart';
 import 'package:triage/widgets/carbon_style_button.dart';
-import 'package:uuid/uuid.dart';
 
 import 'package:flutter/material.dart';
 
@@ -14,151 +11,52 @@ import '../classes/medication_services.dart';
 import '../classes/patient.dart';
 import '../widgets/medication_card.dart';
 
-enum BannerType { acknowledged, advisory, critical, none, unknown }
-
-class BannerData {
-  final Color color;
-  final String message;
-  final IconData icon;
-
-  const BannerData({required this.color, required this.message, required this.icon});
-
-  Color get bannerColor => AppTheme.surfaceColor;
-}
-
-// Fixed map syntax using standard key: value pairs
-final Map<BannerType, BannerData> banners = {
-  BannerType.critical: const BannerData(
-    color: Color(0xFFD32F2F),
-    message: "CRITICAL: Contraindication Detected",
-    icon: Symbols.join_inner,
-  ),
-  BannerType.advisory: const BannerData(
-    color: Color(0xFFFF8F00),
-    message: "ADVISORY: Precautions Required",
-    icon: Symbols.warning_amber_rounded,
-  ),
-  BannerType.acknowledged: const BannerData(
-    color: Color(0xFF673AB7),
-    message: "All Risks Acknowledged & Accepted",
-    icon: Icons.check_circle_outline,
-  ),
-  BannerType.none: BannerData(
-    color: AppTheme.primaryColor,
-    message: "No Interactions Detected",
-    icon: Symbols.verified,
-  ),
-  BannerType.unknown: BannerData(
-    color: AppTheme.tertiaryColor,
-    message: "Not yet checked",
-    icon: Symbols.unknown_document,
-  ),
-};
-
 class PrescriptionScreen extends StatefulWidget {
   final Patient patient;
 
   const PrescriptionScreen({super.key, required this.patient});
 
   @override
-  State<PrescriptionScreen> createState() => _PrescriptionScreenState();
+  State<PrescriptionScreen> createState() => PrescriptionScreenState();
 }
 
-class _PrescriptionScreenState extends State<PrescriptionScreen> {
+class PrescriptionScreenState extends State<PrescriptionScreen> {
   // Mocking the current baseline list
-  bool _hasContraIndications = false;
-  final bool _acceptedIndications = false;
-  List<Map<String, dynamic>> _meds = [];
-  final List<InteractionConflict> _currentConflicts = []; // The source of truth for the UI
-  bool _auditRun = false;
+  bool hasContraIndications = false;
+  final bool hasAcceptedIndications = false;
+  Map<String, Medication> medications = {};
+  late List<InteractionConflict> currentConflicts = []; // The source of truth for the UI
+  bool audited = false;
 
   // These are derived flags
   final bool _hasPrecautions = false; // Set this based on your separate logic
   final nameController = TextEditingController();
   final dosageController = TextEditingController();
   final frequencyController = TextEditingController();
-  late int _dataSheetCount = 0;
+  late int dataSheetCount = 0;
 
   @override
   void initState() {
     super.initState();
-    _loadMedsForPatient();
-    runSafetyAudit();
+    loadMedsForPatient();
   }
 
-  int _countDataSheets() {
-    int count = 0;
-    if (_meds.isNotEmpty) {
-      for (dynamic m in _meds) {
-        if (m["has_local_datasheet"] > 0) {
-          count++;
-        }
-      }
-    }
-    return count;
+  void handleConflictsFound(List<InteractionConflict> conflicts) {
+    setState(() {
+      currentConflicts = conflicts;
+    });
   }
 
-  Future<void> _loadMedsForPatient() async {
+  Future<void> loadMedsForPatient() async {
     try {
-      // 1. Call the database instead of the JSON asset
-      final List<Map<String, dynamic>> dbMeds = await DatabaseManager().getMedicationsForPatient(
-        widget.patient.patientUuid,
-      );
-
-      setState(() {
-        // 2. We need to create a mutable copy because db results are read-only
-        _meds = dbMeds.map((m) => Map<String, dynamic>.from(m)).toList();
-        runSafetyAudit();
-
-        // 3. Inject your UI-specific state (Severity)
-        for (var med in _meds) {
-          med['severity'] = med['severity'] ?? 'Neutral';
-        }
-      });
+      // Call the database instead of the JSON asset
+      List<Map<String, dynamic>> prescription = await MedicationService.getPrescriptionFor(widget.patient.patientUuid);
+      for (Map<String, dynamic> medicationData in prescription) {
+        Medication medication = Medication.fromMap(medicationData, widget.patient.patientUuid);
+        medications[medication.id] = medication;
+      }
     } catch (e) {
       debugPrint("Error loading medications from DB: $e");
-    }
-  }
-
-  void runSafetyAudit() async {
-    _dataSheetCount = _countDataSheets();
-    // Guard clause: Don't spend processing cycles if the list hasn't loaded yet
-    if (_meds.isEmpty || _dataSheetCount < 2) return;
-
-    setState(() {
-      _currentConflicts.clear();
-    });
-
-    for (var primaryMed in _meds) {
-      // 1. Defend against null values coming from SQLite mapping
-      final String nameA = primaryMed['name'] ?? '';
-      primaryMed['has_interaction'] = 0;
-
-      if (nameA.isEmpty) continue; // 2. Skip audit logic if it has no FDA set_id synced yet
-
-      for (var otherMed in _meds) {
-        final String nameB = otherMed['name'] ?? '';
-        if (nameB.isEmpty || nameA == nameB) continue;
-        final String? interaction = await DatabaseManager().getInteractions(nameA, nameB);
-
-        if (interaction != null) {
-          _currentConflicts.add(
-            InteractionConflict(
-              primaryMedName: primaryMed['name'],
-              conflictingMedName: otherMed['name'],
-              interaction: interaction,
-            ),
-          );
-
-          setState(() => primaryMed['has_interaction'] = 1);
-        }
-      }
-    }
-    if (mounted) {
-      setState(() {
-        _auditRun = true;
-        _hasContraIndications = _currentConflicts.isNotEmpty;
-      });
     }
   }
 
@@ -169,136 +67,19 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     return Color(int.parse(buffer.toString(), radix: 16));
   }
 
-  // Logic-driven Banner Widget
-  Widget _buildStatusBanner() {
-    _dataSheetCount = _countDataSheets();
-    if (_meds.isEmpty || _dataSheetCount < 2) {
-      return SizedBox(height: 0);
-    }
-    // Determine state based on your list logic
-    BannerData bannerData;
-    // Example Logic check:
-    if (!_auditRun) {
-      bannerData = banners[BannerType.unknown]!;
-    } else if (_hasContraIndications) {
-      bannerData = banners[BannerType.critical]!;
-    } else if (_hasPrecautions) {
-      bannerData = banners[BannerType.advisory]!;
-    } else if (_acceptedIndications) {
-      bannerData = banners[BannerType.acknowledged]!;
-    } else {
-      bannerData = banners[BannerType.none]!;
-    }
-
-    return Container(
-      width: double.infinity,
-      color: AppTheme.lightTheme.canvasColor,
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      child: Row(
-        children: [
-          if (_meds.length > 1) Icon(bannerData.icon, color: bannerData.color, size: 20),
-          if (_meds.length > 1) const SizedBox(width: 12),
-          if (_meds.length > 1)
-            Expanded(
-              child: Text(
-                bannerData.message,
-                style: TextStyle(color: bannerData.color, fontWeight: FontWeight.bold),
-              ),
-            ),
-          Expanded(
-            child: CarbonButton(
-              label: "Check",
-              onPressed: runSafetyAudit,
-              icon: Symbols.fact_check,
-              style: CarbonButtonStyle.tertiary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _refreshMedInUI(String medId, String setId) {
+  void refreshMedInUI(String medId, String setId) {
     setState(() {
-      final index = _meds.indexWhere((m) => m['id'] == medId);
-      if (index != -1) {
-        _meds[index]['set_id'] = setId;
-        _meds[index]['is_syncing'] = false;
+      if (medications[medId] != null) {
+        medications[medId]!.setId = setId;
+        medications[medId]!.isSyncing = false;
       }
     });
   }
 
-  Future<void> _startBackgroundSync(String medId, String medName) async {
-    try {
-      //Local Cache Check
-      String? existingSetId = await DatabaseManager().getSetIdByName(medName);
-      if (existingSetId != null) {
-        await DatabaseManager().updateMedicationSetId(medId, existingSetId);
-        _refreshMedInUI(medId, existingSetId);
-        runSafetyAudit();
-        return;
-      }
-
-      // FDA Check
-      final drugDataSheet = await MedicationService.getDrugDataSheet(medName, "", medId);
-      if (drugDataSheet != null) {
-        _refreshMedInUI(medId, drugDataSheet['set_id']);
-        runSafetyAudit();
-      }
-    } catch (e) {
-      debugPrint("Background sync failed for $medName: $e");
-    } finally {
-      // 3. Ensure the 'is_syncing' flag is cleared even on failure
-      _stopSyncSpinner(medId);
-    }
-  }
-
-  void _stopSyncSpinner(String medId) {
+  void stopSyncSpinner(String medId) {
     setState(() {
-      final index = _meds.indexWhere((m) => m['id'] == medId);
-      if (index != -1) {
-        _meds[index]['is_syncing'] = false;
-      }
+      medications[medId]!.isSyncing = false;
     });
-  }
-
-  void _addMedication(String medicationName) async {
-    if (medicationName.isNotEmpty) {
-      var uuid = const Uuid();
-      final String medId = uuid.v4();
-
-      final newMed = {
-        "id": medId,
-        "patient_uuid": widget.patient.patientUuid,
-        "name": medicationName,
-        "image_uri": "holder",
-        "dose": dosageController.text,
-        "freq": "PRN",
-        "set_id": "", // <--- This is empty, causing your DB query to fail
-        "has_local_datasheet": 0, // <--- Explicitly set this to avoid null checks
-      };
-
-      // Update UI immediately
-      setState(() {
-        _meds.add({...newMed, "is_syncing": true});
-
-        // Sort the list by name
-        _meds.sort((a, b) => (a['name'] as String).toLowerCase().compareTo((b['name'] as String).toLowerCase()));
-        frequencyController.clear();
-        nameController.clear();
-        dosageController.clear();
-      });
-
-      // Database & Background logic
-      // Wrap in try-catch to prevent silent failures
-      try {
-        await DatabaseManager().insertMedication(newMed);
-        await _startBackgroundSync(medId, medicationName);
-      } catch (e) {
-        // Handle or log error
-        log("Error saving medication: $e", time: DateTime.now(), name: "Medication");
-      }
-    }
   }
 
   void showAddMedicationSheet() {
@@ -327,6 +108,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final entries = medications.entries.toList();
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       // The Floating Action Button replaces the top form
@@ -341,36 +123,31 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
       ),
       body: Column(
         children: [
-          _buildStatusBanner(),
+          InteractionsWidget(medications: medications, onConflictsFound: handleConflictsFound),
           // CURRENT LIST: The Baseline
           Expanded(
             child: ListView.builder(
-              itemCount: _meds.length,
+              itemCount: entries.length,
               itemBuilder: (context, index) {
-                final med = _meds[index];
-
+                final med = entries[index].value;
                 // We swap the old ListTile for our new smart card
                 return MedicationCard(
-                  key: ValueKey(med['id']),
-                  interactions: _currentConflicts,
-                  medData: med,
+                  key: Key(med.id),
+                  interactions: currentConflicts,
+                  medication: med,
                   index: index,
                   onDelete: () async {
-                    final String medIdToDelete = med['id'];
-
                     // 1. Remove from the local database
-                    await DatabaseManager().deleteMedication(medIdToDelete);
+                    await DatabaseManager().deleteMedication(med.id);
 
                     // 2. Remove from the UI state
                     setState(() {
-                      _meds.removeAt(index);
-                      _dataSheetCount = _countDataSheets();
+                      medications.remove(med);
                     });
                   },
                   onExpansionChanged: (isExpanded) {
                     setState(() {
-                      med["has_local_datasheet"] = 1;
-                      _dataSheetCount = _countDataSheets();
+                      med.hasLocalDataSheet = true;
                     });
                   },
                 );
@@ -410,5 +187,168 @@ class SafetyAudit {
     }
 
     return null;
+  }
+}
+
+enum BannerType { acknowledged, advisory, critical, none, unknown }
+
+class BannerData {
+  final Color color;
+  final String message;
+  final IconData icon;
+
+  const BannerData({required this.color, required this.message, required this.icon});
+
+  Color get bannerColor => AppTheme.surfaceColor;
+}
+
+class InteractionsWidget extends StatefulWidget {
+  final Map<String, Medication> medications;
+  final Function(List<InteractionConflict>) onConflictsFound;
+  const InteractionsWidget({super.key, required this.medications, required this.onConflictsFound});
+
+  @override
+  State<StatefulWidget> createState() => InteractionsWidgetState();
+}
+
+class InteractionsWidgetState extends State<InteractionsWidget> {
+  late Map<String, Medication> medications;
+  late bool audited;
+  late bool hasContraIndications;
+  late bool hasPrecautions;
+  late bool hasAcceptedIndications;
+  late List<InteractionConflict> conflicts;
+
+  int get dataSheetCount {
+    int count = 0;
+    if (medications.isNotEmpty) {
+      for (dynamic m in medications.values) {
+        if (m.hasLocalDataSheet) {
+          count++;
+        }
+      }
+    }
+    return count;
+  }
+
+  void runSafetyAudit() async {
+    // Guard clause: Don't spend processing cycles if the list hasn't loaded yet
+    if (medications.isEmpty || dataSheetCount < 2) return;
+
+    setState(() {
+      conflicts.clear();
+    });
+
+    for (Medication medicationA in medications.values) {
+      // 1. Defend against null values coming from SQLite mapping
+      final String nameA = medicationA.name;
+      medicationA.hasInteractions = false;
+
+      if (nameA.isEmpty) continue; // 2. Skip audit logic if it has no FDA set_id synced yet
+
+      for (var medicationB in medications.values) {
+        final String nameB = medicationB.name;
+        if (nameB.isEmpty || nameA == nameB) continue;
+        final String? interaction = await DatabaseManager().getInteractions(nameA, nameB);
+
+        if (interaction != null) {
+          conflicts.add(
+            InteractionConflict(
+              primaryMedName: medicationA.name,
+              conflictingMedName: medicationB.name,
+              interaction: interaction,
+            ),
+          );
+
+          setState(() => medicationA.hasInteractions = true);
+        }
+      }
+    }
+    if (mounted) {
+      setState(() {
+        audited = true;
+        hasContraIndications = conflicts.isNotEmpty;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    conflicts = [];
+    medications = widget.medications;
+    audited = false;
+    hasContraIndications = false;
+    hasPrecautions = false;
+    hasAcceptedIndications = false;
+  }
+
+  final Map<BannerType, BannerData> banners = {
+    BannerType.critical: const BannerData(
+      color: Color(0xFFD32F2F),
+      message: "CRITICAL: Contraindication Detected",
+      icon: Symbols.join_inner,
+    ),
+    BannerType.advisory: const BannerData(
+      color: Color(0xFFFF8F00),
+      message: "ADVISORY: Precautions Required",
+      icon: Symbols.warning_amber_rounded,
+    ),
+    BannerType.acknowledged: const BannerData(
+      color: Color(0xFF673AB7),
+      message: "All Risks Acknowledged & Accepted",
+      icon: Icons.check_circle_outline,
+    ),
+    BannerType.none: BannerData(
+      color: AppTheme.primaryColor,
+      message: "No Interactions Detected",
+      icon: Symbols.verified,
+    ),
+    BannerType.unknown: BannerData(
+      color: AppTheme.tertiaryColor,
+      message: "Not yet checked",
+      icon: Symbols.unknown_document,
+    ),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    if (dataSheetCount < 2) {
+      return SizedBox(height: 0);
+    }
+    // Determine state based on your list logic
+    BannerData bannerData;
+    // Example Logic check:
+    if (!audited) {
+      bannerData = banners[BannerType.unknown]!;
+    } else if (hasContraIndications) {
+      bannerData = banners[BannerType.critical]!;
+    } else if (hasPrecautions) {
+      bannerData = banners[BannerType.advisory]!;
+    } else if (hasAcceptedIndications) {
+      bannerData = banners[BannerType.acknowledged]!;
+    } else {
+      bannerData = banners[BannerType.none]!;
+    }
+    return Container(
+      width: double.infinity,
+      color: AppTheme.lightTheme.canvasColor,
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      child: Row(
+        children: [
+          if (dataSheetCount > 1) Icon(bannerData.icon, color: bannerData.color, size: 20),
+          if (dataSheetCount > 1) const SizedBox(width: 16),
+          if (dataSheetCount > 1) Expanded(child: Text(bannerData.message, style: CarbonTheme.carbonLabelTextStyle)),
+          Expanded(
+            child: CarbonButton(
+              label: "Check",
+              onPressed: runSafetyAudit,
+              icon: Symbols.fact_check,
+              style: CarbonButtonStyle.tertiary,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

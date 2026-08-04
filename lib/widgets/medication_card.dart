@@ -9,14 +9,14 @@ import '../classes/medication_services.dart';
 import 'interaction_chip.dart';
 
 class MedicationCard extends StatefulWidget {
-  final Map<String, dynamic> medData;
+  final Medication medication;
   final List<InteractionConflict> interactions;
   final VoidCallback onDelete;
   final ValueChanged<bool>? onExpansionChanged;
   final int? index;
   const MedicationCard({
     super.key,
-    required this.medData,
+    required this.medication,
     required this.interactions,
     required this.onDelete,
     this.index,
@@ -36,20 +36,20 @@ class _MedicationCardState extends State<MedicationCard> {
     super.initState();
     shape = widget.index != null ? MedicationShapes.values[widget.index!] : MedicationShapes.round;
     // If we already know the datasheet is local, get it immediately
-    if (widget.medData['has_local_datasheet'] == 1) {
-      _triggerFetch();
+    if (widget.medication.hasLocalDataSheet) {
+      triggerFetch();
     }
   }
 
-  void _triggerFetch() async {
+  void triggerFetch() async {
     if (_isFetching) return;
 
     setState(() => _isFetching = true);
 
     final row = await MedicationService.getDrugDataSheet(
-      widget.medData['id']?.toString() ?? "",
-      widget.medData['name'] ?? "",
-      widget.medData['set_id'] ?? "",
+      widget.medication.id,
+      widget.medication.name,
+      widget.medication.setId!,
     );
 
     if (mounted) {
@@ -60,8 +60,8 @@ class _MedicationCardState extends State<MedicationCard> {
         // Update the map immediately here if you want,
         // but only if the row actually came back with data.
         if (row != null) {
-          widget.medData['has_local_datasheet'] = 1;
-          widget.medData['set_id'] = row['set_id'];
+          widget.medication.hasLocalDataSheet;
+          widget.medication.setId = row['set_id'];
         }
       });
     }
@@ -69,8 +69,12 @@ class _MedicationCardState extends State<MedicationCard> {
 
   @override
   Widget build(BuildContext context) {
-    final String medicationId = widget.medData['id']?.toString() ?? 'unknown';
-    final String medicationName = widget.medData['name'] ?? "Unknown Medication";
+    final String medicationId = widget.medication.id;
+    final String medicationName = widget.medication.name;
+    final Frequency? frequencyDetails = widget.medication.frequency;
+    final String frequency = frequencyDetails != null
+        ? FrequencyCodes.getFrequencyLabel(frequencyDetails.latinRecurrence!)
+        : '';
     final List<InteractionConflict> medicationInteractions = widget.interactions
         .where((conflict) => conflict.hasInteraction(medicationName))
         .toList();
@@ -123,7 +127,7 @@ class _MedicationCardState extends State<MedicationCard> {
                   shape: const Border(),
                   collapsedShape: const Border(),
                   title: Text(
-                    "Dose: ${widget.medData['dose'] ?? 'N/A'} —  ${FrequencyCodes.getFrequencyLabel(widget.medData['freq'])}",
+                    "Dose: ${widget.medication.dose ?? 'N/A'} —  $frequency",
                     style: CarbonTheme.carbonHintTextStyle,
                   ),
                   subtitle: Column(
@@ -138,7 +142,7 @@ class _MedicationCardState extends State<MedicationCard> {
                   trailing: const Icon(Icons.expand_more),
                   onExpansionChanged: (expanded) {
                     if (expanded && _datasheet == null) {
-                      _triggerFetch();
+                      triggerFetch();
                     }
                     widget.onExpansionChanged?.call(expanded);
                   },
@@ -147,7 +151,7 @@ class _MedicationCardState extends State<MedicationCard> {
                       const Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator())
                     else if (_datasheet != null && _datasheet!.isNotEmpty) ...[
                       ClassChips(dataSheet: _datasheet),
-                      ..._buildFdaSections(),
+                      ...fdaSections(),
                     ] else
                       const ListTile(title: Text("No datasheet details found.")),
                   ],
@@ -160,7 +164,7 @@ class _MedicationCardState extends State<MedicationCard> {
     );
   }
 
-  List<Widget> _buildFdaSections() {
+  List<Widget> fdaSections() {
     if (_datasheet == null) return [];
 
     Map<String, dynamic> targetJson = _datasheet!;

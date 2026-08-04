@@ -1,17 +1,18 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_native_contact_picker/model/contact.dart';
-import 'package:triage/classes/database_manager.dart';
-import 'package:triage/classes/metric_value.dart';
+import 'package:triage/classes/phone.dart';
 import 'package:triage/classes/specialities.dart';
+import 'package:triage/classes/uuid.dart';
 
+import 'address.dart';
 import 'country_codes.dart';
+import 'database_manager.dart';
+import 'contact.dart';
 
 class Provider {
   final String id;
-  String patientUuid;
   Uint8List? image;
+  String patientUuid;
   String? firstName;
   String? lastName;
   String? email;
@@ -23,14 +24,8 @@ class Provider {
   String? accreditations;
   bool? onCall;
   String? department;
-  String? pager;
-  String? phone;
-  String? street;
-  String? code;
-  String? city;
-  String? provOrState;
-  String? country;
-  String? countryIso;
+  Contact? contact;
+  Address? address;
   DepartmentColors? color;
   late IconData? icon;
 
@@ -48,77 +43,79 @@ class Provider {
     this.hireDate,
     this.isSpecialist,
     this.onCall,
-    this.pager,
     this.color,
     this.department,
-    this.phone,
     this.icon,
-    this.street,
-    this.code,
-    this.city,
-    this.provOrState,
-    this.country,
-    this.countryIso,
+    this.address,
+    this.contact,
   });
-  String get address {
-    return '$street, $city, $provOrState, $code, $country';
-  }
-
-  factory Provider.fromContact(Contact contact, String patientUuid) {
-    String newId = uuid.toString();
-    String fullName = contact.fullName ?? '';
-    // Split the string by spaces, removing any empty strings if there are double spaces
-    List<String> nameParts = fullName.trim().split(RegExp(r'\s+'));
-
-    String firstName = '';
-    String lastName = '';
-
-    if (nameParts.isNotEmpty && nameParts[0].isNotEmpty) {
-      if (nameParts.length == 1) {
-        // If only one word was provided, put it in first name (or handle as you prefer)
-        firstName = nameParts[0];
-      } else {
-        // First part is the first name
-        firstName = nameParts[0];
-        // Everything else combined becomes the last name (handles middle names/multi-part surnames)
-        lastName = nameParts.sublist(1).join(' ');
+  String getEmail(EmailTypes emailType) {
+    String email = '';
+    if (contact != null) {
+      if (contact!.emails.isNotEmpty) {
+        email = contact!.emails[emailType] ?? '';
       }
     }
-
-    return Provider(
-      id: newId,
-      patientUuid: patientUuid,
-      firstName: firstName,
-      lastName: lastName,
-      phone: contact.selectedPhoneNumber,
-    );
+    return email;
   }
+
+  Phone? getAvailablePhone({required PhoneTypes preferred}) {
+    Phone? phone;
+    if (contact != null) {
+      phone = contact!.getAvailablePhone(preferred: PhoneTypes.office);
+    }
+    return phone;
+  }
+
+  String getPhone({required PhoneTypes phoneType}) {
+    String phone = '';
+    if (contact != null) {
+      contact!.getPhoneNumber(phoneType: phoneType);
+    }
+    return phone;
+  }
+
+  String get fullName => '$firstName $lastName';
 
   factory Provider.fromJson(Map<String, dynamic> json) {
     String countryName = json["country"] ?? "Canada";
-    String countryISO = countryCodes[countryName]?.isoA2 ?? "CA";
+    String iso = toCountryCode[countryName]?.isoA2 ?? "CA";
+    Address addressRaw = Address(
+      city: json["city"] ?? "",
+      street: json["street"] ?? "",
+      country: json["country"] ?? "",
+      code: json["code"] ?? "",
+      provOrState: json["pr_st"] ?? "",
+      countryIso: iso,
+    );
+    String pagerRaw = json["pager"] ?? "";
+    String phoneRaw = json["personal_phone"] ?? "";
+    String officeRaw = json['office_phone'] ?? '';
+    String firstNameRaw = json["first_name"];
+    String lastNameRaw = json["last_name"];
+    String fullName = '$firstNameRaw $lastNameRaw';
+    String emailRaw = json["personal_email"] ?? "";
+    Phone pgr = Phone(number: pagerRaw, phoneType: PhoneTypes.pager, isMain: false);
+    Phone cel = Phone(number: phoneRaw, phoneType: PhoneTypes.cell, isMain: false);
+    Phone office = Phone(number: officeRaw, phoneType: PhoneTypes.office, isMain: true);
+    Map<PhoneTypes, Phone> allPhones = {PhoneTypes.pager: pgr, PhoneTypes.cell: cel, PhoneTypes.office: office};
+    Contact contactRaw = Contact(name: fullName, email: emailRaw, phone: office);
     return Provider(
-      image: json['avatar'],
+      // image: json['avatar'],
       patientUuid: json['patient_uuid'] ?? uuid.toString(),
       id: json["provider_uuid"],
-      firstName: json["first_name"],
-      lastName: json["last_name"],
-      email: json["personal_email"] ?? "",
+      firstName: firstNameRaw,
+      lastName: lastNameRaw,
+      email: emailRaw,
       gender: json["gender"],
       position: json["position"],
       hireDate: DateTime.now().subtract(Duration(days: 365)),
       isSpecialist: (json["is_specialist"] == 1),
       accreditations: json['accreditations'],
       onCall: (json["on_call"] == 1),
-      pager: json["pager"] ?? "",
-      phone: json["personal_phone"] ?? "",
-      street: json["street"] ?? "",
-      city: json["city"] ?? "",
-      provOrState: json["pr_st"] ?? "",
-      code: json["code"] ?? "",
-      country: json["country"] ?? "",
+      address: addressRaw,
+      contact: contactRaw,
       specialities: json['specialities'] ?? '',
-      countryIso: countryISO,
     );
   }
 
@@ -147,14 +144,8 @@ class Provider {
       accreditations = provider.accreditations;
       onCall = provider.onCall;
       department = provider.department;
-      pager = provider.pager;
-      phone = provider.phone;
-      street = provider.street;
-      code = provider.code;
-      city = provider.city;
-      provOrState = provider.provOrState;
-      country = provider.country;
-      countryIso = provider.countryIso;
+      contact = Contact.copy(provider.contact);
+      address = Address.copy(provider.address);
       color = provider.color;
       icon = provider.icon;
     }
@@ -194,15 +185,26 @@ class Provider {
     // stopped_seeing DATETIME,
     // purpose TEXT, FOREIGN KEY(patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);''';
 
+    String officePhone = '';
+    String pagerPhone = '';
+    String personalPhone = '';
+    String personalEmail = '';
+    if (contact != null) {
+      officePhone = contact!.getPhoneNumber(phoneType: PhoneTypes.office) ?? '';
+      pagerPhone = contact!.getPhoneNumber(phoneType: PhoneTypes.pager) ?? '';
+      personalPhone = contact!.getPhoneNumber(phoneType: PhoneTypes.cell) ?? '';
+      personalEmail = contact!.getEmail(emailType: EmailTypes.personal) ?? '';
+    }
     return {
       "avatar": image,
       "provider_uuid": id,
       "patient_uuid": patientUuid,
       "first_name": firstName,
       "last_name": lastName,
-      // "personal_email":personalEmail,
+      "personal_email": personalEmail,
+      "personal_phone": personalPhone,
       "office_email": email,
-      "street": street,
+      "office_phone": officePhone,
       "gender": gender,
       "position": position,
       "is_specialist": isSpecialist == null
@@ -210,19 +212,18 @@ class Provider {
           : isSpecialist!
           ? 1
           : 0,
-      "pager": pager,
+      "pager": pagerPhone,
       "specializations": specialities,
       "accreditations": accreditations,
       // "purpose":purpose,
       // "started_seeing":startedSeeing,
       // "stopped_seeing": stoppedSeeing,
-      "code": code,
-      "city": city,
-      "country": country,
-      "pr_st": provOrState,
-      // "facility":facility,
-      // "personal_phone": personalPhone,
-      "office_phone": phone,
+      "street": address?.street,
+      "code": address?.code,
+      "city": address?.city,
+      "country": address?.country,
+      "pr_st": address?.provOrState,
+      "facility": address?.locationName,
     };
   }
 }

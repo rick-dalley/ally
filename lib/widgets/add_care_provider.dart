@@ -1,18 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
-import 'package:flutter_native_contact_picker/model/contact.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/carbon_color_constants.dart';
 import 'package:triage/widgets/avatar_picker.dart';
 import 'package:triage/widgets/carbon_style_autocomplete.dart';
 import 'package:triage/widgets/carbon_style_textbox.dart';
-
-import '../app_theme.dart';
-import '../classes/carbon_theme_constants.dart';
-import '../classes/metric_value.dart';
 import '../classes/provider.dart';
 import '../classes/specialities.dart';
+import '../classes/uuid.dart';
 import 'carbon_style_button.dart';
 
 class AddCareProviderScreen extends StatefulWidget {
@@ -38,24 +33,6 @@ class AddCareProviderScreenState extends State<AddCareProviderScreen> {
   late TextEditingController specialtyController = TextEditingController();
   late TextEditingController departmentController = TextEditingController();
 
-  final FlutterNativeContactPicker _contactPicker = FlutterNativeContactPicker();
-
-  // Call this when the user taps "Select Doctor from Contacts"
-  Future<void> showContactPicker() async {
-    try {
-      Contact? contact = await _contactPicker.selectContact();
-
-      if (contact != null) {
-        provider = Provider.fromContact(contact, patientUuid);
-        firstNameController.text = provider.firstName ?? '';
-        lastNameController.text = provider.lastName ?? '';
-        phoneController.text = provider.phone ?? '';
-        provider.save();
-        // Do what you need with the selected doctor's info here
-      }
-    } catch (e) {}
-  }
-
   void handleAvatarPicked(Uint8List? image) {
     setState(() {
       provider.image = image;
@@ -69,14 +46,7 @@ class AddCareProviderScreenState extends State<AddCareProviderScreen> {
       appBar: AppBar(
         leading: BackButton(onPressed: () => Navigator.pop(context, provider)),
         title: const Text("Add New Caregiver"),
-        actions: [
-          CarbonIconButton(
-            onPressed: () {
-              showContactPicker();
-            },
-            icon: Symbols.import_contacts,
-          ),
-        ],
+        actions: [CarbonIconButton(onPressed: () {}, icon: Symbols.import_contacts)],
       ),
       backgroundColor: carbonColorScaffoldBackground,
       body: SingleChildScrollView(

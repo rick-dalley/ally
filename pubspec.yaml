@@ -22,7 +22,7 @@ dependencies:
   url_launcher: ^6.3.0
   path: ^1.9.0
   uuid: ^4.4.0
-  permission_handler: ^12.0.1
+  permission_handler: ^13.0.0
   camera: ^0.12.0+1
   qr_flutter: ^4.1.0
   # speech_to_text: ^7.4.0
@@ -33,7 +33,6 @@ dependencies:
   csv: ^6.0.0
   cached_network_image: ^3.3.1
   flutter_svg: ^2.0.0
-  flutter_native_contact_picker: ^0.0.11
   image_picker: ^1.2.2
 
 dev_dependencies:

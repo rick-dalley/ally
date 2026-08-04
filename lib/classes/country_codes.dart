@@ -6,7 +6,7 @@ class CountryCode {
   const CountryCode({required this.country, required this.isoA2, required this.isoA3, required this.tld});
 }
 
-Map<String, CountryCode> countryCodes = {
+Map<String, CountryCode> toCountryCode = {
   "Afghanistan": CountryCode(country: "Afghanistan", isoA2: "AF", isoA3: "AFG", tld: ".af"),
   "Åland Islands": CountryCode(country: "Åland Islands", isoA2: "AX", isoA3: "ALA", tld: ".ax"),
   "Albania": CountryCode(country: "Albania", isoA2: "AL", isoA3: "ALB", tld: ".al"),

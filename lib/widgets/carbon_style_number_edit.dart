@@ -49,7 +49,6 @@ class CarbonNumberInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String controllerText = value == null ? value.toString() : "0";
     bool isDouble = decimals ?? false;
     if (value != null && controller.text.isEmpty) {
       controller.text = value.toString();

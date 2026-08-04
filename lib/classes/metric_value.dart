@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/database_manager.dart';
 import 'package:triage/classes/date_time_utilities.dart';
-import 'package:uuid/uuid.dart';
+import 'package:triage/classes/uuid.dart';
 
 import 'listable.dart';
 
@@ -42,8 +42,6 @@ enum JourneySupports implements Listable {
 }
 
 // Create a reusable instance
-const uuid = Uuid();
-typedef UUID = String; // Generate a v4 (random) string UUID
 
 abstract class Storable<T> {
   final String sqlObject;
