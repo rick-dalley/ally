@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:triage/classes/carbon_color_constants.dart';
+import 'package:triage/classes/carbon_theme_constants.dart';
 
 import '../app_theme.dart';
 import '../classes/medication_services.dart';
@@ -81,6 +83,42 @@ class InteractionsChipState extends State<InteractionsChip> {
           actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text("Close"))],
         );
       },
+    );
+  }
+}
+
+class InteractionTile extends StatelessWidget {
+  final String interactsWith;
+  final String explanation;
+  final TextStyle? style;
+  final TextStyle? explanationStyle;
+  final Color? backgroundColor;
+
+  const InteractionTile({
+    super.key,
+    required this.interactsWith,
+    required this.explanation,
+    this.style,
+    this.explanationStyle,
+    this.backgroundColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    Color color = backgroundColor ?? carbonColorPrimary04;
+    return Card(
+      margin: const EdgeInsets.all(8),
+      shape: Border.all(color: Colors.transparent),
+      shadowColor: Colors.transparent,
+      child: Column(
+        children: [
+          Align(
+            alignment: AlignmentGeometry.centerLeft,
+            child: Text(interactsWith, style: style ?? CarbonTheme.carbonTextStyle),
+          ),
+          Text(explanation, style: explanationStyle ?? CarbonTheme.carbonLabelTextStyle),
+        ],
+      ),
     );
   }
 }

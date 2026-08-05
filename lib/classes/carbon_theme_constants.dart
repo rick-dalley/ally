@@ -277,6 +277,12 @@ class CarbonTheme {
     color: carbonColorButtonOnPrimary,
   );
 
+  static TextStyle? carbonHelperLabelOnPrimary = GoogleFonts.ibmPlexSans(
+    fontWeight: FontWeight.w400,
+    fontSize: CarbonButtons.small.fontSize,
+    color: carbonColorButtonOnPrimary,
+  );
+
   static TextStyle? carbonHelperTextStyle = GoogleFonts.ibmPlexSans(
     fontWeight: FontWeight.w400,
     fontSize: CarbonButtons.small.fontSize,

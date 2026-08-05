@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/carbon_color_constants.dart';
+import 'package:triage/classes/database_manager.dart';
 import '../app_theme.dart';
 import '../classes/carbon_theme_constants.dart';
 import '../classes/frequency_codes.dart';
@@ -31,30 +32,37 @@ class _MedicationCardState extends State<MedicationCard> {
   Map<String, dynamic>? _datasheet;
   bool _isFetching = false;
   MedicationShapes shape = MedicationShapes.round;
+
   @override
   void initState() {
     super.initState();
     shape = widget.index != null ? MedicationShapes.values[widget.index!] : MedicationShapes.round;
     // If we already know the datasheet is local, get it immediately
     if (widget.medication.hasLocalDataSheet) {
-      triggerFetch();
+      triggerFetch(
+        medicationId: widget.medication.id,
+        setId: widget.medication.setId!,
+        medicationName: widget.medication.name,
+      );
     }
   }
 
-  void triggerFetch() async {
+  void triggerFetch({required String medicationName, required String setId, required String medicationId}) async {
     if (_isFetching) return;
 
     setState(() => _isFetching = true);
+    final interactions = await DatabaseManager().getAllInteractionsForDrug(medicationName);
 
-    final row = await MedicationService.getDrugDataSheet(
-      widget.medication.id,
-      widget.medication.name,
-      widget.medication.setId!,
-    );
+    for (dynamic interaction in interactions) {}
+    final row = await MedicationService.getDrugDataSheet(medicationId, medicationName, setId);
 
     if (mounted) {
       setState(() {
         _datasheet = row; // This is our in-memory "Source of Truth"
+        if (interactions.isNotEmpty) {
+          _datasheet ??= {};
+          _datasheet!['interactions'] = interactions;
+        }
         _isFetching = false;
 
         // Update the map immediately here if you want,
@@ -121,28 +129,35 @@ class _MedicationCardState extends State<MedicationCard> {
                     IconButton(onPressed: widget.onDelete, icon: const Icon(Symbols.close)),
                   ],
                 ),
+                Align(
+                  alignment: AlignmentGeometry.centerLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 0, 0),
+                    child: Text(
+                      "Dose: ${widget.medication.dose ?? 'N/A'} —  $frequency",
+                      style: CarbonTheme.carbonHintTextStyle,
+                    ),
+                  ),
+                ),
+                if (medicationInteractions.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4.0),
+                    child: InteractionsChip(medicationName: medicationName, interactions: medicationInteractions),
+                  ),
                 // ExpansionTile
                 ExpansionTile(
                   key: ValueKey("tile_$medicationId"),
                   shape: const Border(),
                   collapsedShape: const Border(),
-                  title: Text(
-                    "Dose: ${widget.medication.dose ?? 'N/A'} —  $frequency",
-                    style: CarbonTheme.carbonHintTextStyle,
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4.0),
-                        child: InteractionsChip(medicationName: medicationName, interactions: medicationInteractions),
-                      ),
-                    ],
-                  ),
+                  title: Text("Data Sheet...", style: CarbonTheme.carbonLabelTextStyle),
                   trailing: const Icon(Icons.expand_more),
                   onExpansionChanged: (expanded) {
                     if (expanded && _datasheet == null) {
-                      triggerFetch();
+                      triggerFetch(
+                        medicationId: widget.medication.id,
+                        medicationName: widget.medication.name,
+                        setId: widget.medication.setId!,
+                      );
                     }
                     widget.onExpansionChanged?.call(expanded);
                   },
@@ -174,6 +189,7 @@ class _MedicationCardState extends State<MedicationCard> {
 
     final Map<String, String> sectionMap = {
       'indications_and_usage': 'Indications',
+      'interactions': 'All Interactions',
       'dosage_and_administration': 'Dosage',
       'warnings_and_cautions': 'Warnings',
       'adverse_reactions': 'Adverse Reactions',
@@ -183,16 +199,25 @@ class _MedicationCardState extends State<MedicationCard> {
     return sectionMap.entries.map((entry) {
       final data = targetJson[entry.key];
       String text = data?.toString() ?? "";
-
+      List<Widget> children = [];
       if (text.isEmpty || text == "null") return const SizedBox.shrink();
+      if (entry.key == "interactions") {
+        for (dynamic interaction in data) {
+          children.add(
+            InteractionTile(interactsWith: interaction['interacting_drug'], explanation: interaction['explanation']),
+          );
+        }
+      } else {
+        children = [Padding(padding: const EdgeInsets.all(16.0), child: SelectableText(text))];
+      }
 
       return ExpansionTile(
         shape: const Border(),
-        // Remove the top and bottom borders when collapsed
+        // Remove the top and bottom borders when collapsed"
         collapsedShape: const Border(),
         // Keep it explicit and simple to avoid the 'bool vs double' theme leak
         title: Text(entry.value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-        children: [Padding(padding: const EdgeInsets.all(16.0), child: SelectableText(text))],
+        children: children,
       );
     }).toList();
   }

@@ -189,6 +189,27 @@ class DatabaseManager {
     }
   }
 
+  Future<List<Map<String, dynamic>>> getAllInteractionsForDrug(String drugName) async {
+    final db = await database;
+
+    // Query both columns to capture every interaction regardless of entry order
+    final List<Map<String, dynamic>> results = await db.rawQuery(
+      '''
+    SELECT 
+      CASE 
+        WHEN name_a = ? THEN name_b 
+        ELSE name_a 
+      END AS interacting_drug,
+      explanation
+    FROM interaction
+    WHERE name_a = ? OR name_b = ?
+  ''',
+      [drugName, drugName, drugName],
+    );
+
+    return results;
+  }
+
   Future<void> insertBodyMarker(String patientUuid, Map<String, dynamic> marker) async {
     final db = await database;
 

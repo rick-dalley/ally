@@ -223,22 +223,9 @@ class InteractionsWidgetState extends State<InteractionsWidget> {
   late bool hasPrecautions;
   late bool hasAcceptedIndications;
   late List<InteractionConflict> conflicts;
-  late int dataSheetCount = 0;
-  int getDataSheetCount() {
-    int count = 0;
-    if (medications.isNotEmpty) {
-      for (dynamic m in medications.values) {
-        if (m.hasLocalDataSheet) {
-          count++;
-        }
-      }
-    }
-    return count;
-  }
 
   void runSafetyAudit() async {
-    // Guard clause: Don't spend processing cycles if the list hasn't loaded yet
-    if (medications.isEmpty || dataSheetCount < 2) return;
+    // Guard clause: Don't spend processing cycles if the list hasn't loaded ye
 
     setState(() {
       conflicts.clear();
@@ -282,11 +269,11 @@ class InteractionsWidgetState extends State<InteractionsWidget> {
     super.initState();
     conflicts = [];
     medications = widget.medications;
-    dataSheetCount = getDataSheetCount();
     audited = false;
     hasContraIndications = false;
     hasPrecautions = false;
     hasAcceptedIndications = false;
+    runSafetyAudit();
   }
 
   @override
@@ -294,7 +281,6 @@ class InteractionsWidgetState extends State<InteractionsWidget> {
     super.didUpdateWidget(oldWidget);
     setState(() {
       medications = widget.medications;
-      dataSheetCount = getDataSheetCount();
     });
   }
 
@@ -328,10 +314,6 @@ class InteractionsWidgetState extends State<InteractionsWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (dataSheetCount < 2) {
-      return SizedBox(height: 0);
-    }
-    // Determine state based on your list logic
     BannerData bannerData;
     // Example Logic check:
     if (!audited) {
@@ -351,9 +333,9 @@ class InteractionsWidgetState extends State<InteractionsWidget> {
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Row(
         children: [
-          if (dataSheetCount > 1) Icon(bannerData.icon, color: bannerData.color, size: 20),
-          if (dataSheetCount > 1) const SizedBox(width: 16),
-          if (dataSheetCount > 1) Expanded(child: Text(bannerData.message, style: CarbonTheme.carbonLabelTextStyle)),
+          Icon(bannerData.icon, color: bannerData.color, size: 20),
+          const SizedBox(width: 16),
+          Expanded(child: Text(bannerData.message, style: CarbonTheme.carbonLabelTextStyle)),
           Expanded(
             child: CarbonButton(
               label: "Check",
