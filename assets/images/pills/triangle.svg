@@ -1,12 +1,16 @@
-<svg xmlns="http://w3.org" viewBox="0 0 200 200">
-    <!-- Left Side Shadow -->
-    <polygon class="pill-side-dark" points="40,130 100,165 100,185 40,150" />
-    <!-- Right Side Shadow -->
-    <polygon class="pill-side-light" points="100,165 160,130 160,150 100,185" />
-    <!-- Top Face -->
-    <polygon class="pill-top" points="100,50 160,130 40,130" />
-    <!-- Outlines -->
-    <polygon class="pill-line" points="100,50 160,130 40,130" />
-    <path class="pill-line" d="M 40,130 L 40,150 L 100,185 L 160,150 L 160,130" />
-    <line class="pill-line" x1="100" y1="165" x2="100" y2="185" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+    <defs>
+        <!-- Master True Equilateral/Isosceles Triangle Geometry -->
+        <polygon id="true-tri" points="100,45 160,150 40,150" />
+    </defs>
+
+    <!-- 1. Bottom Extrusion Base (All Blue Side Walls) -->
+    <path fill="#0000FF" stroke="#FF00FF" stroke-width="4" stroke-linejoin="round" d="M 40,150 L 40,175 L 160,175 L 160,150 Z" />
+
+    <!-- 2. Solid Opaque Top Face Lid (Completely covers extrusion to prevent show-through) -->
+    <use href="#true-tri" fill="#FF0000" />
+
+    <!-- 3. Crisp Outlines -->
+    <use href="#true-tri" fill="none" stroke="#FF00FF" stroke-width="4" stroke-linejoin="round" />
+    <path fill="none" stroke="#FF00FF" stroke-width="4" stroke-linejoin="round" d="M 40,150 L 40,175 L 160,175 L 160,150" />
 </svg>

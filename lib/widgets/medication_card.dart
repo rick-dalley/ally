@@ -7,6 +7,7 @@ import '../app_theme.dart';
 import '../classes/carbon_theme_constants.dart';
 import '../classes/frequency_codes.dart';
 import '../classes/medication_services.dart';
+import '../classes/tablet.dart';
 import 'interaction_chip.dart';
 
 class MedicationCard extends StatefulWidget {
@@ -103,11 +104,7 @@ class _MedicationCardState extends State<MedicationCard> {
                 'assets/images/pills/${shape.svg}',
                 width: 40,
                 height: 40,
-                // This is the magic property that applies the color
-                colorFilter: ColorFilter.mode(
-                  AppTheme.primaryColor, // Your desired color
-                  BlendMode.srcIn, // This keeps the alpha (transparency) of your SVG
-                ),
+                colorMapper: PillColorMapper(Colors.cyan),
               ),
             ),
           ),

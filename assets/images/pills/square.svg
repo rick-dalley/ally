@@ -1,12 +1,19 @@
-<svg xmlns="http://w3.org" viewBox="0 0 200 200">
-    <!-- Left Side Shadow -->
-    <polygon class="pill-side-dark" points="40,100 100,140 100,165 40,125" />
-    <!-- Right Side Shadow -->
-    <polygon class="pill-side-light" points="100,140 160,100 160,125 100,165" />
-    <!-- Top Face -->
-    <polygon class="pill-top" points="100,60 160,100 100,140 40,100" />
-    <!-- Outlines -->
-    <polygon class="pill-line" points="100,60 160,100 100,140 40,100" />
-    <path class="pill-line" d="M 40,100 L 40,125 L 100,165 L 160,125 L 160,100" />
-    <line class="pill-line" x1="100" y1="140" x2="100" y2="165" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+    <defs>
+        <!-- Master Diamond Geometry -->
+        <polygon id="diamond-geom" points="100,60 160,100 100,140 40,100" />
+    </defs>
+
+    <!-- 1. Extrusion Side Walls -->
+    <path fill="#00FF00" d="M 40,100 L 40,125 L 100,165 L 160,125 L 160,100 Z" />
+    <polygon fill="#0000FF" points="40,100 100,140 100,165 40,125" />
+    <polygon fill="#00FF00" points="100,140 160,100 160,125 100,165" />
+
+    <!-- 2. Solid Opaque Top Face Lid (Completely covers extrusion to prevent show-through) -->
+    <use href="#diamond-geom" fill="#FF0000" />
+
+    <!-- 3. Crisp Outlines -->
+    <use href="#diamond-geom" fill="none" stroke="#FF00FF" stroke-width="4" stroke-linejoin="round" />
+    <path fill="none" stroke="#FF00FF" stroke-width="4" stroke-linejoin="round" d="M 40,100 L 40,125 L 100,165 L 160,125 L 160,100" />
+    <line fill="none" stroke="#FF00FF" stroke-width="4" stroke-linejoin="round" x1="100" y1="140" x2="100" y2="165" />
 </svg>

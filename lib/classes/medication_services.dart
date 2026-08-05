@@ -12,7 +12,6 @@ enum MedicationShapes {
   almond,
   arrowHead,
   capsule,
-  crescent,
   diamond,
   heart,
   hexagon,
@@ -34,8 +33,6 @@ extension MedicationShapesNames on MedicationShapes {
         return "Arrow Head";
       case MedicationShapes.capsule:
         return "Capsule";
-      case MedicationShapes.crescent:
-        return "Crescent";
       case MedicationShapes.diamond:
         return "Diamond";
       case MedicationShapes.heart:
@@ -69,8 +66,6 @@ extension MedicationShapesSvg on MedicationShapes {
         return "arrow_head.svg";
       case MedicationShapes.capsule:
         return "capsule.svg";
-      case MedicationShapes.crescent:
-        return "crescent.svg";
       case MedicationShapes.diamond:
         return "diamond.svg";
       case MedicationShapes.heart:

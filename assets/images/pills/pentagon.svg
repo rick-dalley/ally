@@ -1,12 +1,22 @@
-<svg xmlns="http://w3.org" viewBox="0 0 200 200">
-    <!-- Left Side Shadow -->
-    <polygon class="pill-side-dark" points="45,120 100,155 100,175 45,140" />
-    <!-- Right Side Shadow -->
-    <polygon class="pill-side-light" points="100,155 155,120 155,140 100,175" />
-    <!-- Top Face -->
-    <polygon class="pill-top" points="100,45 155,85 155,120 100,155 45,120 45,85" />
-    <!-- Outlines -->
-    <polygon class="pill-line" points="100,45 155,85 155,120 100,155 45,120 45,85" />
-    <path class="pill-line" d="M 45,120 L 45,140 L 100,175 L 155,140 L 155,120" />
-    <line class="pill-line" x1="100" y1="155" x2="100" y2="175" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+    <defs>
+        <!-- Master Pentagon Geometry (Top Face) -->
+        <polygon id="pent-geom" points="100,45 155,85 135,140 65,140 45,85" />
+    </defs>
+
+    <!-- 1. Side Walls (Connecting outer perimeter vertices downward, omitting top-center inner drop) -->
+    <path fill="#00FF00" stroke="#FF00FF" stroke-width="4" stroke-linejoin="round" d="
+        M 100,45 L 155,85 L 135,140 L 65,140 L 45,85 Z
+        L 45,105 L 65,160 L 135,160 L 155,105 Z
+        M 155,85 L 155,105
+        M 135,140 L 135,160
+        M 65,140 L 65,160
+        M 45,85 L 45,105
+    " />
+
+    <!-- 2. Solid Opaque Top Face Lid -->
+    <use href="#pent-geom" fill="#FF0000" />
+
+    <!-- 3. Crisp Top Outline -->
+    <use href="#pent-geom" fill="none" stroke="#FF00FF" stroke-width="4" stroke-linejoin="round" />
 </svg>

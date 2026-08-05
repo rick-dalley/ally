@@ -1,6 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
-    <path class="pill-side-light"
-        transform="translate(0, 20)"
-        d="M 100,150 C 40,110 20,70 40,50 C 60,30 90,45 100,65 C 110,45 140,30 160,50 C 180,70 160,110 100,150" />
+    <defs>
+        <!-- Master Heart Path Geometry -->
+        <path id="heart-geom" d="M 100,140 C 45,105 25,70 42,50 C 58,32 85,42 100,62 C 115,42 142,32 158,50 C 175,70 155,105 100,140 Z" />
+    </defs>
+
+    <!-- 1. Bottom Extrusion / Base Side Walls -->
+    <path fill="#00FF00" stroke="#FF00FF" stroke-width="4" stroke-linejoin="round" d="M 42,50 C 58,32 85,42 100,62 C 115,42 142,32 158,50 C 175,70 155,105 100,140 L 100,156 C 155,121 175,86 158,66 C 142,48 115,58 100,78 C 85,58 58,48 42,66 C 25,86 45,121 100,156 L 100,140 Z" />
+
+    <!-- 2. Solid Opaque Top Face Lid (Placed on top so the red completely covers the green extrusion) -->
+    <use href="#heart-geom" fill="#FF0000" />
+
+    <!-- 3. Crisp Top Outline -->
+    <use href="#heart-geom" fill="none" stroke="#FF00FF" stroke-width="4" stroke-linejoin="round" />
 </svg>
+
 

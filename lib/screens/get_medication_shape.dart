@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import '../app_theme.dart';
 import '../classes/app_colors.dart';
 import '../classes/medication_services.dart';
+import '../classes/tablet.dart';
 
 class GetMedicationShape extends StatelessWidget {
   final Function(MedicationShapes) onShapeSelect;
@@ -53,8 +54,10 @@ class GetMedicationShape extends StatelessWidget {
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: SvgPicture.asset(
-                                  "assets/images/pills/${shape.svg}",
-                                  colorFilter: ColorFilter.mode(AppColors.darkMustard, BlendMode.srcIn),
+                                  'assets/images/pills/${shape.svg}',
+                                  width: 40,
+                                  height: 40,
+                                  colorMapper: PillColorMapper(Colors.cyan),
                                 ),
                               ),
                             ),

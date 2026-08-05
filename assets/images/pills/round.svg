@@ -1,9 +1,21 @@
-<svg xmlns="http://w3.org" viewBox="0 0 200 200">
-    <!-- Side Shadow -->
-    <path class="pill-side-light" d="M 40,90 A 60,25 0 0,0 160,90 L 160,115 A 60,25 0 0,1 40,115 Z" />
-    <!-- Top Face -->
-    <ellipse class="pill-top" cx="100" cy="90" rx="60" ry="25" />
-    <!-- Outlines -->
-    <path class="pill-line" d="M 40,90 A 60,25 0 0,0 160,90 A 60,25 0 0,0 40,90 Z" />
-    <path class="pill-line" d="M 40,90 L 40,115 A 60,25 0 0,0 160,115 L 160,90" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+    <defs>
+        <!-- Master Ellipse Geometry -->
+        <ellipse id="ellipse-geom" cx="100" cy="90" rx="60" ry="25" />
+    </defs>
+
+    <!-- 1. Extrusion Side Walls (Shifted down, connecting bottom contour) -->
+    <g transform="translate(0, 25)">
+        <use href="#ellipse-geom" fill="#00FF00" stroke="#FF00FF" stroke-width="4" stroke-linejoin="round" />
+    </g>
+
+    <!-- 2. Side Shadow Layer -->
+    <path fill="#00FF00" d="M 40,90 A 60,25 0 0,0 160,90 L 160,115 A 60,25 0 0,1 40,115 Z" />
+
+    <!-- 3. Solid Opaque Top Face Lid (Completely covers extrusion/base to prevent show-through) -->
+    <use href="#ellipse-geom" fill="#FF0000" />
+
+    <!-- 4. Crisp Outlines & Structural Lines -->
+    <use href="#ellipse-geom" fill="none" stroke="#FF00FF" stroke-width="4" stroke-linejoin="round" />
+    <path fill="none" stroke="#FF00FF" stroke-width="4" stroke-linejoin="round" d="M 40,90 L 40,115 A 60,25 0 0,0 160,115 L 160,90" />
 </svg>
