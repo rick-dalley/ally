@@ -10,7 +10,7 @@ class CarbonActionTile extends StatelessWidget {
   final Color? iconColor;
   final Size? iconSize;
   final String title;
-  final String? subTitle;
+  final String? subtitle;
   const CarbonActionTile({
     super.key,
     required this.onTap,
@@ -19,7 +19,7 @@ class CarbonActionTile extends StatelessWidget {
     this.iconSize,
     this.iconColor,
     this.outlineIcon,
-    this.subTitle,
+    this.subtitle,
   });
 
   @override
@@ -62,7 +62,7 @@ class CarbonActionTile extends StatelessWidget {
             ],
           ),
           title: Text(title, style: CarbonTheme.carbonTertiaryButtonTextStyle),
-          subtitle: Text(subTitle ?? "", style: CarbonTheme.carbonHintTextStyle),
+          subtitle: Text(subtitle ?? "", style: CarbonTheme.carbonHintTextStyle),
           onTap: onTap,
         ),
       ),

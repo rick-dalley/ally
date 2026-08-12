@@ -1,4 +1,5 @@
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:triage/classes/archived/carbon_color_constants_old.dart';
 import 'package:triage/classes/carbon_theme_constants.dart';
 import 'package:triage/screens/add_medication_wizard.dart';
 import 'package:triage/widgets/carbon_style_button.dart';
@@ -120,6 +121,8 @@ class PrescriptionScreenState extends State<PrescriptionScreen> {
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 90.0),
         child: FloatingActionButton(
+          backgroundColor: carbonColorPrimary04,
+          foregroundColor: carbonColorButtonOnPrimary,
           key: Key("FAB_NewPrescription"),
           heroTag: "prescription_screen",
           onPressed: () => showAddMedicationSheet(),
@@ -147,7 +150,7 @@ class PrescriptionScreenState extends State<PrescriptionScreen> {
 
                     // 2. Remove from the UI state
                     setState(() {
-                      medications.remove(med);
+                      medications.remove(med.id);
                     });
                   },
                   onExpansionChanged: (isExpanded) {

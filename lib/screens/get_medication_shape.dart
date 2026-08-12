@@ -2,19 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../app_theme.dart';
-import '../classes/app_colors.dart';
 import '../classes/medication_services.dart';
 import '../classes/tablet.dart';
 
-class GetMedicationShape extends StatelessWidget {
-  final Function(MedicationShapes) onShapeSelect;
-  final MedicationShapes? shape;
+class GetMedicationShape extends StatefulWidget {
+  final Function(TabletShapes) onShapeSelect;
+  final TabletShapes? shape;
   const GetMedicationShape({super.key, required this.onShapeSelect, this.shape});
 
   @override
-  Widget build(BuildContext context) {
-    MedicationShapes? selectedShape = shape;
+  State<StatefulWidget> createState() => GetMedicationShapeState();
+}
 
+class GetMedicationShapeState extends State<GetMedicationShape> {
+  @override
+  Widget build(BuildContext context) {
+    TabletShapes? selectedShape = widget.shape;
+    Color selectedColor = TabletColors.pink.color;
     return Scaffold(
       backgroundColor: AppTheme.onPrimaryColor,
       body: LayoutBuilder(
@@ -34,11 +38,11 @@ class GetMedicationShape extends StatelessWidget {
                     childAspectRatio: 1.0, // Ensures squares
                   ),
                   delegate: SliverChildBuilderDelegate((context, index) {
-                    final shape = MedicationShapes.values[index];
+                    final shape = TabletShapes.values[index];
                     final isSelected = shape == selectedShape;
 
                     return GestureDetector(
-                      onTap: () => onShapeSelect(shape),
+                      onTap: () => widget.onShapeSelect(shape),
                       child: Container(
                         decoration: BoxDecoration(
                           color: AppTheme.tertiaryColor,
@@ -57,7 +61,7 @@ class GetMedicationShape extends StatelessWidget {
                                   'assets/images/pills/${shape.svg}',
                                   width: 40,
                                   height: 40,
-                                  colorMapper: PillColorMapper(Colors.cyan),
+                                  colorMapper: PillColorMapper(selectedColor),
                                 ),
                               ),
                             ),
@@ -74,7 +78,7 @@ class GetMedicationShape extends StatelessWidget {
                         ),
                       ),
                     );
-                  }, childCount: MedicationShapes.values.length),
+                  }, childCount: TabletShapes.values.length),
                 ),
               ),
             ],

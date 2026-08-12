@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:triage/classes/acuity.dart';
 import 'package:triage/classes/body_zone.dart';
-import 'package:triage/classes/carbon_color_constants.dart';
 import 'package:triage/classes/database_manager.dart';
 import 'package:triage/screens/home_screen.dart';
 import 'package:triage/screens/start_up.dart';
@@ -26,7 +24,6 @@ class LuminescaApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      // ... your localization and theme config ...
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       localizationsDelegates: const [
@@ -36,7 +33,7 @@ class LuminescaApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: S.delegate.supportedLocales,
-      // Change 'home' to StartupScreen
+      // Start with your StartupScreen
       home: const StartupScreen(),
       // Define a route for the roster so pushReplacementNamed works
       routes: {'/roster': (context) => const LuminescaHome()},
@@ -75,36 +72,13 @@ class LuminescaHomeState extends State<LuminescaHome> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBackgroundColor,
-      appBar: AppBar(
-        backgroundColor: AppTheme.appBarBackgroundColor,
-        title: RichText(
-          text: TextSpan(
-            style: GoogleFonts.inclusiveSans(fontSize: 20, letterSpacing: 0.5),
-            children: [
-              TextSpan(
-                text: 'CWICare',
-                style: TextStyle(fontWeight: FontWeight.w700, color: carbonColorButtonOnTertiary, letterSpacing: 1.2),
-              ),
-              const TextSpan(
-                text: ' — ',
-                style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w400),
-              ),
-              TextSpan(
-                text: 'Partner',
-                style: TextStyle(fontWeight: FontWeight.w400, color: AppTheme.primaryColor),
-              ),
-            ],
-          ),
-        ),
-      ),
-      // The Roster stays in the tree at all times (so it lays out),
-      // and we only animate the loading overlay on top.
+      // APPBAR REMOVED ENTIRELY: No global branding banner here anymore.
       body: Stack(
         children: [
-          // The Roster: Always present and laid out, just hidden by the stack
+          // The Roster: Always present and laid out, containing HomeScreen which handles its own headers
           const HomeScreen(),
 
-          // The Loading Overlay: Only exists while loading
+          // The Loading Overlay: Only exists while initialization is running
           FutureBuilder(
             future: _initFuture,
             builder: (context, snapshot) {

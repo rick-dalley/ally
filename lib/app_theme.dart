@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:triage/classes/archived/carbon_color_constants_old.dart';
 
 import 'classes/app_colors.dart';
 
@@ -18,7 +19,7 @@ class AppTheme {
   static final Color dividerColor = AppColors.greyDepth;
   static final Color surfaceColor = Colors.white;
   static final Color defaultFontColor = Color(0xFF1F2020);
-  static final Color primaryColor = AppColors.energeticPurple;
+  static final Color primaryColor = carbonColorPrimary04;
   static final Color onPrimaryColor = Colors.white;
   static final Color secondaryColor = AppColors.grey[5];
   static final Color onSecondaryColor = Colors.white;
@@ -99,8 +100,8 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          backgroundColor: AppTheme.primaryColor,
-          foregroundColor: AppTheme.onPrimaryColor,
+          backgroundColor: primaryColor,
+          foregroundColor: onPrimaryColor,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
           textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, letterSpacing: 1.1),
           elevation: 2, // Subtle lift to distinguish from the background
@@ -124,16 +125,12 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.greyDepth,
       cardColor: Colors.white,
 
-      colorScheme: ColorScheme.dark(
-        primary: AppTheme.primaryColor,
-        secondary: AppColors.greyDepth,
-        surface: AppColors.grey[5],
-      ),
+      colorScheme: ColorScheme.dark(primary: primaryColor, secondary: AppColors.greyDepth, surface: AppColors.grey[5]),
 
       // FAB Styling
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: AppTheme.primaryColor,
-        foregroundColor: AppTheme.onPrimaryColor,
+        backgroundColor: primaryColor,
+        foregroundColor: onPrimaryColor,
       ),
 
       // AppBar Styling
@@ -141,15 +138,15 @@ class AppTheme {
         backgroundColor: AppColors.greyDepth,
         elevation: 0,
         centerTitle: false,
-        titleTextStyle: TextStyle(color: AppTheme.onPrimaryColor, fontSize: 20, fontWeight: FontWeight.bold),
+        titleTextStyle: TextStyle(color: onPrimaryColor, fontSize: 20, fontWeight: FontWeight.bold),
       ),
 
       // Input Decoration (Text Fields)
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppTheme.onPrimaryColor.withAlpha(8),
-        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.primaryColor, width: 2)),
-        enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.onPrimaryColor)),
+        fillColor: onPrimaryColor.withAlpha(8),
+        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: primaryColor, width: 2)),
+        enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: onPrimaryColor)),
       ),
     );
   }

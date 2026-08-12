@@ -290,10 +290,11 @@ class DatabaseManager {
 
     // Use a LEFT JOIN to ensure we get the patient even if they have no vitals yet
     return await db.rawQuery('''
-    SELECT p.*, m.*
+    SELECT p.*
     FROM patient p
-    LEFT JOIN patient_metrics m ON p.patient_uuid = m.patient_uuid
+    
   ''');
+    // LEFT JOIN patient_metrics m ON p.patient_uuid = m.patient_uuid
   }
 
   Future<List<Map<String, dynamic>>> getPatientWithVitals({required String patientUuid}) async {
@@ -1196,7 +1197,7 @@ class DatabaseManager {
   Future<void> addMedicationShape({
     required String name,
     required String patientUuid,
-    required MedicationShapes shape,
+    required TabletShapes shape,
   }) async {}
   Future<void> addFrequency({required String name, required String patientUuid, required Frequency frequency}) async {}
 

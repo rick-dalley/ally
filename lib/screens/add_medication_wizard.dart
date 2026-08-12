@@ -38,7 +38,7 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
   String? _dosage;
   Frequency? _frequency;
   MedicationTypes? _type;
-  MedicationShapes? _shape;
+  TabletShapes? _shape;
 
   @override
   void dispose() {

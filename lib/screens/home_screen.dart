@@ -2,13 +2,16 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/carbon_color_constants.dart';
+import 'package:triage/classes/carbon_theme_constants.dart';
 import 'package:triage/classes/patient_action.dart';
 import 'package:triage/screens/add_patients_wheel.dart';
 import 'package:triage/screens/metric_dashboard_screen.dart';
 import 'package:triage/screens/time_scroller.dart';
+import 'package:triage/screens/user_screen.dart';
 import '../app_theme.dart';
 import '../classes/database_manager.dart';
 import '../classes/patient.dart';
+import '../widgets/carbon_style_avatar.dart';
 import '../widgets/emergency_qr.dart';
 import 'prescription_screen.dart';
 import 'providers_screen.dart';
@@ -51,6 +54,21 @@ class HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void showUserScreen({required Patient? user}) {
+    if (user == null) {
+      return;
+    }
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: carbonColorScaffoldBackground,
+      builder: (context) => UserScreen(
+        user: user,
+        onVitalsUpdate: (p) => updatePatient(patientIndex: _currentPageIndex, patient: p),
+        onMemberUpdate: (p) => updatePatient(patientIndex: _currentPageIndex, patient: p),
+      ),
+    );
+  }
+
   void updatePatient({required int patientIndex, required Patient patient}) {
     setState(() {
       patients[patientIndex] = patient;
@@ -64,15 +82,10 @@ class HomeScreenState extends State<HomeScreen> {
     final endTime = actions.last.until;
 
     return [
-      // UserScreen(
-      //   user: patient,
-      //   onVitalsUpdate: (p) => updatePatient(patientIndex: patientIndex, patient: p),
-      //   onMemberUpdate: (p) => updatePatient(patientIndex: patientIndex, patient: p),
-      // ),
-      MetricsDashboardScreen(user: patient),
-      ProviderRosterScreen(user: patient),
       MedicalProfileScreen(user: patient),
       PrescriptionScreen(patient: patient),
+      MetricsDashboardScreen(user: patient),
+      ProviderRosterScreen(user: patient),
       EmergencyQRCodeView(householdMember: patient),
       TimelineScrollerWidget(actions: actions, startTime: startTime, endTime: endTime),
     ];
@@ -100,20 +113,71 @@ class HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Patient? patient;
     if (_isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    } else {
+      if (patients.isNotEmpty) {
+        patient = patients[_currentPageIndex];
+      }
     }
+
+    // Define clear, action-oriented titles corresponding to your 6 bottom nav tabs (_currentIndex)
+    final List<String> pageActionTitles = [
+      'Medical Profile',
+      'Manage Prescriptions',
+      'Review Metrics',
+      'My Health Care Team',
+      'Emergency QR',
+      'Activity Timeline',
+    ];
+
+    final currentActionTitle = pageActionTitles[_currentIndex];
 
     return Scaffold(
       extendBody: true,
       backgroundColor: Colors.transparent,
-      body: PageView.builder(
-        controller: _pageController,
-        itemCount: patients.length,
-        onPageChanged: (index) => setState(() => _currentPageIndex = index),
-        itemBuilder: (context, index) {
-          return IndexedStack(index: _currentIndex, children: _getPages(index));
-        },
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Top Context Bar: Page Action Title (Left) & Active Patient Avatar (Right)
+            if (patient != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Action / Purpose Title
+                    Text(currentActionTitle, style: CarbonTheme.carbonExpressiveTextStyle),
+
+                    // Patient Avatar (Tap for profile, Long press for roster jump)
+                    GestureDetector(
+                      onLongPress: () => _showMemberJumpList(context),
+                      onTap: () => showUserScreen(user: patient),
+                      child: KeyedSubtree(
+                        key: ValueKey(patient.name),
+                        child: CarbonAvatar(user: patient),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+            // Main PageView containing the tabs
+            Expanded(
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: patients.length,
+                onPageChanged: (index) => setState(() {
+                  _currentPageIndex = index;
+                }),
+                itemBuilder: (context, index) {
+                  return IndexedStack(index: _currentIndex, children: _getPages(index));
+                },
+              ),
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: _buildNavBar(),
     );
@@ -128,35 +192,24 @@ class HomeScreenState extends State<HomeScreen> {
           Align(
             alignment: Alignment.center,
             child: ClipRect(
-              // Required for BackdropFilter to work
               child: BackdropFilter(
                 filter: ui.ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
                 child: Container(
                   height: 90,
-                  // Use a color with a lower alpha to let the blur show through
                   color: AppTheme.lightTheme.canvasColor.withValues(alpha: 0.25),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const SizedBox(width: 88),
-                      _navButton(index: 1, icon: Symbols.diversity_4),
-                      _navButton(index: 2, icon: Symbols.conditions),
-                      _navButton(index: 3, icon: Symbols.medication),
+                      _navButton(index: 0, icon: Symbols.conditions),
+                      _navButton(index: 1, icon: Symbols.medication),
+                      _navButton(index: 2, icon: Symbols.health_metrics),
+                      _navButton(index: 3, icon: Symbols.diversity_4),
                       _navButton(index: 4, icon: Symbols.qr_code_2),
                       _navButton(index: 5, icon: Symbols.view_object_track),
                     ],
                   ),
                 ),
               ),
-            ),
-          ),
-          Positioned(
-            left: 20,
-            top: -15,
-            child: GestureDetector(
-              onLongPress: () => _showMemberJumpList(context),
-              onTap: () => setState(() => _currentIndex = 0),
-              child: _buildPatientAvatar(patients[_currentPageIndex].name),
             ),
           ),
         ],
@@ -170,7 +223,6 @@ class HomeScreenState extends State<HomeScreen> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
-      // Add padding/margin inside the container to make it a pill or square
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: isSelected ? carbonColorButtonPrimary : Colors.transparent,
@@ -178,36 +230,7 @@ class HomeScreenState extends State<HomeScreen> {
       ),
       child: InkWell(
         onTap: () => setState(() => _currentIndex = index),
-        child: Icon(
-          icon,
-          size: 32,
-          // If selected, force white; otherwise use the dark primary color
-          color: isSelected ? carbonColorButtonOnPrimary : carbonColorButtonPrimary,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPatientAvatar(String patientName) {
-    final bool isSelected = _currentIndex == 0;
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-      // Adjust padding to keep it circular/balanced compared to icon buttons
-      padding: const EdgeInsets.all(2),
-      decoration: BoxDecoration(
-        color: isSelected ? AppTheme.primaryColor : Colors.transparent,
-        shape: BoxShape.circle, // Keeps the selection highlight circular
-        border: Border.all(color: isSelected ? AppTheme.primaryColor : Colors.transparent, width: 4),
-      ),
-      child: InkWell(
-        customBorder: const CircleBorder(), // Ensures the ripple effect is circular
-        onTap: () => setState(() => _currentIndex = 0),
-        child: CircleAvatar(
-          radius: 30, // Slightly smaller to accommodate the 4px border inside the container
-          backgroundImage: AssetImage("assets/images/faces/users/$patientName.png"),
-        ),
+        child: Icon(icon, size: 32, color: isSelected ? carbonColorButtonOnPrimary : carbonColorButtonPrimary),
       ),
     );
   }

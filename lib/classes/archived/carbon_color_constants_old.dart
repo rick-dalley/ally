@@ -1,15 +1,12 @@
 import 'package:flutter/cupertino.dart';
 
-// 1. Upgraded Primary Scale: Shifted to IBM Carbon's actual calibrated blue
-// (anchored around #0f62fe) for a vibrant, professional hue.
-const Color carbonColorPrimary00 = Color(0xFFa6c8ff);
-const Color carbonColorPrimary01 = Color(0xFF78a9ff);
-const Color carbonColorPrimary02 = Color(0xFF4589ff);
-const Color carbonColorPrimary03 = Color(0xFF1971eb);
-const Color carbonColorPrimary04 = Color(0xFF0f62fe); // primary brand anchor
-const Color carbonColorPrimary05 = Color(0xFF0043ce);
-const Color carbonColorPrimary06 = Color(0xFF002d9c);
-
+const Color carbonColorPrimary00 = Color(0xFF7979FF);
+const Color carbonColorPrimary01 = Color(0xFF6464FF);
+const Color carbonColorPrimary02 = Color(0xFF4E4EFF);
+const Color carbonColorPrimary03 = Color(0xFF3939FF);
+const Color carbonColorPrimary04 = Color(0xFF2323FF); //primary
+const Color carbonColorPrimary05 = Color(0xFF0303FF);
+const Color carbonColorPrimary06 = Color(0xFF0000E2);
 const Color carbonColorAIBorderEnd = Color(0xFF78a9ff);
 const Color carbonColorAIBorderStart = Color(0xa6c8ffa3);
 const Color carbonColorAIBorderStrong = Color(0xFF4589ff);
@@ -25,7 +22,6 @@ const Color carbonColorAIPopoverShadowOuter01 = Color(0x0043ce0f);
 const Color carbonColorAIPopoverShadowOuter02 = Color(0x0000000a);
 const Color carbonColorAISkeletonBackground = Color(0xFFd0e2ff);
 const Color carbonColorAISkeletonElementBackground = Color(0xFF4589ff);
-
 const Color carbonColorBackground = Color(0xffffffff);
 const Color carbonColorBackgroundActive = Color(0x8d8d8d80);
 const Color carbonColorBackgroundBrand = Color(0xFF0f62fe);
@@ -34,7 +30,6 @@ const Color carbonColorBackgroundInverse = Color(0xFF393939);
 const Color carbonColorBackgroundInverseHover = Color(0xFF474747);
 const Color carbonColorBackgroundSelected = Color(0x8d8d8d33);
 const Color carbonColorBackgroundSelectedHover = Color(0x8d8d8d52);
-
 const Color carbonColorBorderDisabled = Color(0xFFc6c6c6);
 const Color carbonColorBorderInteractive = Color(0xFF0f62fe);
 const Color carbonColorBorderInverse = Color(0xFF161616);
@@ -51,7 +46,6 @@ const Color carbonColorBorderSubtleSelected03 = carbonColorPrimary03;
 const Color carbonColorBorderTile01 = Color(0xFFc6c6c6);
 const Color carbonColorBorderTile02 = Color(0xFFa8a8a8);
 const Color carbonColorBorderTile03 = Color(0xFFc6c6c6);
-
 const Color carbonColorButtonPrimary = carbonColorPrimary04;
 final Color carbonColorButtonOnPrimary = Color(0xFFFFFFFF);
 const Color carbonColorButtonSecondary = Color(0xFF525252);
@@ -62,7 +56,6 @@ const Color carbonColorButtonGhost = Color(0xFFFFFFFF);
 final Color carbonColorButtonOnGhost = carbonColorPrimary04;
 const Color carbonColorButtonDanger = Color(0xFFda1e28);
 final Color carbonColorButtonOnDanger = Color(0xFFFFFFFF);
-
 const Color carbonColorChatAvatarAgent = Color(0xFF393939);
 const Color carbonColorChatAvatarBot = Color(0xFF6f6f6f);
 const Color carbonColorChatAvatarUser = Color(0xFF0f62fe);
@@ -84,18 +77,15 @@ const Color carbonColorChatPromptBorderEnd = Color(0xf4f4f400);
 const Color carbonColorChatPromptBorderStart = Color(0xFFf4f4f4);
 const Color carbonColorChatPromptText = Color(0xFF161616);
 const Color carbonColorChatShellBackground = Color(0xFFffffff);
-
 const Color carbonColorField = Color(0xFFf4f4f4);
 const Color carbonColorFieldOnColor = Color(0xFFffffff);
 const Color carbonColorFieldHover01 = Color(0xFFe8e8e8);
 const Color carbonColorFieldHover02 = Color(0xFFe8e8e8);
 const Color carbonColorFieldHover03 = Color(0xFFe8e8e8);
-
 const Color carbonColorFocus = carbonColorPrimary04;
 const Color carbonColorFocusInset = Color(0xFFffffff);
 const Color carbonColorFocusInverse = Color(0xFFffffff);
 const Color carbonColorHighlight = Color(0xFFd0e2ff);
-
 const Color carbonColorIconDisabled = Color(0x16161640);
 const Color carbonColorIconInterActive = carbonColorPrimary04;
 const Color carbonColorIconInverse = Color(0xFFffffff);
@@ -103,9 +93,7 @@ const Color carbonColorIconOnColor = Color(0xFFffffff);
 const Color carbonColorIconOnColorDisabled = Color(0xFF8d8d8d);
 const Color carbonColorIconPrimary = Color(0xFF161616);
 const Color carbonColorIconSecondary = Color(0xFF525252);
-
 const Color carbonColorInteractive = carbonColorPrimary04;
-
 const Color carbonColorLayer01 = Color(0xFFf4f4f4);
 const Color carbonColorLayer02 = Color(0xFFffffff);
 const Color carbonColorLayer03 = Color(0xFFf4f4f4);
@@ -135,7 +123,6 @@ const Color carbonColorLayerSelectedHover01 = Color(0xFFd1d1d1);
 const Color carbonColorLayerSelectedHover02 = Color(0xFFd1d1d1);
 const Color carbonColorLayerSelectedHover03 = Color(0xFFd1d1d1);
 const Color carbonColorLayerSelectedInverse = Color(0xFF161616);
-
 const Color carbonColorLinkInverse = Color(0xFF78a9ff);
 const Color carbonColorLinkInverseActive = Color(0xFFf4f4f4);
 const Color carbonColorLinkInverseHover = Color(0xFFa6c8ff);
@@ -144,19 +131,13 @@ const Color carbonColorLinkPrimary = Color(0xFF0f62fe);
 const Color carbonColorLinkPrimaryHover = Color(0xFF0043ce);
 const Color carbonColorLinkSecondary = Color(0xFF0043ce);
 const Color carbonColorLinkVisited = Color(0xFF8a3ffc);
-
 const Color carbonColorOverlay = Color(0xFF000009);
-
-// 2. Harmonized Scaffolding: Changed from #F1F5F5 to Carbon's native #f4f4f4
-// to match layer-01 and eliminate the clinical grey-cyan tint.
-const Color carbonColorScaffoldBackground = Color(0xFFf4f4f4);
-
+const Color carbonColorScaffoldBackground = Color(0xFFF1F5F5);
 const Color carbonColorSeparator = Color(0xFF343a3f);
 const Color carbonColorVerticalSeparator = Color(0xFF8d8d8d);
 const Color carbonColorShadow = Color(0x0000004d);
 const Color carbonColorSkeletonBackground = Color(0xFFe8e8e8);
 const Color carbonColorSkeletonElement = Color(0xFFc6c6c6);
-
 const Color carbonColorSupportCautionMajor = Color(0xFFff832b);
 const Color carbonColorSupportCautionMinor = Color(0xFFf1c21b);
 const Color carbonColorSupportCautionUndefined = Color(0xFF8a3ffc);
@@ -168,9 +149,100 @@ const Color carbonColorSupportSuccess = Color(0xFF24a148);
 const Color carbonColorSupportSuccessInverse = Color(0xFF42be65);
 const Color carbonColorSupportWarning = Color(0xFFf1c21b);
 const Color carbonColorSupportWarningInverse = Color(0xFFf1c21b);
-
-// (Syntax theme block remains intact below for code editor views...)
-const Color carbonColorTextPrimary = Color(0xFF161616); // Near-black for maximum readability (~13:1 contrast on white)
-const Color carbonColorTextSecondary = Color(0xFF525252); // Medium gray for supporting labels
-const Color carbonColorTextHelper = Color(0xFF6f6f6f); // Soft gray for form helper text (maintains >4.5:1 contrast)
-const Color carbonColorTextPlaceholder = Color(0x16161666); // Subdued black with opacity for input placeholders
+const Color carbonColorSyntaxAngleBracket = Color(0xFF697077);
+const Color carbonColorSyntaxAnnotation = Color(0xFF007d79);
+const Color carbonColorSyntaxArithmeticOperator = Color(0xFF343a3f);
+const Color carbonColorSyntaxAtom = Color(0xFF161616);
+const Color carbonColorSyntaxAttribute = Color(0xFF00539a);
+const Color carbonColorSyntaxAttributeName = Color(0xFF00539a);
+const Color carbonColorSyntaxAttributeValue = Color(0xFF161616);
+const Color carbonColorSyntaxBitwiseOperator = Color(0xFF343a3f);
+const Color carbonColorSyntaxBlockComment = Color(0xFF198038);
+const Color carbonColorSyntaxBool = Color(0xFF161616);
+const Color carbonColorSyntaxBrace = Color(0xFF343a3f);
+const Color carbonColorSyntaxBracket = Color(0xFF343a3f);
+const Color carbonColorSyntaxCharacter = Color(0xFF161616);
+const Color carbonColorSyntaxClassName = Color(0xFF007d79);
+const Color carbonColorSyntaxColor = Color(0xFF161616);
+const Color carbonColorSyntaxComment = Color(0xFF198038);
+const Color carbonColorSyntaxCompareOperator = Color(0xFF343a3f);
+const Color carbonColorSyntaxConstant = Color(0xFF0f62fe);
+const Color carbonColorSyntaxContent = Color(0xFF161616);
+const Color carbonColorSyntaxContentSeparator = Color(0xFF343a3f);
+const Color carbonColorSyntaxControlKeyword = Color(0xFF6929c4);
+const Color carbonColorSyntaxControlOperator = Color(0xFF6929c4);
+const Color carbonColorSyntaxDefinition = Color(0xFF00539a);
+const Color carbonColorSyntaxDefinitionKeyword = Color(0xFF00539a);
+const Color carbonColorSyntaxDefinitionOperator = Color(0xFF00539a);
+const Color carbonColorSyntaxDeleted = Color(0xFFffd7d9);
+const Color carbonColorSyntaxDeRefOperator = Color(0xFF343a3f);
+const Color carbonColorSyntaxDocComment = Color(0xFF198038);
+const Color carbonColorSyntaxDocString = Color(0xFF161616);
+const Color carbonColorSyntaxDocumentMeta = Color(0xFF198038);
+const Color carbonColorSyntaxEmphasis = Color(0xFF161616);
+const Color carbonColorSyntaxEscape = Color(0xFF343a3f);
+const Color carbonColorSyntaxFloat = Color(0xFF198038);
+const Color carbonColorSyntaxFunction = Color(0xFF8e6a00);
+const Color carbonColorSyntaxHeading = Color(0xFF00539a);
+const Color carbonColorSyntaxHeading1 = Color(0xFF00539a);
+const Color carbonColorSyntaxHeading2 = Color(0xFF00539a);
+const Color carbonColorSyntaxHeading3 = Color(0xFF00539a);
+const Color carbonColorSyntaxHeading4 = Color(0xFF00539a);
+const Color carbonColorSyntaxHeading5 = Color(0xFF00539a);
+const Color carbonColorSyntaxHeading6 = Color(0xFF00539a);
+const Color carbonColorSyntaxInserted = Color(0xFFa7f0ba);
+const Color carbonColorSyntaxInteger = Color(0xFF198038);
+const Color carbonColorSyntaxInvalid = Color(0xFFda1e28);
+const Color carbonColorSyntaxKeyword = Color(0xFF0f62fe);
+const Color carbonColorSyntaxLabelName = Color(0xFF0f62fe);
+const Color carbonColorSyntaxLineComment = Color(0xFF198038);
+const Color carbonColorSyntaxLink = Color(0xFF0f62fe);
+const Color carbonColorSyntaxList = Color(0xFF161616);
+const Color carbonColorSyntaxLiteral = Color(0xFF161616);
+const Color carbonColorSyntaxLocal = Color(0xFF0f62fe);
+const Color carbonColorSyntaxLogicOperator = Color(0xFF343a3f);
+const Color carbonColorSyntaxMacroName = Color(0xFF161616);
+const Color carbonColorSyntaxMeta = Color(0xFF198038);
+const Color carbonColorSyntaxModifier = Color(0xFF0f62fe);
+const Color carbonColorSyntaxModuleKeyword = Color(0xFF6929c4);
+const Color carbonColorSyntaxMonospace = Color(0xFF161616);
+const Color carbonColorSyntaxName = Color(0xFF0f62fe);
+const Color carbonColorSyntaxNamespace = Color(0xFF007d79);
+const Color carbonColorSyntaxNull = Color(0xFF161616);
+const Color carbonColorSyntaxNumber = Color(0xFF198038);
+const Color carbonColorSyntaxOperator = Color(0xFF343a3f);
+const Color carbonColorSyntaxOperatorKeyword = Color(0xFF0f62fe);
+const Color carbonColorSyntaxParen = Color(0xFF343a3f);
+const Color carbonColorSyntaxProcessingInstruction = Color(0xFF161616);
+const Color carbonColorSyntaxPropertyName = Color(0xFF00539a);
+const Color carbonColorSyntaxPunctuation = Color(0xFF343a3f);
+const Color carbonColorSyntaxQuote = Color(0xFF198038);
+const Color carbonColorSyntaxRegExp = Color(0xFF6929c4);
+const Color carbonColorSyntaxSelf = Color(0xFF007d79);
+const Color carbonColorSyntaxSeparator = Color(0xFF343a3f);
+const Color carbonColorSyntaxSpecial = Color(0xFF0f62fe);
+const Color carbonColorSyntaxSpecialString = Color(0xFF8a3ffc);
+const Color carbonColorSyntaxSquareBracket = Color(0xFF343a3f);
+const Color carbonColorSyntaxStandard = Color(0xFF0f62fe);
+const Color carbonColorSyntaxStrikethrough = Color(0xFF161616);
+const Color carbonColorSyntaxString = Color(0xFF161616);
+const Color carbonColorSyntaxStrong = Color(0xFF161616);
+const Color carbonColorSyntaxTag = Color(0xFF007d79);
+const Color carbonColorSyntaxTagName = Color(0xFF007d79);
+const Color carbonColorSyntaxType = Color(0xFF007d79);
+const Color carbonColorSyntaxTypeName = Color(0xFF007d79);
+const Color carbonColorSyntaxTypeOperator = Color(0xFF007d79);
+const Color carbonColorSyntaxUnit = Color(0xFF198038);
+const Color carbonColorSyntaxUpdateOperator = Color(0xFF343a3f);
+const Color carbonColorSyntaxUrl = Color(0xFF343a3f);
+const Color carbonColorSyntaxVariable = Color(0xFF0f62fe);
+const Color carbonColorSyntaxVariableName = Color(0xFF0f62fe);
+const Color carbonColorTextDisabled = Color(0x16161640);
+const Color carbonColorTextError = Color(0xFFda1e28);
+const Color carbonColorTextHelper = Color(0xFF6f6f6f);
+const Color carbonColorTextInverse = Color(0xFFffffff);
+const Color carbonColorTextOnColor = Color(0xFFffffff);
+const Color carbonColorTextOnColorDisabled = Color(0xFF8d8d8d);
+const Color carbonColorTextPlaceholder = Color(0x16161666);
+const Color carbonColorTextPrimary = Color(0xFF161616);
+const Color carbonColorTextSecondary = Color(0xFF525252);

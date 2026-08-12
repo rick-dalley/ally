@@ -55,7 +55,6 @@ class ProviderRosterScreenState extends State<ProviderRosterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("My Health Care Team"),
         backgroundColor: carbonColorScaffoldBackground,
         actions: [CarbonIconButton(icon: Symbols.search, onPressed: () {})],
       ),
@@ -86,6 +85,8 @@ class ProviderRosterScreenState extends State<ProviderRosterScreen> {
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 90),
         child: FloatingActionButton(
+          backgroundColor: carbonColorPrimary04,
+          foregroundColor: carbonColorButtonOnPrimary,
           key: const Key("FAB_NewCareGiver"),
           heroTag: "providers_screen",
           onPressed: () async {
@@ -102,8 +103,6 @@ class ProviderRosterScreenState extends State<ProviderRosterScreen> {
             }
           },
           // Signals scanning capability
-          backgroundColor: carbonColorButtonPrimary,
-          foregroundColor: carbonColorButtonOnPrimary,
           shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
           child: const Icon(Symbols.person_add, size: 32),
         ),

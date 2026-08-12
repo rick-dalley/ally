@@ -8,11 +8,12 @@ class PillColorMapper extends ColorMapper {
 
   const PillColorMapper(this.baseColor);
 
+  @override
   Color substitute(String? id, String elementName, String attributeName, Color color) {
     // Define the exact reference hex codes used in your SVG template files
     const refTop = Color(0xFFFF0000); // Red
     const refLight = Color(0xFF00FF00); // Green
-    const refDark = Color(0xFF00FF); // Blue
+    const refDark = Color(0xFFFF00FF); // Blue
     const refLine = Color(0xFFFF00FF); // Magenta
 
     if (color == refTop) {

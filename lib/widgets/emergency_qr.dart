@@ -26,7 +26,6 @@ class EmergencyQRCodeView extends StatelessWidget {
     return Scaffold(
       extendBodyBehindAppBar: false,
       backgroundColor: AppTheme.primaryColor,
-      appBar: AppBar(title: const Text("Emergency Passport"), backgroundColor: AppTheme.primaryColor),
       body: SafeArea(
         // This ensures the content respects notches and system UI
         child: Center(

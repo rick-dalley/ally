@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:triage/classes/carbon_color_constants.dart';
+import 'package:triage/screens/body_screen.dart';
 import 'package:triage/screens/physical_health.dart';
 import 'package:triage/screens/prescription_screen.dart';
 import 'package:triage/screens/questionnaires_screen.dart';
@@ -29,26 +31,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // HEADER AREA (Fixed)
-            Row(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Text(
-                      "PROFILE",
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w400,
-                        color: AppTheme.primaryColor,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
+            // HEADER AREA (Fixed
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
@@ -65,7 +48,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                 children: [
                   CarbonActionTile(
                     title: "Existing Medical Conditions",
-                    subTitle: "Review & Update",
+                    subtitle: "Review & Update",
                     icon: Symbols.diagnosis_sharp,
                     iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.diagnosis_sharp,
@@ -73,7 +56,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                   ),
                   CarbonActionTile(
                     title: "Medical Diary",
-                    subTitle: "Observations about my health journey",
+                    subtitle: "Observations about my health journey",
                     icon: Symbols.clinical_notes_sharp,
                     iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.clinical_notes_sharp,
@@ -81,7 +64,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                   ),
                   CarbonActionTile(
                     title: "Immunizations",
-                    subTitle: "Immunization shots recommended in my locality",
+                    subtitle: "Immunization shots recommended in my locality",
                     icon: Symbols.vaccines_sharp,
                     iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.vaccines_sharp,
@@ -89,15 +72,22 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                   ),
                   CarbonActionTile(
                     title: "Prescriptions",
-                    subTitle: "Medications that have been prescribed for you",
+                    subtitle: "Medications that have been prescribed for you",
                     icon: Symbols.medication_sharp,
                     iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.medication_sharp,
                     onTap: () => launchMedicationScreen(patient: widget.user),
                   ),
                   CarbonActionTile(
+                    title: "Symptoms",
+                    subtitle: "Things I'm feeling",
+                    icon: Symbols.symptoms,
+                    iconSize: Size(32, 32),
+                    onTap: () => launchSymptoms(patient: widget.user),
+                  ),
+                  CarbonActionTile(
                     title: "Tests",
-                    subTitle: "Medical testing and lab work",
+                    subtitle: "Medical testing and lab work",
                     icon: Symbols.lab_panel,
                     iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.lab_panel,
@@ -105,7 +95,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                   ),
                   CarbonActionTile(
                     title: "Mental Wellness Questionnaires",
-                    subTitle: "Questionnaires to help your care giver assess your current mental health",
+                    subtitle: "Questionnaires to help your care giver assess your current mental health",
                     icon: Symbols.ballot_sharp,
                     iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.ballot_sharp,
@@ -152,6 +142,19 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
       },
     );
     //
+  }
+
+  void launchSymptoms({required Patient patient}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: carbonColorButtonTertiary,
+      shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
+      builder: (context) {
+        return BodyOutlineScreen(patient: patient);
+      },
+    );
   }
 
   void launchTestsScreen({required Patient patient}) {

@@ -3,7 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/carbon_color_constants.dart';
 import 'package:triage/classes/database_manager.dart';
-import '../app_theme.dart';
+
 import '../classes/carbon_theme_constants.dart';
 import '../classes/frequency_codes.dart';
 import '../classes/medication_services.dart';
@@ -32,12 +32,12 @@ class MedicationCard extends StatefulWidget {
 class _MedicationCardState extends State<MedicationCard> {
   Map<String, dynamic>? _datasheet;
   bool _isFetching = false;
-  MedicationShapes shape = MedicationShapes.round;
+  TabletShapes shape = TabletShapes.round;
 
   @override
   void initState() {
     super.initState();
-    shape = widget.index != null ? MedicationShapes.values[widget.index!] : MedicationShapes.round;
+    shape = widget.index != null ? TabletShapes.values[widget.index!] : TabletShapes.round;
     // If we already know the datasheet is local, get it immediately
     if (widget.medication.hasLocalDataSheet) {
       triggerFetch(
@@ -104,7 +104,7 @@ class _MedicationCardState extends State<MedicationCard> {
                 'assets/images/pills/${shape.svg}',
                 width: 40,
                 height: 40,
-                colorMapper: PillColorMapper(Colors.cyan),
+                colorMapper: PillColorMapper(TabletColors.values[widget.index! % 10].color),
               ),
             ),
           ),

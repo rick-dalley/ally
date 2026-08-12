@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:triage/classes/contactable.dart';
@@ -8,7 +9,7 @@ import 'package:triage/classes/uuid.dart';
 import 'address.dart';
 import 'database_manager.dart';
 
-enum MedicationShapes {
+enum TabletShapes {
   almond,
   arrowHead,
   capsule,
@@ -24,68 +25,128 @@ enum MedicationShapes {
   triangle,
 }
 
-extension MedicationShapesNames on MedicationShapes {
+extension TabletShapesNames on TabletShapes {
   String get name {
     switch (this) {
-      case MedicationShapes.almond:
+      case TabletShapes.almond:
         return "Almond";
-      case MedicationShapes.arrowHead:
+      case TabletShapes.arrowHead:
         return "Arrow Head";
-      case MedicationShapes.capsule:
+      case TabletShapes.capsule:
         return "Capsule";
-      case MedicationShapes.diamond:
+      case TabletShapes.diamond:
         return "Diamond";
-      case MedicationShapes.heart:
+      case TabletShapes.heart:
         return "Heart";
-      case MedicationShapes.hexagon:
+      case TabletShapes.hexagon:
         return "Hexagon";
-      case MedicationShapes.lozenge:
+      case TabletShapes.lozenge:
         return "Lozenge";
-      case MedicationShapes.oval:
+      case TabletShapes.oval:
         return "Oval";
-      case MedicationShapes.pentagon:
+      case TabletShapes.pentagon:
         return "Pentagon";
-      case MedicationShapes.rectangle:
+      case TabletShapes.rectangle:
         return "Rectangle";
-      case MedicationShapes.round:
+      case TabletShapes.round:
         return "Round";
-      case MedicationShapes.square:
+      case TabletShapes.square:
         return "Square";
-      case MedicationShapes.triangle:
+      case TabletShapes.triangle:
         return "Triangle";
     }
   }
 }
 
-extension MedicationShapesSvg on MedicationShapes {
+extension TabletShapeSvg on TabletShapes {
   String get svg {
     switch (this) {
-      case MedicationShapes.almond:
+      case TabletShapes.almond:
         return "almond.svg";
-      case MedicationShapes.arrowHead:
+      case TabletShapes.arrowHead:
         return "arrow_head.svg";
-      case MedicationShapes.capsule:
+      case TabletShapes.capsule:
         return "capsule.svg";
-      case MedicationShapes.diamond:
+      case TabletShapes.diamond:
         return "diamond.svg";
-      case MedicationShapes.heart:
+      case TabletShapes.heart:
         return "heart.svg";
-      case MedicationShapes.hexagon:
+      case TabletShapes.hexagon:
         return "hexagon.svg";
-      case MedicationShapes.lozenge:
+      case TabletShapes.lozenge:
         return "lozenge.svg";
-      case MedicationShapes.oval:
+      case TabletShapes.oval:
         return "oval.svg";
-      case MedicationShapes.pentagon:
+      case TabletShapes.pentagon:
         return "pentagon.svg";
-      case MedicationShapes.rectangle:
+      case TabletShapes.rectangle:
         return "rectangle.svg";
-      case MedicationShapes.round:
+      case TabletShapes.round:
         return "round.svg";
-      case MedicationShapes.square:
+      case TabletShapes.square:
         return "square.svg";
-      case MedicationShapes.triangle:
+      case TabletShapes.triangle:
         return "triangle.svg";
+    }
+  }
+}
+
+enum TabletColors { white, pink, yellow, tan, cyan, orange, red, purple, green, peach, black }
+
+extension TabletColorsColor on TabletColors {
+  Color get color {
+    switch (this) {
+      case TabletColors.white:
+        return const Color(0xFFF8F8FF);
+      case TabletColors.pink:
+        return const Color(0xFFFFC0CB);
+      case TabletColors.yellow:
+        return const Color(0xFFFFFF00);
+      case TabletColors.tan:
+        return const Color(0xFFD2B48C);
+      case TabletColors.cyan:
+        return const Color(0xFF00FFFF);
+      case TabletColors.orange:
+        return const Color(0xFFFFA500);
+      case TabletColors.red:
+        return const Color(0xFFFF0000);
+      case TabletColors.purple:
+        return const Color(0xFFBC8F8F);
+      case TabletColors.green:
+        return const Color(0xFF90EE90);
+      case TabletColors.peach:
+        return const Color(0xFFFFDAB9);
+      case TabletColors.black:
+        return const Color(0xFF000000);
+    }
+  }
+}
+
+extension TableColorsLabel on TabletColors {
+  String get label {
+    switch (this) {
+      case TabletColors.white:
+        return "White";
+      case TabletColors.pink:
+        return "Pink";
+      case TabletColors.yellow:
+        return "Yellow";
+      case TabletColors.tan:
+        return "Tan";
+      case TabletColors.cyan:
+        return "Turquoise";
+      case TabletColors.orange:
+        return "Orange";
+      case TabletColors.red:
+        return "Red";
+      case TabletColors.purple:
+        return "Purple";
+      case TabletColors.green:
+        return "Green";
+      case TabletColors.peach:
+        return "Peach";
+      case TabletColors.black:
+        return "Black";
     }
   }
 }
