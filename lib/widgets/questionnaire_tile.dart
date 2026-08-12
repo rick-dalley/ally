@@ -73,8 +73,6 @@ class QuestionnaireTile extends StatelessWidget {
   }
 
   Widget _buildTextSection(BuildContext context) {
-    final daysElapsed = dateTaken != null ? DateTime.now().difference(dateTaken!).inDays : null;
-
     return Expanded(
       child: InkWell(
         onTap: () => onLaunch(context, assessmentName, patientId, template, scoreGuidePath, isCompleted, builder),

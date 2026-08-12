@@ -9,7 +9,12 @@ import 'package:triage/screens/tests_screen.dart';
 import 'package:triage/widgets/carbon_style_action_tile.dart';
 
 import '../app_theme.dart';
+import '../classes/carbon_theme_constants.dart';
+import '../classes/database_manager.dart';
+import '../classes/flyable.dart';
 import '../classes/patient.dart';
+import '../classes/patient_sentiment.dart';
+import '../widgets/carbon_flyout_widget.dart';
 import 'immunization_screen.dart';
 import 'observation.dart';
 
@@ -23,6 +28,7 @@ class MedicalProfileScreen extends StatefulWidget {
 }
 
 class MedicalProfileScreenState extends State<MedicalProfileScreen> {
+  late Flyable sentiment = Sentiment.happy;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,6 +52,42 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.only(top: 16, bottom: 24),
                 children: [
+                  Container(
+                    // color: AppTheme.surfaceColor,
+                    decoration: BoxDecoration(color: AppTheme.onPrimaryColor, borderRadius: BorderRadius.zero),
+                    // padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
+                    child: Stack(
+                      clipBehavior: Clip.none, // Allows the widget to draw outside its bounds
+                      alignment: Alignment.centerRight,
+                      children: [
+                        Row(children: [SizedBox(height: 64)]),
+                        Row(
+                          children: [
+                            const SizedBox(width: 16),
+                            Text(
+                              "My mood today is ${sentiment.label}",
+                              style: CarbonTheme.carbonTertiaryButtonTextStyle,
+                            ),
+                          ],
+                        ),
+                        Positioned(
+                          right: 0,
+                          child: CarbonFlyOutWidget(
+                            children: Sentiment.values,
+                            style: CarbonButtonStyle.tertiary,
+                            onSelected: (Flyable item) {
+                              setState(() {
+                                Sentiment newSentiment = item as Sentiment;
+                                sentiment = newSentiment;
+                                DatabaseManager().trackMoodChange(widget.user.patientUuid, sentiment.index);
+                              });
+                            },
+                            selectedItem: sentiment.index,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   CarbonActionTile(
                     title: "Existing Medical Conditions",
                     subtitle: "Review & Update",

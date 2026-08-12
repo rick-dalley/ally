@@ -114,9 +114,7 @@ class FamilyRosterState extends State<FamilyRoster> {
                         onMemberUpdate: (Patient patient) {
                           updatePatient(index: index, patient: patient);
                         },
-                        onVitalsUpdate: (Patient patient) {
-                          updatePatient(index: index, patient: patient);
-                        },
+
                         onAssessmentsTap: () => _showAssessmentsMenu(context, filteredPatients[index]),
                         onMedsTap: () async {
                           final Map<String, dynamic>? result = await showModalBottomSheet(

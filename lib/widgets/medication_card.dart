@@ -54,7 +54,6 @@ class _MedicationCardState extends State<MedicationCard> {
     setState(() => _isFetching = true);
     final interactions = await DatabaseManager().getAllInteractionsForDrug(medicationName);
 
-    for (dynamic interaction in interactions) {}
     final row = await MedicationService.getDrugDataSheet(medicationId, medicationName, setId);
 
     if (mounted) {

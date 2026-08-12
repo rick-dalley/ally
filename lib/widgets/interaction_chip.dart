@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/classes/carbon_color_constants.dart';
 import 'package:triage/classes/carbon_theme_constants.dart';
 
 import '../app_theme.dart';
@@ -105,7 +104,6 @@ class InteractionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color color = backgroundColor ?? carbonColorPrimary04;
     return Card(
       margin: const EdgeInsets.all(8),
       shape: Border.all(color: Colors.transparent),

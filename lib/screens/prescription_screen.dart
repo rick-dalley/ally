@@ -30,7 +30,6 @@ class PrescriptionScreenState extends State<PrescriptionScreen> {
   bool audited = false;
 
   // These are derived flags
-  final bool _hasPrecautions = false; // Set this based on your separate logic
   final nameController = TextEditingController();
   final dosageController = TextEditingController();
   final frequencyController = TextEditingController();

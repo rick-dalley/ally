@@ -21,16 +21,6 @@ class VaccineCard extends StatelessWidget {
 
   const VaccineCard({super.key, required this.vaccine, required this.onChangedDate, required this.onTookVaccine});
 
-  Future<void> _launchURL(String policyUrl) async {
-    final Uri url = Uri.parse(policyUrl);
-
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    } else {
-      throw 'Could not launch $url';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(

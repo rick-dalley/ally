@@ -63,7 +63,6 @@ class HomeScreenState extends State<HomeScreen> {
       backgroundColor: carbonColorScaffoldBackground,
       builder: (context) => UserScreen(
         user: user,
-        onVitalsUpdate: (p) => updatePatient(patientIndex: _currentPageIndex, patient: p),
         onMemberUpdate: (p) => updatePatient(patientIndex: _currentPageIndex, patient: p),
       ),
     );
@@ -84,16 +83,15 @@ class HomeScreenState extends State<HomeScreen> {
     return [
       MedicalProfileScreen(user: patient),
       PrescriptionScreen(patient: patient),
-      MetricsDashboardScreen(user: patient),
+      MetricsDashboardScreen(
+        user: patient,
+        onVitalsUpdate: (p) => updatePatient(patientIndex: _currentPageIndex, patient: p),
+        onMemberUpdate: (p) => updatePatient(patientIndex: _currentPageIndex, patient: p),
+      ),
       ProviderRosterScreen(user: patient),
       EmergencyQRCodeView(householdMember: patient),
       TimelineScrollerWidget(actions: actions, startTime: startTime, endTime: endTime),
     ];
-  }
-
-  void _jumpToPatient(int index) {
-    _pageController.jumpToPage(index);
-    Navigator.pop(context);
   }
 
   void _showMemberJumpList(BuildContext context) {

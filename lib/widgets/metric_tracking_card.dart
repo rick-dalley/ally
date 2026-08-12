@@ -77,8 +77,6 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
 
   @override
   Widget build(BuildContext context) {
-    int readings = range.count ?? 0;
-
     MetricIcon metricIcon =
         metricIcons[widget.metric.name] ?? MetricIcon(iconData: Symbols.unknown_2, color: carbonColorBorderSubtle03);
     final Color borderColor = CarbonTheme.getTileBorderColor(CarbonTileStyle.expandable, tracked);

@@ -3,13 +3,9 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/blood_type.dart';
 import 'package:triage/classes/metric_value.dart';
 import 'package:triage/classes/patient_action.dart';
-import 'package:triage/classes/vitals.dart';
 import 'package:triage/screens/patient_timeline_screen.dart';
 import 'package:triage/widgets/blood_type_selector.dart';
 import 'package:triage/widgets/carbon_style_two_xl_button.dart';
-import 'package:triage/widgets/current_metrics.dart';
-import 'package:triage/widgets/carbon_flyout_widget.dart';
-import 'package:triage/widgets/vitals_history.dart';
 import '../app_theme.dart';
 import '../classes/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
@@ -20,17 +16,15 @@ import '../classes/patient.dart';
 import '../classes/patient_pain.dart';
 import '../classes/patient_sentiment.dart';
 import '../widgets/body_metrics_entry_widget.dart';
-import '../widgets/carbon_style_expander.dart';
 import 'body_screen.dart';
 import '../widgets/carbon_style_textbox.dart';
 
 class UserScreen extends StatefulWidget {
   // Pass the initial patient snapshot down from the roster list
   final Patient user;
-  final Function(Patient) onMemberUpdate;
-  final Function(Patient) onVitalsUpdate;
   final VoidCallback? onAssessmentsTap;
   final VoidCallback? onMedsTap;
+  final Function(Patient) onMemberUpdate;
 
   const UserScreen({
     super.key,
@@ -38,7 +32,6 @@ class UserScreen extends StatefulWidget {
     this.onAssessmentsTap,
     this.onMedsTap,
     required this.onMemberUpdate(Patient patient),
-    required this.onVitalsUpdate(Patient patient),
   });
 
   @override
@@ -51,7 +44,7 @@ class UserScreenState extends State<UserScreen> {
   late AboType aboType;
   late RhFactor rhFactor;
   late Flyable sentiment = Sentiment.happy;
-  bool _isExpanded = false;
+
   @override
   void initState() {
     super.initState();
@@ -69,40 +62,9 @@ class UserScreenState extends State<UserScreen> {
     }
   }
 
-  // A completely separate, clean async routine to fetch fresh row data
-  Future<void> refreshPatientData() async {
-    final dynamic result = await DatabaseManager().getPatientWithVitals(
-      patientUuid: patientController.patient.patientUuid,
-    );
-    final Map<String, dynamic> updatedPatient = result[0];
-
-    if (mounted) {
-      // Synchronous setState execution ONLY after the data is securely sitting in memory
-      setState(() {
-        patientController.patient = Patient.fromJson(updatedPatient);
-      });
-      widget.onMemberUpdate(patientController.patient);
-    }
-  }
-
   void updateAcuity() {
     widget.onMemberUpdate(patientController.patient);
     setState(() {});
-  }
-
-  void showVitalsHistory({
-    required BuildContext context,
-    required String patientUuid,
-    required CurrentVitalsRecord? vitals,
-  }) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppTheme.surfaceColor,
-      shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
-      builder: (context) =>
-          VitalsHistoryView(patientUuid: patientUuid, vitals: vitals, onAddedVitals: refreshPatientData),
-    );
   }
 
   void showBloodTypModal({required BuildContext context, required Patient patient}) {
@@ -134,13 +96,6 @@ class UserScreenState extends State<UserScreen> {
     );
   }
 
-  void onMoodChanged(Sentiment mood) {
-    setState(() {
-      sentiment = mood;
-    });
-    DatabaseManager().trackMoodChange(widget.user.patientUuid, mood.index);
-  }
-
   void onAboChanged(Listable abo) {
     setState(() {
       aboType = abo as AboType;
@@ -170,7 +125,6 @@ class UserScreenState extends State<UserScreen> {
       listenable: patientController,
       builder: (context, _) {
         final patient = patientController.patient;
-        final String patientUuid = patient.patientUuid;
 
         if (patient.medications > 0) {
           switch (patient.medicationSafetyAudit) {
@@ -192,67 +146,11 @@ class UserScreenState extends State<UserScreen> {
               children: [
                 // Replace your existing Container child: Row(...) block with this:
                 Text(patient.firstName, style: CarbonTheme.carbonHeadingTextStyle),
-                const SizedBox(height: 24),
-                Container(
-                  // color: AppTheme.surfaceColor,
-                  decoration: BoxDecoration(color: AppTheme.onPrimaryColor, borderRadius: BorderRadius.zero),
-                  // padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
-                  child: Stack(
-                    clipBehavior: Clip.none, // Allows the widget to draw outside its bounds
-                    alignment: Alignment.centerRight,
-                    children: [
-                      Row(children: [SizedBox(height: 64)]),
-                      Row(
-                        children: [
-                          const SizedBox(width: 16),
-                          Text("My mood today is ${sentiment.label}", style: CarbonTheme.carbonTertiaryButtonTextStyle),
-                        ],
-                      ),
-                      Positioned(
-                        right: 0,
-                        child: CarbonFlyOutWidget(
-                          children: Sentiment.values,
-                          style: CarbonButtonStyle.tertiary,
-                          onSelected: (Flyable item) {
-                            setState(() {
-                              Sentiment newSentiment = item as Sentiment;
-                              sentiment = newSentiment;
-                            });
-                          },
-                          selectedItem: sentiment.index,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+
                 const SizedBox(height: 32),
                 Column(
                   mainAxisSize: MainAxisSize.min, // Prevents Column from taking infinite height
                   children: [
-                    CarbonStyle2xlButton(
-                      topLabel: "Symptoms",
-                      label: "Identify A New Symptom",
-                      width: 320,
-                      icon: Symbols.symptoms,
-                      onTap: () {
-                        showSymptomsValidator(patient);
-                      },
-                      style: CarbonButtonStyle.tertiary,
-                    ),
-
-                    SizedBox(
-                      child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [const SizedBox(width: 24)]),
-                    ),
-                    const SizedBox(height: 32),
-                    CurrentMetrics(
-                      title: "Recent Metrics",
-                      vitals: patient.vitals,
-                      barHeight: 180,
-                      onTap: () {
-                        showVitalsHistory(context: context, patientUuid: patientUuid, vitals: patient.vitals);
-                      },
-                    ),
-                    const SizedBox(height: 32),
                     Row(
                       children: [
                         CarbonStyle2xlButton(
@@ -279,76 +177,63 @@ class UserScreenState extends State<UserScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    CarbonStyleExpander(
-                      text: "Personal Information",
-                      onTap: (bool isExpanded) {
-                        setState(() {
-                          _isExpanded = isExpanded;
-                        });
-                      },
-                      isExpanded: _isExpanded,
-                    ),
                   ],
                 ),
-                if (_isExpanded)
-                  Column(
-                    children: [
-                      CarbonTextInput(
-                        label: 'Provincial Health #:',
-                        helperText: "Enter your government issued health identification",
-                        value: _formatPHN(patient.phn.toString()),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          Expanded(
-                            child: CarbonTextInput(label: "Born:", value: patient.formattedDateOfBirth),
-                          ),
-                          SizedBox(width: 8),
-                          Expanded(child: Text("(${patient.age} yrs)")),
-                        ],
-                      ),
-                      SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          Expanded(
-                            child: CarbonTextInput(label: "HEIGHT", value: patient.height.toString()),
-                          ),
-                          SizedBox(width: 8),
-                          Expanded(child: Text("(${patient.heightUoM})")),
-                        ],
-                      ),
-                      SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          Expanded(
-                            child: CarbonTextInput(label: "WEIGHT", value: patient.weight.toString()),
-                          ),
-                          SizedBox(width: 8),
-                          Expanded(
-                            child: Align(
-                              alignment: AlignmentGeometry.centerLeft,
-                              child: Text("(${patient.weightUoM})"),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 16),
-                      CarbonTextInput(label: "CONTACT:", value: patient.contactName),
-                      SizedBox(height: 16),
-                      CarbonTextInput(label: "PHONE:", value: patient.contactPhone),
-                      SizedBox(height: 16),
-                      CarbonTextInput(label: "PRIMARY CAREGIVER:", value: patient.familyDoctorName),
-                      SizedBox(height: 16),
-                      CarbonTextInput(label: "PHONE:", value: patient.familyDoctorPhone),
-                      SizedBox(height: 16),
-                      CarbonTextInput(label: "PHARMACY:", value: patient.pharmacyPhone),
-                      SizedBox(height: 16),
-                      CarbonTextInput(label: "FAX:", value: patient.pharmacyFax),
-                    ],
-                  ),
+                Column(
+                  children: [
+                    CarbonTextInput(
+                      label: 'Provincial Health #:',
+                      helperText: "Enter your government issued health identification",
+                      value: _formatPHN(patient.phn.toString()),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Expanded(
+                          child: CarbonTextInput(label: "Born:", value: patient.formattedDateOfBirth),
+                        ),
+                        SizedBox(width: 8),
+                        Expanded(child: Text("(${patient.age} yrs)")),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Expanded(
+                          child: CarbonTextInput(label: "HEIGHT", value: patient.height.toString()),
+                        ),
+                        SizedBox(width: 8),
+                        Expanded(child: Text("(${patient.heightUoM})")),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Expanded(
+                          child: CarbonTextInput(label: "WEIGHT", value: patient.weight.toString()),
+                        ),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Align(alignment: AlignmentGeometry.centerLeft, child: Text("(${patient.weightUoM})")),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    CarbonTextInput(label: "CONTACT:", value: patient.contactName),
+                    SizedBox(height: 16),
+                    CarbonTextInput(label: "PHONE:", value: patient.contactPhone),
+                    SizedBox(height: 16),
+                    CarbonTextInput(label: "PRIMARY CAREGIVER:", value: patient.familyDoctorName),
+                    SizedBox(height: 16),
+                    CarbonTextInput(label: "PHONE:", value: patient.familyDoctorPhone),
+                    SizedBox(height: 16),
+                    CarbonTextInput(label: "PHARMACY:", value: patient.pharmacyPhone),
+                    SizedBox(height: 16),
+                    CarbonTextInput(label: "FAX:", value: patient.pharmacyFax),
+                  ],
+                ),
               ],
             ),
           ),
