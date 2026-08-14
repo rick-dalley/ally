@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../classes/acuity.dart';
+import '../classes/carbon_color_constants.dart';
+import 'carbon_checkbox.dart';
 
 // 1. Extracted TextField to prevent global dialog rebuilds
 class RationaleInputField extends StatelessWidget {
@@ -84,8 +86,11 @@ class _AcuityChangeConfirmationState extends State<AcuityChangeConfirmation> {
         ),
 
         if (_isBigJumpUp)
-          CheckboxListTile(
-            title: const Text("EMERGENCY OVERRIDE", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          CarbonCheckboxListTile(
+            title: const Text(
+              "EMERGENCY OVERRIDE",
+              style: TextStyle(color: carbonColorSupportError, fontWeight: FontWeight.bold),
+            ),
             value: _isEmergency,
             onChanged: (val) => setState(() {
               _isEmergency = val!;

@@ -4,7 +4,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/widgets/carbon_style_search_field.dart';
 
 import '../app_theme.dart';
-import '../classes/app_colors.dart';
+import '../classes/carbon_color_constants.dart';
 import '../classes/carbon_theme_constants.dart';
 import '../widgets/carbon_style_full_button.dart';
 import '../widgets/text_scanner.dart';
@@ -79,7 +79,7 @@ class GetMedicationNameState extends State<GetMedicationName> {
             "assets/images/pills.svg",
             width: 96,
             height: 96,
-            colorFilter: ColorFilter.mode(AppColors.darkMustard, BlendMode.srcIn),
+            colorFilter: ColorFilter.mode(carbonColorInteractive, BlendMode.srcIn),
           ),
 
           const SizedBox(height: 20),

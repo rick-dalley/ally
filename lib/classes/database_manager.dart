@@ -149,6 +149,30 @@ class DatabaseManager {
     return true;
   }
 
+  // The current (still-open) mood period, if one exists — null only means this
+  // patient has never logged a mood at all yet.
+  Future<Map<String, dynamic>?> getCurrentMood(String patientUuid) async {
+    final db = await database;
+    final List<Map<String, dynamic>> rows = await db.query(
+      'patient_mood',
+      where: 'patient_uuid = ?',
+      whereArgs: [patientUuid],
+      orderBy: 'start_date DESC',
+      limit: 1,
+    );
+    return rows.isNotEmpty ? rows.first : null;
+  }
+
+  // Attaches a reason to whichever mood period is currently open — not necessarily
+  // tied to the moment the mood last changed, since a long-press to explain "why" can
+  // happen any time during that period.
+  Future<void> setMoodReason(String patientUuid, String reason) async {
+    final current = await getCurrentMood(patientUuid);
+    if (current == null) return;
+    final db = await database;
+    await db.update('patient_mood', {'reason': reason}, where: 'id = ?', whereArgs: [current['id']]);
+  }
+
   Future<List<Map<String, dynamic>>> getPatientVaccinations(String patientUuid) async {
     final db = await database;
     dynamic result = await db.query(
@@ -177,9 +201,11 @@ class DatabaseManager {
     });
   }
 
-  // Vaccinations with a next-due date set — there's no reference table of recommended
-  // schedules yet (e.g. "tetanus every 10 years"), so this only surfaces reminders for
-  // records where a due date was explicitly set, not computed from the vaccine name.
+  // Vaccinations with a next-due date set. next_due is auto-computed from the schedule's
+  // interval_between_shots when a dose is recorded (see ImmunizationScreen.onTookVaccineHandler /
+  // Vaccine.expirationDate) — but TODO(data): that interval field is currently placeholder data
+  // (uniformly 1 year for every vaccine in immunizations.json, not clinically reviewed), so due
+  // dates surfaced here may be wrong until that data is corrected.
   Future<List<Map<String, dynamic>>> getVaccinationsWithReminders(String patientUuid) async {
     final db = await database;
     return await db.query(
@@ -218,6 +244,53 @@ class DatabaseManager {
       where: 'name = ? and patient_uuid = ?',
       whereArgs: [vaccinationName, patientUuid],
     );
+  }
+
+  // Tests
+  Future<List<Map<String, dynamic>>> getTestCatalog() async {
+    final db = await database;
+    return await db.query('test_catalog', orderBy: 'category, name');
+  }
+
+  Future<List<Map<String, dynamic>>> getPatientTests(String patientUuid) async {
+    final db = await database;
+    return await db.query('patient_test', where: 'patient_uuid = ?', whereArgs: [patientUuid], orderBy: 'name');
+  }
+
+  Future<int> addPatientTest(String patientUuid, Map<String, dynamic> row) async {
+    final db = await database;
+    final Map<String, dynamic> withPatient = Map<String, dynamic>.from(row)..['patient_uuid'] = patientUuid;
+    return await db.insert('patient_test', withPatient);
+  }
+
+  // Tests with a next-due date set — same "explicitly set, not derived from a
+  // clinical schedule" honesty as getVaccinationsWithReminders; this catalog has no
+  // recommended-frequency data to compute one from.
+  Future<List<Map<String, dynamic>>> getTestsWithReminders(String patientUuid) async {
+    final db = await database;
+    return await db.query('patient_test', where: 'patient_uuid = ? AND next_due IS NOT NULL', whereArgs: [patientUuid]);
+  }
+
+  // Clears next_due (stops reminding) and records the actual done date — "Done" on a
+  // test reminder.
+  Future<void> markTestDone(int testId, DateTime doneOn) async {
+    final db = await database;
+    await db.update(
+      'patient_test',
+      {'last_done': doneOn.toIso8601String(), 'next_due': null},
+      where: 'id = ?',
+      whereArgs: [testId],
+    );
+  }
+
+  Future<void> rescheduleTestReminder(int testId, DateTime newDueDate) async {
+    final db = await database;
+    await db.update('patient_test', {'next_due': newDueDate.toIso8601String()}, where: 'id = ?', whereArgs: [testId]);
+  }
+
+  Future<void> deletePatientTest(int testId) async {
+    final db = await database;
+    await db.delete('patient_test', where: 'id = ?', whereArgs: [testId]);
   }
 
   // Drugs
@@ -268,6 +341,14 @@ class DatabaseManager {
     return await db.insert('markers', row);
   }
 
+  // Edits an existing marker (tapped from the body map to update a symptom already
+  // logged) rather than inserting a duplicate row — id must come from a previously
+  // loaded BodyMarker, not a freshly-created one.
+  Future<void> updateBodyMarker(int id, Map<String, dynamic> marker) async {
+    final db = await database;
+    await db.update('markers', marker, where: 'id = ?', whereArgs: [id]);
+  }
+
   Future<void> insertMarkersBatch(String tableName, List<Map<String, dynamic>> rows) async {
     final db = await database;
     await db.transaction((txn) async {
@@ -305,14 +386,24 @@ class DatabaseManager {
     );
   }
 
-  Future<void> resolveBodyMarker(int markerId) async {
+  // reason is optional since the days-later follow-up check-in's "It's Better" answer
+  // (SymptomFollowUpDialog) doesn't collect one — only a deliberate dismissal via the
+  // marker modal's X button does.
+  Future<void> resolveBodyMarker(int markerId, {String? reason}) async {
     final db = await database;
     await db.update(
       'markers',
-      {'resolved': 1, 'resolved_at': DateTime.now().toIso8601String()},
+      {'resolved': 1, 'resolved_at': DateTime.now().toIso8601String(), 'dismissal_reason': reason},
       where: 'id = ?',
       whereArgs: [markerId],
     );
+  }
+
+  // "Created this by mistake" — an erroneous entry has no clinical meaning to keep
+  // around resolved, unlike the other dismissal reasons.
+  Future<void> deleteBodyMarker(int markerId) async {
+    final db = await database;
+    await db.delete('markers', where: 'id = ?', whereArgs: [markerId]);
   }
 
   Future<void> markBodyMarkerChecked(int markerId) async {
@@ -1090,6 +1181,19 @@ class DatabaseManager {
       'appointment',
       where: 'patient_uuid = ?',
       whereArgs: [patientUuid],
+      orderBy: 'scheduled_for ASC',
+    );
+  }
+
+  // Every appointment booked with one specific provider — used by the caregiver card
+  // to find the one worth showing as a chip (soonest upcoming, or most recent past if
+  // nothing's upcoming) without pulling every appointment across every provider.
+  Future<List<Map<String, dynamic>>> getAppointmentsForProvider(String patientUuid, String providerUuid) async {
+    final db = await database;
+    return await db.query(
+      'appointment',
+      where: 'patient_uuid = ? AND provider_uuid = ?',
+      whereArgs: [patientUuid, providerUuid],
       orderBy: 'scheduled_for ASC',
     );
   }

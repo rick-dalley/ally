@@ -75,7 +75,8 @@ class ImmunizationScreenState extends State<ImmunizationScreen> {
       int yearsAgo = DTUtilities.calculateYearsSince(when);
       if (taken) {
         _takenVaccines[name] = PatientVaccine(name: name, protection: protection, received: when, yearsAgo: yearsAgo);
-        service.insertVaccination(memberId, name, protection, when);
+        // expirationDate is null for one-time (interval <= 0) vaccines — no reminder gets scheduled for those.
+        service.insertVaccination(memberId, name, protection, when, nextDue: vax.expirationDate);
       } else {
         service.deleteVaccination(name, memberId);
       }

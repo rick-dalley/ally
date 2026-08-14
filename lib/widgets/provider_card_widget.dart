@@ -8,9 +8,12 @@ import 'package:triage/classes/provider.dart';
 import 'package:triage/widgets/avatar_picker.dart';
 import 'package:triage/widgets/carbon_style_button.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../classes/database_manager.dart';
 import '../classes/patient.dart';
 import '../classes/uuid.dart';
 import 'appointment_chip.dart';
+import 'book_appointment_sheet.dart';
+import 'carbon_button_compact.dart';
 
 class ProviderCard extends StatefulWidget {
   final Patient user;
@@ -33,6 +36,53 @@ class ProviderCard extends StatefulWidget {
 
 class ProviderCardState extends State<ProviderCard> {
   late Provider provider = widget.provider ?? Provider(id: uuid.toString(), patientUuid: widget.user.patientUuid);
+  Appointment? _appointment;
+  bool _loadingAppointment = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAppointment();
+  }
+
+  Future<void> _loadAppointment() async {
+    final rows = await DatabaseManager().getAppointmentsForProvider(widget.user.patientUuid, provider.id);
+    if (!mounted) return;
+    setState(() {
+      _appointment = _pickRelevant(rows);
+      _loadingAppointment = false;
+    });
+  }
+
+  // The one appointment worth showing as a chip: the soonest still-scheduled upcoming
+  // one, or — if nothing's upcoming — the most recent past one, matching the chip's
+  // own "history" styling for that case.
+  Appointment? _pickRelevant(List<Map<String, dynamic>> rows) {
+    if (rows.isEmpty) return null;
+    final DateTime now = DateTime.now();
+    final List<Appointment> appointments = rows.map((row) => Appointment.fromRow(row, provider)).toList();
+
+    final List<Appointment> upcoming =
+        appointments.where((a) => a.when.isAfter(now) && a.status == 'scheduled').toList()
+          ..sort((a, b) => a.when.compareTo(b.when));
+    if (upcoming.isNotEmpty) return upcoming.first;
+
+    final List<Appointment> past = appointments.where((a) => !a.when.isAfter(now)).toList()
+      ..sort((a, b) => b.when.compareTo(a.when));
+    return past.isNotEmpty ? past.first : null;
+  }
+
+  Future<void> _openBooking() async {
+    final bool? booked = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+      builder: (context) => BookAppointmentSheet(patientUuid: widget.user.patientUuid, provider: provider),
+    );
+    if (booked == true) await _loadAppointment();
+  }
+
   Future<void> openMap(String address) async {
     // Encode the address for a URL
     final String encodedAddress = Uri.encodeComponent(address);
@@ -116,7 +166,30 @@ class ProviderCardState extends State<ProviderCard> {
                       // Use a fixed size or just wrap the content
                       SizedBox(
                         width: 184, // Match the width of the image
-                        child: AppointmentChip(),
+                        child: _loadingAppointment
+                            ? const SizedBox(
+                                height: 16,
+                                width: 16,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (_appointment != null)
+                                    AppointmentChip(
+                                      appointment: _appointment!,
+                                      patientUuid: widget.user.patientUuid,
+                                      onChanged: _loadAppointment,
+                                    ),
+                                  const SizedBox(height: 4),
+                                  CarbonCompactButton(
+                                    icon: Symbols.event,
+                                    label: _appointment != null ? "Book Another" : "Book Appointment",
+                                    style: CarbonButtonStyle.ghost,
+                                    onTap: _openBooking,
+                                  ),
+                                ],
+                              ),
                       ),
                     ],
                   ),
@@ -145,7 +218,7 @@ class ProviderCardState extends State<ProviderCard> {
                           },
                           child: Text(
                             provider.email ?? '',
-                            style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
+                            style: TextStyle(color: carbonColorBorderInteractive, decoration: TextDecoration.underline),
                           ),
                         ),
                         Text(phoneInformation, style: CarbonTheme.carbonLabelTextStyle),

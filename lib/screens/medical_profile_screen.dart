@@ -14,7 +14,9 @@ import '../classes/database_manager.dart';
 import '../classes/flyable.dart';
 import '../classes/patient.dart';
 import '../classes/patient_sentiment.dart';
+import '../widgets/carbon_button_compact.dart';
 import '../widgets/carbon_flyout_widget.dart';
+import '../widgets/carbon_style_textbox.dart';
 import 'immunization_screen.dart';
 import 'observation.dart';
 
@@ -28,7 +30,69 @@ class MedicalProfileScreen extends StatefulWidget {
 }
 
 class MedicalProfileScreenState extends State<MedicalProfileScreen> {
-  late Flyable sentiment = Sentiment.happy;
+  // Starts calm rather than a guess like "happy" — corrected to whatever the patient
+  // actually last picked as soon as _loadCurrentMood resolves, below.
+  Flyable sentiment = Sentiment.calm;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentMood();
+  }
+
+  Future<void> _loadCurrentMood() async {
+    final row = await DatabaseManager().getCurrentMood(widget.user.patientUuid);
+    if (row != null) {
+      if (!mounted) return;
+      setState(() => sentiment = Sentiment.values[row['mood'] as int]);
+      return;
+    }
+    // First time this patient has ever opened this screen — seed a real starting
+    // row at calm rather than just holding an unsaved default in memory.
+    await DatabaseManager().trackMoodChange(widget.user.patientUuid, Sentiment.calm.index);
+  }
+
+  Future<void> _askMoodReason() async {
+    final controller = TextEditingController();
+    final String? reason = await showDialog<String>(
+      context: context,
+      builder: (context) => Dialog(
+        shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Why do you feel ${sentiment.label.toLowerCase()}?", style: CarbonTheme.carbonHeadingTextStyle),
+              const SizedBox(height: 8),
+              Text("Totally optional — only saved if you write something.", style: CarbonTheme.carbonHintTextStyle),
+              const SizedBox(height: 16),
+              CarbonTextInput(label: "Reason (optional)", controller: controller, maxLines: 3, onChanged: (_) {}),
+              const SizedBox(height: 16),
+              CarbonCompactButton(
+                icon: Symbols.check,
+                label: "Save",
+                style: CarbonButtonStyle.primary,
+                onTap: () => Navigator.pop(context, controller.text),
+              ),
+              const SizedBox(height: 8),
+              CarbonCompactButton(
+                icon: Symbols.close,
+                label: "Cancel",
+                style: CarbonButtonStyle.ghost,
+                onTap: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (reason != null && reason.trim().isNotEmpty) {
+      await DatabaseManager().setMoodReason(widget.user.patientUuid, reason.trim());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,6 +147,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                               });
                             },
                             selectedItem: sentiment.index,
+                            onLongPress: _askMoodReason,
                           ),
                         ),
                       ],

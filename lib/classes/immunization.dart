@@ -11,6 +11,11 @@ class Vaccine {
   final String name;
   final String recommendation;
   final String protection;
+  // Years between doses. TODO(data): every entry in immunizations.json currently
+  // has interval_between_shots = 1, which is placeholder data, not a clinically
+  // reviewed schedule (e.g. MMR/HPV are one-time-ever, Td/Tdap is every 10 years,
+  // not annual). interval <= 0 is the convention for "one-time, no recurring
+  // reminder" once that data is corrected — no entry uses it yet.
   final int interval;
   DateTime? takenOn;
   int yearsAgo;
@@ -44,7 +49,8 @@ class Vaccine {
   }
 
   DateTime? get expirationDate {
-    return takenOn != null ? DateTime(takenOn!.year + interval, takenOn!.month, takenOn!.day) : null;
+    if (takenOn == null || interval <= 0) return null;
+    return DateTime(takenOn!.year + interval, takenOn!.month, takenOn!.day);
   }
 
   int get yearsSince {
@@ -62,6 +68,8 @@ class Vaccine {
   String get reminder {
     int yrs = yearsSince;
     String rem = yrs > 1 ? "($yrs years ago)." : "($yrs year ago).";
+
+    if (interval <= 0) return "$rem\nNo recurring dose required.";
 
     rem = overdue
         ? interval > 1
@@ -188,9 +196,9 @@ class ImmunizationService {
     }
   }
 
-  Future<int> insertVaccination(String patientUuid, String name, String protection, DateTime? received) {
+  Future<int> insertVaccination(String patientUuid, String name, String protection, DateTime? received, {DateTime? nextDue}) {
     patientImmunizations[name] = PatientVaccine(name: name, protection: protection, received: received);
-    return DatabaseManager().insertVaccination(patientUuid, name, protection, received);
+    return DatabaseManager().insertVaccination(patientUuid, name, protection, received, nextDue: nextDue);
   }
 
   Future<int> deleteVaccination(String name, String patientUuid) {

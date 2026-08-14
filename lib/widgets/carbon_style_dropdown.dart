@@ -33,11 +33,21 @@ class CarbonDropdown<T extends Listable> extends StatelessWidget {
         ),
         DropdownButtonFormField<Listable>(
           initialValue: value,
+          // Without isExpanded, the button's internal Row sizes the selected item to
+          // its intrinsic (unconstrained) width instead of the button's actual width —
+          // fine for short labels, but a long one (e.g. a full-sentence care-plan
+          // option) overflows the row rather than wrapping or ellipsizing.
+          isExpanded: true,
           items: [
             for (Listable val in items)
               DropdownMenuItem(
                 value: val,
-                child: Text(val.label, style: CarbonTheme.carbonTextStyle),
+                child: Text(
+                  val.label,
+                  style: CarbonTheme.carbonTextStyle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
           ],
           icon: const Icon(Icons.expand_more, color: Color(0xFF525252)),

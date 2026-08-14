@@ -5,6 +5,7 @@ import 'package:triage/classes/specialities.dart';
 import 'package:triage/classes/uuid.dart';
 
 import 'address.dart';
+import 'cancellation_policy.dart';
 import 'country_codes.dart';
 import 'database_manager.dart';
 import 'contact.dart';
@@ -16,6 +17,7 @@ class Provider {
   String? firstName;
   String? lastName;
   String? email;
+  String? website;
   String? gender;
   String? position;
   DateTime? hireDate;
@@ -24,6 +26,9 @@ class Provider {
   String? accreditations;
   bool? onCall;
   String? department;
+  String? purpose; // shown in the Add Caregiver form as "Notes" — maps to the existing purpose column
+  CancellationBillingPolicy? cancellationPolicy;
+  int? cancellationNoticeHours;
   Contact? contact;
   Address? address;
   DepartmentColors? color;
@@ -38,6 +43,7 @@ class Provider {
     this.firstName,
     this.lastName,
     this.email,
+    this.website,
     this.gender,
     this.position,
     this.hireDate,
@@ -45,6 +51,9 @@ class Provider {
     this.onCall,
     this.color,
     this.department,
+    this.purpose,
+    this.cancellationPolicy,
+    this.cancellationNoticeHours,
     this.icon,
     this.address,
     this.contact,
@@ -62,7 +71,7 @@ class Provider {
   Phone? getAvailablePhone({required PhoneTypes preferred}) {
     Phone? phone;
     if (contact != null) {
-      phone = contact!.getAvailablePhone(preferred: PhoneTypes.office);
+      phone = contact!.getAvailablePhone(preferred: preferred);
     }
     return phone;
   }
@@ -70,9 +79,38 @@ class Provider {
   String getPhone({required PhoneTypes phoneType}) {
     String phone = '';
     if (contact != null) {
-      contact!.getPhoneNumber(phoneType: phoneType);
+      phone = contact!.getPhoneNumber(phoneType: phoneType) ?? '';
     }
     return phone;
+  }
+
+  // Keeps the Contact-construction details (it starts null on a freshly-created
+  // Provider, and phone numbers live in its `phones` map, not the field the
+  // constructor requires) out of any widget that just wants to set a phone number.
+  void setPhone(PhoneTypes type, String number) {
+    contact ??= Contact(
+      name: fullName,
+      email: email ?? '',
+      phone: Phone(number: number, phoneType: type, isMain: type == PhoneTypes.office),
+    );
+    contact!.addPhone(type, Phone(number: number, phoneType: type, isMain: type == PhoneTypes.office));
+  }
+
+  // Preserves whatever other address fields are already set (city/state/etc. aren't
+  // collected by every form that edits street) rather than clobbering them, since
+  // Address is immutable and there's no partial-update on it.
+  void setStreet(String street) {
+    final Address current =
+        address ?? const Address(city: '', street: '', country: '', code: '', provOrState: '', countryIso: 'US');
+    address = Address(
+      city: current.city,
+      street: street,
+      country: current.country,
+      code: current.code,
+      provOrState: current.provOrState,
+      countryIso: current.countryIso,
+      locationName: current.locationName,
+    );
   }
 
   String get fullName => '$firstName $lastName';
@@ -99,14 +137,15 @@ class Provider {
     Phone cel = Phone(number: phoneRaw, phoneType: PhoneTypes.cell, isMain: false);
     Phone office = Phone(number: officeRaw, phoneType: PhoneTypes.office, isMain: true);
     Map<PhoneTypes, Phone> allPhones = {PhoneTypes.pager: pgr, PhoneTypes.cell: cel, PhoneTypes.office: office};
-    Contact contactRaw = Contact(name: fullName, email: emailRaw, phone: office);
+    Contact contactRaw = Contact(name: fullName, email: emailRaw, phone: office)..phones = allPhones;
     return Provider(
-      // image: json['avatar'],
+      image: json['avatar'] as Uint8List?,
       patientUuid: json['patient_uuid'] ?? uuid.toString(),
       id: json["provider_uuid"],
       firstName: firstNameRaw,
       lastName: lastNameRaw,
       email: emailRaw,
+      website: json['website'] as String?,
       gender: json["gender"],
       position: json["position"],
       hireDate: DateTime.now().subtract(Duration(days: 365)),
@@ -116,6 +155,11 @@ class Provider {
       address: addressRaw,
       contact: contactRaw,
       specialities: json['specialities'] ?? '',
+      purpose: json['purpose'] as String?,
+      cancellationPolicy: json['cancellation_policy'] != null
+          ? CancellationBillingPolicy.values.byName(json['cancellation_policy'] as String)
+          : null,
+      cancellationNoticeHours: json['cancellation_notice_hours'] as int?,
     );
   }
 
@@ -136,6 +180,7 @@ class Provider {
       firstName = provider.firstName;
       lastName = provider.lastName;
       email = provider.email;
+      website = provider.website;
       gender = provider.gender;
       position = provider.position;
       hireDate = provider.hireDate;
@@ -144,6 +189,9 @@ class Provider {
       accreditations = provider.accreditations;
       onCall = provider.onCall;
       department = provider.department;
+      purpose = provider.purpose;
+      cancellationPolicy = provider.cancellationPolicy;
+      cancellationNoticeHours = provider.cancellationNoticeHours;
       contact = Contact.copy(provider.contact);
       address = Address.copy(provider.address);
       color = provider.color;
@@ -201,6 +249,7 @@ class Provider {
       "patient_uuid": patientUuid,
       "first_name": firstName,
       "last_name": lastName,
+      "website": website,
       "personal_email": personalEmail,
       "personal_phone": personalPhone,
       "office_email": email,
@@ -215,7 +264,9 @@ class Provider {
       "pager": pagerPhone,
       "specializations": specialities,
       "accreditations": accreditations,
-      // "purpose":purpose,
+      "purpose": purpose,
+      "cancellation_policy": cancellationPolicy?.name,
+      "cancellation_notice_hours": cancellationNoticeHours,
       // "started_seeing":startedSeeing,
       // "stopped_seeing": stoppedSeeing,
       "street": address?.street,

@@ -36,6 +36,9 @@ class CarbonFlyOutWidget extends StatefulWidget {
   final List<Flyable> children;
   final CarbonButtonStyle? style;
   final Function(Flyable) onSelected;
+  // Overrides the default long-press behavior (reopening the same picker list) —
+  // e.g. the mood widget uses this to ask "why do you feel this way" instead.
+  final VoidCallback? onLongPress;
 
   const CarbonFlyOutWidget({
     super.key,
@@ -43,6 +46,7 @@ class CarbonFlyOutWidget extends StatefulWidget {
     required this.onSelected,
     required this.children,
     this.style,
+    this.onLongPress,
   });
 
   @override
@@ -62,7 +66,19 @@ class CarbonFlyOutWidgetState extends State<CarbonFlyOutWidget> {
     buttonStyle = widget.style ?? CarbonButtonStyle.ghost;
     for (Flyable child in widget.children) {
       flyoutWidgets.add(CarbonFlyOutItemWidget(flyableItem: child, style: buttonStyle));
-      selectedFlyOutWidget = flyoutWidgets[0];
+    }
+    selectedFlyOutWidget = flyoutWidgets[widget.selectedItem];
+  }
+
+  // selectedItem can change after the first build — e.g. the mood widget loads the
+  // patient's actual current mood asynchronously, arriving after this widget's
+  // initial construction. Without this, the icon stays stuck on whatever was selected
+  // at construction time even though the parent's own label text updates correctly.
+  @override
+  void didUpdateWidget(covariant CarbonFlyOutWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedItem != oldWidget.selectedItem) {
+      setState(() => selectedFlyOutWidget = flyoutWidgets[widget.selectedItem]);
     }
   }
 
@@ -89,7 +105,7 @@ class CarbonFlyOutWidgetState extends State<CarbonFlyOutWidget> {
   Widget _buildCollapsed() {
     return GestureDetector(
       onTap: () => setState(() => _isExpanded = true),
-      onLongPress: () => _openDetailedModal(widget.selectedItem),
+      onLongPress: widget.onLongPress ?? () => _openDetailedModal(widget.selectedItem),
       child: selectedFlyOutWidget,
     );
   }

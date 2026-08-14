@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/carbon_color_constants.dart';
+import 'package:triage/widgets/carbon_checkbox.dart';
 import 'package:triage/widgets/carbon_style_button.dart';
 import 'package:triage/widgets/carbon_style_dropdown.dart';
 import 'package:triage/widgets/carbon_style_number_edit.dart';
@@ -139,9 +140,8 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
                 if (!tracked)
                   Align(
                     alignment: AlignmentGeometry.centerRight,
-                    child: Checkbox(
+                    child: CarbonCheckbox(
                       value: tracked,
-                      shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
                       onChanged: (val) {
                         setState(() {
                           tracked = val ?? false;
@@ -337,20 +337,14 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
         ),
 
         const SizedBox(height: 16),
-        CheckboxListTile(
+        CarbonCheckboxListTile(
           title: const Text("Display Medical Set Limits", style: TextStyle(fontSize: 13)),
           value: showMedicalLimits,
-          controlAffinity: ListTileControlAffinity.leading,
-          contentPadding: EdgeInsets.zero,
-          dense: true,
           onChanged: (val) => setState(() => showMedicalLimits = val ?? false),
         ),
-        CheckboxListTile(
+        CarbonCheckboxListTile(
           title: const Text("Display Universally Accepted Healthy Limits", style: TextStyle(fontSize: 13)),
           value: showHealthyLimits,
-          controlAffinity: ListTileControlAffinity.leading,
-          contentPadding: EdgeInsets.zero,
-          dense: true,
           onChanged: (val) => setState(() => showHealthyLimits = val ?? false),
         ),
         const SizedBox(height: 16),

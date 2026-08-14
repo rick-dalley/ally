@@ -64,6 +64,7 @@ flutter:
     - assets/questions/
     - assets/screen_captures/
     - assets/sql/
+    - assets/tests/
 
 flutter_intl:
   enabled: true

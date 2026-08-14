@@ -2,14 +2,20 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../app_theme.dart';
 import '../classes/body_markers.dart';
 import '../classes/body_zone.dart';
+import '../classes/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
 import '../classes/patient.dart';
 import '../classes/patient_pain.dart';
 import '../classes/reminder_registry.dart';
+import '../classes/symptom_care_plan.dart';
+import '../classes/symptom_dismissal_reason.dart';
 import '../widgets/body_marker_modal.dart';
+import '../widgets/carbon_button_compact.dart';
+import '../widgets/seek_care_sheet.dart';
 import '../widgets/symptom_followup_dialog.dart';
 
 enum FlipDirection { none, flipX, flipY, flipXY }
@@ -137,7 +143,10 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
   // closed. This is now the single source of truth on open.
   Future<void> _loadMarkers() async {
     final rows = await DatabaseManager().getMarkersForPatient(widget.patient.patientUuid);
-    final loaded = rows.map((row) => BodyMarker.fromRow(row)).toList();
+    // Resolved markers (dismissed, or resolved via a follow-up "It's Better") stay in
+    // the database as history but shouldn't still look like an active symptom on the
+    // map — nothing else in this screen shows a resolved/unresolved distinction visually.
+    final loaded = rows.map((row) => BodyMarker.fromRow(row)).where((marker) => !marker.resolved).toList();
     if (!mounted) return;
     setState(() {
       _markers
@@ -166,6 +175,108 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
     if (!mounted || handled != true) return;
     await ReminderRegistry.instance.refresh();
     await _loadMarkers();
+  }
+
+  // Shared by both creating a new marker (tapped an empty zone) and editing an
+  // existing one (tapped a marker already on the map) — the only difference is
+  // whether onSave inserts a new row or updates the one the patient already has.
+  void _openMarkerModal({required BodyMarker marker, required bool isNew}) {
+    showModalBottomSheet(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      builder: (context) => BodyMarkerModal(
+        initialMarker: marker,
+        onSave: (updatedMarker) async {
+          if (isNew) {
+            await DatabaseManager().insertBodyMarker(widget.patient.patientUuid, updatedMarker.toRow());
+          } else {
+            await DatabaseManager().updateBodyMarker(updatedMarker.id!, updatedMarker.toRow());
+          }
+          await _loadMarkers();
+        },
+        onSeekCare: _handleSeekCare,
+        onDismiss: (dismissedMarker, reason) async {
+          // A marker that was never saved (isNew) has no row to remove — closing the
+          // modal (already done by BodyMarkerModal itself) is the whole action.
+          if (isNew) return;
+          if (reason == SymptomDismissalReason.createdByMistake) {
+            await DatabaseManager().deleteBodyMarker(dismissedMarker.id!);
+          } else {
+            await DatabaseManager().resolveBodyMarker(dismissedMarker.id!, reason: reason.name);
+          }
+          await _loadMarkers();
+        },
+      ),
+    );
+  }
+
+  void _handleSeekCare(BodyMarker marker, SymptomCarePlan plan) {
+    if (plan == SymptomCarePlan.call911) {
+      _confirmAndCall911();
+      return;
+    }
+    final SeekCareSheetMode mode = switch (plan) {
+      SymptomCarePlan.phoneForAdvice => SeekCareSheetMode.advice,
+      SymptomCarePlan.seekImmediateHelp => SeekCareSheetMode.urgent,
+      SymptomCarePlan.scheduleAppointment => SeekCareSheetMode.schedule,
+      SymptomCarePlan.ignoreForNow || SymptomCarePlan.keepCheckingIn || SymptomCarePlan.call911 =>
+        SeekCareSheetMode.schedule,
+    };
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+      builder: (context) => SeekCareSheet(
+        patientUuid: widget.patient.patientUuid,
+        bodyPart: marker.name,
+        mode: mode,
+        severity: marker.severity,
+        frequency: marker.frequency,
+      ),
+    );
+  }
+
+  // A real emergency call needs a confirmation step — this can't be one accidental
+  // tap away, unlike every other action in this dialog chain.
+  Future<void> _confirmAndCall911() async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => Dialog(
+        shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Call 911?", style: CarbonTheme.carbonHeadingTextStyle),
+              const SizedBox(height: 8),
+              Text("This will dial emergency services right now.", style: CarbonTheme.carbonHintTextStyle),
+              const SizedBox(height: 24),
+              CarbonCompactButton(
+                icon: Symbols.emergency,
+                label: "Call 911 Now",
+                style: CarbonButtonStyle.danger,
+                onTap: () => Navigator.pop(context, true),
+              ),
+              const SizedBox(height: 8),
+              CarbonCompactButton(
+                icon: Symbols.close,
+                label: "Cancel",
+                style: CarbonButtonStyle.ghost,
+                onTap: () => Navigator.pop(context, false),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (confirmed == true) {
+      final Uri uri = Uri(scheme: 'tel', path: '911');
+      if (await canLaunchUrl(uri)) await launchUrl(uri);
+    }
   }
 
   @override
@@ -224,40 +335,15 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
                               if (zone.name == "none" || zone.name.isEmpty) {
                                 return;
                               }
-                              setState(() {
-                                final newMarker = BodyMarker(
-                                  offset: details.localPosition,
-                                  emoji: PainLevel.distracting,
-                                  name: zone.name,
-                                  medicalName: zone.latin,
-                                  zoneMap: zone.map,
-                                  group: markerGroup,
-                                );
-
-                                // Show the Modal
-                                showModalBottomSheet(
-                                  context: context,
-                                  useSafeArea: true,
-                                  isScrollControlled: true,
-                                  // constraints: BoxConstraints(maxHeight: mq.size.height * 0.45),
-                                  builder: (context) => BodyMarkerModal(
-                                    initialMarker: newMarker,
-                                    onSave: (updatedMarker) async {
-                                      // Persist the marker the modal actually collected
-                                      // (severity/frequency/nature), then reload from the
-                                      // database rather than hand-building an in-memory
-                                      // copy — same "reload after mutation" pattern used
-                                      // everywhere else in this app.
-                                      await DatabaseManager().insertBodyMarker(
-                                        widget.patient.patientUuid,
-                                        updatedMarker.toRow(),
-                                      );
-                                      await _loadMarkers();
-                                    },
-                                  ),
-                                );
-                              });
-                              // Here you would trigger your "Hot Button" modal
+                              final newMarker = BodyMarker(
+                                offset: details.localPosition,
+                                emoji: PainLevel.distracting,
+                                name: zone.name,
+                                medicalName: zone.latin,
+                                zoneMap: zone.map,
+                                group: markerGroup,
+                              );
+                              _openMarkerModal(marker: newMarker, isNew: true);
                             },
                             child: Align(
                               alignment: Alignment.center,
@@ -302,9 +388,20 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
                               .where((marker) => marker.group == markerGroup)
                               .map(
                                 (marker) => Positioned(
-                                  left: marker.offset.dx - 12,
-                                  top: marker.offset.dy - 12,
-                                  child: const Icon(Icons.circle, color: Colors.red, size: 24),
+                                  // A 44x44 tap target centered on the same point the
+                                  // 24px dot is drawn at — the dot alone is too small
+                                  // to reliably tap to reopen and update a symptom.
+                                  left: marker.offset.dx - 22,
+                                  top: marker.offset.dy - 22,
+                                  width: 44,
+                                  height: 44,
+                                  child: GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: () => _openMarkerModal(marker: marker, isNew: false),
+                                    child: const Center(
+                                      child: Icon(Icons.circle, color: Colors.red, size: 24),
+                                    ),
+                                  ),
                                 ),
                               ),
                         ],

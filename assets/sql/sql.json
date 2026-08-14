@@ -22,7 +22,7 @@
     },
     {
       "table": "provider",
-      "query": "CREATE TABLE IF NOT EXISTS provider (provider_uuid TEXT PRIMARY KEY NOT NULL, patient_uuid TEXT NOT NULL, first_name TEXT NOT NULL, last_name TEXT NOT NULL,  avatar BLOB, gender TEXT, position TEXT, is_specialist INTEGER DEFAULT 0, pager TEXT, city TEXT, street TEXT, pr_st TEXT, code TEXT, country TEXT, accreditations TEXT, specializations TEXT, facility TEXT, office_phone TEXT, office_email TEXT, personal_phone TEXT, personal_email TEXT, started_seeing DATETIME, stopped_seeing DATETIME, purpose TEXT, FOREIGN KEY(patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
+      "query": "CREATE TABLE IF NOT EXISTS provider (provider_uuid TEXT PRIMARY KEY NOT NULL, patient_uuid TEXT NOT NULL, first_name TEXT NOT NULL, last_name TEXT NOT NULL,  avatar BLOB, website TEXT, gender TEXT, position TEXT, is_specialist INTEGER DEFAULT 0, pager TEXT, city TEXT, street TEXT, pr_st TEXT, code TEXT, country TEXT, accreditations TEXT, specializations TEXT, facility TEXT, office_phone TEXT, office_email TEXT, personal_phone TEXT, personal_email TEXT, started_seeing DATETIME, stopped_seeing DATETIME, purpose TEXT, cancellation_policy TEXT, cancellation_notice_hours INTEGER, FOREIGN KEY(patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
     },
     {
       "table": "device",
@@ -61,8 +61,16 @@
       "query": "CREATE TABLE IF NOT EXISTS patient_vaccination (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, protection TEXT, received INTEGER, years_ago INTEGER, next_due DATETIME, patient_uuid TEXT, FOREIGN KEY(patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
     },
     {
+      "table": "test_catalog",
+      "query": "CREATE TABLE IF NOT EXISTS test_catalog (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE NOT NULL, description TEXT, category TEXT, location TEXT NOT NULL);"
+    },
+    {
+      "table": "patient_test",
+      "query": "CREATE TABLE IF NOT EXISTS patient_test (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_uuid TEXT NOT NULL, name TEXT NOT NULL, location TEXT NOT NULL, last_done DATETIME, next_due DATETIME, notes TEXT, FOREIGN KEY(patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
+    },
+    {
       "table": "patient_mood",
-      "query": "CREATE TABLE patient_mood (id INTEGER PRIMARY KEY AUTOINCREMENT,patient_uuid TEXT NOT NULL, mood INTEGER NOT NULL, start_date TEXT NOT NULL, end_date TEXT, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE); CREATE INDEX idx_patient_mood_uuid ON patient_mood(patient_uuid);"
+      "query": "CREATE TABLE patient_mood (id INTEGER PRIMARY KEY AUTOINCREMENT,patient_uuid TEXT NOT NULL, mood INTEGER NOT NULL, reason TEXT, start_date TEXT NOT NULL, end_date TEXT, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE); CREATE INDEX idx_patient_mood_uuid ON patient_mood(patient_uuid);"
     },
     {
       "table": "datasheet",
@@ -194,7 +202,7 @@
     },
     {
       "table": "markers",
-      "query": "CREATE TABLE markers ( id INTEGER PRIMARY KEY AUTOINCREMENT, patient_uuid TEXT NOT NULL, dx REAL NOT NULL, dy REAL NOT NULL, zone_map INTEGER NOT NULL, zone_name TEXT NOT NULL, marker_group INTEGER NOT NULL, emoji INTEGER NOT NULL, severity INTEGER, frequency INTEGER, nature INTEGER, descriptions TEXT, improves_when TEXT,  worsens_when TEXT,  interventions_tried TEXT,  recorded INTEGER NOT NULL, resolved INTEGER NOT NULL DEFAULT 0, resolved_at DATETIME, last_checked_at DATETIME);"
+      "query": "CREATE TABLE markers ( id INTEGER PRIMARY KEY AUTOINCREMENT, patient_uuid TEXT NOT NULL, dx REAL NOT NULL, dy REAL NOT NULL, zone_map INTEGER NOT NULL, zone_name TEXT NOT NULL, marker_group INTEGER NOT NULL, emoji INTEGER NOT NULL, severity INTEGER, frequency INTEGER, nature INTEGER, care_plan TEXT, dismissal_reason TEXT, descriptions TEXT, improves_when TEXT,  worsens_when TEXT,  interventions_tried TEXT,  recorded INTEGER NOT NULL, resolved INTEGER NOT NULL DEFAULT 0, resolved_at DATETIME, last_checked_at DATETIME);"
     },
     {
       "table": "markers",

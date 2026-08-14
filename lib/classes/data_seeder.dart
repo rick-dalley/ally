@@ -22,6 +22,7 @@ class DataSeeder {
     await _seedInteractions(db);
     await _seedMetricsAndUnits(db);
     await _seedPatientMetricThresholds(db);
+    await _seedTestCatalog(db);
 
     debugPrint('--- Seeding Complete ---');
   }
@@ -219,6 +220,34 @@ class DataSeeder {
       await migrationBatch.commit(noResult: true);
     } catch (error) {
       debugPrint("Critical failure in _seedConditionsCatalog: $error");
+    }
+  }
+
+  // A reference catalog of common at-home and clinic/lab tests — not an attempt to
+  // cover every possible medical test, just a common ~50 ready to pick from, same
+  // spirit as _seedConditionsCatalog.
+  static Future<void> _seedTestCatalog(Database db) async {
+    final List<Map<String, dynamic>> existingRecords = await db.rawQuery("SELECT COUNT(*) as total FROM test_catalog");
+    if (existingRecords.first['total'] as int > 0) {
+      return; // Catalog is already successfully configured!
+    }
+
+    try {
+      final String jsonString = await rootBundle.loadString('assets/tests/tests.json');
+      final List<dynamic> data = jsonDecode(jsonString);
+
+      final Batch batch = db.batch();
+      for (var entry in data) {
+        batch.insert('test_catalog', {
+          'name': entry['name'],
+          'description': entry['description'],
+          'category': entry['category'],
+          'location': entry['location'],
+        }, conflictAlgorithm: ConflictAlgorithm.ignore);
+      }
+      await batch.commit(noResult: true);
+    } catch (error) {
+      debugPrint("Critical failure in _seedTestCatalog: $error");
     }
   }
 

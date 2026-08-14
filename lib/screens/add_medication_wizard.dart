@@ -10,7 +10,7 @@ import 'package:triage/screens/get_medication_type.dart';
 import 'package:triage/widgets/carbon_button_compact.dart';
 
 import '../app_theme.dart';
-import '../classes/app_colors.dart';
+import '../classes/carbon_color_constants.dart';
 import '../classes/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
 import '../classes/medication_services.dart';
@@ -250,7 +250,7 @@ class _StepProgress extends StatelessWidget {
               child: Container(
                 height: 4,
                 decoration: BoxDecoration(
-                  color: isComplete ? AppColors.mustard[3] : AppTheme.cardBorder,
+                  color: isComplete ? carbonColorBorderInteractive : AppTheme.cardBorder,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),

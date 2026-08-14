@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:triage/widgets/carbon_style_separators.dart';
 import '../app_theme.dart';
-import '../classes/app_colors.dart';
+import '../classes/carbon_color_constants.dart';
 import '../classes/carbon_theme_constants.dart';
 import '../classes/medication_services.dart';
 
@@ -16,7 +16,7 @@ class GetMedicationType extends StatefulWidget {
 
 class _GetMedicationTypeState extends State<GetMedicationType> {
   MedicationTypes? _selectedType;
-  final selectedColor = AppColors.mustard[3];
+  final selectedColor = carbonColorBorderInteractive;
 
   @override
   Widget build(BuildContext context) {

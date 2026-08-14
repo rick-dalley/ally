@@ -6,6 +6,7 @@ import 'package:triage/classes/date_time_utilities.dart';
 import 'package:triage/classes/patient_pain.dart';
 
 import 'body_zone.dart';
+import 'symptom_care_plan.dart';
 
 class BodyMarker {
   final int? id; // null until it's been saved once
@@ -18,6 +19,7 @@ class BodyMarker {
   DetailedPainLevel? severity;
   Frequency? frequency;
   PainType? nature;
+  SymptomCarePlan? carePlan;
   String? descriptions;
   String? improvesWhen;
   String? worsensWhen;
@@ -39,6 +41,7 @@ class BodyMarker {
     this.severity,
     this.frequency,
     this.nature,
+    this.carePlan,
     this.improvesWhen,
     this.worsensWhen,
     this.interventionsTried,
@@ -84,6 +87,7 @@ class BodyMarker {
     final int? severityIndex = row['severity'] as int?;
     final int? frequencyIndex = row['frequency'] as int?;
     final int? natureIndex = row['nature'] as int?;
+    final String? carePlanName = row['care_plan'] as String?;
 
     return BodyMarker(
       id: row['id'] as int?,
@@ -96,6 +100,7 @@ class BodyMarker {
       severity: severityIndex != null ? DetailedPainLevel.values[severityIndex] : null,
       frequency: frequencyIndex != null ? Frequency.values[frequencyIndex] : null,
       nature: natureIndex != null ? PainType.values[natureIndex] : null,
+      carePlan: carePlanName != null ? SymptomCarePlan.values.byName(carePlanName) : null,
       descriptions: row['descriptions'] as String?,
       improvesWhen: row['improves_when'] as String?,
       worsensWhen: row['worsens_when'] as String?,
@@ -118,6 +123,7 @@ class BodyMarker {
       'severity': severity?.index,
       'frequency': frequency?.index,
       'nature': nature?.index,
+      'care_plan': carePlan?.name,
       'descriptions': descriptions,
       'improves_when': improvesWhen,
       'worsens_when': worsensWhen,

@@ -4,6 +4,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../app_theme.dart';
 import '../classes/immunization.dart';
+import 'carbon_checkbox.dart';
 
 // 1. Add this extension to your file to handle Sentence Case easily
 extension StringExtension on String {
@@ -38,11 +39,10 @@ class VaccineCard extends StatelessWidget {
             child: SizedBox(
               height: 24,
               width: 24,
-              child: Checkbox(
+              child: CarbonCheckbox(
                 value: vaccine.taken,
                 onChanged: (val) =>
                     onTookVaccine(vaccine.name, val!, vaccine.protection, vaccine.takenOn ?? DateTime.now()),
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ),
           ),

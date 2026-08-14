@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import '../app_theme.dart';
-import '../classes/app_colors.dart';
+import '../classes/carbon_color_constants.dart';
 import '../classes/carbon_theme_constants.dart';
 import '../classes/medication_services.dart';
 import '../widgets/carbon_style_number_edit.dart';
@@ -62,14 +62,14 @@ class GetMedicationDosageState extends State<GetMedicationDosage> {
                     decoration: BoxDecoration(
                       color: AppTheme.tertiaryColor,
                       border: Border.all(
-                        color: isSelected ? AppColors.mustard[3] : AppTheme.cardBorder,
+                        color: isSelected ? carbonColorBorderInteractive : AppTheme.cardBorder,
                         width: isSelected ? 2 : 1,
                       ),
                     ),
                     child: Text(
                       unit.label,
                       style: TextStyle(
-                        color: isSelected ? AppColors.mustard[5] : AppTheme.defaultFontColor,
+                        color: isSelected ? carbonColorInteractive : AppTheme.defaultFontColor,
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                       ),
                     ),

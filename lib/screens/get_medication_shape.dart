@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../app_theme.dart';
-import '../classes/app_colors.dart';
+import '../classes/carbon_color_constants.dart';
 import '../classes/carbon_theme_constants.dart';
 import '../classes/medication_services.dart';
 import '../classes/tablet.dart';
@@ -73,7 +73,7 @@ class GetMedicationShapeState extends State<GetMedicationShape> {
                         decoration: BoxDecoration(
                           color: AppTheme.tertiaryColor,
                           border: Border.all(
-                            color: isSelected ? AppColors.mustard[3] : AppTheme.cardBorder,
+                            color: isSelected ? carbonColorBorderInteractive : AppTheme.cardBorder,
                             width: isSelected ? 2 : 1,
                           ),
                         ),
@@ -87,7 +87,7 @@ class GetMedicationShapeState extends State<GetMedicationShape> {
                                   'assets/images/pills/${shape.svg}',
                                   width: 40,
                                   height: 40,
-                                  colorMapper: PillColorMapper(isSelected ? AppColors.mustard[3] : glyphColor),
+                                  colorMapper: PillColorMapper(isSelected ? carbonColorInteractive : glyphColor),
                                 ),
                               ),
                             ),
@@ -97,7 +97,7 @@ class GetMedicationShapeState extends State<GetMedicationShape> {
                                 shape.name.toUpperCase(),
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: isSelected ? AppColors.mustard[5] : AppTheme.defaultFontColor,
+                                  color: isSelected ? carbonColorInteractive : AppTheme.defaultFontColor,
                                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                                 ),
                                 textAlign: TextAlign.center,
