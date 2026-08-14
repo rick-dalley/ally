@@ -4,6 +4,7 @@ import 'package:triage/classes/carbon_theme_constants.dart';
 import 'package:triage/screens/add_medication_wizard.dart';
 import 'package:triage/widgets/carbon_style_button.dart';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
@@ -87,8 +88,15 @@ class PrescriptionScreenState extends State<PrescriptionScreen> {
     });
   }
 
-  void showAddMedicationSheet() {
-    showModalBottomSheet(
+  Future<void> showAddMedicationSheet() async {
+    // Reset so a previously-entered (or previously-saved) value doesn't linger
+    // into the next time this sheet is opened — these controllers are owned by
+    // this screen's state and reused across every wizard invocation.
+    nameController.clear();
+    dosageController.clear();
+    frequencyController.clear();
+
+    await showModalBottomSheet(
       context: context,
       isScrollControlled: true, // Crucial to keep keyboard from covering fields
       useSafeArea: true, // This adds the padding for the notch and system bars
@@ -109,6 +117,10 @@ class PrescriptionScreenState extends State<PrescriptionScreen> {
         ),
       ),
     );
+
+    // The wizard pops itself (both on save and on cancel) — either way, reload
+    // so a successful save actually shows up in the list.
+    await loadMedsForPatient();
   }
 
   @override
@@ -147,9 +159,12 @@ class PrescriptionScreenState extends State<PrescriptionScreen> {
                     // 1. Remove from the local database
                     await DatabaseManager().deleteMedication(med.id);
 
-                    // 2. Remove from the UI state
+                    // 2. Remove from the UI state. Rebuilding the map (rather than
+                    // mutating in place) gives InteractionsWidget a genuinely new
+                    // reference to diff against in didUpdateWidget, so the automatic
+                    // re-audit actually fires on delete too.
                     setState(() {
-                      medications.remove(med.id);
+                      medications = Map<String, Medication>.from(medications)..remove(med.id);
                     });
                   },
                   onExpansionChanged: (isExpanded) {
@@ -263,6 +278,11 @@ class InteractionsWidgetState extends State<InteractionsWidget> {
         audited = true;
         hasContraIndications = conflicts.isNotEmpty;
       });
+      // The banner above reads its own `conflicts`/`hasContraIndications` state, but the
+      // per-card chips live in the parent (PrescriptionScreen) and only ever see what's
+      // reported back through this callback — without it the banner can say "found" while
+      // every card stays silent, which is exactly what was happening.
+      widget.onConflictsFound(conflicts);
     }
   }
 
@@ -275,15 +295,33 @@ class InteractionsWidgetState extends State<InteractionsWidget> {
     hasContraIndications = false;
     hasPrecautions = false;
     hasAcceptedIndications = false;
-    runSafetyAudit();
+    // Deferred: when there's 0 or 1 medication, runSafetyAudit's loop never reaches an
+    // `await`, so it (and the ancestor setState in its onConflictsFound callback) would
+    // otherwise run synchronously inside this initState — during the same build pass
+    // that's constructing this widget's ancestor. Same fix as the frequency-screen crash.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) runSafetyAudit();
+    });
   }
 
   @override
   void didUpdateWidget(covariant InteractionsWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
+    // PrescriptionScreen rebuilds (and so recreates this widget) for reasons unrelated to
+    // the medication list too, so only re-run the audit when the actual set of medications
+    // changed — otherwise every unrelated rebuild would re-fire an O(n^2) round of DB queries.
+    final bool medsChanged = !setEquals(oldWidget.medications.keys.toSet(), widget.medications.keys.toSet());
     setState(() {
       medications = widget.medications;
     });
+    if (medsChanged) {
+      // Deferred for the same reason as in initState — a 0-or-1-medication audit never
+      // hits an `await`, so this would otherwise call setState on the PrescriptionScreen
+      // ancestor synchronously, inside the build pass that's updating this widget.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) runSafetyAudit();
+      });
+    }
   }
 
   final Map<BannerType, BannerData> banners = {

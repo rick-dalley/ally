@@ -244,7 +244,7 @@ class Frequency {
   });
 }
 
-enum WizardSteps { name, dosage, type, frequency, shape, color }
+enum WizardSteps { name, type, dosage, frequency, shape, color }
 
 extension WizardStepsName on WizardSteps {
   String get label {
@@ -315,6 +315,26 @@ class Pharmacy implements Contactable {
 
 class Dosage {}
 
+// Tolerates null / unrecognized values (e.g. topical medications with no shape,
+// or rows seeded before these columns existed) rather than throwing.
+TabletShapes? _parseTabletShape(dynamic raw) {
+  if (raw == null) return null;
+  try {
+    return TabletShapes.values.byName(raw.toString());
+  } catch (_) {
+    return null;
+  }
+}
+
+TabletColors? _parseTabletColor(dynamic raw) {
+  if (raw == null) return null;
+  try {
+    return TabletColors.values.byName(raw.toString());
+  } catch (_) {
+    return null;
+  }
+}
+
 class Medication {
   final String id;
   final String patientUuid;
@@ -332,6 +352,8 @@ class Medication {
   bool isSyncing;
   Dosage? dose;
   Frequency? frequency;
+  TabletShapes? shape;
+  TabletColors? color;
   Medication({
     required this.id,
     required this.name,
@@ -349,6 +371,8 @@ class Medication {
     this.hasInteractionAlert = false,
     this.hasInteractions = false,
     this.isSyncing = false,
+    this.shape,
+    this.color,
   });
 
   factory Medication.fromMap(Map<String, dynamic> map, String patient, {String classString = "", bool alert = false}) {
@@ -375,6 +399,8 @@ class Medication {
       hasLocalDataSheet: map['has_local_dataset'] == 1,
       hasInteractionAlert: alert,
       severity: rawSeverity,
+      shape: _parseTabletShape(map['shape']),
+      color: _parseTabletColor(map['color']),
       datasheetSections: {
         'Boxed Warning': getSection('boxed_warning'),
         'Indications': getSection('indications_and_usage'),

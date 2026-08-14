@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:csv/csv.dart';
 import 'package:flutter/foundation.dart'; // For kDebugMode
 import 'package:flutter/services.dart';
@@ -18,6 +19,7 @@ class DataSeeder {
     await _seedProviders(db);
     await _seedInteractions(db);
     await _seedMetricsAndUnits(db);
+    await _seedPatientMetricThresholds(db);
 
     debugPrint('--- Seeding Complete ---');
   }
@@ -304,15 +306,45 @@ class DataSeeder {
               frequency = 'PRN'; // Default fallback until the UI toggle is saved
             }
 
+            final String medicationId = '${patientUuid}_med_${med['id']}';
+            final int medIndex = (med['id'] as num?)?.toInt() ?? 1;
+
+            // Stagger start dates so medications don't all appear to begin the same day.
+            final DateTime startedTaking = DateTime.now().subtract(Duration(days: 5 + (medIndex * 11)));
+            // One medication per patient is seeded as a completed/discontinued course,
+            // so the timeline and history views have something other than "currently active" to show.
+            final bool discontinued = medIndex == 2;
+            final DateTime? stoppedTaking = discontinued ? startedTaking.add(const Duration(days: 30)) : null;
+
             await txn.insert('medication', {
-              'id': '${patientUuid}_med_${med['id']}', // Unique compound string key
+              'id': medicationId, // Unique compound string key
               'patient_uuid': patientUuid, // Links cleanly back to parent
               'set_id': med['set_id'],
               'name': med['name'],
               'dose': med['dose'],
               'freq': frequency,
+              'type': med['type'],
+              'shape': med['shape'],
+              'color': med['color'],
+              'started_taking': startedTaking.toIso8601String(),
+              'stopped_taking': stoppedTaking?.toIso8601String(),
               'has_local_datasheet': med['has_local_datasheet'] ?? 0,
             }, conflictAlgorithm: ConflictAlgorithm.replace);
+
+            // Only log adherence history for medications the patient is still taking.
+            if (!discontinued) {
+              // The hero demo patient's BP combo (med id 3) gets a deliberate recent
+              // adherence decline, to demo the "declining adherence" story end to end.
+              final bool simulateDecline = patientUuid == '02039325-2425-4bf3-bf85-1ec81a797e25' && medIndex == 3;
+              await _seedMedicationDoseLog(
+                txn,
+                medicationId: medicationId,
+                patientUuid: patientUuid,
+                frequency: frequency,
+                startedTaking: startedTaking,
+                simulateDecline: simulateDecline,
+              );
+            }
           }
         }
 
@@ -344,5 +376,109 @@ class DataSeeder {
         }
       }
     });
+  }
+
+  // Maps a Latin dosing frequency code to the clock times a dose is expected each day.
+  // Anything not in this map (PRN, malformed values, etc.) has no fixed schedule to log
+  // adherence against, so it's skipped rather than guessed at.
+  static const Map<String, List<String>> _doseTimesByFrequency = {
+    'qd': ['08:00'],
+    'bid': ['08:00', '20:00'],
+    'tid': ['08:00', '14:00', '20:00'],
+    'qid': ['08:00', '12:00', '16:00', '20:00'],
+  };
+
+  /// Backfills the last 7 days of scheduled-dose history for one medication, so the
+  /// adherence/reminder UI and the therapy-impact timeline have real rows to render
+  /// instead of a blank state. `simulateDecline` skews the most recent 3 days toward
+  /// "missed", to demo the declining-adherence scenario end to end.
+  static Future<void> _seedMedicationDoseLog(
+    Transaction txn, {
+    required String medicationId,
+    required String patientUuid,
+    required String frequency,
+    required DateTime startedTaking,
+    bool simulateDecline = false,
+  }) async {
+    final List<String>? doseTimes = _doseTimesByFrequency[frequency.toLowerCase()];
+    if (doseTimes == null) return;
+
+    final DateTime today = DateTime.now();
+    final DateTime windowStart = today.subtract(const Duration(days: 7));
+    final DateTime effectiveStart = startedTaking.isAfter(windowStart) ? startedTaking : windowStart;
+
+    // Seeded per-medication so re-running the seeder produces the same demo history.
+    final Random rng = Random(medicationId.hashCode);
+
+    for (DateTime day = effectiveStart; day.isBefore(today); day = day.add(const Duration(days: 1))) {
+      final int daysAgo = today.difference(day).inDays;
+
+      for (final String time in doseTimes) {
+        final List<String> parts = time.split(':');
+        final DateTime scheduledFor = DateTime(day.year, day.month, day.day, int.parse(parts[0]), int.parse(parts[1]));
+
+        final String status;
+        if (simulateDecline && daysAgo <= 3) {
+          status = rng.nextDouble() < 0.75 ? 'missed' : 'taken';
+        } else {
+          final double roll = rng.nextDouble();
+          status = roll < 0.85 ? 'taken' : (roll < 0.93 ? 'snoozed' : 'missed');
+        }
+
+        await txn.insert('medication_dose_log', {
+          'id': '${medicationId}_dose_${scheduledFor.millisecondsSinceEpoch}',
+          'medication_id': medicationId,
+          'patient_uuid': patientUuid,
+          'scheduled_for': scheduledFor.toIso8601String(),
+          'status': status,
+          'responded_at': status == 'taken' ? scheduledFor.add(const Duration(minutes: 5)).toIso8601String() : null,
+        }, conflictAlgorithm: ConflictAlgorithm.replace);
+      }
+    }
+  }
+
+  /// Seeds per-patient, three-tier (danger/acceptable/healthy) alert thresholds for the
+  /// demo patient's blood pressure, standing in for a doctor having customized the
+  /// catalog defaults for this specific patient. Storage only — no trigger/notification
+  /// logic reads these yet.
+  static Future<void> _seedPatientMetricThresholds(Database db) async {
+    final List<Map<String, dynamic>> existing = await db.rawQuery(
+      "SELECT COUNT(*) as total FROM patient_metric_threshold",
+    );
+    if (existing.first['total'] as int > 0) {
+      return; // Already configured!
+    }
+
+    const String heroPatientUuid = '02039325-2425-4bf3-bf85-1ec81a797e25';
+    const String cardiologistUuid = '61659e82-7b1f-4edb-a465-2490a13a7c20';
+
+    try {
+      final Batch batch = db.batch();
+      batch.insert('patient_metric_threshold', {
+        'patient_uuid': heroPatientUuid,
+        'metric_id': 1, // Blood Pressure - Systolic
+        'danger_low': 85,
+        'acceptable_low': 95,
+        'healthy_low': 105,
+        'healthy_high': 125,
+        'acceptable_high': 135,
+        'danger_high': 150,
+        'set_by': cardiologistUuid,
+      });
+      batch.insert('patient_metric_threshold', {
+        'patient_uuid': heroPatientUuid,
+        'metric_id': 2, // Blood Pressure - Diastolic
+        'danger_low': 50,
+        'acceptable_low': 55,
+        'healthy_low': 65,
+        'healthy_high': 85,
+        'acceptable_high': 92,
+        'danger_high': 100,
+        'set_by': cardiologistUuid,
+      });
+      await batch.commit(noResult: true);
+    } catch (error) {
+      debugPrint("Critical failure in _seedPatientMetricThresholds: $error");
+    }
   }
 }

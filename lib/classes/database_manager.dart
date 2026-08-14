@@ -20,6 +20,7 @@ bool overWrite = false;
 class DatabaseManager {
   // Singleton pattern
   static final DatabaseManager _instance = DatabaseManager._internal();
+
   Database? _db;
   static const uuid = Uuid();
 
@@ -99,8 +100,16 @@ class DatabaseManager {
     }
   }
 
-  Future<void> updateAboType(String patientUuid, int aboType) async {}
-  Future<void> updateRhFactor(String patientUuid, int rhFactor) async {}
+  Future<void> updateAboType(String patientUuid, int aboType) async {
+    final db = await database;
+    await db.update('patient', {'abo_type': aboType}, where: 'patient_uuid = ?', whereArgs: [patientUuid]);
+  }
+
+  Future<void> updateRhFactor(String patientUuid, int rhFactor) async {
+    final db = await database;
+    await db.update('patient', {'rh_factor': rhFactor}, where: 'patient_uuid = ?', whereArgs: [patientUuid]);
+  }
+
   Future<bool> trackMoodChange(String patientUuid, int mood) async {
     final db = await database;
 
@@ -1187,19 +1196,54 @@ class DatabaseManager {
     );
   }
 
-  Future<void> addMedication({required String name, required String patientUuid}) async {}
-  Future<void> addDosage({required String name, required String patientUuid, required String dosage}) async {}
-  Future<void> addMedicationType({
-    required String name,
-    required String patientUuid,
-    required MedicationTypes type,
-  }) async {}
-  Future<void> addMedicationShape({
-    required String name,
-    required String patientUuid,
-    required TabletShapes shape,
-  }) async {}
-  Future<void> addFrequency({required String name, required String patientUuid, required Frequency frequency}) async {}
+  // The wizard generates medicationId up front (see AddMedicationWizard) so every
+  // subsequent add* call below can target the exact row by primary key instead of
+  // guessing which row "this patient's medication named X" refers to.
+  Future<void> addMedication({required String medicationId, required String name, required String patientUuid}) async {
+    await insertMedication({'id': medicationId, 'patient_uuid': patientUuid, 'name': name});
+  }
+
+  Future<void> addDosage({required String medicationId, required String dosage}) async {
+    final db = await database;
+    await db.update('medication', {'dose': dosage}, where: 'id = ?', whereArgs: [medicationId]);
+  }
+
+  Future<void> addMedicationType({required String medicationId, required MedicationTypes type}) async {
+    final db = await database;
+    await db.update('medication', {'type': type.name}, where: 'id = ?', whereArgs: [medicationId]);
+  }
+
+  Future<void> addMedicationShape({required String medicationId, required TabletShapes shape}) async {
+    final db = await database;
+    await db.update('medication', {'shape': shape.name}, where: 'id = ?', whereArgs: [medicationId]);
+  }
+
+  Future<void> addMedicationColor({required String medicationId, required TabletColors color}) async {
+    final db = await database;
+    await db.update('medication', {'color': color.name}, where: 'id = ?', whereArgs: [medicationId]);
+  }
+
+  Future<void> addFrequency({required String medicationId, required Frequency frequency}) async {
+    final db = await database;
+
+    final String? latin = frequency.latinRecurrence;
+    final String freqLabel = (latin != null && latin.isNotEmpty)
+        ? latin
+        : (frequency.period != null && frequency.periodUoM != null)
+        ? 'every ${frequency.period} ${frequency.periodUoM}'
+        : 'PRN';
+
+    await db.update(
+      'medication',
+      {
+        'freq': freqLabel,
+        'started_taking': frequency.start?.toIso8601String(),
+        'stopped_taking': frequency.end?.toIso8601String(),
+      },
+      where: 'id = ?',
+      whereArgs: [medicationId],
+    );
+  }
 
   Future<void> deleteProvider({required String providerUuid}) async {
     final db = await database;

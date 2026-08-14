@@ -3,14 +3,16 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/app_theme.dart';
 import 'package:triage/classes/carbon_theme_constants.dart';
 import 'package:triage/classes/frequency_codes.dart';
+import 'package:triage/classes/medication_services.dart';
 import 'package:triage/widgets/carbon_style_dropdown.dart';
 import 'package:triage/widgets/carbon_style_full_button.dart';
 import '../classes/listable.dart';
 
 class GetMedicationFrequency extends StatefulWidget {
   final TextEditingController controller;
+  final Function(Frequency) onFrequencySelected;
 
-  const GetMedicationFrequency({super.key, required this.controller});
+  const GetMedicationFrequency({super.key, required this.controller, required this.onFrequencySelected});
 
   @override
   State<GetMedicationFrequency> createState() => _GetMedicationFrequencyState();
@@ -30,6 +32,20 @@ class _GetMedicationFrequencyState extends State<GetMedicationFrequency> {
     super.initState();
     start = DateTime.now();
     end = start?.add(const Duration(days: 30));
+    latinRecurrence = FrequencyCodes.quaqueDie.latin;
+    // Deferred: this page mounts mid-build as the wizard's PageView transitions to it,
+    // so calling the parent's setState synchronously here would fire while the
+    // framework is still building (a "setState called during build" crash). Posting
+    // it for after the frame finishes is the standard fix.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _emitFrequency();
+    });
+  }
+
+  void _emitFrequency() {
+    widget.onFrequencySelected(
+      Frequency(latinRecurrence: latinRecurrence, start: start, end: end, specificTime: specificTime, alert: _alert),
+    );
   }
 
   @override
@@ -55,6 +71,7 @@ class _GetMedicationFrequencyState extends State<GetMedicationFrequency> {
                   FrequencyCodes frequencyCode = val as FrequencyCodes;
                   latinRecurrence = frequencyCode.latin;
                 });
+                _emitFrequency();
               },
             ),
             SizedBox(height: CarbonSpacing.wide.height),
@@ -72,7 +89,10 @@ class _GetMedicationFrequencyState extends State<GetMedicationFrequency> {
                         firstDate: DateTime.now(),
                         lastDate: DateTime(2100),
                       );
-                      if (date != null) setState(() => start = date);
+                      if (date != null) {
+                        setState(() => start = date);
+                        _emitFrequency();
+                      }
                     },
                   ),
                 ),
@@ -89,7 +109,10 @@ class _GetMedicationFrequencyState extends State<GetMedicationFrequency> {
                         firstDate: start ?? DateTime.now(),
                         lastDate: DateTime(2100),
                       );
-                      if (date != null) setState(() => end = date);
+                      if (date != null) {
+                        setState(() => end = date);
+                        _emitFrequency();
+                      }
                     },
                   ),
                 ),
@@ -120,6 +143,7 @@ class _GetMedicationFrequencyState extends State<GetMedicationFrequency> {
                 value: _alert,
                 onChanged: (val) {
                   setState(() => _alert = val);
+                  _emitFrequency();
                 },
               ),
             ),
@@ -135,6 +159,7 @@ class _GetMedicationFrequencyState extends State<GetMedicationFrequency> {
       setState(() {
         specificTime = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, time.hour, time.minute);
       });
+      _emitFrequency();
     }
   }
 }

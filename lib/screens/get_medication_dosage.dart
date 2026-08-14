@@ -18,15 +18,23 @@ class GetMedicationDosageState extends State<GetMedicationDosage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.onPrimaryColor,
-      body: Column(
-        children: [
-          Text("Dosage Amount", style: CarbonTheme.carbonHeadingTextStyle),
-          CarbonNumberInput(
-            controller: widget.controller,
-            label: "Dosage",
-            hint: "Enter the amount medication (usually mg)",
-          ),
-        ],
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Dosage", style: CarbonTheme.carbonHeadingTextStyle),
+            const SizedBox(height: 8),
+            Text("How much do you take at once?", style: CarbonTheme.carbonHintTextStyle),
+            const SizedBox(height: 24),
+            CarbonNumberInput(
+              controller: widget.controller,
+              label: "Dosage",
+              hint: "Enter the amount of medication (usually mg)",
+              onChanged: widget.onAddDosage,
+            ),
+          ],
+        ),
       ),
     );
   }

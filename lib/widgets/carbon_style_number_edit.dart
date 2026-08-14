@@ -20,6 +20,7 @@ class CarbonNumberInput extends StatelessWidget {
   final bool? enabled;
   final FocusNode? focusNode;
   final bool? decimals;
+  final ValueChanged<String>? onChanged;
   const CarbonNumberInput({
     super.key,
     required this.label,
@@ -35,6 +36,7 @@ class CarbonNumberInput extends StatelessWidget {
     this.value,
     this.focusNode,
     this.decimals,
+    this.onChanged,
   });
 
   void _increment() {
@@ -83,6 +85,7 @@ class CarbonNumberInput extends StatelessWidget {
                   controller: controller,
                   focusNode: focusNode,
                   keyboardType: TextInputType.number,
+                  onChanged: onChanged,
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: fillColor,

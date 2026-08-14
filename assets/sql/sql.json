@@ -2,7 +2,7 @@
   "CREATE": [
     {
       "table": "patient",
-      "query": "CREATE TABLE IF NOT EXISTS patient (patient_uuid TEXT PRIMARY KEY, first_name TEXT NOT NULL, last_name TEXT NOT NULL, acuity INTEGER NOT NULL, phn int UNIQUE, phase_step_id INTEGER NOT NULL, email TEXT, ssn TEXT, title TEXT, country TEXT, dob DATETIME, admitted DATETIME DEFAULT CURRENT_TIMESTAMP, police_reports INTEGER DEFAULT 0, assessments INTEGER DEFAULT 0, status TEXT, path TEXT, street_address TEXT, city TEXT, province TEXT, postal_code TEXT, phone TEXT, contact_name TEXT, relation TEXT, contact_phone TEXT, family_doctor_name TEXT, family_doctor_phone TEXT, pharmacy_name TEXT, pharmacy_phone TEXT, pharmacy_fax TEXT, narrative_hint TEXT, last_update DATETIME DEFAULT CURRENT_TIMESTAMP);"
+      "query": "CREATE TABLE IF NOT EXISTS patient (patient_uuid TEXT PRIMARY KEY, first_name TEXT NOT NULL, last_name TEXT NOT NULL, acuity INTEGER NOT NULL, phn int UNIQUE, phase_step_id INTEGER NOT NULL, email TEXT, ssn TEXT, title TEXT, country TEXT, dob DATETIME, admitted DATETIME DEFAULT CURRENT_TIMESTAMP, police_reports INTEGER DEFAULT 0, assessments INTEGER DEFAULT 0, status TEXT, path TEXT, street_address TEXT, city TEXT, province TEXT, postal_code TEXT, phone TEXT, contact_name TEXT, relation TEXT, contact_phone TEXT, family_doctor_name TEXT, family_doctor_phone TEXT, pharmacy_name TEXT, pharmacy_phone TEXT, pharmacy_fax TEXT, narrative_hint TEXT, abo_type INTEGER, rh_factor INTEGER, last_update DATETIME DEFAULT CURRENT_TIMESTAMP);"
     },
     {
       "table": "patient",
@@ -78,7 +78,31 @@
     },
     {
       "table": "medication",
-      "query": "CREATE TABLE IF NOT EXISTS medication (id TEXT PRIMARY KEY, patient_uuid TEXT, name TEXT, set_id TEXT, dose TEXT, freq TEXT, has_local_datasheet int NOT NULL, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid), FOREIGN KEY (set_id) REFERENCES datasheet(set_id) ON DELETE RESTRICT);"
+      "query": "CREATE TABLE IF NOT EXISTS medication (id TEXT PRIMARY KEY, patient_uuid TEXT, name TEXT, set_id TEXT, dose TEXT, freq TEXT, type TEXT, shape TEXT, color TEXT, started_taking DATETIME, stopped_taking DATETIME, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, has_local_datasheet int NOT NULL, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid), FOREIGN KEY (set_id) REFERENCES datasheet(set_id) ON DELETE RESTRICT);"
+    },
+    {
+      "table": "medication",
+      "query": "CREATE INDEX idx_medication_patient_started ON medication(patient_uuid, started_taking);"
+    },
+    {
+      "table": "medication_dose_log",
+      "query": "CREATE TABLE IF NOT EXISTS medication_dose_log (id TEXT PRIMARY KEY, medication_id TEXT NOT NULL, patient_uuid TEXT NOT NULL, scheduled_for DATETIME NOT NULL, status TEXT NOT NULL, responded_at DATETIME, notes TEXT, FOREIGN KEY (medication_id) REFERENCES medication(id) ON DELETE CASCADE, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
+    },
+    {
+      "table": "medication_dose_log",
+      "query": "CREATE INDEX idx_dose_log_patient_time ON medication_dose_log(patient_uuid, scheduled_for);"
+    },
+    {
+      "table": "medication_dose_log",
+      "query": "CREATE INDEX idx_dose_log_medication_time ON medication_dose_log(medication_id, scheduled_for);"
+    },
+    {
+      "table": "patient_metric_threshold",
+      "query": "CREATE TABLE IF NOT EXISTS patient_metric_threshold (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_uuid TEXT NOT NULL, metric_id INTEGER NOT NULL, danger_low REAL, acceptable_low REAL, healthy_low REAL, healthy_high REAL, acceptable_high REAL, danger_high REAL, set_by TEXT, set_at DATETIME DEFAULT CURRENT_TIMESTAMP, active INTEGER DEFAULT 1, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE, FOREIGN KEY (metric_id) REFERENCES metric(id) ON DELETE CASCADE);"
+    },
+    {
+      "table": "patient_metric_threshold",
+      "query": "CREATE INDEX idx_threshold_patient_metric ON patient_metric_threshold(patient_uuid, metric_id);"
     },
     {
       "table": "condition",

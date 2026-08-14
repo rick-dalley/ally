@@ -32,12 +32,10 @@ class MedicationCard extends StatefulWidget {
 class _MedicationCardState extends State<MedicationCard> {
   Map<String, dynamic>? _datasheet;
   bool _isFetching = false;
-  TabletShapes shape = TabletShapes.round;
 
   @override
   void initState() {
     super.initState();
-    shape = widget.index != null ? TabletShapes.values[widget.index!] : TabletShapes.round;
     // If we already know the datasheet is local, get it immediately
     if (widget.medication.hasLocalDataSheet) {
       triggerFetch(
@@ -86,6 +84,8 @@ class _MedicationCardState extends State<MedicationCard> {
     final List<InteractionConflict> medicationInteractions = widget.interactions
         .where((conflict) => conflict.hasInteraction(medicationName))
         .toList();
+    final TabletShapes shape = widget.medication.shape ?? TabletShapes.round;
+    final TabletColors color = widget.medication.color ?? TabletColors.white;
 
     return Card(
       margin: const EdgeInsets.all(8),
@@ -103,7 +103,7 @@ class _MedicationCardState extends State<MedicationCard> {
                 'assets/images/pills/${shape.svg}',
                 width: 40,
                 height: 40,
-                colorMapper: PillColorMapper(TabletColors.values[widget.index! % 10].color),
+                colorMapper: PillColorMapper(color.color),
               ),
             ),
           ),

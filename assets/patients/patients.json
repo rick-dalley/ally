@@ -39,7 +39,10 @@
         "name": "Calcium Carbonate",
         "dose": "10 mg",
         "freq": "tid",
-        "has_local_datasheet": 0
+        "has_local_datasheet": 0,
+        "type": "tablet",
+        "shape": "oval",
+        "color": "pink"
       },
       {
         "id": 2,
@@ -47,7 +50,10 @@
         "name": "MORPHINE SULFATE",
         "dose": "25 mg",
         "freq": "qd",
-        "has_local_datasheet": 1
+        "has_local_datasheet": 1,
+        "type": "tablet",
+        "shape": "capsule",
+        "color": "yellow"
       },
       {
         "id": 3,
@@ -55,7 +61,10 @@
         "name": "valsartan and hydrochlorothiazide",
         "dose": "50 mg",
         "freq": "tid",
-        "has_local_datasheet": 0
+        "has_local_datasheet": 0,
+        "type": "tablet",
+        "shape": "diamond",
+        "color": "tan"
       },
       {
         "id": 4,
@@ -63,7 +72,10 @@
         "name": "Acetaminophen",
         "dose": "5 mg",
         "freq": "tid",
-        "has_local_datasheet": 0
+        "has_local_datasheet": 0,
+        "type": "capsule",
+        "shape": "capsule",
+        "color": "cyan"
       },
       {
         "id": 5,
@@ -71,7 +83,10 @@
         "name": "verapamil hydrochloride",
         "dose": "25 mg",
         "freq": "tid",
-        "has_local_datasheet": 0
+        "has_local_datasheet": 0,
+        "type": "tablet",
+        "shape": "rectangle",
+        "color": "orange"
       },
       {
         "id": 6,
@@ -79,7 +94,10 @@
         "name": "Fluocinonide",
         "dose": "50 mg",
         "freq": "bid",
-        "has_local_datasheet": 0
+        "has_local_datasheet": 0,
+        "type": "topical",
+        "shape": null,
+        "color": null
       },
       {
         "id": 7,
@@ -87,7 +105,10 @@
         "name": "Allantoin",
         "dose": "50 mg",
         "freq": "qd",
-        "has_local_datasheet": 0
+        "has_local_datasheet": 0,
+        "type": "topical",
+        "shape": null,
+        "color": null
       },
       {
         "id": 8,
@@ -95,7 +116,10 @@
         "name": "Bethanechol Chloride",
         "dose": "5 mg",
         "freq": "qd",
-        "has_local_datasheet": 1
+        "has_local_datasheet": 1,
+        "type": "capsule",
+        "shape": "capsule",
+        "color": "green"
       },
       {
         "id": 9,
@@ -103,7 +127,10 @@
         "name": "PYRITHIONE ZINC",
         "dose": "50 mg",
         "freq": "qd",
-        "has_local_datasheet": 1
+        "has_local_datasheet": 1,
+        "type": "topical",
+        "shape": null,
+        "color": null
       }
     ],
     "current_pulse": 32,
@@ -180,7 +207,10 @@
         "name": "Ranitidine",
         "dose": "5 mg",
         "freq": "tid",
-        "has_local_datasheet": 1
+        "has_local_datasheet": 1,
+        "type": "tablet",
+        "shape": "oval",
+        "color": "pink"
       },
       {
         "id": 2,
@@ -188,7 +218,10 @@
         "name": "Avobenzone, Octinoxate, Octisalate",
         "dose": "50 mg",
         "freq": "qd",
-        "has_local_datasheet": 0
+        "has_local_datasheet": 0,
+        "type": "topical",
+        "shape": null,
+        "color": null
       },
       {
         "id": 3,
@@ -196,7 +229,10 @@
         "name": "Zoledronic Acid",
         "dose": "250 mg",
         "freq": "bid",
-        "has_local_datasheet": 0
+        "has_local_datasheet": 0,
+        "type": "tablet",
+        "shape": "diamond",
+        "color": "tan"
       },
       {
         "id": 4,
@@ -204,7 +240,10 @@
         "name": "Levetiracetam",
         "dose": "250 mg",
         "freq": "qd",
-        "has_local_datasheet": 1
+        "has_local_datasheet": 1,
+        "type": "capsule",
+        "shape": "capsule",
+        "color": "cyan"
       },
       {
         "id": 5,
@@ -212,7 +251,10 @@
         "name": "Arnica Carbo Special Order",
         "dose": "5 mg",
         "freq": "qid",
-        "has_local_datasheet": 0
+        "has_local_datasheet": 0,
+        "type": "liquid",
+        "shape": null,
+        "color": null
       }
     ],
     "current_pulse": 36,
@@ -348,7 +390,10 @@
         "name": "omeprazole",
         "dose": "50 mg",
         "freq": "qid",
-        "has_local_datasheet": 1
+        "has_local_datasheet": 1,
+        "type": "tablet",
+        "shape": "oval",
+        "color": "pink"
       },
       {
         "id": 2,
@@ -356,7 +401,10 @@
         "name": "Titanium Dioxide, Zinc Oxide",
         "dose": "250 mg",
         "freq": "qd",
-        "has_local_datasheet": 0
+        "has_local_datasheet": 0,
+        "type": "topical",
+        "shape": null,
+        "color": null
       },
       {
         "id": 3,
@@ -364,7 +412,10 @@
         "name": "Sodium Monofluorophosphate, Calcium Glycerophosphate",
         "dose": "5 mg",
         "freq": "tid",
-        "has_local_datasheet": 0
+        "has_local_datasheet": 0,
+        "type": "tablet",
+        "shape": "diamond",
+        "color": "tan"
       },
       {
         "id": 4,
@@ -372,7 +423,10 @@
         "name": "OXYTOCIN",
         "dose": "4 mg",
         "freq": "bid",
-        "has_local_datasheet": 0
+        "has_local_datasheet": 0,
+        "type": "liquid",
+        "shape": null,
+        "color": null
       },
       {
         "id": 5,
@@ -380,7 +434,10 @@
         "name": "venlafaxine hydrochloride",
         "dose": "4 mg",
         "freq": "qd",
-        "has_local_datasheet": 0
+        "has_local_datasheet": 0,
+        "type": "tablet",
+        "shape": "rectangle",
+        "color": "orange"
       },
       {
         "id": 6,
@@ -388,7 +445,10 @@
         "name": "oxycodone hydrochloride and acetaminophen",
         "dose": "4 mg",
         "freq": "tid",
-        "has_local_datasheet": 0
+        "has_local_datasheet": 0,
+        "type": "tablet",
+        "shape": "square",
+        "color": "red"
       }
     ],
     "current_pulse": 47,
@@ -519,7 +579,10 @@
         "name": "CHLORHEXIDINE GLUCONATE, ETHYL ALCOHOL",
         "dose": "50 mg",
         "freq": "bid",
-        "has_local_datasheet": 1
+        "has_local_datasheet": 1,
+        "type": "topical",
+        "shape": null,
+        "color": null
       },
       {
         "id": 2,
@@ -527,7 +590,10 @@
         "name": "aluminum chlorhydrate",
         "dose": "5 mg",
         "freq": "bid",
-        "has_local_datasheet": 0
+        "has_local_datasheet": 0,
+        "type": "topical",
+        "shape": null,
+        "color": null
       },
       {
         "id": 3,
@@ -535,7 +601,10 @@
         "name": "Arsenicum album, Hepar sulphuris calcareum, Hydrastis canadensis, Kali bichromicum, Lycopodium clavatum, Mercurius solubilis, Natrum muriaticum, Phosphorus, Pulsatilla, Sepia Thuja occidentalis,",
         "dose": "10 mg",
         "freq": "tid",
-        "has_local_datasheet": 0
+        "has_local_datasheet": 0,
+        "type": "tablet",
+        "shape": "diamond",
+        "color": "tan"
       },
       {
         "id": 4,
@@ -543,7 +612,10 @@
         "name": "HYDROQUINONE",
         "dose": "50 mg",
         "freq": "qid",
-        "has_local_datasheet": 1
+        "has_local_datasheet": 1,
+        "type": "topical",
+        "shape": null,
+        "color": null
       },
       {
         "id": 5,
@@ -551,7 +623,10 @@
         "name": "Acetaminophen",
         "dose": "10 mg",
         "freq": "qid",
-        "has_local_datasheet": 1
+        "has_local_datasheet": 1,
+        "type": "tablet",
+        "shape": "rectangle",
+        "color": "orange"
       },
       {
         "id": 6,
@@ -559,7 +634,10 @@
         "name": "Acetaminophen, Diphenhydramine HCl, Phenylephrine HCl",
         "dose": "50 mg",
         "freq": "tid",
-        "has_local_datasheet": 1
+        "has_local_datasheet": 1,
+        "type": "tablet",
+        "shape": "square",
+        "color": "red"
       },
       {
         "id": 7,
@@ -567,7 +645,10 @@
         "name": "Acetaminophen",
         "dose": "25 mg",
         "freq": "tid",
-        "has_local_datasheet": 1
+        "has_local_datasheet": 1,
+        "type": "tablet",
+        "shape": "triangle",
+        "color": "purple"
       },
       {
         "id": 8,
@@ -575,7 +656,10 @@
         "name": "Glutathione",
         "dose": "25 mg",
         "freq": "bid",
-        "has_local_datasheet": 0
+        "has_local_datasheet": 0,
+        "type": "capsule",
+        "shape": "capsule",
+        "color": "green"
       },
       {
         "id": 9,
@@ -583,7 +667,10 @@
         "name": "Benztropine Mesylate",
         "dose": "250 mg",
         "freq": "tid",
-        "has_local_datasheet": 1
+        "has_local_datasheet": 1,
+        "type": "tablet",
+        "shape": "almond",
+        "color": "peach"
       },
       {
         "id": 10,
@@ -591,7 +678,10 @@
         "name": "BENZALKONIUM CHLORIDE",
         "dose": "4 mg",
         "freq": "bid",
-        "has_local_datasheet": 1
+        "has_local_datasheet": 1,
+        "type": "topical",
+        "shape": null,
+        "color": null
       }
     ],
     "current_pulse": 80,
