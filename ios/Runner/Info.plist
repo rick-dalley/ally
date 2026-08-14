@@ -49,5 +49,7 @@
     <array>
       <string>mailto</string>
     </array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Used to find the nearest walk-in clinic or emergency department when you need one.</string>
 </dict>
 </plist>

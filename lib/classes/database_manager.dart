@@ -218,26 +218,15 @@ class DatabaseManager {
     return results;
   }
 
-  Future<void> insertBodyMarker(String patientUuid, Map<String, dynamic> marker) async {
+  // Returns the generated row id (BodyMarker.id) — needed later to mark a marker
+  // resolved or record that we've checked in on it.
+  Future<int> insertBodyMarker(String patientUuid, Map<String, dynamic> marker) async {
     final db = await database;
-
-    // Create a copy of the marker map to prepare for insertion
     Map<String, dynamic> row = Map<String, dynamic>.from(marker);
-
-    // Add the patient reference
     row['patient_uuid'] = patientUuid;
-
-    // Ensure all 'Chips' lists (JSON arrays) are encoded to strings
-    row['descriptions'] = jsonEncode(row['descriptions'] ?? []);
-    row['improves_when'] = jsonEncode(row['improves_when'] ?? []);
-    row['worsens_when'] = jsonEncode(row['worsens_when'] ?? []);
-    row['interventions_tried'] = jsonEncode(row['interventions_tried'] ?? []);
-
-    // Perform the insertion
-    await db.insert('markers', row, conflictAlgorithm: ConflictAlgorithm.replace);
+    return await db.insert('markers', row);
   }
 
-  // DatabaseManager now only cares about standard SQL operations
   Future<void> insertMarkersBatch(String tableName, List<Map<String, dynamic>> rows) async {
     final db = await database;
     await db.transaction((txn) async {
@@ -251,11 +240,47 @@ class DatabaseManager {
     final db = await database;
 
     // Fetch all markers for the patient, sorted by most recent first
+    return await db.query('markers', where: 'patient_uuid = ?', whereArgs: [patientUuid], orderBy: 'recorded DESC');
+  }
+
+  // Markers due for an "is this still bothering you?" check-in: not yet resolved,
+  // first recorded at least [minAge] ago, and (if we've asked before) not asked again
+  // within [minAge] — spaces repeat check-ins out instead of asking every app open.
+  Future<List<Map<String, dynamic>>> getMarkersDueForFollowUp(
+    String patientUuid, {
+    Duration minAge = const Duration(days: 3),
+  }) async {
+    final db = await database;
+    final DateTime cutoff = DateTime.now().subtract(minAge);
+    final int recordedCutoff = cutoff.millisecondsSinceEpoch ~/ 1000;
+
     return await db.query(
-      'body_markers',
-      where: 'patient_uuid = ?',
-      whereArgs: [patientUuid],
-      orderBy: 'recorded DESC',
+      'markers',
+      where:
+          'patient_uuid = ? AND resolved = 0 AND recorded <= ? '
+          'AND (last_checked_at IS NULL OR last_checked_at <= ?)',
+      whereArgs: [patientUuid, recordedCutoff, cutoff.toIso8601String()],
+      orderBy: 'recorded ASC',
+    );
+  }
+
+  Future<void> resolveBodyMarker(int markerId) async {
+    final db = await database;
+    await db.update(
+      'markers',
+      {'resolved': 1, 'resolved_at': DateTime.now().toIso8601String()},
+      where: 'id = ?',
+      whereArgs: [markerId],
+    );
+  }
+
+  Future<void> markBodyMarkerChecked(int markerId) async {
+    final db = await database;
+    await db.update(
+      'markers',
+      {'last_checked_at': DateTime.now().toIso8601String()},
+      where: 'id = ?',
+      whereArgs: [markerId],
     );
   }
 
@@ -989,7 +1014,55 @@ class DatabaseManager {
       '''
     SELECT p.*
     FROM provider p WHERE patient_uuid = ?
-    ORDER BY p.last_name, p.first_name 
+    ORDER BY p.last_name, p.first_name
+  ''',
+      [patientUuid],
+    );
+  }
+
+  // A local record only — nothing here actually books anything with the provider's
+  // real scheduling system, since this app has no such integration. It's a note-to-
+  // self the patient can act on (call/email the office), not a synced calendar entry.
+  Future<String> insertAppointment({
+    required String patientUuid,
+    required String providerUuid,
+    required DateTime scheduledFor,
+    String? reason,
+    String? notes,
+  }) async {
+    final db = await database;
+    final String id = uuid.v4();
+    await db.insert('appointment', {
+      'id': id,
+      'patient_uuid': patientUuid,
+      'provider_uuid': providerUuid,
+      'scheduled_for': scheduledFor.toIso8601String(),
+      'reason': reason,
+      'notes': notes,
+    });
+    return id;
+  }
+
+  Future<List<Map<String, dynamic>>> getAppointmentsForPatient(String patientUuid) async {
+    final db = await database;
+    return await db.query(
+      'appointment',
+      where: 'patient_uuid = ?',
+      whereArgs: [patientUuid],
+      orderBy: 'scheduled_for ASC',
+    );
+  }
+
+  // Active medications that have reminders turned on, joined with their preference row
+  // — the Remindable feed's source for medication reminders.
+  Future<List<Map<String, dynamic>>> getMedicationsWithReminders(String patientUuid) async {
+    final db = await database;
+    return await db.rawQuery(
+      '''
+    SELECT m.*, r.chime_enabled, r.text_enabled, r.email_enabled, r.wearable_enabled, r.wearable_mode, r.lead_minutes
+    FROM medication m
+    JOIN medication_reminder_preference r ON r.medication_id = m.id
+    WHERE m.patient_uuid = ? AND m.stopped_taking IS NULL AND r.enabled = 1
   ''',
       [patientUuid],
     );
@@ -1194,13 +1267,24 @@ class DatabaseManager {
         ? 'every ${frequency.period} ${frequency.periodUoM}'
         : 'PRN';
 
+    // `stopped_taking` is NOT written here — that column now specifically means "the
+    // patient discontinued this therapy" for the archive feature (only archiveMedication
+    // sets it). The frequency screen's "end date" defaults to 30 days out for every new
+    // medication; writing that into stopped_taking made every newly-added medication look
+    // pre-archived a month in the future and vanish from the active list immediately.
+    //
+    // `specificTime` was previously captured by the frequency screen's time picker and
+    // then silently discarded — never written anywhere — so the reminder system had no
+    // way to honor a time the patient actually chose, only the frequency code's fixed
+    // defaults (e.g. 08:00 for "once daily"). Persisted as "HH:mm"; ReminderRegistry
+    // prefers it over the frequency-code default when present.
+    final String? reminderTime = frequency.specificTime != null
+        ? '${frequency.specificTime!.hour.toString().padLeft(2, '0')}:${frequency.specificTime!.minute.toString().padLeft(2, '0')}'
+        : null;
+
     await db.update(
       'medication',
-      {
-        'freq': freqLabel,
-        'started_taking': frequency.start?.toIso8601String(),
-        'stopped_taking': frequency.end?.toIso8601String(),
-      },
+      {'freq': freqLabel, 'started_taking': frequency.start?.toIso8601String(), 'reminder_time': reminderTime},
       where: 'id = ?',
       whereArgs: [medicationId],
     );

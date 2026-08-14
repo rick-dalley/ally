@@ -11,8 +11,10 @@ import 'package:triage/screens/user_screen.dart';
 import '../app_theme.dart';
 import '../classes/database_manager.dart';
 import '../classes/patient.dart';
+import '../classes/reminder_registry.dart';
 import '../widgets/carbon_style_avatar.dart';
 import '../widgets/emergency_qr.dart';
+import '../widgets/reminder_feed.dart';
 import 'prescription_screen.dart';
 import 'providers_screen.dart';
 import 'medical_profile_screen.dart';
@@ -51,6 +53,9 @@ class HomeScreenState extends State<HomeScreen> {
         patients = data.map((p) => Patient.fromJson(p)).toList();
         _isLoading = false;
       });
+      if (patients.isNotEmpty) {
+        ReminderRegistry.instance.loadForPatient(patients[_currentPageIndex].patientUuid);
+      }
     }
   }
 
@@ -161,14 +166,19 @@ class HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
+            const ReminderFeed(),
+
             // Main PageView containing the tabs
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
                 itemCount: patients.length,
-                onPageChanged: (index) => setState(() {
-                  _currentPageIndex = index;
-                }),
+                onPageChanged: (index) {
+                  setState(() {
+                    _currentPageIndex = index;
+                  });
+                  ReminderRegistry.instance.loadForPatient(patients[index].patientUuid);
+                },
                 itemBuilder: (context, index) {
                   return IndexedStack(index: _currentIndex, children: _getPages(index));
                 },

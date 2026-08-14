@@ -5,9 +5,11 @@ import 'package:material_symbols_icons/symbols.dart';
 import '../app_theme.dart';
 import '../classes/body_markers.dart';
 import '../classes/body_zone.dart';
+import '../classes/database_manager.dart';
 import '../classes/patient.dart';
 import '../classes/patient_pain.dart';
 import '../widgets/body_marker_modal.dart';
+import '../widgets/symptom_followup_dialog.dart';
 
 enum FlipDirection { none, flipX, flipY, flipXY }
 
@@ -126,6 +128,42 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
     selectedMap = AnatomyZoneMaps.bodyFront;
     touchImage = TouchImageFactory.instance.getTouchImage(selection: selectedMap);
     anatomyImage = touchImage?.flip(imageOrientation);
+    _loadMarkers();
+  }
+
+  // Previously this screen never read from (or wrote to) the database at all — every
+  // marker only ever lived in this in-memory list and vanished the moment the screen
+  // closed. This is now the single source of truth on open.
+  Future<void> _loadMarkers() async {
+    final rows = await DatabaseManager().getMarkersForPatient(widget.patient.patientUuid);
+    final loaded = rows.map((row) => BodyMarker.fromRow(row)).toList();
+    if (!mounted) return;
+    setState(() {
+      _markers
+        ..clear()
+        ..addAll(loaded);
+    });
+    _checkFollowUps();
+  }
+
+  // No push-notification system exists in this app, so "follow up in a few days" can
+  // only mean "ask the next time they open this screen." Processes one due marker at
+  // a time — each answer updates that marker's resolved/last_checked_at state, so the
+  // same one won't come up again on the next pass, and the loop naturally terminates.
+  Future<void> _checkFollowUps() async {
+    final due = await DatabaseManager().getMarkersDueForFollowUp(widget.patient.patientUuid);
+    if (!mounted || due.isEmpty) return;
+
+    final marker = BodyMarker.fromRow(due.first);
+    final bool? handled = await showDialog<bool>(
+      context: context,
+      builder: (context) => SymptomFollowUpDialog(patientUuid: widget.patient.patientUuid, marker: marker),
+    );
+
+    // Dismissed without picking an option (tapped outside/back) — don't immediately
+    // re-show the same prompt in a loop; ask again next time they open this screen.
+    if (!mounted || handled != true) return;
+    await _loadMarkers();
   }
 
   @override
@@ -202,19 +240,17 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
                                   // constraints: BoxConstraints(maxHeight: mq.size.height * 0.45),
                                   builder: (context) => BodyMarkerModal(
                                     initialMarker: newMarker,
-                                    onSave: (updatedMarker) {
-                                      // On Save, update the state to store the new marker
-                                      setState(() {
-                                        _markers.add(
-                                          BodyMarker.fromOffset(
-                                            details.localPosition,
-                                            zone.name,
-                                            zone.latin,
-                                            selectedMap,
-                                            markerGroup,
-                                          ),
-                                        );
-                                      });
+                                    onSave: (updatedMarker) async {
+                                      // Persist the marker the modal actually collected
+                                      // (severity/frequency/nature), then reload from the
+                                      // database rather than hand-building an in-memory
+                                      // copy — same "reload after mutation" pattern used
+                                      // everywhere else in this app.
+                                      await DatabaseManager().insertBodyMarker(
+                                        widget.patient.patientUuid,
+                                        updatedMarker.toRow(),
+                                      );
+                                      await _loadMarkers();
                                     },
                                   ),
                                 );

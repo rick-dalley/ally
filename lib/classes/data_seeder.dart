@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart'; // For kDebugMode
 import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart';
 
+import 'frequency_codes.dart';
+
 class DataSeeder {
   /// Entry point for seeding data.
   /// Only executes in debug mode to prevent data pollution in release builds.
@@ -352,16 +354,6 @@ class DataSeeder {
     });
   }
 
-  // Maps a Latin dosing frequency code to the clock times a dose is expected each day.
-  // Anything not in this map (PRN, malformed values, etc.) has no fixed schedule to log
-  // adherence against, so it's skipped rather than guessed at.
-  static const Map<String, List<String>> _doseTimesByFrequency = {
-    'qd': ['08:00'],
-    'bid': ['08:00', '20:00'],
-    'tid': ['08:00', '14:00', '20:00'],
-    'qid': ['08:00', '12:00', '16:00', '20:00'],
-  };
-
   /// Backfills the last 7 days of scheduled-dose history for one medication, so the
   /// adherence/reminder UI and the therapy-impact timeline have real rows to render
   /// instead of a blank state. `simulateDecline` skews the most recent 3 days toward
@@ -374,8 +366,10 @@ class DataSeeder {
     required DateTime startedTaking,
     bool simulateDecline = false,
   }) async {
-    final List<String>? doseTimes = _doseTimesByFrequency[frequency.toLowerCase()];
-    if (doseTimes == null) return;
+    // Shared with the live reminder system (FrequencySchedule) so seeded adherence
+    // history and real reminders agree on what "qd"/"bid"/etc. actually mean.
+    final List<String> doseTimes = FrequencySchedule.dailyTimesFor(frequency);
+    if (doseTimes.isEmpty) return;
 
     final DateTime today = DateTime.now();
     final DateTime windowStart = today.subtract(const Duration(days: 7));

@@ -116,41 +116,53 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
 
     setState(() => _isSaving = true);
 
-    await DatabaseManager().addMedication(medicationId: _medicationId, name: name, patientUuid: widget.patientUuid);
+    try {
+      await DatabaseManager().addMedication(medicationId: _medicationId, name: name, patientUuid: widget.patientUuid);
 
-    if (_dosage != null) {
-      await DatabaseManager().addDosage(medicationId: _medicationId, dosage: _dosage!);
+      if (_dosage != null) {
+        await DatabaseManager().addDosage(medicationId: _medicationId, dosage: _dosage!);
+      }
+
+      if (_frequency != null) {
+        await DatabaseManager().addFrequency(medicationId: _medicationId, frequency: _frequency!);
+      }
+
+      if (_type != null) {
+        await DatabaseManager().addMedicationType(medicationId: _medicationId, type: _type!);
+      }
+
+      if (_isPillShaped && _shape != null) {
+        await DatabaseManager().addMedicationShape(medicationId: _medicationId, shape: _shape!);
+      }
+
+      if (_isPillShaped && _color != null) {
+        await DatabaseManager().addMedicationColor(medicationId: _medicationId, color: _color!);
+      }
+
+      if (_reminderPreference != null) {
+        final pref = _reminderPreference!;
+        await DatabaseManager().saveMedicationReminderPreference(
+          medicationId: _medicationId,
+          patientUuid: widget.patientUuid,
+          enabled: pref.enabled,
+          channels: pref.channels,
+          wearableMode: pref.wearableMode,
+          leadMinutes: pref.leadMinutes,
+        );
+      }
+
+      if (mounted) Navigator.pop(context);
+    } catch (error) {
+      // Without this, a thrown error left _isSaving stuck true forever — the Save
+      // button's onTap becomes a permanent no-op with no indication anything went
+      // wrong. Reset so the button works again, and actually surface the failure.
+      if (mounted) {
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Couldn't save this medication: $error")));
+      }
     }
-
-    if (_frequency != null) {
-      await DatabaseManager().addFrequency(medicationId: _medicationId, frequency: _frequency!);
-    }
-
-    if (_type != null) {
-      await DatabaseManager().addMedicationType(medicationId: _medicationId, type: _type!);
-    }
-
-    if (_isPillShaped && _shape != null) {
-      await DatabaseManager().addMedicationShape(medicationId: _medicationId, shape: _shape!);
-    }
-
-    if (_isPillShaped && _color != null) {
-      await DatabaseManager().addMedicationColor(medicationId: _medicationId, color: _color!);
-    }
-
-    if (_reminderPreference != null) {
-      final pref = _reminderPreference!;
-      await DatabaseManager().saveMedicationReminderPreference(
-        medicationId: _medicationId,
-        patientUuid: widget.patientUuid,
-        enabled: pref.enabled,
-        channels: pref.channels,
-        wearableMode: pref.wearableMode,
-        leadMinutes: pref.leadMinutes,
-      );
-    }
-
-    if (mounted) Navigator.pop(context);
   }
 
   @override

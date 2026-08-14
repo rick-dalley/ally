@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:ui';
 
 import 'package:triage/classes/database_manager.dart';
@@ -9,11 +8,12 @@ import 'package:triage/classes/patient_pain.dart';
 import 'body_zone.dart';
 
 class BodyMarker {
+  final int? id; // null until it's been saved once
   final Offset offset;
   final PainLevel emoji;
   final AnatomyZoneMaps zoneMap;
-  final String name;
-  final String medicalName;
+  final String name; // the zone's plain name (e.g. "right hand") — persisted as zone_name
+  final String medicalName; // the zone's latin name — derived from a Zone lookup, not persisted
   final BodyMarkerGroup group;
   DetailedPainLevel? severity;
   Frequency? frequency;
@@ -22,9 +22,13 @@ class BodyMarker {
   String? improvesWhen;
   String? worsensWhen;
   String? interventionsTried;
-  int? recorded = DTUtilities.now();
+  final int recorded;
+  bool resolved;
+  DateTime? resolvedAt;
+  DateTime? lastCheckedAt;
 
   BodyMarker({
+    this.id,
     required this.offset,
     required this.emoji,
     required this.name,
@@ -38,8 +42,11 @@ class BodyMarker {
     this.improvesWhen,
     this.worsensWhen,
     this.interventionsTried,
-    this.recorded,
-  });
+    int? recorded,
+    this.resolved = false,
+    this.resolvedAt,
+    this.lastCheckedAt,
+  }) : recorded = recorded ?? DTUtilities.now();
 
   factory BodyMarker.fromOffset(
     Offset offset,
@@ -57,104 +64,74 @@ class BodyMarker {
       group: markerGroup,
     );
   }
-  factory BodyMarker.fromJson(Map<String, dynamic> item) {
-    int severityIndex = item["severity"];
-    int emojiIndex = item["emoji"];
-    int frequencyIndex = item["frequency"];
-    int natureIndex = item["nature"];
-    AnatomyZoneMaps zoneMap = AnatomyZoneMaps.values[item["map"]];
-    Zone zoneFromJson = Zone.fromJson(item["zone"], zoneMap);
-    double dx = item["dx"];
-    double dy = item["dy"];
-    String descriptionChips = item["description"];
-    String improvesWhenChips = item["improves_when"];
-    String worsensWhenChips = item["worsens_when"];
-    String interventionsTriedChips = item["interventions_tried"];
+
+  // The `markers` table stores zone_map + zone_name (there's no fixed, ordered list of
+  // every Zone to index into — zones are loaded per body-part map from touch_points.json)
+  // — so the actual Zone (and its latin name) is re-found from the already-loaded touch
+  // image data at read time, rather than stored redundantly.
+  factory BodyMarker.fromRow(Map<String, dynamic> row) {
+    final AnatomyZoneMaps zoneMap = AnatomyZoneMaps.values[row['zone_map'] as int];
+    final String zoneName = row['zone_name'] as String;
+    final List<Zone> zones = TouchImageFactory.instance.getTouchImage(selection: zoneMap)?.zones ?? const [];
+    String medicalName = '';
+    for (final zone in zones) {
+      if (zone.name == zoneName) {
+        medicalName = zone.latin;
+        break;
+      }
+    }
+
+    final int? severityIndex = row['severity'] as int?;
+    final int? frequencyIndex = row['frequency'] as int?;
+    final int? natureIndex = row['nature'] as int?;
 
     return BodyMarker(
-      offset: Offset(dx, dy),
-      name: zoneFromJson.name,
-      medicalName: zoneFromJson.latin,
-      descriptions: descriptionChips,
-      severity: DetailedPainLevel.values[severityIndex],
-      emoji: PainLevel.values[emojiIndex],
-      frequency: Frequency.values[frequencyIndex],
-      nature: PainType.values[natureIndex],
-      improvesWhen: improvesWhenChips,
-      worsensWhen: worsensWhenChips,
-      interventionsTried: interventionsTriedChips,
-      recorded: item["recorded"],
-      group: BodyMarkerGroup.values[item['group']],
-      zoneMap: zoneFromJson.map,
+      id: row['id'] as int?,
+      offset: Offset((row['dx'] as num).toDouble(), (row['dy'] as num).toDouble()),
+      name: zoneName,
+      medicalName: medicalName,
+      zoneMap: zoneMap,
+      group: BodyMarkerGroup.values[row['marker_group'] as int],
+      emoji: PainLevel.values[row['emoji'] as int],
+      severity: severityIndex != null ? DetailedPainLevel.values[severityIndex] : null,
+      frequency: frequencyIndex != null ? Frequency.values[frequencyIndex] : null,
+      nature: natureIndex != null ? PainType.values[natureIndex] : null,
+      descriptions: row['descriptions'] as String?,
+      improvesWhen: row['improves_when'] as String?,
+      worsensWhen: row['worsens_when'] as String?,
+      interventionsTried: row['interventions_tried'] as String?,
+      recorded: row['recorded'] as int,
+      resolved: (row['resolved'] as int? ?? 0) == 1,
+      resolvedAt: row['resolved_at'] != null ? DateTime.tryParse(row['resolved_at'] as String) : null,
+      lastCheckedAt: row['last_checked_at'] != null ? DateTime.tryParse(row['last_checked_at'] as String) : null,
     );
   }
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toRow() {
     return {
-      "dx": offset.dx,
-      "dy": offset.dy,
-      "name": name,
-      "medical_name": medicalName,
-      "emoji": emoji.index,
-      "severity": severity?.index,
-      "frequency": frequency?.index,
-      "nature": nature?.index,
-      "improves_when": improvesWhen,
-      "worsens_when": worsensWhen,
-      "interventions_tried": interventionsTried,
-      "descriptions": descriptions,
-      "recorded": recorded,
-      "zone": zoneMap,
-      "group": group,
+      'dx': offset.dx,
+      'dy': offset.dy,
+      'zone_map': zoneMap.index,
+      'zone_name': name,
+      'marker_group': group.index,
+      'emoji': emoji.index,
+      'severity': severity?.index,
+      'frequency': frequency?.index,
+      'nature': nature?.index,
+      'descriptions': descriptions,
+      'improves_when': improvesWhen,
+      'worsens_when': worsensWhen,
+      'interventions_tried': interventionsTried,
+      'recorded': recorded,
+      'resolved': resolved ? 1 : 0,
+      'resolved_at': resolvedAt?.toIso8601String(),
+      'last_checked_at': lastCheckedAt?.toIso8601String(),
     };
   }
 
-  Future<void> save({required String patientUuid, required BodyMarker marker}) async {
-    DatabaseManager().insertBodyMarker(patientUuid, marker.toJson());
-  }
-}
+  Duration get age => DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(recorded * 1000));
 
-class MarkerFactory {
-  // Singleton pattern for clean access across your app
-  static final MarkerFactory instance = MarkerFactory._internal();
-  factory MarkerFactory() => instance;
-  MarkerFactory._internal();
-
-  Future<List<BodyMarker>> getMarkersForPatient(String patientUuid) async {
-    // 1. Fetch raw data from the actual database
-    final List<Map<String, dynamic>> rawData = await DatabaseManager().getMarkersForPatient(patientUuid);
-
-    // 2. Hydrate: Convert JSON strings back to lists, then to BodyMarker objects
-    return rawData.map((item) {
-      // Create a mutable copy to perform decoding
-      Map<String, dynamic> decodedItem = Map<String, dynamic>.from(item);
-
-      // Decode the stored JSON strings back into dynamic lists
-      decodedItem['description'] = jsonDecode(decodedItem['descriptions'] ?? '[]');
-      decodedItem['improves_when'] = jsonDecode(decodedItem['improves_when'] ?? '[]');
-      decodedItem['worsens_when'] = jsonDecode(decodedItem['worsens_when'] ?? '[]');
-      decodedItem['interventions_tried'] = jsonDecode(decodedItem['interventions_tried'] ?? '[]');
-
-      return BodyMarker.fromJson(decodedItem);
-    }).toList();
-  }
-
-  Future<void> saveMarkersForPatient(String patientUuid, List<BodyMarker> markers) async {
-    // Convert BodyMarkers to the database-friendly Map format
-    List<Map<String, dynamic>> rows = markers.map((marker) {
-      Map<String, dynamic> row = marker.toJson();
-      row['patient_uuid'] = patientUuid;
-
-      // Handle the serialization logic here, NOT in the database manager
-      row['descriptions'] = jsonEncode(row['descriptions'] ?? []);
-      row['improves_when'] = jsonEncode(row['improves_when'] ?? []);
-      row['worsens_when'] = jsonEncode(row['worsens_when'] ?? []);
-      row['interventions_tried'] = jsonEncode(row['interventions_tried'] ?? []);
-
-      return row;
-    }).toList();
-
-    // The database manager just sees raw data, not 'Markers'
-    await DatabaseManager().insertMarkersBatch('body_markers', rows);
+  Future<int> save({required String patientUuid}) {
+    return DatabaseManager().insertBodyMarker(patientUuid, toRow());
   }
 }

@@ -78,7 +78,7 @@
     },
     {
       "table": "medication",
-      "query": "CREATE TABLE IF NOT EXISTS medication (id TEXT PRIMARY KEY, patient_uuid TEXT, name TEXT, set_id TEXT, dose TEXT, freq TEXT, type TEXT, shape TEXT, color TEXT, started_taking DATETIME, stopped_taking DATETIME, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, has_local_datasheet int NOT NULL, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid), FOREIGN KEY (set_id) REFERENCES datasheet(set_id) ON DELETE RESTRICT);"
+      "query": "CREATE TABLE IF NOT EXISTS medication (id TEXT PRIMARY KEY, patient_uuid TEXT, name TEXT, set_id TEXT, dose TEXT, freq TEXT, reminder_time TEXT, type TEXT, shape TEXT, color TEXT, started_taking DATETIME, stopped_taking DATETIME, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, has_local_datasheet int NOT NULL, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid), FOREIGN KEY (set_id) REFERENCES datasheet(set_id) ON DELETE RESTRICT);"
     },
     {
       "table": "medication",
@@ -166,7 +166,7 @@
     },
     {
       "table" : "appointment",
-      "query" : "CREATE TABLE appointment (id TEXT PRIMARY KEY, provider_uuid TEXT, location_name TEXT, scheduled_for DATETIME NOT NULL, appointment_update_url TEXT, appointment_url TEXT, notes TEXT, street TEXT, city TEXT, pr_st TEXT, country TEXT, code TEXT );"
+      "query" : "CREATE TABLE appointment (id TEXT PRIMARY KEY, patient_uuid TEXT, provider_uuid TEXT, location_name TEXT, scheduled_for DATETIME NOT NULL, appointment_update_url TEXT, appointment_url TEXT, reason TEXT, notes TEXT, street TEXT, city TEXT, pr_st TEXT, country TEXT, code TEXT, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE );"
     },
     {
       "table": "appointment",
@@ -194,7 +194,7 @@
     },
     {
       "table": "markers",
-      "query": "CREATE TABLE markers ( id INTEGER PRIMARY KEY AUTOINCREMENT, patient_uuid TEXT NOT NULL, dx REAL NOT NULL, dy REAL NOT NULL, zone INTEGER NOT NULL, emoji INTEGER NOT NULL, severity INTEGER, frequency INTEGER, nature INTEGER, descriptions TEXT, improves_when TEXT,  worsens_when TEXT,  interventions_tried TEXT,  recorded INTEGER NOT NULL);"
+      "query": "CREATE TABLE markers ( id INTEGER PRIMARY KEY AUTOINCREMENT, patient_uuid TEXT NOT NULL, dx REAL NOT NULL, dy REAL NOT NULL, zone_map INTEGER NOT NULL, zone_name TEXT NOT NULL, marker_group INTEGER NOT NULL, emoji INTEGER NOT NULL, severity INTEGER, frequency INTEGER, nature INTEGER, descriptions TEXT, improves_when TEXT,  worsens_when TEXT,  interventions_tried TEXT,  recorded INTEGER NOT NULL, resolved INTEGER NOT NULL DEFAULT 0, resolved_at DATETIME, last_checked_at DATETIME);"
     },
     {
       "table": "markers",
@@ -203,6 +203,10 @@
     {
       "table": "markers",
       "query": "CREATE INDEX idx_markers_patient_uuid ON markers(patient_uuid);"
+    },
+    {
+      "table": "markers",
+      "query": "CREATE INDEX idx_markers_followup ON markers(patient_uuid, resolved, recorded);"
     }
   ]
  }

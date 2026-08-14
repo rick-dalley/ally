@@ -141,3 +141,53 @@ enum FrequencyCodes implements Listable {
     return frequencyCode.label;
   }
 }
+
+extension FrequencyCodesSchedule on FrequencyCodes {
+  // The daily clock times a dose is expected, "HH:mm" — the single source of truth
+  // for turning a frequency into an actual reminder schedule. proReNata (as-needed)
+  // and the meal-relative codes deliberately return an approximation, not a promise.
+  List<String> get dailyTimes {
+    switch (this) {
+      case FrequencyCodes.quaqueDie:
+        return ['08:00'];
+      case FrequencyCodes.bisInDie:
+        return ['08:00', '20:00'];
+      case FrequencyCodes.terInDie:
+        return ['08:00', '14:00', '20:00'];
+      case FrequencyCodes.quaterInDie:
+        return ['08:00', '12:00', '16:00', '20:00'];
+      case FrequencyCodes.quaqueHoraSomni:
+        return ['21:00'];
+      case FrequencyCodes.quaqueAnteMeridiem:
+        return ['08:00'];
+      case FrequencyCodes.quaquePostMeridiem:
+        return ['20:00'];
+      case FrequencyCodes.proReNata:
+        return const []; // as-needed — no fixed schedule to remind against
+      case FrequencyCodes.anteCibum:
+        return ['07:30', '12:30', '17:30']; // approximate meal times
+      case FrequencyCodes.postCibum:
+        return ['08:30', '13:30', '18:30'];
+    }
+  }
+}
+
+class FrequencySchedule {
+  FrequencySchedule._();
+
+  // `medication.freq` isn't stored consistently — seeded rows hold a short code
+  // ("qd", "bid"), rows saved through the wizard hold the latin phrase ("Quaque
+  // die"), and free text like "PRN" or "every 8 hours" is possible too. This checks
+  // a raw stored value against both forms, case-insensitively, before giving up.
+  static List<String> dailyTimesFor(String? rawFrequency) {
+    if (rawFrequency == null || rawFrequency.trim().isEmpty) return const [];
+    final String normalized = rawFrequency.trim().toLowerCase();
+
+    for (final code in FrequencyCodes.values) {
+      if (code.code.toLowerCase() == normalized || code.latin.toLowerCase() == normalized) {
+        return code.dailyTimes;
+      }
+    }
+    return const []; // unrecognized format — no fixed schedule can be derived
+  }
+}

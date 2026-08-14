@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:triage/app_theme.dart';
+import 'package:material_symbols_icons/symbols.dart';
+import 'package:triage/classes/carbon_theme_constants.dart';
 import 'package:triage/classes/patient_pain.dart';
+import 'package:triage/widgets/carbon_button_compact.dart';
 import 'package:triage/widgets/carbon_style_dropdown.dart';
 
 import '../classes/body_markers.dart';
@@ -28,110 +30,58 @@ class _BodyMarkerModalState extends State<BodyMarkerModal> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
       child: Container(
         padding: const EdgeInsets.all(16),
         width: 400,
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(_currentMarker.name.toUpperCase(), style: AppTheme.defaultTextStyle),
+            Text(_currentMarker.name.toUpperCase(), style: CarbonTheme.carbonHeadingTextStyle),
             const SizedBox(height: 16),
 
-            Row(
-              children: [
-                IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: Icon(PainLevel.none.icon),
-                ),
-                IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: Icon(PainLevel.mild.icon),
-                ),
-                IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: Icon(PainLevel.distracting.icon),
-                ),
-                IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: Icon(PainLevel.limiting.icon),
-                ),
-                IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: Icon(PainLevel.incapacitating.icon),
-                ),
-                IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: Icon(PainLevel.severe.icon),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // onChanged: ,
             CarbonButton2LineDropDown<DetailedPainLevel>(
               label: "Pain Level",
               placeholder: "Select the Pain Level",
               helperText: "Choose the level of pain that you are feeling",
               onChanged: (Listable val) {
-                final level = val as DetailedPainLevel;
-                setState(() {
-                  _currentMarker = _updateMarker(severity: level);
-                });
+                setState(() => _currentMarker = _updateMarker(severity: val as DetailedPainLevel));
               },
-              value: DetailedPainLevel.none,
+              value: _currentMarker.severity ?? DetailedPainLevel.none,
               items: DetailedPainLevel.values,
             ),
             const SizedBox(height: 16),
-            // Frequency
             CarbonDropdown<Frequency>(
               label: "Frequency",
               helperText: "Select how often this pain occurs",
               placeholder: "Select the frequency",
               items: Frequency.values,
-              value: Frequency.cyclical,
+              value: _currentMarker.frequency ?? Frequency.cyclical,
               onChanged: (Listable val) {
-                setState(() {
-                  final Frequency frequency = val as Frequency;
-                  _currentMarker = _updateMarker(frequency: frequency);
-                });
+                setState(() => _currentMarker = _updateMarker(frequency: val as Frequency));
               },
             ),
             const SizedBox(height: 16),
-
-            // Nature
             CarbonDropdown(
               label: "Type",
               helperText: "A description of how it feels",
               placeholder: "Select Pain Type",
               items: PainType.values,
-              value: PainType.achy,
+              value: _currentMarker.nature ?? PainType.achy,
               onChanged: (Listable val) {
-                setState(() {
-                  PainType painType = val as PainType;
-                  _currentMarker = _updateMarker(painType: painType);
-                });
+                setState(() => _currentMarker = _updateMarker(painType: val as PainType));
               },
             ),
-
-            const Spacer(),
-            ElevatedButton(
-              onPressed: () {
+            const SizedBox(height: 24),
+            CarbonCompactButton(
+              icon: Symbols.check,
+              label: "Save",
+              style: CarbonButtonStyle.primary,
+              onTap: () {
                 widget.onSave(_currentMarker);
                 Navigator.pop(context);
               },
-              child: const Text("Save"),
             ),
           ],
         ),
@@ -139,16 +89,30 @@ class _BodyMarkerModalState extends State<BodyMarkerModal> {
     );
   }
 
-  // Helper to maintain immutability while updating state
+  // Each call only supplies the field the user just changed — everything else must
+  // carry forward from _currentMarker's current state, or every prior selection gets
+  // silently wiped by the next one (this was the actual bug before: frequency/nature
+  // were accepted as parameters here but never read).
   BodyMarker _updateMarker({DetailedPainLevel? severity, Frequency? frequency, PainType? painType}) {
     return BodyMarker(
+      id: _currentMarker.id,
       offset: _currentMarker.offset,
       emoji: _currentMarker.emoji,
       name: _currentMarker.name,
       medicalName: _currentMarker.medicalName,
       zoneMap: _currentMarker.zoneMap,
-      severity: severity,
       group: _currentMarker.group,
+      severity: severity ?? _currentMarker.severity,
+      frequency: frequency ?? _currentMarker.frequency,
+      nature: painType ?? _currentMarker.nature,
+      descriptions: _currentMarker.descriptions,
+      improvesWhen: _currentMarker.improvesWhen,
+      worsensWhen: _currentMarker.worsensWhen,
+      interventionsTried: _currentMarker.interventionsTried,
+      recorded: _currentMarker.recorded,
+      resolved: _currentMarker.resolved,
+      resolvedAt: _currentMarker.resolvedAt,
+      lastCheckedAt: _currentMarker.lastCheckedAt,
     );
   }
 }
