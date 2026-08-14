@@ -58,7 +58,7 @@
     },
     {
       "table": "patient_vaccination",
-      "query": "CREATE TABLE IF NOT EXISTS patient_vaccination (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, protection TEXT, received INTEGER, years_ago INTEGER, patient_uuid TEXT, FOREIGN KEY(patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
+      "query": "CREATE TABLE IF NOT EXISTS patient_vaccination (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, protection TEXT, received INTEGER, years_ago INTEGER, next_due DATETIME, patient_uuid TEXT, FOREIGN KEY(patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
     },
     {
       "table": "patient_mood",
@@ -166,7 +166,7 @@
     },
     {
       "table" : "appointment",
-      "query" : "CREATE TABLE appointment (id TEXT PRIMARY KEY, patient_uuid TEXT, provider_uuid TEXT, location_name TEXT, scheduled_for DATETIME NOT NULL, appointment_update_url TEXT, appointment_url TEXT, reason TEXT, notes TEXT, street TEXT, city TEXT, pr_st TEXT, country TEXT, code TEXT, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE );"
+      "query" : "CREATE TABLE appointment (id TEXT PRIMARY KEY, patient_uuid TEXT, provider_uuid TEXT, location_name TEXT, scheduled_for DATETIME NOT NULL, appointment_update_url TEXT, appointment_url TEXT, reason TEXT, notes TEXT, status TEXT NOT NULL DEFAULT 'scheduled', street TEXT, city TEXT, pr_st TEXT, country TEXT, code TEXT, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE );"
     },
     {
       "table": "appointment",

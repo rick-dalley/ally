@@ -8,6 +8,7 @@ import '../classes/body_zone.dart';
 import '../classes/database_manager.dart';
 import '../classes/patient.dart';
 import '../classes/patient_pain.dart';
+import '../classes/reminder_registry.dart';
 import '../widgets/body_marker_modal.dart';
 import '../widgets/symptom_followup_dialog.dart';
 
@@ -163,6 +164,7 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
     // Dismissed without picking an option (tapped outside/back) — don't immediately
     // re-show the same prompt in a loop; ask again next time they open this screen.
     if (!mounted || handled != true) return;
+    await ReminderRegistry.instance.refresh();
     await _loadMarkers();
   }
 

@@ -14,7 +14,7 @@ import '../classes/patient.dart';
 import '../classes/reminder_registry.dart';
 import '../widgets/carbon_style_avatar.dart';
 import '../widgets/emergency_qr.dart';
-import '../widgets/reminder_feed.dart';
+import '../widgets/reminder_sheet.dart';
 import 'prescription_screen.dart';
 import 'providers_screen.dart';
 import 'medical_profile_screen.dart';
@@ -32,18 +32,38 @@ class HomeScreenState extends State<HomeScreen> {
   List<Patient> patients = [];
   bool _isLoading = true;
   late PageController _pageController;
+  bool _reminderSheetShowing = false;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
     loadPatientData();
+    ReminderRegistry.instance.addListener(_maybeShowReminders);
   }
 
   @override
   void dispose() {
+    ReminderRegistry.instance.removeListener(_maybeShowReminders);
     _pageController.dispose();
     super.dispose();
+  }
+
+  // Reminders float over the screen as a modal sheet rather than living inline in the
+  // layout — they shouldn't push other content around or take up permanent space.
+  // Fires automatically whenever the registry reports something newly due.
+  void _maybeShowReminders() {
+    if (_reminderSheetShowing || !mounted) return;
+    if (ReminderRegistry.instance.due.isEmpty) return;
+
+    _reminderSheetShowing = true;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const ReminderSheet(),
+    ).whenComplete(() => _reminderSheetShowing = false);
   }
 
   Future<void> loadPatientData() async {
@@ -165,8 +185,6 @@ class HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-
-            const ReminderFeed(),
 
             // Main PageView containing the tabs
             Expanded(

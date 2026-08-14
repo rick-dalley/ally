@@ -14,7 +14,7 @@ import 'data_seeder.dart';
 import 'medication_services.dart';
 import 'metric_value.dart';
 
-bool overWrite = true;
+bool overWrite = false;
 
 class DatabaseManager {
   // Singleton pattern
@@ -160,14 +160,55 @@ class DatabaseManager {
     return result;
   }
 
-  Future<int> insertVaccination(String patientUuid, String name, String protection, DateTime? received) async {
+  Future<int> insertVaccination(
+    String patientUuid,
+    String name,
+    String protection,
+    DateTime? received, {
+    DateTime? nextDue,
+  }) async {
     final db = await database;
     return await db.insert('patient_vaccination', {
       'patient_uuid': patientUuid,
       'name': name,
       'protection': protection,
       'received': received?.toIso8601String(), // Store as ISO string for SQLite
+      'next_due': nextDue?.toIso8601String(),
     });
+  }
+
+  // Vaccinations with a next-due date set — there's no reference table of recommended
+  // schedules yet (e.g. "tetanus every 10 years"), so this only surfaces reminders for
+  // records where a due date was explicitly set, not computed from the vaccine name.
+  Future<List<Map<String, dynamic>>> getVaccinationsWithReminders(String patientUuid) async {
+    final db = await database;
+    return await db.query(
+      'patient_vaccination',
+      where: 'patient_uuid = ? AND next_due IS NOT NULL',
+      whereArgs: [patientUuid],
+    );
+  }
+
+  // Clears next_due (stops reminding) and records the actual received date — "Done"
+  // on an immunization reminder.
+  Future<void> markVaccinationReceived(int vaccinationId, DateTime receivedOn) async {
+    final db = await database;
+    await db.update(
+      'patient_vaccination',
+      {'received': receivedOn.toIso8601String(), 'next_due': null},
+      where: 'id = ?',
+      whereArgs: [vaccinationId],
+    );
+  }
+
+  Future<void> rescheduleVaccinationReminder(int vaccinationId, DateTime newDueDate) async {
+    final db = await database;
+    await db.update(
+      'patient_vaccination',
+      {'next_due': newDueDate.toIso8601String()},
+      where: 'id = ?',
+      whereArgs: [vaccinationId],
+    );
   }
 
   Future<int> deleteVaccination(String vaccinationName, String patientUuid) async {
@@ -1065,6 +1106,66 @@ class DatabaseManager {
     WHERE m.patient_uuid = ? AND m.stopped_taking IS NULL AND r.enabled = 1
   ''',
       [patientUuid],
+    );
+  }
+
+  // The actual record a missed dose/appointment/shot needs — "Done"/"Skipped" on a
+  // reminder write here, not just dismiss the on-screen card.
+  Future<void> logMedicationDose({
+    required String medicationId,
+    required String patientUuid,
+    required DateTime scheduledFor,
+    required String status, // 'taken' | 'missed' | 'snoozed' | 'skipped'
+  }) async {
+    final db = await database;
+    await db.insert('medication_dose_log', {
+      'id': uuid.v4(),
+      'medication_id': medicationId,
+      'patient_uuid': patientUuid,
+      'scheduled_for': scheduledFor.toIso8601String(),
+      'status': status,
+      'responded_at': DateTime.now().toIso8601String(),
+    });
+  }
+
+  // Today's logged doses for every medication a patient has — used to keep a reminder
+  // from resurfacing once that specific dose has already been marked done/skipped.
+  Future<List<Map<String, dynamic>>> getTodaysMedicationDoseLog(String patientUuid) async {
+    final db = await database;
+    final DateTime now = DateTime.now();
+    final String todayStart = DateTime(now.year, now.month, now.day).toIso8601String();
+    final String todayEnd = DateTime(now.year, now.month, now.day, 23, 59, 59).toIso8601String();
+    return await db.query(
+      'medication_dose_log',
+      where: 'patient_uuid = ? AND scheduled_for >= ? AND scheduled_for <= ?',
+      whereArgs: [patientUuid, todayStart, todayEnd],
+    );
+  }
+
+  // "Don't remind me again" — turns the reminder off without touching whether the
+  // patient is still taking the medication (that's archiveMedication's job).
+  Future<void> muteMedicationReminder(String medicationId) async {
+    final db = await database;
+    await db.update(
+      'medication_reminder_preference',
+      {'enabled': 0},
+      where: 'medication_id = ?',
+      whereArgs: [medicationId],
+    );
+  }
+
+  Future<void> updateAppointmentStatus(String appointmentId, String status) async {
+    final db = await database;
+    await db.update('appointment', {'status': status}, where: 'id = ?', whereArgs: [appointmentId]);
+  }
+
+  Future<void> rescheduleAppointment(String appointmentId, DateTime newTime) async {
+    final db = await database;
+    await db.update(
+      'appointment',
+      {'scheduled_for': newTime.toIso8601String(), 'status': 'scheduled'},
+      where: 'id = ?',
+      whereArgs: [appointmentId],
     );
   }
 

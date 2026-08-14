@@ -11,6 +11,7 @@ import '../app_theme.dart';
 import '../classes/database_manager.dart';
 import '../classes/medication_services.dart';
 import '../classes/patient.dart';
+import '../classes/reminder_registry.dart';
 import '../widgets/medication_card.dart';
 
 class PrescriptionScreen extends StatefulWidget {
@@ -121,6 +122,11 @@ class PrescriptionScreenState extends State<PrescriptionScreen> {
     // The wizard pops itself (both on save and on cancel) — either way, reload
     // so a successful save actually shows up in the list.
     await loadMedsForPatient();
+
+    // Without this, a newly-saved reminder wouldn't show up until the registry's next
+    // 5-minute poll or the next patient switch — not immediately, which is exactly
+    // when someone testing (or actually setting up) a reminder is looking for it.
+    await ReminderRegistry.instance.refresh();
   }
 
   @override
