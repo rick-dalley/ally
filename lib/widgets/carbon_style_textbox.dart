@@ -15,6 +15,7 @@ class CarbonTextInput extends StatefulWidget {
   final Function(String)? onChanged;
   final TextInputType? keyboardType;
   final TextEditingController? controller;
+  final int maxLines;
 
   const CarbonTextInput({
     super.key,
@@ -28,6 +29,7 @@ class CarbonTextInput extends StatefulWidget {
     this.errorText,
     this.keyboardType,
     this.onChanged,
+    this.maxLines = 1,
   });
 
   @override
@@ -94,6 +96,7 @@ class CarbonStateText extends State<CarbonTextInput> {
           controller: controller,
           style: CarbonTheme.carbonTextStyle,
           keyboardType: keyboard,
+          maxLines: widget.maxLines,
           decoration: InputDecoration(
             filled: true,
             fillColor: fillColor,

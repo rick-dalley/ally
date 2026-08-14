@@ -155,14 +155,16 @@ class PrescriptionScreenState extends State<PrescriptionScreen> {
                   interactions: currentConflicts,
                   medication: med,
                   index: index,
-                  onDelete: () async {
-                    // 1. Remove from the local database
-                    await DatabaseManager().deleteMedication(med.id);
+                  onArchive: () async {
+                    // 1. Close it out in the database — sets stopped_taking, keeps the
+                    // row (and its dose/interaction history) intact for later reference
+                    // or in case the patient goes back on it.
+                    await DatabaseManager().archiveMedication(med.id);
 
-                    // 2. Remove from the UI state. Rebuilding the map (rather than
-                    // mutating in place) gives InteractionsWidget a genuinely new
+                    // 2. Remove from the active-list UI state. Rebuilding the map (rather
+                    // than mutating in place) gives InteractionsWidget a genuinely new
                     // reference to diff against in didUpdateWidget, so the automatic
-                    // re-audit actually fires on delete too.
+                    // re-audit actually fires here too.
                     setState(() {
                       medications = Map<String, Medication>.from(medications)..remove(med.id);
                     });
@@ -172,6 +174,7 @@ class PrescriptionScreenState extends State<PrescriptionScreen> {
                       med.hasLocalDataSheet = true;
                     });
                   },
+                  onMedicationChanged: loadMedsForPatient,
                 );
               },
             ),

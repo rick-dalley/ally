@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart' show IconData;
 import 'package:http/http.dart' as http;
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/contactable.dart';
 import 'package:triage/classes/phone.dart';
 import 'package:triage/classes/uuid.dart';
@@ -183,8 +185,13 @@ enum MedicationTypes {
   unknown,
 }
 
-extension MedicationTypeNames on MedicationTypes {
-  String get name {
+// Named `label`/`description`/`icon` rather than `name` deliberately — Dart enums
+// already have a built-in `.name` getter (the raw identifier, e.g. "tablet"), and an
+// extension can't override it: `type.name` always resolves to the built-in one, no
+// matter what an extension declares, so an extension named `name` here would be
+// silently unreachable dead code (this file previously had exactly that bug).
+extension MedicationTypeDetails on MedicationTypes {
+  String get label {
     switch (this) {
       case MedicationTypes.tablet:
         return "Tablet";
@@ -207,17 +214,90 @@ extension MedicationTypeNames on MedicationTypes {
       case MedicationTypes.inhaler:
         return "Inhaler";
       case MedicationTypes.suppository:
-        return "suppository";
+        return "Suppository";
       case MedicationTypes.injection:
         return "Injection";
       case MedicationTypes.iv:
-        return "Intravenous";
+        return "Intravenous (IV)";
       case MedicationTypes.nebulizer:
         return "Nebulizer";
       case MedicationTypes.unknown:
-        return "unknown";
+        return "Something Else";
     }
   }
+
+  String get description {
+    switch (this) {
+      case MedicationTypes.tablet:
+        return "A solid pill you swallow whole, chew, or let dissolve";
+      case MedicationTypes.capsule:
+        return "Medicine sealed inside a soft or hard shell you swallow";
+      case MedicationTypes.liquid:
+        return "A syrup, solution, or drops you swallow";
+      case MedicationTypes.topical:
+        return "A cream or lotion you apply to your skin";
+      case MedicationTypes.ointment:
+        return "A thick, soothing layer you apply to your skin";
+      case MedicationTypes.gel:
+        return "A smooth gel you apply to your skin";
+      case MedicationTypes.transdermalPatch:
+        return "A sticky patch that releases medicine through your skin";
+      case MedicationTypes.drops:
+        return "Liquid drops for your eyes, ears, or nose";
+      case MedicationTypes.spray:
+        return "A fine mist you spray into your nose or mouth";
+      case MedicationTypes.inhaler:
+        return "A device you breathe in from to get a measured dose";
+      case MedicationTypes.suppository:
+        return "Inserted rectally or vaginally, dissolves at body temperature";
+      case MedicationTypes.injection:
+        return "Given by needle into a muscle or under the skin";
+      case MedicationTypes.iv:
+        return "Given directly into a vein, usually by a nurse or doctor";
+      case MedicationTypes.nebulizer:
+        return "A machine that turns liquid medicine into a mist you breathe";
+      case MedicationTypes.unknown:
+        return "Not sure yet — you can update this later";
+    }
+  }
+
+  IconData get icon {
+    switch (this) {
+      case MedicationTypes.tablet:
+        return Symbols.medication;
+      case MedicationTypes.capsule:
+        return Symbols.pill;
+      case MedicationTypes.liquid:
+        return Symbols.medication_liquid;
+      case MedicationTypes.topical:
+        return Symbols.spa;
+      case MedicationTypes.ointment:
+        return Symbols.healing;
+      case MedicationTypes.gel:
+        return Symbols.texture;
+      case MedicationTypes.transdermalPatch:
+        return Symbols.sanitizer;
+      case MedicationTypes.drops:
+        return Symbols.colorize;
+      case MedicationTypes.spray:
+        return Symbols.mist;
+      case MedicationTypes.inhaler:
+        return Symbols.air;
+      case MedicationTypes.suppository:
+        return Symbols.grain;
+      case MedicationTypes.injection:
+        return Symbols.syringe;
+      case MedicationTypes.iv:
+        return Symbols.bloodtype;
+      case MedicationTypes.nebulizer:
+        return Symbols.humidity_mid;
+      case MedicationTypes.unknown:
+        return Symbols.help;
+    }
+  }
+
+  // Only pill-shaped forms have a meaningful shape/color to pick in the wizard.
+  bool get isPillShaped => this == MedicationTypes.tablet || this == MedicationTypes.capsule;
 }
 
 enum MedicationSafetyAudit { auditNotPerformed, interactionsNotDetected, interactionsDetected }
@@ -244,7 +324,7 @@ class Frequency {
   });
 }
 
-enum WizardSteps { name, type, dosage, frequency, shape, color }
+enum WizardSteps { name, type, dosage, frequency, reminders, shape, color }
 
 extension WizardStepsName on WizardSteps {
   String get label {
@@ -257,12 +337,89 @@ extension WizardStepsName on WizardSteps {
         return "Type";
       case WizardSteps.frequency:
         return "Frequency";
+      case WizardSteps.reminders:
+        return "Reminders";
       case WizardSteps.shape:
         return "Shape";
       case WizardSteps.color:
         return "Color";
     }
   }
+}
+
+enum DosageUnit { mg, mcg, mL, units, tablets }
+
+extension DosageUnitLabel on DosageUnit {
+  String get label {
+    switch (this) {
+      case DosageUnit.mg:
+        return "mg";
+      case DosageUnit.mcg:
+        return "mcg";
+      case DosageUnit.mL:
+        return "mL";
+      case DosageUnit.units:
+        return "units (IU)";
+      case DosageUnit.tablets:
+        return "tablet(s)";
+    }
+  }
+}
+
+enum ReminderChannel { chime, text, email, wearable }
+
+extension ReminderChannelDetails on ReminderChannel {
+  String get label {
+    switch (this) {
+      case ReminderChannel.chime:
+        return "Chime on my phone";
+      case ReminderChannel.text:
+        return "Text message";
+      case ReminderChannel.email:
+        return "Email";
+      case ReminderChannel.wearable:
+        return "Wearable device";
+    }
+  }
+
+  IconData get icon {
+    switch (this) {
+      case ReminderChannel.chime:
+        return Symbols.notifications;
+      case ReminderChannel.text:
+        return Symbols.sms;
+      case ReminderChannel.email:
+        return Symbols.mail;
+      case ReminderChannel.wearable:
+        return Symbols.watch;
+    }
+  }
+}
+
+enum WearableAlertMode { audible, vibration, both }
+
+extension WearableAlertModeLabel on WearableAlertMode {
+  String get label {
+    switch (this) {
+      case WearableAlertMode.audible:
+        return "Sound";
+      case WearableAlertMode.vibration:
+        return "Vibration";
+      case WearableAlertMode.both:
+        return "Sound and vibration";
+    }
+  }
+}
+
+// UI-layer bundle for the wizard's Reminders step — not a database row shape (see
+// DatabaseManager.saveMedicationReminderPreference for how this gets persisted).
+class ReminderPreference {
+  final bool enabled;
+  final Set<ReminderChannel> channels;
+  final int leadMinutes;
+  final WearableAlertMode? wearableMode;
+
+  const ReminderPreference({this.enabled = false, this.channels = const {}, this.leadMinutes = 0, this.wearableMode});
 }
 
 // InteractionConflict
@@ -350,7 +507,11 @@ class Medication {
   bool hasInteractionAlert;
   bool hasInteractions;
   bool isSyncing;
-  Dosage? dose;
+  // The raw values actually stored in the `medication` table (e.g. "50 mg", "Quaque die").
+  String? dose;
+  String? freq;
+  // Reserved for a future structured dosing schedule (see WizardSteps/Frequency) — not
+  // populated from the database today; `freq` above is the real current value.
   Frequency? frequency;
   TabletShapes? shape;
   TabletColors? color;
@@ -367,6 +528,7 @@ class Medication {
     this.imageBits,
     this.imageUrl,
     this.dose,
+    this.freq,
     this.frequency,
     this.hasInteractionAlert = false,
     this.hasInteractions = false,
@@ -399,6 +561,8 @@ class Medication {
       hasLocalDataSheet: map['has_local_dataset'] == 1,
       hasInteractionAlert: alert,
       severity: rawSeverity,
+      dose: map['dose'],
+      freq: map['freq'],
       shape: _parseTabletShape(map['shape']),
       color: _parseTabletColor(map['color']),
       datasheetSections: {

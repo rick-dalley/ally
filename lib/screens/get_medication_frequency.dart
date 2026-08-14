@@ -19,13 +19,10 @@ class GetMedicationFrequency extends StatefulWidget {
 }
 
 class _GetMedicationFrequencyState extends State<GetMedicationFrequency> {
-  bool _alert = false;
   DateTime? start;
   DateTime? end;
   DateTime? specificTime;
   String? latinRecurrence;
-
-  bool get _shouldRecommendAlert => specificTime != null;
 
   @override
   void initState() {
@@ -43,111 +40,102 @@ class _GetMedicationFrequencyState extends State<GetMedicationFrequency> {
   }
 
   void _emitFrequency() {
+    // Reminder configuration (channels, lead time, etc.) lives on its own wizard step
+    // now, not on Frequency — `alert` here is vestigial and always false.
     widget.onFrequencySelected(
-      Frequency(latinRecurrence: latinRecurrence, start: start, end: end, specificTime: specificTime, alert: _alert),
+      Frequency(latinRecurrence: latinRecurrence, start: start, end: end, specificTime: specificTime, alert: false),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      child: Container(
-        color: AppTheme.onPrimaryColor,
-        child: Column(
-          children: [
-            Text("Frequency", style: CarbonTheme.carbonHeadingTextStyle),
-            Text("Set the time and frequency that you must take this medication"),
-            SizedBox(height: CarbonSpacing.wide.height),
-            // Using a conditional to prevent build errors before data arrives
-            //
-            CarbonDropdown(
-              label: "Frequency",
-              helperText: "Check the code for frequency on the label of you medication, or choose it if you know it",
-              placeholder: "Select the frequency",
-              items: FrequencyCodes.values,
-              value: FrequencyCodes.quaqueDie,
-              onChanged: (Listable val) {
-                setState(() {
-                  FrequencyCodes frequencyCode = val as FrequencyCodes;
-                  latinRecurrence = frequencyCode.latin;
-                });
-                _emitFrequency();
-              },
-            ),
-            SizedBox(height: CarbonSpacing.wide.height),
-            Row(
-              children: [
-                Expanded(
-                  child: CarbonFullButton(
-                    icon: Symbols.calendar_clock,
-                    style: CarbonButtonStyle.tertiary,
-                    label: start != null ? "Start: ${start.toString().split(' ')[0]}" : "Start Date",
-                    onTap: () async {
-                      final date = await showDatePicker(
-                        context: context,
-                        initialDate: start ?? DateTime.now(),
-                        firstDate: DateTime.now(),
-                        lastDate: DateTime(2100),
-                      );
-                      if (date != null) {
-                        setState(() => start = date);
-                        _emitFrequency();
-                      }
-                    },
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: CarbonFullButton(
-                    icon: Symbols.calendar_clock,
-                    style: CarbonButtonStyle.tertiary,
-                    label: end != null ? "End: ${end.toString().split(' ')[0]}" : "End Date",
-                    onTap: () async {
-                      final date = await showDatePicker(
-                        context: context,
-                        initialDate: end ?? DateTime.now(),
-                        firstDate: start ?? DateTime.now(),
-                        lastDate: DateTime(2100),
-                      );
-                      if (date != null) {
-                        setState(() => end = date);
-                        _emitFrequency();
-                      }
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16.0),
-            ListTile(
-              title: Text("Time", style: CarbonTheme.carbonLabelTextStyle),
-              trailing: IconButton(icon: const Icon(Symbols.schedule), onPressed: _pickTime),
-              subtitle: Padding(
-                padding: const EdgeInsets.only(top: 8.0, left: 8.0),
-                child: Text(
-                  specificTime != null
-                      ? "Selected: ${specificTime!.hour.toString().padLeft(2, '0')}:${specificTime!.minute.toString().padLeft(2, '0')}"
-                      : "6:00pm",
-                  style: CarbonTheme.carbonTextStyle,
-                ),
-              ),
-            ),
-
-            const Divider(),
-
-            Container(
-              color: _shouldRecommendAlert && !_alert ? Colors.amber.withValues(alpha: 0.1) : null,
-              child: SwitchListTile(
-                title: const Text("Enable Medication Alerts"),
-                subtitle: _shouldRecommendAlert ? const Text("Recommended for specific times") : null,
-                value: _alert,
-                onChanged: (val) {
-                  setState(() => _alert = val);
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Container(
+          color: AppTheme.onPrimaryColor,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Frequency", style: CarbonTheme.carbonHeadingTextStyle),
+              const SizedBox(height: 8),
+              Text("How often do you take this?", style: CarbonTheme.carbonHintTextStyle),
+              SizedBox(height: CarbonSpacing.wide.height),
+              CarbonDropdown(
+                label: "Frequency",
+                helperText: "Check the code for frequency on the label of your medication, or choose it if you know it",
+                placeholder: "Select the frequency",
+                items: FrequencyCodes.values,
+                value: FrequencyCodes.quaqueDie,
+                onChanged: (Listable val) {
+                  setState(() {
+                    FrequencyCodes frequencyCode = val as FrequencyCodes;
+                    latinRecurrence = frequencyCode.latin;
+                  });
                   _emitFrequency();
                 },
               ),
-            ),
-          ],
+              SizedBox(height: CarbonSpacing.wide.height),
+              Row(
+                children: [
+                  Expanded(
+                    child: CarbonFullButton(
+                      icon: Symbols.calendar_clock,
+                      style: CarbonButtonStyle.tertiary,
+                      label: start != null ? "Start: ${start.toString().split(' ')[0]}" : "Start Date",
+                      onTap: () async {
+                        final date = await showDatePicker(
+                          context: context,
+                          initialDate: start ?? DateTime.now(),
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime(2100),
+                        );
+                        if (date != null) {
+                          setState(() => start = date);
+                          _emitFrequency();
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: CarbonFullButton(
+                      icon: Symbols.calendar_clock,
+                      style: CarbonButtonStyle.tertiary,
+                      label: end != null ? "End: ${end.toString().split(' ')[0]}" : "End Date",
+                      onTap: () async {
+                        final date = await showDatePicker(
+                          context: context,
+                          initialDate: end ?? DateTime.now(),
+                          firstDate: start ?? DateTime.now(),
+                          lastDate: DateTime(2100),
+                        );
+                        if (date != null) {
+                          setState(() => end = date);
+                          _emitFrequency();
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16.0),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text("Time", style: CarbonTheme.carbonLabelTextStyle),
+                trailing: IconButton(icon: const Icon(Symbols.schedule), onPressed: _pickTime),
+                subtitle: Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    specificTime != null
+                        ? "Selected: ${specificTime!.hour.toString().padLeft(2, '0')}:${specificTime!.minute.toString().padLeft(2, '0')}"
+                        : "6:00pm",
+                    style: CarbonTheme.carbonTextStyle,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

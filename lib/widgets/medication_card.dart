@@ -5,22 +5,29 @@ import 'package:triage/classes/carbon_color_constants.dart';
 import 'package:triage/classes/database_manager.dart';
 
 import '../classes/carbon_theme_constants.dart';
-import '../classes/frequency_codes.dart';
 import '../classes/medication_services.dart';
 import '../classes/tablet.dart';
+import 'change_medication_sheet.dart';
 import 'interaction_chip.dart';
 
 class MedicationCard extends StatefulWidget {
   final Medication medication;
   final List<InteractionConflict> interactions;
-  final VoidCallback onDelete;
+  // Archives the medication (stops tracking it as active) rather than deleting its
+  // history — the patient may go back on it later, and past dosing matters for the
+  // therapy-impact timeline.
+  final VoidCallback onArchive;
+  // Called after a dosage/frequency change is saved, so the parent can reload — the
+  // card doesn't own the source-of-truth list, so it can't refresh itself.
+  final VoidCallback? onMedicationChanged;
   final ValueChanged<bool>? onExpansionChanged;
   final int? index;
   const MedicationCard({
     super.key,
     required this.medication,
     required this.interactions,
-    required this.onDelete,
+    required this.onArchive,
+    this.onMedicationChanged,
     this.index,
     this.onExpansionChanged,
   });
@@ -43,6 +50,19 @@ class _MedicationCardState extends State<MedicationCard> {
         setId: widget.medication.setId!,
         medicationName: widget.medication.name,
       );
+    }
+  }
+
+  Future<void> _openChangeSheet(BuildContext context) async {
+    final bool? changed = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
+      builder: (context) => ChangeMedicationSheet(medication: widget.medication),
+    );
+    if (changed == true) {
+      widget.onMedicationChanged?.call();
     }
   }
 
@@ -77,10 +97,10 @@ class _MedicationCardState extends State<MedicationCard> {
   Widget build(BuildContext context) {
     final String medicationId = widget.medication.id;
     final String medicationName = widget.medication.name;
-    final Frequency? frequencyDetails = widget.medication.frequency;
-    final String frequency = frequencyDetails != null
-        ? FrequencyCodes.getFrequencyLabel(frequencyDetails.latinRecurrence!)
-        : '';
+    // The raw value actually stored on the medication (a latin phrase or "PRN", not a
+    // FrequencyCodes short code), so it's displayed as-is rather than run through the
+    // code-lookup table.
+    final String frequency = widget.medication.freq ?? '';
     final List<InteractionConflict> medicationInteractions = widget.interactions
         .where((conflict) => conflict.hasInteraction(medicationName))
         .toList();
@@ -122,7 +142,16 @@ class _MedicationCardState extends State<MedicationCard> {
                         child: Text(medicationName.toUpperCase(), style: CarbonTheme.carbonTertiaryButtonTextStyle),
                       ),
                     ),
-                    IconButton(onPressed: widget.onDelete, icon: const Icon(Symbols.close)),
+                    IconButton(
+                      onPressed: () => _openChangeSheet(context),
+                      icon: const Icon(Symbols.edit),
+                      tooltip: "Change dosage or frequency",
+                    ),
+                    IconButton(
+                      onPressed: widget.onArchive,
+                      icon: const Icon(Symbols.close),
+                      tooltip: "Stop taking this medication",
+                    ),
                   ],
                 ),
                 Align(

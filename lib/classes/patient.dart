@@ -1,11 +1,8 @@
-import 'dart:math';
-
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import 'package:triage/classes/acuity.dart';
 import 'package:triage/classes/blood_type.dart';
 import 'package:triage/classes/patient_pain.dart';
-import 'package:triage/classes/vitals.dart';
 
 import 'database_manager.dart';
 import 'date_time_utilities.dart';
@@ -56,7 +53,6 @@ class Patient {
   String formattedDateOfBirth;
   String formattedAdmissionDate;
   int age;
-  CurrentVitalsRecord? vitals;
   bool isAWOL;
 
   Patient({
@@ -99,19 +95,18 @@ class Patient {
     this.formattedAdmissionDate = "",
     this.formattedDateOfBirth = "",
     this.age = 17,
-    this.vitals,
-    this.pain = PainLevel.distracting,
+    this.pain = PainLevel.none,
     this.eyeColor = "",
     this.isAWOL = false,
     this.bloodType = const BloodType(abo: AboType.o, rh: RhFactor.positive),
   });
 
   factory Patient.fromJson(Map<String, dynamic> item) {
-    final DateTime adm = DTUtilities.randomHrsAgo(max: 48);
-    final DateTime birth = DTUtilities.randomYrsAgo(min: 17, max: 95);
-    CurrentVitalsRecord vitalsRecord = CurrentVitalsRecord.fromPatientJson(item);
-    int painIndex = Random().nextInt(5);
-    PainLevel pain = PainLevel.values[painIndex];
+    // Was randomizing admitted/dob/pain on every single construction — i.e. on every
+    // screen load — instead of reading the values actually stored in the database.
+    final DateTime adm = DTUtilities.sqliteToDart(item['admitted']);
+    final DateTime birth = DTUtilities.sqliteToDart(item['dob']);
+    const PainLevel pain = PainLevel.none; // No real pain-tracking source wired up yet.
     int rawRhFactor = item["rh_factor"] ?? 0;
     RhFactor rhFactor = RhFactor.values[rawRhFactor];
     int rawAboType = item["abo_type"] ?? 0;
@@ -185,7 +180,6 @@ class Patient {
       age: DTUtilities.calculateYearsSince(birth),
       formattedDateOfBirth: DateFormat.yMEd().format(birth),
       formattedAdmissionDate: DateFormat.yMEd().format(adm),
-      vitals: vitalsRecord,
       //'Partner',
       narrativeHint: item['narrative_hint'] ?? "", //'Maecenas ut massa ...
       pain: pain,
@@ -229,7 +223,6 @@ class Patient {
       height: patient.height,
       weight: patient.weight,
       age: patient.age,
-      vitals: patient.vitals,
       narrativeHint: patient.narrativeHint,
       eyeColor: "brown",
     );

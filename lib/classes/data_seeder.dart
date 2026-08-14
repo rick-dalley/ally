@@ -348,32 +348,6 @@ class DataSeeder {
           }
         }
 
-        if (item['vitals'] != null && item['vitals'] is List) {
-          final List<dynamic> vitalsList = item['vitals'];
-
-          for (var vital in vitalsList) {
-            // Define the map of metrics to insert
-            int vitalId = vital['id'] ?? 1;
-
-            final Map<String, dynamic> metrics = {
-              'pulse': (vital['pulse'] as num?)?.toInt() ?? 0.0,
-              'systolic': (vital['systolic'] as num?)?.toInt() ?? 0.0,
-              'diastolic': (vital['diastolic'] as num?)?.toInt() ?? 0.0,
-              'spo2': (vital['spo2'] as num?)?.toDouble() ?? 0.0,
-              'temp': (vital['temp'] as num?)?.toDouble() ?? 0.0,
-            };
-            // Insert each metric as its own row
-            for (var entry in metrics.entries) {
-              await txn.insert('patient_metrics', {
-                'id': '${item['patient_uuid']}_${entry.key}_$vitalId',
-                'reading_id': vitalId,
-                'patient_uuid': patientUuid,
-                'metric_type': entry.key,
-                'metric_value': entry.value,
-              }, conflictAlgorithm: ConflictAlgorithm.replace);
-            }
-          }
-        }
       }
     });
   }

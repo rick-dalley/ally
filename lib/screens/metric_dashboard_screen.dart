@@ -3,13 +3,9 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/carbon_theme_constants.dart';
 import 'package:triage/widgets/carbon_style_search_field.dart';
 import '../app_theme.dart';
-import '../classes/database_manager.dart';
 import '../classes/metric_value.dart';
 import '../classes/patient.dart';
-import '../classes/vitals.dart' hide Metric;
-import '../widgets/current_metrics.dart';
 import '../widgets/metric_tracking_card.dart';
-import '../widgets/vitals_history.dart';
 
 class MetricsDashboardScreen extends StatefulWidget {
   final Patient user;
@@ -83,40 +79,8 @@ class MetricsDashboardScreenState extends State<MetricsDashboardScreen> {
   }
 
   // A completely separate, clean async routine to fetch fresh row data
-  Future<void> refreshPatientData() async {
-    final dynamic result = await DatabaseManager().getPatientWithVitals(
-      patientUuid: patientController.patient.patientUuid,
-    );
-    final Map<String, dynamic> updatedPatient = result[0];
-
-    if (mounted) {
-      // Synchronous setState execution ONLY after the data is securely sitting in memory
-      setState(() {
-        patientController.patient = Patient.fromJson(updatedPatient);
-      });
-      widget.onMemberUpdate(patientController.patient);
-    }
-  }
-
-  void showVitalsHistory({
-    required BuildContext context,
-    required String patientUuid,
-    required CurrentVitalsRecord? vitals,
-  }) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppTheme.surfaceColor,
-      shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
-      builder: (context) =>
-          VitalsHistoryView(patientUuid: patientUuid, vitals: vitals, onAddedVitals: refreshPatientData),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    Patient user = widget.user;
-
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: FutureBuilder<void>(
@@ -176,17 +140,6 @@ class MetricsDashboardScreenState extends State<MetricsDashboardScreen> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                 child: CarbonSearchField(controller: searchController),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                child: CurrentMetrics(
-                  title: "Recent Metrics",
-                  vitals: user.vitals,
-                  barHeight: 180,
-                  onTap: () {
-                    showVitalsHistory(context: context, patientUuid: user.patientUuid, vitals: user.vitals);
-                  },
-                ),
               ),
               Expanded(
                 child: ListView(

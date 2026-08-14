@@ -17,10 +17,6 @@ class GetMedicationType extends StatefulWidget {
 class _GetMedicationTypeState extends State<GetMedicationType> {
   MedicationTypes? _selectedType;
   final selectedColor = AppColors.mustard[3];
-  // Helper to format enum values into display strings
-  String _formatType(MedicationTypes type) {
-    return type.name[0].toUpperCase() + type.name.substring(1);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,17 +50,19 @@ class _GetMedicationTypeState extends State<GetMedicationType> {
                 separatorBuilder: (_, _) => carbonSeparator,
                 itemBuilder: (context, index) {
                   final type = MedicationTypes.values[index];
+                  final bool isSelected = _selectedType == type;
                   return RadioListTile<MedicationTypes>(
                     activeColor: selectedColor,
-
                     value: type,
+                    secondary: Icon(type.icon, color: isSelected ? selectedColor : AppTheme.defaultHintColor),
                     title: Text(
-                      _formatType(type),
+                      type.label,
                       style: TextStyle(
-                        color: (_selectedType == type) ? selectedColor : AppTheme.defaultFontColor,
-                        fontWeight: (_selectedType == type) ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected ? selectedColor : AppTheme.defaultFontColor,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                       ),
                     ),
+                    subtitle: Text(type.description, style: CarbonTheme.carbonHelperTextStyle),
                   );
                 },
               ),

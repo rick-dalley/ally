@@ -8,14 +8,13 @@ import 'package:flutter/services.dart';
 import 'package:triage/classes/patient_condition.dart';
 import 'package:triage/classes/provider.dart';
 import 'package:triage/classes/questionnaire.dart';
-import 'package:triage/classes/vitals.dart';
 import 'package:uuid/uuid.dart';
 import 'acuity.dart';
 import 'data_seeder.dart';
 import 'medication_services.dart';
 import 'metric_value.dart';
 
-bool overWrite = false;
+bool overWrite = true;
 
 class DatabaseManager {
   // Singleton pattern
@@ -296,50 +295,15 @@ class DatabaseManager {
 
   Future<List<Map<String, dynamic>>> getAllPatientsWithVitals() async {
     final db = await database;
-
-    // Use a LEFT JOIN to ensure we get the patient even if they have no vitals yet
-    return await db.rawQuery('''
-    SELECT p.*
-    FROM patient p
-    
-  ''');
-    // LEFT JOIN patient_metrics m ON p.patient_uuid = m.patient_uuid
+    return await db.query('patient');
   }
 
+  // Retired the LEFT JOIN patient_metrics (2026-08-14) — that table and the vitals
+  // subsystem built on it are gone; current-reading data now lives entirely in the
+  // catalog-driven metric/patient_metric tables (see getPatientMetricRanges etc.).
   Future<List<Map<String, dynamic>>> getPatientWithVitals({required String patientUuid}) async {
     final db = await database;
-
-    // Use a LEFT JOIN to ensure we get the patient even if they have no vitals yet
-    return await db.rawQuery(
-      '''
-    SELECT p.*, m.*
-    FROM patient p
-    LEFT JOIN patient_metrics m ON p.patient_uuid = m.patient_uuid
-    WHERE p.patient_uuid = ?
-  ''',
-      [patientUuid],
-    );
-  }
-
-  Future<List<Map<String, dynamic>>> getPatientVitalsHistory({required String patientUuid}) async {
-    final db = await database;
-
-    // Use a LEFT JOIN to ensure we get the patient even if they have no vitals yet
-    return await db.rawQuery(
-      '''
-    SELECT m.*
-    FROM patient p
-    LEFT JOIN patient_metrics m ON p.patient_uuid = m.patient_uuid
-    WHERE p.patient_uuid = ?
-    ORDER BY m.reading_id, m.metric_type
-  ''',
-      [patientUuid],
-    );
-  }
-
-  // Helper to avoid deadlocks during the open/create cycle
-  Future<void> rawInsertVitals(Database db, Map<String, dynamic> data) async {
-    await db.insert('vitals', data, conflictAlgorithm: ConflictAlgorithm.replace);
+    return await db.query('patient', where: 'patient_uuid = ?', whereArgs: [patientUuid]);
   }
 
   Future<void> insertAcuity({
@@ -443,100 +407,13 @@ class DatabaseManager {
     return result.first['next_id'] as int;
   }
 
-  Future<void> insertVitalsBatch({
-    required String patientUuid,
-    required int systolic,
-    required int diastolic,
-    required int pulse,
-    required double spo2,
-    required double temperature,
-  }) async {
-    final db = await database;
-
-    final int nextReadingId = await getNextReadingId(db, patientUuid);
-    // 1. Initialize a highly optimized atomic write batch
-    final batch = db.batch();
-    final String timestamp = DateTime.now().toIso8601String();
-
-    // A helper map to structure our loop properties cleanly
-    final Map<String, double> vitalsMap = {
-      'systolic': systolic.toDouble(),
-      'diastolic': diastolic.toDouble(),
-      'pulse': pulse.toDouble(),
-      'spo2': spo2,
-      'temp': temperature,
-    };
-
-    // 2. Queue all 5 unique metric types into the batch execution buffer
-    vitalsMap.forEach((metricType, value) {
-      if (value > 0) {
-        final String rowId = "${patientUuid}_${metricType}_${DateTime.now().microsecondsSinceEpoch}";
-
-        batch.insert('patient_metrics', {
-          'id': rowId, // <-- Supply the required primary key GUID here!
-          'reading_id': nextReadingId,
-          'patient_uuid': patientUuid,
-          'metric_type': metricType,
-          'metric_value': value,
-          'recorded_at': timestamp,
-        });
-      }
-    });
-
-    // 3. Commit all rows to the phone storage database in one single disk pass
-    await batch.commit(noResult: true);
-  }
-
-  Future<CurrentVitalsRecord?> getCurrentVitals(String patientUuid) async {
-    final db = await database; // Your DB instance
-
-    // Query the sidecar table
-    final List<Map<String, dynamic>> results = await db.query(
-      'patient_current_metrics',
-      where: 'patient_uuid = ?',
-      whereArgs: [patientUuid],
-    );
-
-    if (results.isEmpty) return null;
-
-    final row = results.first;
-
-    // Convert the flat database row into the format CurrentVitals expects
-    final List<Map<String, dynamic>> metricList = [
-      {
-        'metric_type': 'systolic',
-        'metric_value': row['current_systolic'],
-        'min_found': row['min_systolic'],
-        'max_found': row['max_systolic'],
-      },
-      {
-        'metric_type': 'diastolic',
-        'metric_value': row['current_diastolic'],
-        'min_found': row['min_diastolic'],
-        'max_found': row['max_diastolic'],
-      },
-      {
-        'metric_type': 'pulse',
-        'metric_value': row['current_pulse'],
-        'min_found': row['min_pulse'],
-        'max_found': row['max_pulse'],
-      },
-      {
-        'metric_type': 'spo2',
-        'metric_value': row['current_spo2'],
-        'min_found': row['min_spo2'],
-        'max_found': row['max_spo2'],
-      },
-      {
-        'metric_type': 'temperature',
-        'metric_value': row['current_temperature'],
-        'min_found': row['min_temperature'],
-        'max_found': row['max_temperature'],
-      },
-    ];
-
-    return CurrentVitalsRecord.fromJson(metricList);
-  }
+  // insertVitalsBatch, getCurrentVitals, and getVitalsForPatient were retired
+  // 2026-08-14 along with the rest of the legacy vitals subsystem (see
+  // MEMORY: project-ally-data-model-gaps) — getCurrentVitals queried a
+  // patient_current_metrics table that never existed in the schema, and
+  // getVitalsForPatient queried a bare "vitals" table that never existed either.
+  // insertPatientMetric/getLatestMetric/getNextReadingId below are unrelated —
+  // real, live methods still used by user_screen.dart for height/weight — kept.
 
   Future<MetricValue?> getLatestMetric(String patientUuid, String metricType) async {
     final db = await database;
@@ -638,18 +515,6 @@ class DatabaseManager {
   }
 
   // Retrieve all vital readings for a specific patient, newest first
-  Future<List<Map<String, dynamic>>> getVitalsForPatient(String patientUuid) async {
-    final db = await database;
-
-    return await db.query(
-      'vitals',
-      where: 'patient_uuid = ?',
-      whereArgs: [patientUuid],
-      // Sort by timestamp descending so the latest data is at the top of the list
-      orderBy: 'recorded_at DESC',
-    );
-  }
-
   Future<List<Map<String, dynamic>>> getPatientEvents(String uuid) async {
     final db = await database;
     return await db.query('patient_events', where: 'patient_uuid = ?', whereArgs: [uuid], orderBy: 'timestamp DESC');
@@ -730,6 +595,96 @@ class DatabaseManager {
   Future<int> deleteMedication(String medUuid) async {
     final db = await database;
     return await db.delete('medication', where: 'id = ?', whereArgs: [medUuid]);
+  }
+
+  // "Removing" a medication from the active list doesn't mean it's gone — the patient
+  // may go back on it later, and the history (what they took, for how long) matters for
+  // the therapy-impact timeline. This just closes it out rather than deleting the row.
+  Future<void> archiveMedication(String medicationId) async {
+    final db = await database;
+    await db.update(
+      'medication',
+      {'stopped_taking': DateTime.now().toIso8601String()},
+      where: 'id = ?',
+      whereArgs: [medicationId],
+    );
+  }
+
+  // Logs a dosage/frequency change (with the patient/doctor's reason) and updates the
+  // medication's live dose/freq to match, atomically — the log is the history, the
+  // medication row stays "current," same pattern as patient_mood. Ordered by changed_at,
+  // consecutive rows in getMedicationChangeHistory give "how long were they on this dose"
+  // for a titration timeline, even though nothing renders that yet.
+  Future<void> recordMedicationChange({
+    required String medicationId,
+    required String patientUuid,
+    String? previousDose,
+    String? newDose,
+    String? previousFreq,
+    String? newFreq,
+    required String reason,
+  }) async {
+    final db = await database;
+    await db.transaction((txn) async {
+      await txn.insert('medication_change_log', {
+        'id': uuid.v4(),
+        'medication_id': medicationId,
+        'patient_uuid': patientUuid,
+        'previous_dose': previousDose,
+        'new_dose': newDose,
+        'previous_freq': previousFreq,
+        'new_freq': newFreq,
+        'reason': reason,
+      });
+
+      await txn.update('medication', {'dose': ?newDose, 'freq': ?newFreq}, where: 'id = ?', whereArgs: [medicationId]);
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> getMedicationChangeHistory(String medicationId) async {
+    final db = await database;
+    return await db.query(
+      'medication_change_log',
+      where: 'medication_id = ?',
+      whereArgs: [medicationId],
+      orderBy: 'changed_at ASC',
+    );
+  }
+
+  // A preference, not a clinical event — one current row per medication (unlike
+  // medication_change_log), so a plain upsert is enough; no reason/history needed.
+  Future<void> saveMedicationReminderPreference({
+    required String medicationId,
+    required String patientUuid,
+    required bool enabled,
+    required Set<ReminderChannel> channels,
+    WearableAlertMode? wearableMode,
+    required int leadMinutes,
+  }) async {
+    final db = await database;
+    await db.insert('medication_reminder_preference', {
+      'medication_id': medicationId,
+      'patient_uuid': patientUuid,
+      'enabled': enabled ? 1 : 0,
+      'chime_enabled': channels.contains(ReminderChannel.chime) ? 1 : 0,
+      'text_enabled': channels.contains(ReminderChannel.text) ? 1 : 0,
+      'email_enabled': channels.contains(ReminderChannel.email) ? 1 : 0,
+      'wearable_enabled': channels.contains(ReminderChannel.wearable) ? 1 : 0,
+      'wearable_mode': wearableMode?.name,
+      'lead_minutes': leadMinutes,
+      'updated_at': DateTime.now().toIso8601String(),
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<Map<String, dynamic>?> getMedicationReminderPreference(String medicationId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> results = await db.query(
+      'medication_reminder_preference',
+      where: 'medication_id = ?',
+      whereArgs: [medicationId],
+      limit: 1,
+    );
+    return results.isEmpty ? null : results.first;
   }
 
   Future<void> saveDatasheet(Map<String, dynamic> fdaJson, String? classes) async {
@@ -816,12 +771,18 @@ class DatabaseManager {
     return found;
   }
 
-  Future<List<Map<String, dynamic>>> getMedicationsForPatient(String patientUuid) async {
+  // Active by default — archived (stopped_taking set) medications are excluded so a
+  // patient who tried something before and stopped doesn't see it mixed into their
+  // current list. Pass includeArchived for a future medication-history view.
+  Future<List<Map<String, dynamic>>> getMedicationsForPatient(
+    String patientUuid, {
+    bool includeArchived = false,
+  }) async {
     final db = await database;
 
     return await db.query(
       'medication',
-      where: 'patient_uuid = ?',
+      where: includeArchived ? 'patient_uuid = ?' : 'patient_uuid = ? AND stopped_taking IS NULL',
       whereArgs: [patientUuid],
       // Optional: Sort by name so the list doesn't jump around
       orderBy: 'name ASC',

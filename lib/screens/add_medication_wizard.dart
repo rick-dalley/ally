@@ -4,6 +4,7 @@ import 'package:triage/screens/get_medication_color.dart';
 import 'package:triage/screens/get_medication_dosage.dart';
 import 'package:triage/screens/get_medication_frequency.dart';
 import 'package:triage/screens/get_medication_name.dart';
+import 'package:triage/screens/get_medication_reminders.dart';
 import 'package:triage/screens/get_medication_shape.dart';
 import 'package:triage/screens/get_medication_type.dart';
 import 'package:triage/widgets/carbon_button_compact.dart';
@@ -46,9 +47,46 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
   MedicationTypes? _type;
   TabletShapes? _shape;
   TabletColors? _color;
-
-  static const int _lastStep = 5; // name, type, dosage, frequency, shape, color
+  ReminderPreference? _reminderPreference;
   bool _isSaving = false;
+
+  // Only pill-shaped forms (tablet/capsule) have a shape/color worth asking about.
+  // Defaults to true until the Type step is answered — that step always comes before
+  // shape/color could ever be reached, so this can never desync mid-flow.
+  bool get _isPillShaped => _type?.isPillShaped ?? true;
+
+  List<WizardSteps> get _activeSteps => [
+    WizardSteps.name,
+    WizardSteps.type,
+    WizardSteps.dosage,
+    WizardSteps.frequency,
+    WizardSteps.reminders,
+    if (_isPillShaped) ...[WizardSteps.shape, WizardSteps.color],
+  ];
+
+  List<Widget> get _activePages => [
+    GetMedicationName(
+      nameController: widget.nameController,
+      // The name field itself keeps the text controller in sync regardless of whether
+      // the user scanned a barcode or typed manually; _saveMedication reads that
+      // controller directly, so this callback just keeps the wizard (e.g. the progress
+      // bar) in sync while the user is on this step.
+      onAddMedication: (val) => setState(() {}),
+    ),
+    GetMedicationType(onTypeSelected: (val) => setState(() => _type = val)),
+    GetMedicationDosage(controller: widget.dosageController, onAddDosage: (val) => setState(() => _dosage = val)),
+    GetMedicationFrequency(
+      controller: widget.frequencyController,
+      onFrequencySelected: (val) => setState(() => _frequency = val),
+    ),
+    GetMedicationReminders(onReminderPreferenceChanged: (val) => setState(() => _reminderPreference = val)),
+    if (_isPillShaped) ...[
+      GetMedicationShape(onShapeSelect: (val) => setState(() => _shape = val)),
+      GetMedicationColor(onColorSelect: (val) => setState(() => _color = val)),
+    ],
+  ];
+
+  int get _lastStep => _activeSteps.length - 1;
 
   @override
   void dispose() {
@@ -92,12 +130,24 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
       await DatabaseManager().addMedicationType(medicationId: _medicationId, type: _type!);
     }
 
-    if (_shape != null) {
+    if (_isPillShaped && _shape != null) {
       await DatabaseManager().addMedicationShape(medicationId: _medicationId, shape: _shape!);
     }
 
-    if (_color != null) {
+    if (_isPillShaped && _color != null) {
       await DatabaseManager().addMedicationColor(medicationId: _medicationId, color: _color!);
+    }
+
+    if (_reminderPreference != null) {
+      final pref = _reminderPreference!;
+      await DatabaseManager().saveMedicationReminderPreference(
+        medicationId: _medicationId,
+        patientUuid: widget.patientUuid,
+        enabled: pref.enabled,
+        channels: pref.channels,
+        wearableMode: pref.wearableMode,
+        leadMinutes: pref.leadMinutes,
+      );
     }
 
     if (mounted) Navigator.pop(context);
@@ -105,7 +155,14 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
 
   @override
   Widget build(BuildContext context) {
+    final List<WizardSteps> steps = _activeSteps;
+    final List<Widget> pages = _activePages;
     final bool isLastStep = _currentStep == _lastStep;
+
+    // A step count can only ever shrink (losing shape/color) once the user leaves the
+    // Type page, and only while sitting on it — so _currentStep is always in range, but
+    // clamp defensively rather than trust that invariant silently forever.
+    final int safeCurrentStep = _currentStep.clamp(0, steps.length - 1);
 
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBackgroundColor,
@@ -113,7 +170,7 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
         padding: EdgeInsets.all(CarbonSpacing.wide.width),
         child: Row(
           children: [
-            if (_currentStep > 0) ...[
+            if (safeCurrentStep > 0) ...[
               Expanded(
                 child: CarbonCompactButton(
                   icon: Symbols.chevron_backward,
@@ -137,7 +194,7 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
               child: CarbonCompactButton(
                 icon: isLastStep ? Symbols.trophy : Symbols.navigate_next,
                 style: CarbonButtonStyle.primary,
-                label: isLastStep ? (_isSaving ? "Saving..." : "Save") : WizardSteps.values[_currentStep + 1].label,
+                label: isLastStep ? (_isSaving ? "Saving..." : "Save") : steps[safeCurrentStep + 1].label,
                 onTap: _isSaving ? () {} : _goNext,
               ),
             ),
@@ -147,35 +204,14 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
       body: Column(
         children: [
           const SizedBox(height: 12),
-          _StepProgress(currentStep: _currentStep, stepCount: _lastStep + 1),
+          _StepProgress(currentStep: safeCurrentStep, stepCount: steps.length),
           const SizedBox(height: 4),
           Expanded(
             child: PageView(
               controller: _pageController,
               physics: const NeverScrollableScrollPhysics(),
               onPageChanged: (idx) => setState(() => _currentStep = idx),
-
-              children: [
-                GetMedicationName(
-                  nameController: widget.nameController,
-                  // The name field itself keeps the text controller in sync regardless of
-                  // whether the user scanned a barcode or typed manually; _saveMedication
-                  // reads that controller directly, so this callback just keeps the wizard
-                  // (e.g. the progress bar) in sync while the user is on this step.
-                  onAddMedication: (val) => setState(() {}),
-                ),
-                GetMedicationType(onTypeSelected: (val) => setState(() => _type = val)),
-                GetMedicationDosage(
-                  controller: widget.dosageController,
-                  onAddDosage: (val) => setState(() => _dosage = val),
-                ),
-                GetMedicationFrequency(
-                  controller: widget.frequencyController,
-                  onFrequencySelected: (val) => setState(() => _frequency = val),
-                ),
-                GetMedicationShape(onShapeSelect: (val) => setState(() => _shape = val)),
-                GetMedicationColor(onColorSelect: (val) => setState(() => _color = val)),
-              ],
+              children: pages,
             ),
           ),
         ],
