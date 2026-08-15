@@ -7,27 +7,40 @@ import 'package:triage/widgets/carbon_style_dropdown.dart';
 import 'package:triage/widgets/carbon_style_number_edit.dart';
 import 'package:triage/widgets/carbon_style_textbox.dart';
 import 'package:triage/widgets/high_low_close_capsule.dart';
+import 'package:triage/widgets/metric_target_sheet.dart';
+import 'package:triage/widgets/metric_threshold_sheet.dart';
 import '../classes/carbon_theme_constants.dart';
 import '../classes/metric_value.dart';
 
 class MetricExpandableCard extends StatefulWidget {
+  final String patientUuid;
   final bool tracked;
   final Metric metric;
   final MetricRange? range;
+  final MetricThreshold? threshold;
+  final MetricTarget? target;
   final String description;
   final String whyItMatters;
   final IconData categoryIcon;
   final Function(bool) onTrackingChanged;
+  // Called after the patient saves/removes a threshold or target — the parent owns the
+  // source-of-truth maps this card was built from, so it needs to reload and rebuild
+  // this card with the fresh data rather than this card tracking it independently.
+  final VoidCallback? onDataChanged;
   final List<Map<String, dynamic>>? historicalValues;
   final Map<String, dynamic>? savedConfig;
   const MetricExpandableCard({
     super.key,
+    required this.patientUuid,
     required this.tracked,
     required this.metric,
     required this.description,
     required this.whyItMatters,
     required this.categoryIcon,
     required this.onTrackingChanged,
+    this.threshold,
+    this.target,
+    this.onDataChanged,
     this.historicalValues,
     this.savedConfig,
     this.range,
@@ -41,22 +54,21 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
   late bool tracked = widget.tracked;
   bool expanded = false;
   bool showInfoView = false; // true if opened via '?' button
-  // Form states for tracking details
-  final TextEditingController targetController = TextEditingController();
-  final TextEditingController upperLimitController = TextEditingController();
-  final TextEditingController lowerLimitController = TextEditingController();
   final TextEditingController newValueController = TextEditingController();
   late final FocusNode newValueControllerFocusNode = FocusNode();
-  bool showMedicalLimits = false;
-  bool showHealthyLimits = false;
-  String? linkedResource;
   late List<Map<String, dynamic>> history;
   late Map<String, dynamic> config;
   late String title = widget.metric.name;
-  late double usl = widget.metric.safeUpperValue ?? 0.0;
-  late double lsl = widget.metric.safeLowerValue ?? 0.0;
   late MetricRange range = widget.range ?? MetricRange(id: widget.metric.id);
   late bool isNewValueEnabled = false;
+
+  // Getters, not `late` fields — a `late` field computed from `widget.x` only ever
+  // evaluates once (the first time it's read), so it goes stale the moment the parent
+  // reloads fresh threshold/target data and rebuilds this card with the same
+  // ValueKey(metric.id) (which keeps this State object alive rather than recreating
+  // it). A getter re-reads `widget.threshold`/`widget.target` on every access instead.
+  double get usl => widget.threshold?.dangerHigh ?? widget.metric.safeUpperValue ?? 0.0;
+  double get lsl => widget.threshold?.dangerLow ?? widget.metric.safeLowerValue ?? 0.0;
 
   @override
   void initState() {
@@ -70,10 +82,37 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
   @override
   void dispose() {
     newValueControllerFocusNode.dispose();
-    targetController.dispose();
-    upperLimitController.dispose();
-    lowerLimitController.dispose();
+    newValueController.dispose();
     super.dispose();
+  }
+
+  Future<void> _editThresholds() async {
+    final bool? saved = await showDialog<bool>(
+      context: context,
+      builder: (context) => MetricThresholdSheet(
+        patientUuid: widget.patientUuid,
+        metric: widget.metric,
+        existing: widget.threshold,
+      ),
+    );
+    if (saved == true) widget.onDataChanged?.call();
+  }
+
+  Future<void> _editTarget() async {
+    final bool? saved = await showDialog<bool>(
+      context: context,
+      builder: (context) => MetricTargetSheet(
+        patientUuid: widget.patientUuid,
+        metric: widget.metric,
+        existing: widget.target,
+      ),
+    );
+    if (saved == true) widget.onDataChanged?.call();
+  }
+
+  String _rangeLabel(double? low, double? high) {
+    if (low == null && high == null) return "Not set";
+    return "${low?.toStringAsFixed(1) ?? '—'} to ${high?.toStringAsFixed(1) ?? '—'}";
   }
 
   @override
@@ -304,6 +343,11 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
   }
 
   Widget _buildTrackingDetailsContent() {
+    final MetricThreshold? threshold = widget.threshold;
+    final MetricTarget? target = widget.target;
+    final bool hasCustomSafe = threshold?.dangerLow != null || threshold?.dangerHigh != null;
+    final bool hasCustomHealthy = threshold?.healthyLow != null || threshold?.healthyHigh != null;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -315,38 +359,82 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
             color: CarbonTheme.getTileColor(CarbonTileStyle.base),
             border: Border.all(color: carbonColorBorderSubtle03),
           ),
-          child: range.count == 0
-              ? Center(
-                  child: Text("No Data", textAlign: TextAlign.center, style: CarbonTheme.carbonTextStyle),
-                )
-              : SizedBox(width: 16, height: 16),
+          child: Center(
+            child: Text(
+              range.count == 0 ? "No data yet" : "Trend chart coming soon",
+              textAlign: TextAlign.center,
+              style: CarbonTheme.carbonTextStyle,
+            ),
+          ),
         ),
         const SizedBox(height: 16),
-        CarbonNumberInput(controller: targetController, label: 'Target Value'),
-        const SizedBox(height: 16),
-        CarbonNumberInput(
-          controller: upperLimitController,
-          label: 'Upper Limit',
-          hint: "The highest value before triggering an alarm.",
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("SAFE RANGE", style: CarbonTheme.carbonLabelTextStyle),
+                  const SizedBox(height: 4),
+                  Text(_rangeLabel(lsl, usl), style: CarbonTheme.carbonTextStyle),
+                  Text(
+                    hasCustomSafe ? "From ${threshold?.setBy ?? 'your doctor'}" : "General guideline",
+                    style: CarbonTheme.carbonHelperTextStyle,
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("HEALTHY RANGE", style: CarbonTheme.carbonLabelTextStyle),
+                  const SizedBox(height: 4),
+                  Text(
+                    _rangeLabel(
+                      threshold?.healthyLow ?? widget.metric.healthyLowerValue,
+                      threshold?.healthyHigh ?? widget.metric.healthyUpperValue,
+                    ),
+                    style: CarbonTheme.carbonTextStyle,
+                  ),
+                  Text(
+                    hasCustomHealthy ? "From ${threshold?.setBy ?? 'your doctor'}" : "General guideline",
+                    style: CarbonTheme.carbonHelperTextStyle,
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 16),
-        CarbonNumberInput(
-          controller: lowerLimitController,
-          label: 'Lower Limit',
-          hint: "The lowest value before triggering an alarm.",
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            onPressed: _editThresholds,
+            icon: const Icon(Symbols.edit, size: 16),
+            label: Text(hasCustomSafe || hasCustomHealthy ? "Edit what your doctor told you" : "Record what your doctor told you"),
+          ),
         ),
-
-        const SizedBox(height: 16),
-        CarbonCheckboxListTile(
-          title: const Text("Display Medical Set Limits", style: TextStyle(fontSize: 13)),
-          value: showMedicalLimits,
-          onChanged: (val) => setState(() => showMedicalLimits = val ?? false),
+        const SizedBox(height: 8),
+        const Divider(height: 1),
+        const SizedBox(height: 8),
+        Text("TARGET", style: CarbonTheme.carbonLabelTextStyle),
+        const SizedBox(height: 4),
+        Text(
+          target != null ? "${target.direction.label} ${target.targetValue}" : "No target set",
+          style: CarbonTheme.carbonTextStyle,
         ),
-        CarbonCheckboxListTile(
-          title: const Text("Display Universally Accepted Healthy Limits", style: TextStyle(fontSize: 13)),
-          value: showHealthyLimits,
-          onChanged: (val) => setState(() => showHealthyLimits = val ?? false),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            onPressed: _editTarget,
+            icon: const Icon(Symbols.edit, size: 16),
+            label: Text(target != null ? "Edit target" : "Set a target"),
+          ),
         ),
+        const SizedBox(height: 8),
+        const Divider(height: 1),
         const SizedBox(height: 16),
         CarbonDropdown<JourneySupports>(
           label: 'Link Journey Support',

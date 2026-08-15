@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/carbon_color_constants.dart';
+import 'package:triage/screens/allergies_screen.dart';
 import 'package:triage/screens/body_screen.dart';
+import 'package:triage/screens/eye_care_screen.dart';
 import 'package:triage/screens/physical_health.dart';
 import 'package:triage/screens/prescription_screen.dart';
 import 'package:triage/screens/questionnaires_screen.dart';
+import 'package:triage/screens/supplies_screen.dart';
 import 'package:triage/screens/tests_screen.dart';
 import 'package:triage/widgets/carbon_style_action_tile.dart';
 
@@ -18,7 +21,7 @@ import '../widgets/carbon_button_compact.dart';
 import '../widgets/carbon_flyout_widget.dart';
 import '../widgets/carbon_style_textbox.dart';
 import 'immunization_screen.dart';
-import 'observation.dart';
+import 'patient_diary_screen.dart';
 
 class MedicalProfileScreen extends StatefulWidget {
   final Patient user;
@@ -167,7 +170,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     icon: Symbols.clinical_notes_sharp,
                     iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.clinical_notes_sharp,
-                    onTap: () => _launchObservationsModal(context),
+                    onTap: () => launchPatientDiaryScreen(patient: widget.user),
                   ),
                   CarbonActionTile(
                     title: "Immunizations",
@@ -199,6 +202,30 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.lab_panel,
                     onTap: () => launchTestsScreen(patient: widget.user),
+                  ),
+                  CarbonActionTile(
+                    title: "Allergies",
+                    subtitle: "Things I react badly to",
+                    icon: Symbols.allergy,
+                    iconSize: Size(32.0, 32.0),
+                    outlineIcon: Symbols.allergy,
+                    onTap: () => _launchAllergiesChecklist(context, widget.user.patientUuid),
+                  ),
+                  CarbonActionTile(
+                    title: "Eye Care",
+                    subtitle: "Glasses & contacts prescriptions",
+                    icon: Symbols.ophthalmology,
+                    iconSize: Size(32.0, 32.0),
+                    outlineIcon: Symbols.ophthalmology,
+                    onTap: () => launchEyeCareScreen(patient: widget.user),
+                  ),
+                  CarbonActionTile(
+                    title: "Supplies",
+                    subtitle: "Needles, swabs, test strips, and other consumables",
+                    icon: Symbols.inventory_2,
+                    iconSize: Size(32.0, 32.0),
+                    outlineIcon: Symbols.inventory_2,
+                    onTap: () => launchSuppliesScreen(patient: widget.user),
                   ),
                   CarbonActionTile(
                     title: "Mental Wellness Questionnaires",
@@ -264,6 +291,39 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
     );
   }
 
+  void launchPatientDiaryScreen({required Patient patient}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Allows the sheet to take full height
+      useSafeArea: true, // Respects the device notch and safe areas
+      backgroundColor: AppTheme.surfaceColor,
+      // Set to zero for the strict, sharp-cornered Carbon aesthetic
+      shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
+      builder: (context) {
+        return Column(
+          children: [
+            // Header: Consistent with your other Carbon-style modals
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    icon: const Icon(Symbols.close, color: Colors.grey, size: 28),
+                    onPressed: () => Navigator.pop(context, false),
+                  ),
+                ],
+              ),
+            ),
+
+            // Content: Expanded to fill the remaining vertical space
+            Expanded(child: PatientDiaryScreen(user: patient)),
+          ],
+        );
+      },
+    );
+  }
+
   void launchTestsScreen({required Patient patient}) {
     showModalBottomSheet(
       context: context,
@@ -298,6 +358,72 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
     //
   }
 
+  void launchEyeCareScreen({required Patient patient}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Allows the sheet to take full height
+      useSafeArea: true, // Respects the device notch and safe areas
+      backgroundColor: AppTheme.surfaceColor,
+      // Set to zero for the strict, sharp-cornered Carbon aesthetic
+      shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
+      builder: (context) {
+        return Column(
+          children: [
+            // Header: Consistent with your other Carbon-style modals
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    icon: const Icon(Symbols.close, color: Colors.grey, size: 28),
+                    onPressed: () => Navigator.pop(context, false),
+                  ),
+                ],
+              ),
+            ),
+
+            // Content: Expanded to fill the remaining vertical space
+            Expanded(child: EyeCareScreen(user: patient)),
+          ],
+        );
+      },
+    );
+  }
+
+  void launchSuppliesScreen({required Patient patient}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Allows the sheet to take full height
+      useSafeArea: true, // Respects the device notch and safe areas
+      backgroundColor: AppTheme.surfaceColor,
+      // Set to zero for the strict, sharp-cornered Carbon aesthetic
+      shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
+      builder: (context) {
+        return Column(
+          children: [
+            // Header: Consistent with your other Carbon-style modals
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    icon: const Icon(Symbols.close, color: Colors.grey, size: 28),
+                    onPressed: () => Navigator.pop(context, false),
+                  ),
+                ],
+              ),
+            ),
+
+            // Content: Expanded to fill the remaining vertical space
+            Expanded(child: SuppliesScreen(user: patient)),
+          ],
+        );
+      },
+    );
+  }
+
   void launchQuestionnairesScreen({required Patient patient}) {
     showModalBottomSheet(
       context: context,
@@ -325,6 +451,39 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
 
             // Content: Expanded to fill the remaining vertical space
             Expanded(child: QuestionnairesScreen(patient: widget.user)),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _launchAllergiesChecklist(BuildContext context, String patientUuid) async {
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Allows the sheet to take full height
+      useSafeArea: true, // Respects the device notch and safe areas
+      backgroundColor: AppTheme.surfaceColor,
+      // Set to zero for the strict, sharp-cornered Carbon aesthetic
+      shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
+      builder: (context) {
+        return Column(
+          children: [
+            // Header: Consistent with your other Carbon-style modals
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    icon: const Icon(Symbols.close, color: Colors.grey, size: 28),
+                    onPressed: () => Navigator.pop(context, false),
+                  ),
+                ],
+              ),
+            ),
+
+            // Content: Expanded to fill the remaining vertical space
+            Expanded(child: AllergiesScreen(patientUuid: patientUuid, scrollController: ScrollController())),
           ],
         );
       },
@@ -376,55 +535,6 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
     }
   }
 
-  Future<void> _launchObservationsModal(BuildContext context) async {
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      // Ensure the background is consistent with your theme
-      backgroundColor: AppTheme.surfaceColor,
-      // Explicitly set to zero to override the default Material rounding
-      shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
-      builder: (context) {
-        return Container(
-          // Constrain height if it's not a full-screen sheet
-          height: MediaQuery.of(context).size.height * 0.9,
-          decoration: BoxDecoration(
-            color: AppTheme.surfaceColor,
-            borderRadius: BorderRadius.zero, // Sharp corners
-          ),
-          child: Column(
-            children: [
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Pull bar handle indicator
-                    Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(color: AppTheme.cardBorder, borderRadius: BorderRadius.circular(10)),
-                    ),
-                    // Dismiss Button
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: IconButton(
-                        icon: const Icon(Symbols.close, color: Colors.grey, size: 22),
-                        onPressed: () => Navigator.pop(context, false),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 4),
-              Expanded(child: ObservationScreen(patientUuid: widget.user.patientUuid)),
-            ],
-          ),
-        );
-      },
-    );
-  }
 
   void _launchImmunizationModal(BuildContext context, Patient householdMember) {
     showModalBottomSheet(

@@ -6,6 +6,7 @@ import '../classes/database_manager.dart';
 import '../classes/patient_condition.dart';
 import '../widgets/condition_chip.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import '../widgets/carbon_quick_entry_field.dart';
 import '../widgets/halo_ripple_chip.dart';
 
 class MedicalCategory {
@@ -66,6 +67,11 @@ Map<String, MedicalCategory> categoryIcons = {
     color: Color(0xFF8A346C),
     textColor: AppTheme.onPrimaryColor,
   ),
+  "Custom": MedicalCategory(
+    iconData: Symbols.medical_information,
+    color: carbonColorButtonPrimary,
+    textColor: AppTheme.onPrimaryColor,
+  ),
 };
 
 class ExistingMedicalConditionsScreen extends StatefulWidget {
@@ -79,7 +85,6 @@ class ExistingMedicalConditionsScreen extends StatefulWidget {
 }
 
 class ExistingMedicalConditionsScreenState extends State<ExistingMedicalConditionsScreen> {
-  final TextEditingController _otherController = TextEditingController();
   late Future<Map<String, List<ConditionReference>>> _catalogFuture;
   late Future<List<PatientCondition>> _patientConditions;
 
@@ -90,7 +95,10 @@ class ExistingMedicalConditionsScreenState extends State<ExistingMedicalConditio
   void initState() {
     super.initState();
     _patientConditions = DatabaseManager().getConditionsForPatient(widget.patientUuid);
+    _loadCatalog();
+  }
 
+  void _loadCatalog() {
     _catalogFuture = DatabaseManager().getConditionsCatalog().then((data) {
       // Flatten the incoming catalog map data structure for fast summary lookups
       setState(() {
@@ -98,6 +106,26 @@ class ExistingMedicalConditionsScreenState extends State<ExistingMedicalConditio
       });
       return data;
     });
+  }
+
+  // A condition the patient typed rather than picked from the catalog — filed under
+  // "Custom" so it gets a chip and full status/onset/duration editing exactly like a
+  // catalog pick, instead of sitting inert in a notes field nobody reads back.
+  Future<void> _addCustomCondition(String name) async {
+    final int conditionId = await DatabaseManager().getOrCreateCustomCondition(name);
+    await DatabaseManager().insertPatientCondition(
+      PatientCondition(
+        patientUuid: widget.patientUuid,
+        conditionId: conditionId,
+        name: name,
+        status: ConditionStatus.active,
+        onset: DateTime.now(),
+      ),
+    );
+    setState(() {
+      _patientConditions = DatabaseManager().getConditionsForPatient(widget.patientUuid);
+    });
+    _loadCatalog();
   }
 
   @override
@@ -193,6 +221,12 @@ class ExistingMedicalConditionsScreenState extends State<ExistingMedicalConditio
                 physics: const ClampingScrollPhysics(),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 children: [
+                  CarbonQuickEntryField(
+                    label: "Don't see it below?",
+                    hintText: "Type a condition and tap the check to add it",
+                    onSave: _addCustomCondition,
+                  ),
+                  const SizedBox(height: 20),
                   Text(
                     "Tap and the conditions below that you currently have, or which you previously experienced.",
                     style: CarbonTheme.carbonHelperTextStyle,
@@ -231,20 +265,6 @@ class ExistingMedicalConditionsScreenState extends State<ExistingMedicalConditio
                         ),
                       );
                     },
-                  ),
-                  const Divider(height: 40),
-
-                  const Text("OTHER CONDITIONS / NOTES", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: _otherController,
-                    maxLines: 3,
-                    decoration: InputDecoration(
-                      hintText: "Enter any conditions not listed above...",
-                      filled: true,
-                      fillColor: AppTheme.onPrimaryColor,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
                   ),
                   const SizedBox(height: 20),
                 ],

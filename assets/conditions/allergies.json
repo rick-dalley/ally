@@ -68,52 +68,53 @@
       {
         "name": "Sulphites",
         "description": "Sulphites are preservatives, not a true allergy. They cause a non-allergic sensitivity (intolerance) that most commonly triggers asthma symptoms, wheezing, or skin irritation."
-        ]
-      },
-      {
-        "name": "Medications & Drug Allergies",
-        "description": "Certain medications can cause the immune system to overreact, resulting in hives, rashes, or respiratory distress.",
-        "allergens": [
-          {
-            "name": "Penicillin",
-            "description": "Penicillin and related antibiotic variants are the most common sources of drug allergies."
-          },
-          {
-            "name": "NSAID",
-            "description": "Over-the-counter pain relievers such as aspirin and ibuprofen."
-          }
-        ]
-      },
-      {
-        "name": "Insect Stings",
-        "description": "Venom injected during an insect bite or sting can spark localized swelling or full-body anaphylaxis.",
-        "allergens": [
-          {
-            "name": "Stinging Insects",
-            "description": "Honeybees, hornets, wasps, yellowjackets, and fire ants."
-          }
-        ]
-      },
-      {
-        "name": "Skin & Contact Allergens (Contact Dermatitis)",
-        "description": "Direct skin contact with specific materials or chemicals can induce localized rashes, itching, and blisters.",
-        "allergens": [
-          {
-            "name": "Latex",
-            "description": "Natural rubber latex found in medical gloves, elastic bands, and balloons."
-          },
-          {
-            "name": "Fragrances and Preservatives",
-            "description": "Chemicals used in cosmetics, soaps, and laundry detergents."
-          },
-          {
-            "name": "Nickel",
-            "description": "A common metal used in jewelry, belt buckles, and zippers."
-          },
-          {
-            "name": "Poison Ivy/Oak",
-            "description": "Plants containing urushiol oil, which triggers an intensely itchy rash upon touch."
-          }
-        ]
       }
     ]
+  },
+  {
+    "category": "Medications & Drug Allergies",
+    "description": "Certain medications can cause the immune system to overreact, resulting in hives, rashes, or respiratory distress.",
+    "allergens": [
+      {
+        "name": "Penicillin",
+        "description": "Penicillin and related antibiotic variants are the most common sources of drug allergies."
+      },
+      {
+        "name": "NSAID",
+        "description": "Over-the-counter pain relievers such as aspirin and ibuprofen."
+      }
+    ]
+  },
+  {
+    "category": "Insect Stings",
+    "description": "Venom injected during an insect bite or sting can spark localized swelling or full-body anaphylaxis.",
+    "allergens": [
+      {
+        "name": "Stinging Insects",
+        "description": "Honeybees, hornets, wasps, yellowjackets, and fire ants."
+      }
+    ]
+  },
+  {
+    "category": "Skin & Contact Allergens",
+    "description": "Direct skin contact with specific materials or chemicals can induce localized rashes, itching, and blisters.",
+    "allergens": [
+      {
+        "name": "Latex",
+        "description": "Natural rubber latex found in medical gloves, elastic bands, and balloons."
+      },
+      {
+        "name": "Fragrances and Preservatives",
+        "description": "Chemicals used in cosmetics, soaps, and laundry detergents."
+      },
+      {
+        "name": "Nickel",
+        "description": "A common metal used in jewelry, belt buckles, and zippers."
+      },
+      {
+        "name": "Poison Ivy/Oak",
+        "description": "Plants containing urushiol oil, which triggers an intensely itchy rash upon touch."
+      }
+    ]
+  }
+]

@@ -251,6 +251,85 @@ class MetricRange {
   }
 }
 
+// At-least / at-most / exact — a target is a single point to reach or beat, never a
+// band to stay inside the way Safe/Healthy are, so it needs a direction to know which
+// side of the number counts as "on track" rather than a second bound.
+enum TargetDirection {
+  atLeast,
+  atMost,
+  exact;
+
+  String get label {
+    switch (this) {
+      case TargetDirection.atLeast:
+        return "At Least";
+      case TargetDirection.atMost:
+        return "At Most";
+      case TargetDirection.exact:
+        return "Exactly";
+    }
+  }
+}
+
+// Doctor-communicated safety/health boundaries for one patient's one metric. This app
+// is patient-facing, not something a doctor logs into directly, so these values are
+// transcribed by the patient from what their doctor actually told them (same trust
+// model as recording a diagnosed condition or a vision prescription) — never a number
+// the app or the patient invents on their own. Falls back to the metric catalog's flat
+// population defaults when no per-patient override is on file.
+class MetricThreshold {
+  final int metricId;
+  final double? dangerLow;
+  final double? dangerHigh;
+  final double? healthyLow;
+  final double? healthyHigh;
+  final String? setBy;
+  final DateTime? setAt;
+
+  const MetricThreshold({
+    required this.metricId,
+    this.dangerLow,
+    this.dangerHigh,
+    this.healthyLow,
+    this.healthyHigh,
+    this.setBy,
+    this.setAt,
+  });
+
+  factory MetricThreshold.fromMap(Map<String, dynamic> item) {
+    return MetricThreshold(
+      metricId: item['metric_id'] as int,
+      dangerLow: (item['danger_low'] as num?)?.toDouble(),
+      dangerHigh: (item['danger_high'] as num?)?.toDouble(),
+      healthyLow: (item['healthy_low'] as num?)?.toDouble(),
+      healthyHigh: (item['healthy_high'] as num?)?.toDouble(),
+      setBy: item['set_by'] as String?,
+      setAt: item['set_at'] != null ? DateTime.tryParse(item['set_at'].toString()) : null,
+    );
+  }
+}
+
+// A single point the patient (or their trainer) is working toward — VO2 max, target
+// weight, resting heart rate. No doctor-authority concept here, unlike MetricThreshold:
+// this is a personal goal the patient sets for themselves, not a clinical boundary.
+class MetricTarget {
+  final int metricId;
+  final double targetValue;
+  final TargetDirection direction;
+  final DateTime? setAt;
+
+  const MetricTarget({required this.metricId, required this.targetValue, required this.direction, this.setAt});
+
+  factory MetricTarget.fromMap(Map<String, dynamic> item) {
+    return MetricTarget(
+      metricId: item['metric_id'] as int,
+      targetValue: (item['target_value'] as num).toDouble(),
+      direction: TargetDirection.values[item['direction'] as int? ?? 0],
+      setAt: item['set_at'] != null ? DateTime.tryParse(item['set_at'].toString()) : null,
+    );
+  }
+}
+
 class Metrics {
   Map<int, Metric> tracked = {};
   Map<int, Metric> untracked = {};
@@ -328,6 +407,16 @@ class Metrics {
       }
     }
     return range;
+  }
+
+  Future<Map<int, MetricThreshold>> getThresholdsFor(String patientUuid) async {
+    final rows = await DatabaseManager().getActiveThresholds(patientUuid);
+    return {for (final row in rows) row['metric_id'] as int: MetricThreshold.fromMap(row)};
+  }
+
+  Future<Map<int, MetricTarget>> getTargetsFor(String patientUuid) async {
+    final rows = await DatabaseManager().getActiveTargets(patientUuid);
+    return {for (final row in rows) row['metric_id'] as int: MetricTarget.fromMap(row)};
   }
 
   Future<List<MetricValue>> getTrackedMetricValuesFor(String patientUuid, int metricId) async {

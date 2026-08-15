@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
+import '../classes/allergen.dart';
 import '../classes/database_manager.dart';
 import '../classes/medication_services.dart';
 import '../classes/patient.dart';
@@ -31,6 +32,12 @@ class PrescriptionScreenState extends State<PrescriptionScreen> {
   late List<InteractionConflict> currentConflicts = []; // The source of truth for the UI
   bool audited = false;
 
+  // Loaded once per screen visit (allergies don't change while this screen is open,
+  // unlike the medication list) and matched against medication names fresh on every
+  // build — cheap, synchronous, no per-pair DB round trip needed the way the drug-drug
+  // interaction audit requires, so there's no separate imperative "run the audit" step.
+  List<Map<String, dynamic>> _allergyRows = [];
+
   // These are derived flags
   final nameController = TextEditingController();
   final dosageController = TextEditingController();
@@ -41,6 +48,13 @@ class PrescriptionScreenState extends State<PrescriptionScreen> {
   void initState() {
     super.initState();
     loadMedsForPatient();
+    _loadAllergies();
+  }
+
+  Future<void> _loadAllergies() async {
+    final rows = await DatabaseManager().getPatientAllergyNames(widget.patient.patientUuid);
+    if (!mounted) return;
+    setState(() => _allergyRows = rows);
   }
 
   void handleConflictsFound(List<InteractionConflict> conflicts) {
@@ -132,6 +146,10 @@ class PrescriptionScreenState extends State<PrescriptionScreen> {
   @override
   Widget build(BuildContext context) {
     final entries = medications.entries.toList();
+    final List<AllergyConflict> allergyConflicts = findAllergyConflicts(
+      medications.values.map((m) => m.name),
+      _allergyRows,
+    );
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       // The Floating Action Button replaces the top form
@@ -159,6 +177,7 @@ class PrescriptionScreenState extends State<PrescriptionScreen> {
                 return MedicationCard(
                   key: Key(med.id),
                   interactions: currentConflicts,
+                  allergyConflicts: allergyConflicts,
                   medication: med,
                   index: index,
                   onArchive: () async {

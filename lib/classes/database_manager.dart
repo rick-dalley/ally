@@ -5,16 +5,19 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:triage/classes/allergen.dart';
 import 'package:triage/classes/patient_condition.dart';
+import 'package:triage/classes/patient_supply.dart';
 import 'package:triage/classes/provider.dart';
 import 'package:triage/classes/questionnaire.dart';
+import 'package:triage/classes/vision_prescription.dart';
 import 'package:uuid/uuid.dart';
 import 'acuity.dart';
 import 'data_seeder.dart';
 import 'medication_services.dart';
 import 'metric_value.dart';
 
-bool overWrite = false;
+bool overWrite = true;
 
 class DatabaseManager {
   // Singleton pattern
@@ -281,6 +284,24 @@ class DatabaseManager {
       where: 'id = ?',
       whereArgs: [testId],
     );
+
+    // Recurring tests (rheumatology's quarterly bloodwork, for instance) need every
+    // occurrence on record, not just "when was it most recently done" — patient_test
+    // only ever holds the latest date, so this is the only place a full history exists.
+    final List<Map<String, dynamic>> rows = await db.query(
+      'patient_test',
+      columns: ['patient_uuid', 'name', 'category'],
+      where: 'id = ?',
+      whereArgs: [testId],
+    );
+    if (rows.isEmpty) return;
+    await db.insert('test_completion_log', {
+      'id': uuid.v4(),
+      'patient_uuid': rows.first['patient_uuid'],
+      'name': rows.first['name'],
+      'category': rows.first['category'],
+      'completed_on': doneOn.toIso8601String(),
+    });
   }
 
   Future<void> rescheduleTestReminder(int testId, DateTime newDueDate) async {
@@ -291,6 +312,290 @@ class DatabaseManager {
   Future<void> deletePatientTest(int testId) async {
     final db = await database;
     await db.delete('patient_test', where: 'id = ?', whereArgs: [testId]);
+  }
+
+  // Supplies — consumables only (needles, swabs, test strips, catheters), never
+  // durable equipment. See patient_supply.dart for the full reasoning.
+
+  Future<List<Map<String, dynamic>>> getSupplyCatalog() async {
+    final db = await database;
+    return await db.query('supply', orderBy: 'category, name');
+  }
+
+  // Supplies typically used for whatever conditions this patient has actually logged
+  // (via condition_supply), minus anything they're already tracking — so a diabetes
+  // diagnosis can surface "test strips, lancets" as one-tap suggestions instead of
+  // making the patient dig through the full catalog.
+  Future<List<Map<String, dynamic>>> getSuggestedSupplies(String patientUuid) async {
+    final db = await database;
+    return await db.rawQuery(
+      '''
+      SELECT DISTINCT s.id, s.name, s.category
+      FROM supply s
+      JOIN condition_supply cs ON cs.supply_id = s.id
+      JOIN patient_condition pc ON pc.condition_id = cs.condition_id
+      WHERE pc.patient_uuid = ?
+        AND s.name NOT IN (SELECT name FROM patient_supply WHERE patient_uuid = ?)
+      ORDER BY s.category, s.name
+      ''',
+      [patientUuid, patientUuid],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getPatientSupplies(String patientUuid) async {
+    final db = await database;
+    return await db.query('patient_supply', where: 'patient_uuid = ?', whereArgs: [patientUuid], orderBy: 'name');
+  }
+
+  Future<int> insertPatientSupply(String patientUuid, PatientSupply record) async {
+    final db = await database;
+    final Map<String, dynamic> row = Map<String, dynamic>.from(record.toRow())..['patient_uuid'] = patientUuid;
+    return await db.insert('patient_supply', row);
+  }
+
+  Future<void> updatePatientSupply(PatientSupply record) async {
+    final db = await database;
+    await db.update('patient_supply', record.toRow(), where: 'id = ?', whereArgs: [record.id]);
+  }
+
+  Future<void> deletePatientSupply(int id) async {
+    final db = await database;
+    await db.delete('patient_supply', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // "Don't remind me again" on a low-supply reminder — zeroes the threshold rather than
+  // deleting the row, so it still tracks quantity, just only alerts once truly at zero.
+  Future<void> updateSupplyThreshold(int id, int threshold) async {
+    final db = await database;
+    await db.update('patient_supply', {'reorder_threshold': threshold}, where: 'id = ?', whereArgs: [id]);
+  }
+
+  // Due for a reorder right now — not a forecast, a plain threshold check. See
+  // SupplyReminder in remindable.dart for why no predicted "runs out on" date exists.
+  Future<List<Map<String, dynamic>>> getLowSupplies(String patientUuid) async {
+    final db = await database;
+    return await db.rawQuery(
+      'SELECT * FROM patient_supply WHERE patient_uuid = ? AND quantity_on_hand <= reorder_threshold',
+      [patientUuid],
+    );
+  }
+
+  // Eye Care — vision prescriptions are a static credential (sphere/cylinder/axis/PD),
+  // not a tracked/dosed thing, deliberately kept out of the medication wizard. See
+  // vision_prescription.dart for the full reasoning.
+
+  Future<List<Map<String, dynamic>>> getVisionPrescriptionsForPatient(String patientUuid) async {
+    final db = await database;
+    return await db.query(
+      'vision_prescription',
+      where: 'patient_uuid = ?',
+      whereArgs: [patientUuid],
+      orderBy: 'issued_date DESC',
+    );
+  }
+
+  Future<int> insertVisionPrescription(VisionPrescription record) async {
+    final db = await database;
+    return await db.insert('vision_prescription', record.toRow());
+  }
+
+  Future<void> updateVisionPrescription(VisionPrescription record) async {
+    final db = await database;
+    await db.update('vision_prescription', record.toRow(), where: 'id = ?', whereArgs: [record.id]);
+  }
+
+  Future<void> deleteVisionPrescription(int id) async {
+    final db = await database;
+    await db.delete('vision_prescription', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // Patient Diary
+  String _dateOnly(DateTime date) =>
+      '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+
+  Future<Map<String, dynamic>?> getDiaryEntry(String patientUuid, DateTime date) async {
+    final db = await database;
+    final rows = await db.query(
+      'patient_diary_entry',
+      where: 'patient_uuid = ? AND entry_date = ?',
+      whereArgs: [patientUuid, _dateOnly(date)],
+    );
+    return rows.isEmpty ? null : rows.first;
+  }
+
+  // Upsert keyed on the (patient_uuid, entry_date) unique constraint — one entry per
+  // patient per day, matching the "no entry for a day you didn't write in" rule.
+  Future<void> saveDiaryEntry(String patientUuid, DateTime date, String content) async {
+    final db = await database;
+    final String now = DateTime.now().toIso8601String();
+    final existing = await getDiaryEntry(patientUuid, date);
+    if (existing != null) {
+      await db.update(
+        'patient_diary_entry',
+        {'content': content, 'updated_at': now},
+        where: 'id = ?',
+        whereArgs: [existing['id']],
+      );
+    } else {
+      await db.insert('patient_diary_entry', {
+        'patient_uuid': patientUuid,
+        'entry_date': _dateOnly(date),
+        'content': content,
+        'created_at': now,
+        'updated_at': now,
+      });
+    }
+  }
+
+  // Clearing an entry back to empty removes the row outright rather than leaving a
+  // blank one behind — a day with no text is a day with no entry, full stop.
+  Future<void> deleteDiaryEntry(String patientUuid, DateTime date) async {
+    final db = await database;
+    await db.delete(
+      'patient_diary_entry',
+      where: 'patient_uuid = ? AND entry_date = ?',
+      whereArgs: [patientUuid, _dateOnly(date)],
+    );
+  }
+
+  Future<Set<String>> getDiaryEntryDatesForMonth(String patientUuid, int year, int month) async {
+    final db = await database;
+    final String prefix = '$year-${month.toString().padLeft(2, '0')}';
+    final rows = await db.query(
+      'patient_diary_entry',
+      columns: ['entry_date'],
+      where: "patient_uuid = ? AND entry_date LIKE ?",
+      whereArgs: [patientUuid, '$prefix%'],
+    );
+    return rows.map((r) => r['entry_date'] as String).toSet();
+  }
+
+  // Everything that happened on one specific day, across every event source the diary
+  // pulls from — medication doses, appointments, symptoms, mood, and test completions.
+  // Returned as raw rows per category (not a unified model) so DiaryDayEvent's factory
+  // constructors stay the single place that knows how to render each shape.
+  Future<Map<String, List<Map<String, dynamic>>>> getDayEvents(String patientUuid, DateTime date) async {
+    final db = await database;
+    final DateTime start = DateTime(date.year, date.month, date.day);
+    final DateTime end = start.add(const Duration(days: 1));
+    final String startIso = start.toIso8601String();
+    final String endIso = end.toIso8601String();
+    final int startEpoch = start.millisecondsSinceEpoch ~/ 1000;
+    final int endEpoch = end.millisecondsSinceEpoch ~/ 1000;
+
+    final doses = await db.rawQuery(
+      '''
+      SELECT d.*, m.name AS medication_name, m.dose AS dose
+      FROM medication_dose_log d
+      JOIN medication m ON m.id = d.medication_id
+      WHERE d.patient_uuid = ? AND d.scheduled_for >= ? AND d.scheduled_for < ?
+      ORDER BY d.scheduled_for
+      ''',
+      [patientUuid, startIso, endIso],
+    );
+
+    final appointments = await db.rawQuery(
+      '''
+      SELECT a.*, p.first_name || ' ' || p.last_name AS provider_name
+      FROM appointment a
+      LEFT JOIN provider p ON p.provider_uuid = a.provider_uuid
+      WHERE a.patient_uuid = ? AND a.scheduled_for >= ? AND a.scheduled_for < ?
+      ORDER BY a.scheduled_for
+      ''',
+      [patientUuid, startIso, endIso],
+    );
+
+    final symptoms = await db.query(
+      'markers',
+      where: 'patient_uuid = ? AND recorded >= ? AND recorded < ?',
+      whereArgs: [patientUuid, startEpoch, endEpoch],
+      orderBy: 'recorded',
+    );
+
+    // A mood *period* overlapping the day, not just one that started that day —
+    // "what was my mood on this day" should answer correctly even if it didn't change.
+    final moods = await db.query(
+      'patient_mood',
+      where: 'patient_uuid = ? AND start_date < ? AND (end_date IS NULL OR end_date >= ?)',
+      whereArgs: [patientUuid, endIso, startIso],
+      orderBy: 'start_date',
+    );
+
+    final tests = await db.query(
+      'test_completion_log',
+      where: 'patient_uuid = ? AND completed_on >= ? AND completed_on < ?',
+      whereArgs: [patientUuid, startIso, endIso],
+      orderBy: 'completed_on',
+    );
+
+    return {'doses': doses, 'appointments': appointments, 'symptoms': symptoms, 'moods': moods, 'tests': tests};
+  }
+
+  // Which dates in a month have at least one event, across all five sources — for the
+  // month view's "something happened" marker, shown independent of whether a diary
+  // entry was ever written for that day.
+  Future<Set<String>> getEventDatesForMonth(String patientUuid, int year, int month) async {
+    final db = await database;
+    final DateTime monthStart = DateTime(year, month);
+    final DateTime monthEnd = DateTime(year, month + 1);
+    final String startIso = monthStart.toIso8601String();
+    final String endIso = monthEnd.toIso8601String();
+    final int startEpoch = monthStart.millisecondsSinceEpoch ~/ 1000;
+    final int endEpoch = monthEnd.millisecondsSinceEpoch ~/ 1000;
+
+    final Set<String> dates = {};
+
+    void addDatesFromIso(List<Map<String, dynamic>> rows, String column) {
+      for (final row in rows) {
+        final DateTime? parsed = DateTime.tryParse(row[column] as String? ?? '');
+        if (parsed != null) dates.add(_dateOnly(parsed));
+      }
+    }
+
+    addDatesFromIso(
+      await db.rawQuery(
+        'SELECT scheduled_for FROM medication_dose_log WHERE patient_uuid = ? AND scheduled_for >= ? AND scheduled_for < ?',
+        [patientUuid, startIso, endIso],
+      ),
+      'scheduled_for',
+    );
+    addDatesFromIso(
+      await db.rawQuery(
+        'SELECT scheduled_for FROM appointment WHERE patient_uuid = ? AND scheduled_for >= ? AND scheduled_for < ?',
+        [patientUuid, startIso, endIso],
+      ),
+      'scheduled_for',
+    );
+    addDatesFromIso(
+      await db.rawQuery(
+        'SELECT completed_on FROM test_completion_log WHERE patient_uuid = ? AND completed_on >= ? AND completed_on < ?',
+        [patientUuid, startIso, endIso],
+      ),
+      'completed_on',
+    );
+
+    final symptomRows = await db.rawQuery(
+      'SELECT recorded FROM markers WHERE patient_uuid = ? AND recorded >= ? AND recorded < ?',
+      [patientUuid, startEpoch, endEpoch],
+    );
+    for (final row in symptomRows) {
+      dates.add(_dateOnly(DateTime.fromMillisecondsSinceEpoch((row['recorded'] as int) * 1000)));
+    }
+
+    // Only the day a mood actually *changed*, not every day of an ongoing period —
+    // otherwise a single weeks-long calm streak would light up the entire month with
+    // "something happened" markers for days nothing new occurred on. A period that
+    // started in an earlier month but is still running isn't marked at all here; it
+    // has no in-month change-day to point to.
+    addDatesFromIso(
+      await db.rawQuery(
+        'SELECT start_date FROM patient_mood WHERE patient_uuid = ? AND start_date >= ? AND start_date < ?',
+        [patientUuid, startIso, endIso],
+      ),
+      'start_date',
+    );
+
+    return dates;
   }
 
   // Drugs
@@ -590,6 +895,79 @@ class DatabaseManager {
 
     // Instantly map the database row to our strongly typed data model object
     return MetricValue.fromMap(maps.first);
+  }
+
+  // Looks up a condition the patient typed in free-hand rather than picking from the
+  // catalog, reusing it if it already exists (case-sensitive — matches the catalog's
+  // own UNIQUE(name) constraint) rather than throwing on a duplicate insert. Filed
+  // under a dedicated "Custom" category so it renders alongside the real body-system
+  // categories without needing a special icon/color lookup path.
+  Future<int> getOrCreateCustomCondition(String name) async {
+    final db = await database;
+    final existing = await db.query('condition', where: 'name = ?', whereArgs: [name], limit: 1);
+    if (existing.isNotEmpty) return existing.first['id'] as int;
+    return await db.insert('condition', {'name': name, 'category': 'Custom'});
+  }
+
+  // Allergies — same chip-toggle catalog shape as Conditions (see allergen.dart).
+
+  Future<Map<String, List<AllergenReference>>> getAllergensCatalog() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('allergen', orderBy: 'category ASC, name ASC');
+    final Map<String, List<AllergenReference>> catalog = {};
+    for (final row in maps) {
+      final reference = AllergenReference.fromMap(row);
+      catalog.putIfAbsent(reference.category, () => []).add(reference);
+    }
+    return catalog;
+  }
+
+  Future<int> getOrCreateCustomAllergen(String name) async {
+    final db = await database;
+    final existing = await db.query('allergen', where: 'name = ?', whereArgs: [name], limit: 1);
+    if (existing.isNotEmpty) return existing.first['id'] as int;
+    return await db.insert('allergen', {'name': name, 'category': 'Custom'});
+  }
+
+  Future<List<PatientAllergy>> getAllergiesForPatient(String patientUuid) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'patient_allergy',
+      where: 'patient_uuid = ?',
+      whereArgs: [patientUuid],
+    );
+    return List.generate(maps.length, (i) => PatientAllergy.fromMap(maps[i]));
+  }
+
+  Future<int> insertPatientAllergy(PatientAllergy record) async {
+    final db = await database;
+    return await db.insert('patient_allergy', record.toMap());
+  }
+
+  Future<void> updatePatientAllergy(PatientAllergy record) async {
+    final db = await database;
+    await db.update('patient_allergy', record.toMap(), where: 'id = ?', whereArgs: [record.id]);
+  }
+
+  Future<void> deletePatientAllergy(int id) async {
+    final db = await database;
+    await db.delete('patient_allergy', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // The names + severities behind the drug-allergy cross-check on the medication safety
+  // audit (see prescription_screen.dart) — a patient's recorded allergies, joined back
+  // to the catalog for the actual allergen name (patient_allergy only stores allergen_id).
+  Future<List<Map<String, dynamic>>> getPatientAllergyNames(String patientUuid) async {
+    final db = await database;
+    return await db.rawQuery(
+      '''
+      SELECT a.name, pa.severity
+      FROM patient_allergy pa
+      JOIN allergen a ON a.id = pa.allergen_id
+      WHERE pa.patient_uuid = ?
+      ''',
+      [patientUuid],
+    );
   }
 
   Future<void> deletePatientCondition(int id) async {
@@ -991,7 +1369,11 @@ class DatabaseManager {
 
   Future<List<Map<String, dynamic>>> getPatientConditions(String uuid) async {
     final db = await database;
-    return await db.query('patient_condition', where: 'patient_uuid = ? AND is_active = 1', whereArgs: [uuid]);
+    return await db.query(
+      'patient_condition',
+      where: 'patient_uuid = ? AND status = ?',
+      whereArgs: [uuid, ConditionStatus.active.index],
+    );
   }
 
   Future<Map<String, dynamic>?> getDatasheetBySetId(String setId) async {
@@ -1230,6 +1612,18 @@ class DatabaseManager {
       'status': status,
       'responded_at': DateTime.now().toIso8601String(),
     });
+
+    // A dose actually taken consumes one unit of whatever supply is linked to this
+    // medication (e.g. an insulin syringe) — real observed usage, not a guessed daily
+    // rate, and the only case a supply's count changes without the patient touching
+    // the Supplies screen at all. MAX(...,0) floors it rather than going negative.
+    if (status == 'taken') {
+      await db.rawUpdate(
+        'UPDATE patient_supply SET quantity_on_hand = MAX(quantity_on_hand - 1, 0) '
+        'WHERE patient_uuid = ? AND linked_medication_id = ?',
+        [patientUuid, medicationId],
+      );
+    }
   }
 
   // Today's logged doses for every medication a patient has — used to keep a reminder
@@ -1268,6 +1662,24 @@ class DatabaseManager {
     await db.update(
       'appointment',
       {'scheduled_for': newTime.toIso8601String(), 'status': 'scheduled'},
+      where: 'id = ?',
+      whereArgs: [appointmentId],
+    );
+  }
+
+  // Full edit — time, reason, and notes together — for when the patient got a detail
+  // wrong or wants to change it, distinct from rescheduleAppointment (time only, used
+  // by the reminder "bump" action) and updateAppointmentStatus (status only).
+  Future<void> updateAppointmentDetails(
+    String appointmentId, {
+    required DateTime scheduledFor,
+    String? reason,
+    String? notes,
+  }) async {
+    final db = await database;
+    await db.update(
+      'appointment',
+      {'scheduled_for': scheduledFor.toIso8601String(), 'reason': reason, 'notes': notes, 'status': 'scheduled'},
       where: 'id = ?',
       whereArgs: [appointmentId],
     );
@@ -1404,6 +1816,92 @@ class DatabaseManager {
     ORDER BY pm.metric_id;
     ''',
       [patientUuid, patientUuid],
+    );
+  }
+
+  // Metric thresholds/targets — see metric_value.dart's MetricThreshold/MetricTarget
+  // for why these are two separate concepts (doctor-communicated safety bounds vs. a
+  // personal single-point goal) rather than one shape.
+
+  Future<List<Map<String, dynamic>>> getActiveThresholds(String patientUuid) async {
+    final db = await database;
+    return await db.query(
+      'patient_metric_threshold',
+      where: 'patient_uuid = ? AND active = 1',
+      whereArgs: [patientUuid],
+    );
+  }
+
+  // Deactivates whatever threshold was previously on file for this metric and inserts
+  // the new one as active, rather than overwriting in place — same "keep history,
+  // don't destroy it" shape as trackMoodChange, so a past reading can still be checked
+  // against whatever threshold was actually active when it was recorded.
+  Future<void> setPatientMetricThreshold({
+    required String patientUuid,
+    required int metricId,
+    double? dangerLow,
+    double? dangerHigh,
+    double? healthyLow,
+    double? healthyHigh,
+    String? setBy,
+  }) async {
+    final db = await database;
+    await db.transaction((txn) async {
+      await txn.update(
+        'patient_metric_threshold',
+        {'active': 0},
+        where: 'patient_uuid = ? AND metric_id = ? AND active = 1',
+        whereArgs: [patientUuid, metricId],
+      );
+      await txn.insert('patient_metric_threshold', {
+        'patient_uuid': patientUuid,
+        'metric_id': metricId,
+        'danger_low': dangerLow,
+        'danger_high': dangerHigh,
+        'healthy_low': healthyLow,
+        'healthy_high': healthyHigh,
+        'set_by': setBy,
+        'active': 1,
+      });
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> getActiveTargets(String patientUuid) async {
+    final db = await database;
+    return await db.query('patient_metric_target', where: 'patient_uuid = ? AND active = 1', whereArgs: [patientUuid]);
+  }
+
+  Future<void> setPatientMetricTarget({
+    required String patientUuid,
+    required int metricId,
+    required double targetValue,
+    required TargetDirection direction,
+  }) async {
+    final db = await database;
+    await db.transaction((txn) async {
+      await txn.update(
+        'patient_metric_target',
+        {'active': 0},
+        where: 'patient_uuid = ? AND metric_id = ? AND active = 1',
+        whereArgs: [patientUuid, metricId],
+      );
+      await txn.insert('patient_metric_target', {
+        'patient_uuid': patientUuid,
+        'metric_id': metricId,
+        'target_value': targetValue,
+        'direction': direction.index,
+        'active': 1,
+      });
+    });
+  }
+
+  Future<void> clearPatientMetricTarget(String patientUuid, int metricId) async {
+    final db = await database;
+    await db.update(
+      'patient_metric_target',
+      {'active': 0},
+      where: 'patient_uuid = ? AND metric_id = ? AND active = 1',
+      whereArgs: [patientUuid, metricId],
     );
   }
 

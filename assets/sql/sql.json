@@ -62,11 +62,11 @@
     },
     {
       "table": "test_catalog",
-      "query": "CREATE TABLE IF NOT EXISTS test_catalog (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE NOT NULL, description TEXT, category TEXT, location TEXT NOT NULL);"
+      "query": "CREATE TABLE IF NOT EXISTS test_catalog (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE NOT NULL, description TEXT, category TEXT);"
     },
     {
       "table": "patient_test",
-      "query": "CREATE TABLE IF NOT EXISTS patient_test (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_uuid TEXT NOT NULL, name TEXT NOT NULL, location TEXT NOT NULL, last_done DATETIME, next_due DATETIME, notes TEXT, FOREIGN KEY(patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
+      "query": "CREATE TABLE IF NOT EXISTS patient_test (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_uuid TEXT NOT NULL, name TEXT NOT NULL, category TEXT, last_done DATETIME, next_due DATETIME, notes TEXT, FOREIGN KEY(patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
     },
     {
       "table": "patient_mood",
@@ -101,6 +101,22 @@
       "query": "CREATE INDEX idx_dose_log_patient_time ON medication_dose_log(patient_uuid, scheduled_for);"
     },
     {
+      "table": "test_completion_log",
+      "query": "CREATE TABLE IF NOT EXISTS test_completion_log (id TEXT PRIMARY KEY, patient_uuid TEXT NOT NULL, name TEXT NOT NULL, category TEXT, completed_on DATETIME NOT NULL, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
+    },
+    {
+      "table": "test_completion_log",
+      "query": "CREATE INDEX idx_test_completion_patient_time ON test_completion_log(patient_uuid, completed_on);"
+    },
+    {
+      "table": "patient_diary_entry",
+      "query": "CREATE TABLE IF NOT EXISTS patient_diary_entry (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_uuid TEXT NOT NULL, entry_date TEXT NOT NULL, content TEXT NOT NULL, created_at DATETIME NOT NULL, updated_at DATETIME NOT NULL, UNIQUE(patient_uuid, entry_date), FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
+    },
+    {
+      "table": "patient_diary_entry",
+      "query": "CREATE INDEX idx_diary_patient_date ON patient_diary_entry(patient_uuid, entry_date);"
+    },
+    {
       "table": "medication_dose_log",
       "query": "CREATE INDEX idx_dose_log_medication_time ON medication_dose_log(medication_id, scheduled_for);"
     },
@@ -122,11 +138,19 @@
     },
     {
       "table": "patient_metric_threshold",
-      "query": "CREATE TABLE IF NOT EXISTS patient_metric_threshold (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_uuid TEXT NOT NULL, metric_id INTEGER NOT NULL, danger_low REAL, acceptable_low REAL, healthy_low REAL, healthy_high REAL, acceptable_high REAL, danger_high REAL, set_by TEXT, set_at DATETIME DEFAULT CURRENT_TIMESTAMP, active INTEGER DEFAULT 1, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE, FOREIGN KEY (metric_id) REFERENCES metric(id) ON DELETE CASCADE);"
+      "query": "CREATE TABLE IF NOT EXISTS patient_metric_threshold (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_uuid TEXT NOT NULL, metric_id INTEGER NOT NULL, danger_low REAL, danger_high REAL, healthy_low REAL, healthy_high REAL, set_by TEXT, set_at DATETIME DEFAULT CURRENT_TIMESTAMP, active INTEGER DEFAULT 1, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE, FOREIGN KEY (metric_id) REFERENCES metric(id) ON DELETE CASCADE);"
     },
     {
       "table": "patient_metric_threshold",
       "query": "CREATE INDEX idx_threshold_patient_metric ON patient_metric_threshold(patient_uuid, metric_id);"
+    },
+    {
+      "table": "patient_metric_target",
+      "query": "CREATE TABLE IF NOT EXISTS patient_metric_target (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_uuid TEXT NOT NULL, metric_id INTEGER NOT NULL, target_value REAL NOT NULL, direction INTEGER NOT NULL DEFAULT 0, set_at DATETIME DEFAULT CURRENT_TIMESTAMP, active INTEGER DEFAULT 1, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE, FOREIGN KEY (metric_id) REFERENCES metric(id) ON DELETE CASCADE);"
+    },
+    {
+      "table": "patient_metric_target",
+      "query": "CREATE INDEX idx_target_patient_metric ON patient_metric_target(patient_uuid, metric_id);"
     },
     {
       "table": "condition",
@@ -142,7 +166,47 @@
     },
     {
       "table": "patient_condition",
-      "query": "CREATE TABLE patient_condition (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_uuid TEXT, condition_id int, treatment_notes TEXT, is_active INTEGER DEFAULT 1, onset DATETIME, recovery DATETIME, recorded_at DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (patient_uuid) REFERENCES patient (patient_uuid) ON DELETE CASCADE, FOREIGN KEY (condition_id) REFERENCES condition (id) ON DELETE RESTRICT );"
+      "query": "CREATE TABLE patient_condition (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_uuid TEXT, condition_id int, treatment_notes TEXT, status INTEGER DEFAULT 0, onset DATETIME, status_date DATETIME, duration_estimate_value INTEGER, duration_estimate_unit INTEGER, recorded_at DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (patient_uuid) REFERENCES patient (patient_uuid) ON DELETE CASCADE, FOREIGN KEY (condition_id) REFERENCES condition (id) ON DELETE RESTRICT );"
+    },
+    {
+      "table": "supply",
+      "query": "CREATE TABLE IF NOT EXISTS supply (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE, category TEXT);"
+    },
+    {
+      "table": "condition_supply",
+      "query": "CREATE TABLE IF NOT EXISTS condition_supply (condition_id INTEGER NOT NULL, supply_id INTEGER NOT NULL, PRIMARY KEY (condition_id, supply_id), FOREIGN KEY (condition_id) REFERENCES condition (id) ON DELETE CASCADE, FOREIGN KEY (supply_id) REFERENCES supply (id) ON DELETE CASCADE);"
+    },
+    {
+      "table": "condition_supply",
+      "query": "CREATE INDEX idx_condition_supply_condition ON condition_supply(condition_id);"
+    },
+    {
+      "table": "patient_supply",
+      "query": "CREATE TABLE IF NOT EXISTS patient_supply (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_uuid TEXT NOT NULL, name TEXT NOT NULL, category TEXT, quantity_on_hand INTEGER DEFAULT 0, reorder_threshold INTEGER DEFAULT 5, linked_medication_id TEXT, added_at DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (patient_uuid) REFERENCES patient (patient_uuid) ON DELETE CASCADE, FOREIGN KEY (linked_medication_id) REFERENCES medication (id) ON DELETE SET NULL);"
+    },
+    {
+      "table": "patient_supply",
+      "query": "CREATE INDEX idx_patient_supply_patient ON patient_supply(patient_uuid);"
+    },
+    {
+      "table": "vision_prescription",
+      "query": "CREATE TABLE IF NOT EXISTS vision_prescription (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_uuid TEXT NOT NULL, provider_uuid TEXT, type INTEGER NOT NULL DEFAULT 0, od_sphere REAL, od_cylinder REAL, od_axis INTEGER, od_add REAL, os_sphere REAL, os_cylinder REAL, os_axis INTEGER, os_add REAL, pd REAL, base_curve REAL, diameter REAL, issued_date DATETIME, expiry_date DATETIME, notes TEXT, FOREIGN KEY (patient_uuid) REFERENCES patient (patient_uuid) ON DELETE CASCADE, FOREIGN KEY (provider_uuid) REFERENCES provider (provider_uuid) ON DELETE SET NULL);"
+    },
+    {
+      "table": "vision_prescription",
+      "query": "CREATE INDEX idx_vision_prescription_patient ON vision_prescription(patient_uuid);"
+    },
+    {
+      "table": "allergen",
+      "query": "CREATE TABLE IF NOT EXISTS allergen (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE, category TEXT, description TEXT);"
+    },
+    {
+      "table": "patient_allergy",
+      "query": "CREATE TABLE IF NOT EXISTS patient_allergy (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_uuid TEXT NOT NULL, allergen_id INTEGER NOT NULL, severity INTEGER DEFAULT 0, reaction TEXT, recorded_at DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (patient_uuid) REFERENCES patient (patient_uuid) ON DELETE CASCADE, FOREIGN KEY (allergen_id) REFERENCES allergen (id) ON DELETE RESTRICT);"
+    },
+    {
+      "table": "patient_allergy",
+      "query": "CREATE INDEX idx_patient_allergy_patient ON patient_allergy(patient_uuid);"
     },
     {
       "table": "observations",

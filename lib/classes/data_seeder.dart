@@ -18,6 +18,8 @@ class DataSeeder {
     await _seedPatientData(db);
     await _seedObservations(db);
     await _seedConditionsCatalog(db);
+    await _seedSuppliesCatalog(db);
+    await _seedAllergensCatalog(db);
     await _seedProviders(db);
     await _seedInteractions(db);
     await _seedMetricsAndUnits(db);
@@ -223,9 +225,141 @@ class DataSeeder {
     }
   }
 
-  // A reference catalog of common at-home and clinic/lab tests — not an attempt to
-  // cover every possible medical test, just a common ~50 ready to pick from, same
-  // spirit as _seedConditionsCatalog.
+  // assets/conditions/allergies.json is shaped as a LIST of {category, description,
+  // allergens: [{name, description}]} objects — different from conditions.json's
+  // {categoryKey: [...]} map shape, so this doesn't reuse _seedConditionsCatalog's loop.
+  static Future<void> _seedAllergensCatalog(Database db) async {
+    final List<Map<String, dynamic>> existingRecords = await db.rawQuery("SELECT COUNT(*) as total FROM allergen");
+    if (existingRecords.first['total'] as int > 0) {
+      return; // Catalog is already successfully configured!
+    }
+
+    try {
+      final String jsonString = await rootBundle.loadString('assets/conditions/allergies.json');
+      final List<dynamic> parsedJson = jsonDecode(jsonString);
+
+      final Batch migrationBatch = db.batch();
+      for (final categoryEntry in parsedJson) {
+        if (categoryEntry is! Map) continue;
+        final String? category = categoryEntry['category'] as String?;
+        final allergens = categoryEntry['allergens'];
+        if (category == null || allergens is! List) continue;
+        for (final allergen in allergens) {
+          if (allergen is! Map) continue;
+          migrationBatch.insert('allergen', {
+            'name': allergen['name'],
+            'category': category,
+            'description': allergen['description'],
+          }, conflictAlgorithm: ConflictAlgorithm.ignore);
+        }
+      }
+      await migrationBatch.commit(noResult: true);
+    } catch (error) {
+      debugPrint("Critical failure in _seedAllergensCatalog: $error");
+    }
+  }
+
+  // Category per supply name — kept here rather than in the JSON since it drives icon
+  // selection (see iconForSupplyCategory in patient_supply.dart) and every condition
+  // that mentions the same supply should agree on its category regardless of who wrote
+  // that condition's list.
+  static const Map<String, String> _supplyCategories = {
+    'Blood Glucose Test Strips': 'Testing & Monitoring',
+    'Lancets': 'Testing & Monitoring',
+    'Alcohol Swabs': 'Injection Supplies',
+    'Insulin Syringes': 'Injection Supplies',
+    'Sharps Disposal Container': 'Injection Supplies',
+    'Sterile Gauze Pads': 'Wound Care',
+    'Adhesive Wound Tape': 'Wound Care',
+    'Non-Stick Dressings': 'Wound Care',
+    'Ostomy Bags': 'Continence & Ostomy',
+    'Ostomy Wafers/Skin Barriers': 'Continence & Ostomy',
+    'Incontinence Pads': 'Continence & Ostomy',
+    'Intermittent Catheters': 'Continence & Ostomy',
+    'Nebulizer Masks/Tubing': 'Respiratory',
+    'CPAP Filters': 'Respiratory',
+  };
+
+  // Reads the same conditions.json a second time (small file, one-time cost) for each
+  // condition's optional "supplies" array — not every condition has one; this is a
+  // starting list of the more obviously supply-heavy conditions (diabetes, IBD,
+  // incontinence, respiratory), not an attempt to cover all ~150 entries at once. Runs
+  // after _seedConditionsCatalog so `condition` rows already have real ids to link
+  // against.
+  static Future<void> _seedSuppliesCatalog(Database db) async {
+    final List<Map<String, dynamic>> existingRecords = await db.rawQuery("SELECT COUNT(*) as total FROM supply");
+    if (existingRecords.first['total'] as int > 0) {
+      return; // Catalog is already successfully configured!
+    }
+
+    try {
+      final String jsonString = await rootBundle.loadString('assets/conditions/conditions.json');
+      final Map<String, dynamic> parsedJson = jsonDecode(jsonString);
+
+      final Batch supplyBatch = db.batch();
+      final Set<String> uniqueSupplyNames = {};
+
+      parsedJson.forEach((categoryKey, ailmentList) {
+        if (ailmentList is! List) return;
+        for (var ailment in ailmentList) {
+          if (ailment is! Map) continue;
+          final supplies = ailment['supplies'];
+          if (supplies is! List) continue;
+          for (final supply in supplies) {
+            uniqueSupplyNames.add(supply.toString());
+          }
+        }
+      });
+
+      for (final name in uniqueSupplyNames) {
+        supplyBatch.insert('supply', {
+          'name': name,
+          'category': _supplyCategories[name] ?? 'Custom',
+        }, conflictAlgorithm: ConflictAlgorithm.ignore);
+      }
+      await supplyBatch.commit(noResult: true);
+
+      // Now link each condition to its supplies — needs real ids on both sides, so
+      // this happens as a second pass once every supply/condition row actually exists.
+      final List<Map<String, dynamic>> supplyRows = await db.query('supply');
+      final Map<String, int> supplyIdByName = {
+        for (final row in supplyRows) row['name'] as String: row['id'] as int,
+      };
+      final List<Map<String, dynamic>> conditionRows = await db.query('condition');
+      final Map<String, int> conditionIdByName = {
+        for (final row in conditionRows) row['name'] as String: row['id'] as int,
+      };
+
+      final Batch joinBatch = db.batch();
+      parsedJson.forEach((categoryKey, ailmentList) {
+        if (ailmentList is! List) return;
+        for (var ailment in ailmentList) {
+          if (ailment is! Map) continue;
+          final supplies = ailment['supplies'];
+          if (supplies is! List) continue;
+          final int? conditionId = conditionIdByName[ailment['name']];
+          if (conditionId == null) continue;
+          for (final supply in supplies) {
+            final int? supplyId = supplyIdByName[supply.toString()];
+            if (supplyId == null) continue;
+            joinBatch.insert('condition_supply', {
+              'condition_id': conditionId,
+              'supply_id': supplyId,
+            }, conflictAlgorithm: ConflictAlgorithm.ignore);
+          }
+        }
+      });
+      await joinBatch.commit(noResult: true);
+    } catch (error) {
+      debugPrint("Critical failure in _seedSuppliesCatalog: $error");
+    }
+  }
+
+  // A reference catalog of common out-of-house (clinic/lab) tests — deliberately not
+  // at-home ones, since those mostly duplicate what the Metrics screen already tracks
+  // (blood pressure, glucose, SpO2, weight, etc.) with a real value-tracking/trend
+  // system this catalog doesn't have. Not an attempt to cover every possible medical
+  // test, just a common list to pick from, same spirit as _seedConditionsCatalog.
   static Future<void> _seedTestCatalog(Database db) async {
     final List<Map<String, dynamic>> existingRecords = await db.rawQuery("SELECT COUNT(*) as total FROM test_catalog");
     if (existingRecords.first['total'] as int > 0) {
@@ -242,7 +376,6 @@ class DataSeeder {
           'name': entry['name'],
           'description': entry['description'],
           'category': entry['category'],
-          'location': entry['location'],
         }, conflictAlgorithm: ConflictAlgorithm.ignore);
       }
       await batch.commit(noResult: true);
@@ -455,10 +588,8 @@ class DataSeeder {
         'patient_uuid': heroPatientUuid,
         'metric_id': 1, // Blood Pressure - Systolic
         'danger_low': 85,
-        'acceptable_low': 95,
         'healthy_low': 105,
         'healthy_high': 125,
-        'acceptable_high': 135,
         'danger_high': 150,
         'set_by': cardiologistUuid,
       });
@@ -466,10 +597,8 @@ class DataSeeder {
         'patient_uuid': heroPatientUuid,
         'metric_id': 2, // Blood Pressure - Diastolic
         'danger_low': 50,
-        'acceptable_low': 55,
         'healthy_low': 65,
         'healthy_high': 85,
-        'acceptable_high': 92,
         'danger_high': 100,
         'set_by': cardiologistUuid,
       });

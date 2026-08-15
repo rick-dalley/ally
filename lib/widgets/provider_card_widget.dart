@@ -72,15 +72,19 @@ class ProviderCardState extends State<ProviderCard> {
     return past.isNotEmpty ? past.first : null;
   }
 
+  // Reloads unconditionally once the sheet closes, regardless of how it closed —
+  // dismissing by tapping the background pops with a null result, not true, so gating
+  // the reload on the return value meant a background-dismiss after a successful save
+  // would leave the new appointment invisible until the whole screen was reopened.
   Future<void> _openBooking() async {
-    final bool? booked = await showModalBottomSheet<bool>(
+    await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       builder: (context) => BookAppointmentSheet(patientUuid: widget.user.patientUuid, provider: provider),
     );
-    if (booked == true) await _loadAppointment();
+    await _loadAppointment();
   }
 
   Future<void> openMap(String address) async {
@@ -179,6 +183,7 @@ class ProviderCardState extends State<ProviderCard> {
                                     AppointmentChip(
                                       appointment: _appointment!,
                                       patientUuid: widget.user.patientUuid,
+                                      provider: provider,
                                       onChanged: _loadAppointment,
                                     ),
                                   const SizedBox(height: 4),

@@ -33,6 +33,8 @@ class MetricsDashboardScreenState extends State<MetricsDashboardScreen> {
   Map<int, Metric> trackedMetrics = {};
   Map<int, Metric> untrackedMetrics = {};
   Map<int, MetricRange> ranges = {};
+  Map<int, MetricThreshold> thresholds = {};
+  Map<int, MetricTarget> targets = {};
 
   @override
   void initState() {
@@ -58,6 +60,21 @@ class MetricsDashboardScreenState extends State<MetricsDashboardScreen> {
     trackedMetrics = metrics.tracked;
     untrackedMetrics = metrics.untracked;
     ranges = await metrics.getRangesFor(userUuid);
+    thresholds = await metrics.getThresholdsFor(userUuid);
+    targets = await metrics.getTargetsFor(userUuid);
+  }
+
+  // Re-fetches just the threshold/target maps and rebuilds — called after a save from
+  // inside a card, without redoing the more expensive readings/ranges reload.
+  Future<void> _reloadThresholdsAndTargets() async {
+    final metrics = Metrics();
+    final freshThresholds = await metrics.getThresholdsFor(userUuid);
+    final freshTargets = await metrics.getTargetsFor(userUuid);
+    if (!mounted) return;
+    setState(() {
+      thresholds = freshThresholds;
+      targets = freshTargets;
+    });
   }
 
   void handleTrackingChanged(int metricId, bool isTracked) {
@@ -153,9 +170,12 @@ class MetricsDashboardScreenState extends State<MetricsDashboardScreen> {
                       for (final metric in filteredTrackedList)
                         MetricExpandableCard(
                           key: ValueKey(metric.id),
+                          patientUuid: userUuid,
                           tracked: true,
                           metric: metric,
                           range: ranges[metric.id] ?? MetricRange(id: metric.id, maximum: 0, minimum: 0),
+                          threshold: thresholds[metric.id],
+                          target: targets[metric.id],
                           description: metric.description,
                           whyItMatters: metric.purpose ?? '',
                           categoryIcon: Symbols.monitoring,
@@ -164,6 +184,7 @@ class MetricsDashboardScreenState extends State<MetricsDashboardScreen> {
                           onTrackingChanged: (isTracked) {
                             handleTrackingChanged(metric.id, isTracked);
                           },
+                          onDataChanged: _reloadThresholdsAndTargets,
                         ),
                     ],
                     if (filteredUntrackedList.isNotEmpty) ...[
@@ -174,8 +195,11 @@ class MetricsDashboardScreenState extends State<MetricsDashboardScreen> {
                       for (final metric in filteredUntrackedList)
                         MetricExpandableCard(
                           key: ValueKey(metric.id),
+                          patientUuid: userUuid,
                           tracked: false,
                           metric: metric,
+                          threshold: thresholds[metric.id],
+                          target: targets[metric.id],
                           description: metric.description,
                           whyItMatters: metric.purpose ?? '',
                           categoryIcon: Symbols.monitoring,
@@ -184,6 +208,7 @@ class MetricsDashboardScreenState extends State<MetricsDashboardScreen> {
                           onTrackingChanged: (isTracked) {
                             handleTrackingChanged(metric.id, isTracked);
                           },
+                          onDataChanged: _reloadThresholdsAndTargets,
                         ),
                     ],
                   ],

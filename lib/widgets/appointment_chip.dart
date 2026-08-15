@@ -8,6 +8,7 @@ import '../classes/cancellation_policy.dart';
 import '../classes/contact.dart';
 import '../classes/phone.dart';
 import 'appointment_details_sheet.dart';
+import 'book_appointment_sheet.dart';
 
 class Appointment {
   final String id;
@@ -71,11 +72,18 @@ class Appointment {
 class AppointmentChip extends StatelessWidget {
   final Appointment appointment;
   final String patientUuid;
-  // Called after the details sheet reports a real change (e.g. a cancellation) — lets
-  // the caregiver card reload so a cancelled appointment stops showing as the chip.
+  final Provider provider;
+  // Called after the details sheet reports a real change (e.g. a cancellation or
+  // edit) — lets the caregiver card reload so the chip reflects the current state.
   final VoidCallback? onChanged;
 
-  const AppointmentChip({super.key, required this.appointment, required this.patientUuid, this.onChanged});
+  const AppointmentChip({
+    super.key,
+    required this.appointment,
+    required this.patientUuid,
+    required this.provider,
+    this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -83,15 +91,29 @@ class AppointmentChip extends StatelessWidget {
     return ActionChip(
       avatar: Icon(isPast ? Symbols.history : Symbols.calendar_today, size: 16),
       label: Text(DateFormat('MMM d, h:mm a').format(appointment.when)),
+      // Reloads unconditionally regardless of the returned value — a background-tap
+      // dismiss after a real change (e.g. cancelling) pops with null, not a specific
+      // signal, so gating on the return value could leave a change invisible until
+      // the whole screen was reopened. Reloading is a cheap, idempotent query either way.
       onPressed: () async {
-        final bool? changed = await showModalBottomSheet<bool>(
+        final String? action = await showModalBottomSheet<String>(
           context: context,
           isScrollControlled: true,
           useSafeArea: true,
           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
           builder: (context) => AppointmentDetailsSheet(appointment: appointment, patientUuid: patientUuid),
         );
-        if (changed == true) onChanged?.call();
+        if (action == 'edit' && context.mounted) {
+          await showModalBottomSheet<bool>(
+            context: context,
+            isScrollControlled: true,
+            useSafeArea: true,
+            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+            builder: (context) =>
+                BookAppointmentSheet(patientUuid: patientUuid, provider: provider, existing: appointment),
+          );
+        }
+        onChanged?.call();
       },
       backgroundColor: isPast ? Colors.amber.shade50 : AppTheme.primaryColor.withValues(alpha: 0.1),
       side: BorderSide(color: isPast ? Colors.amber : AppTheme.primaryColor),

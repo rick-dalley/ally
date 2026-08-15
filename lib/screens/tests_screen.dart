@@ -4,12 +4,12 @@ import 'package:material_symbols_icons/symbols.dart';
 import '../app_theme.dart';
 import '../classes/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
-import '../classes/listable.dart';
 import '../classes/medical_test.dart';
 import '../classes/patient.dart';
 import '../classes/reminder_registry.dart';
+import '../widgets/book_test_sheet.dart';
 import '../widgets/carbon_button_compact.dart';
-import '../widgets/carbon_style_dropdown.dart';
+import '../widgets/test_catalog_picker_sheet.dart';
 
 class TestsScreen extends StatefulWidget {
   final Patient user;
@@ -20,21 +20,13 @@ class TestsScreen extends StatefulWidget {
 }
 
 class TestsScreenState extends State<TestsScreen> {
-  late Future<List<TestCatalogEntry>> _catalogFuture;
   List<PatientTest> _tracked = [];
-  TestCatalogEntry? _selectedCatalogEntry;
   bool _loadingTracked = true;
 
   @override
   void initState() {
     super.initState();
-    _catalogFuture = _loadCatalog();
     _loadTracked();
-  }
-
-  Future<List<TestCatalogEntry>> _loadCatalog() async {
-    final rows = await DatabaseManager().getTestCatalog();
-    return rows.map((row) => TestCatalogEntry.fromRow(row)).toList();
   }
 
   Future<void> _loadTracked() async {
@@ -46,14 +38,34 @@ class TestsScreenState extends State<TestsScreen> {
     });
   }
 
-  Future<void> _addTrackedTest(TestCatalogEntry entry) async {
-    await DatabaseManager().addPatientTest(widget.user.patientUuid, {
-      'name': entry.name,
-      'location': entry.location.name,
-      'last_done': null,
-      'next_due': null,
-      'notes': null,
-    });
+  // Two-step: pick from the catalog (a scrollable list of icon tiles, not a dropdown),
+  // then ask when to be reminded and any special instructions from the lab.
+  Future<void> _startNewTest() async {
+    final rows = await DatabaseManager().getTestCatalog();
+    final catalog = rows.map((row) => TestCatalogEntry.fromRow(row)).toList();
+    if (!mounted) return;
+
+    final TestCatalogEntry? chosen = await showModalBottomSheet<TestCatalogEntry>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+      builder: (context) => TestCatalogPickerSheet(catalog: catalog),
+    );
+    if (chosen == null || !mounted) return;
+
+    // Reloads unconditionally once the booking sheet closes, regardless of how it
+    // closed — dismissing by tapping the background pops with a null result, not
+    // true, so gating the reload on the return value meant a background-dismiss after
+    // a successful save would leave the new test invisible until the whole screen
+    // was reopened.
+    await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+      builder: (context) => BookTestSheet(patientUuid: widget.user.patientUuid, catalogEntry: chosen),
+    );
     await _loadTracked();
   }
 
@@ -90,70 +102,31 @@ class TestsScreenState extends State<TestsScreen> {
       appBar: AppBar(
         title: Align(
           alignment: AlignmentGeometry.centerLeft,
-          child: Text(
-            "Tests",
-            style: TextStyle(color: AppTheme.primaryColor, fontSize: 24, fontWeight: FontWeight.w400),
-          ),
+          child: Text("Tests", style: CarbonTheme.carbonLabelTextStyle),
         ),
         backgroundColor: AppTheme.lightTheme.canvasColor,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text("Tracked Tests", style: CarbonTheme.carbonHeadingTextStyle),
-          const SizedBox(height: 8),
-          if (_loadingTracked)
-            const Padding(padding: EdgeInsets.symmetric(vertical: 16), child: LinearProgressIndicator())
-          else if (_tracked.isEmpty)
-            Text("Nothing tracked yet — add one below.", style: CarbonTheme.carbonHelperTextStyle)
-          else
-            ..._tracked.map(_buildTrackedTile),
-          const SizedBox(height: 32),
-          const Divider(),
-          const SizedBox(height: 16),
-          Text("Add a Test to Track", style: CarbonTheme.carbonHeadingTextStyle),
-          const SizedBox(height: 8),
-          Text(
-            "Common tests to start from — not every test that exists, just a starting list.",
-            style: CarbonTheme.carbonHintTextStyle,
-          ),
-          const SizedBox(height: 16),
-          FutureBuilder<List<TestCatalogEntry>>(
-            future: _catalogFuture,
-            builder: (context, snapshot) {
-              final catalog = snapshot.data ?? const [];
-              if (snapshot.connectionState != ConnectionState.done) {
-                return const Padding(padding: EdgeInsets.symmetric(vertical: 16), child: LinearProgressIndicator());
-              }
-              if (catalog.isEmpty) {
-                return Text("No test catalog loaded.", style: CarbonTheme.carbonHelperTextStyle);
-              }
-              final TestCatalogEntry effective = _selectedCatalogEntry ?? catalog.first;
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CarbonDropdown<TestCatalogEntry>(
-                    label: "Choose a test",
-                    placeholder: "Choose a test",
-                    helperText: "${effective.location.label}${effective.category != null ? ' • ${effective.category}' : ''}",
-                    items: catalog,
-                    value: effective,
-                    onChanged: (Listable val) {
-                      setState(() => _selectedCatalogEntry = val as TestCatalogEntry);
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  CarbonCompactButton(
-                    icon: Symbols.add,
-                    label: "Add to Tracked Tests",
-                    style: CarbonButtonStyle.primary,
-                    onTap: () => _addTrackedTest(effective),
-                  ),
-                ],
-              );
-            },
-          ),
-        ],
+      body: _loadingTracked
+          ? const Center(child: CircularProgressIndicator())
+          : _tracked.isEmpty
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  "No tests scheduled yet. Tap + to schedule one.",
+                  style: CarbonTheme.carbonHelperTextStyle,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: _tracked.length,
+              itemBuilder: (context, index) => _buildTrackedTile(_tracked[index]),
+            ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _startNewTest,
+        child: const Icon(Symbols.add),
       ),
     );
   }
@@ -171,7 +144,7 @@ class TestsScreenState extends State<TestsScreen> {
           children: [
             Row(
               children: [
-                Icon(test.location == TestLocation.home ? Symbols.home_health : Symbols.biotech, size: 20),
+                Icon(test.icon, size: 20),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -179,12 +152,22 @@ class TestsScreenState extends State<TestsScreen> {
                     style: CarbonTheme.carbonLabelTextStyle?.copyWith(fontWeight: FontWeight.bold),
                   ),
                 ),
-                Text(test.location.label, style: CarbonTheme.carbonHelperTextStyle),
               ],
             ),
             const SizedBox(height: 4),
             Text("Last done: $lastDone", style: CarbonTheme.carbonHelperTextStyle),
             Text("Next due: $nextDue", style: CarbonTheme.carbonHelperTextStyle),
+            if (test.notes != null && test.notes!.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Symbols.info, size: 16),
+                  const SizedBox(width: 4),
+                  Expanded(child: Text(test.notes!, style: CarbonTheme.carbonHelperTextStyle)),
+                ],
+              ),
+            ],
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,

@@ -4,15 +4,18 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/carbon_color_constants.dart';
 import 'package:triage/classes/database_manager.dart';
 
+import '../classes/allergen.dart';
 import '../classes/carbon_theme_constants.dart';
 import '../classes/medication_services.dart';
 import '../classes/tablet.dart';
+import 'allergy_conflict_chip.dart';
 import 'change_medication_sheet.dart';
 import 'interaction_chip.dart';
 
 class MedicationCard extends StatefulWidget {
   final Medication medication;
   final List<InteractionConflict> interactions;
+  final List<AllergyConflict> allergyConflicts;
   // Archives the medication (stops tracking it as active) rather than deleting its
   // history — the patient may go back on it later, and past dosing matters for the
   // therapy-impact timeline.
@@ -26,6 +29,7 @@ class MedicationCard extends StatefulWidget {
     super.key,
     required this.medication,
     required this.interactions,
+    this.allergyConflicts = const [],
     required this.onArchive,
     this.onMedicationChanged,
     this.index,
@@ -104,6 +108,9 @@ class _MedicationCardState extends State<MedicationCard> {
     final List<InteractionConflict> medicationInteractions = widget.interactions
         .where((conflict) => conflict.hasInteraction(medicationName))
         .toList();
+    final List<AllergyConflict> medicationAllergyConflicts = widget.allergyConflicts
+        .where((conflict) => conflict.matchesMedication(medicationName))
+        .toList();
     final TabletShapes shape = widget.medication.shape ?? TabletShapes.round;
     final TabletColors color = widget.medication.color ?? TabletColors.white;
 
@@ -168,6 +175,11 @@ class _MedicationCardState extends State<MedicationCard> {
                   Padding(
                     padding: const EdgeInsets.only(top: 4.0),
                     child: InteractionsChip(medicationName: medicationName, interactions: medicationInteractions),
+                  ),
+                if (medicationAllergyConflicts.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4.0),
+                    child: AllergyConflictChip(medicationName: medicationName, conflicts: medicationAllergyConflicts),
                   ),
                 // ExpansionTile
                 ExpansionTile(

@@ -65,12 +65,18 @@
     {
       "name": "Asthma",
       "description": "Chronic inflammation making the airways narrow and swell.",
-      "metrics": []
+      "metrics": [],
+      "supplies": [
+        "Nebulizer Masks/Tubing"
+      ]
     },
     {
       "name": "Chronic Obstructive Pulmonary Disease (COPD)",
       "description": "Progressive lung airflow blockage.",
-      "metrics": []
+      "metrics": [],
+      "supplies": [
+        "Nebulizer Masks/Tubing"
+      ]
     },
     {
       "name": "Acute Bronchitis",
@@ -95,7 +101,19 @@
     {
       "name": "Sleep Apnea",
       "description": "Disrupted breathing patterns during sleep.",
-      "metrics": ["spO2", "duration", "interruptions", "bed times","wake up times", "rem sleep duration", "deep sleep duration", "CPAP machine notifications"]
+      "metrics": [
+        "spO2",
+        "duration",
+        "interruptions",
+        "bed times",
+        "wake up times",
+        "rem sleep duration",
+        "deep sleep duration",
+        "CPAP machine notifications"
+      ],
+      "supplies": [
+        "CPAP Filters"
+      ]
     },
     {
       "name": "COVID-19",
@@ -107,12 +125,29 @@
     {
       "name": "Type 2 Diabetes",
       "description": "Chronic condition affecting how the body processes blood sugar.",
-      "metrics": []
+      "metrics": [],
+      "supplies": [
+        "Blood Glucose Test Strips",
+        "Lancets",
+        "Alcohol Swabs",
+        "Sterile Gauze Pads",
+        "Non-Stick Dressings"
+      ]
     },
     {
       "name": "Type 1 Diabetes",
       "description": "Autoimmune condition where the pancreas produces little to no insulin.",
-      "metrics": []
+      "metrics": [],
+      "supplies": [
+        "Blood Glucose Test Strips",
+        "Lancets",
+        "Alcohol Swabs",
+        "Insulin Syringes",
+        "Sharps Disposal Container",
+        "Sterile Gauze Pads",
+        "Adhesive Wound Tape",
+        "Non-Stick Dressings"
+      ]
     },
     {
       "name": "Hypothyroidism",
@@ -216,7 +251,11 @@
     {
       "name": "Rheumatoid Arthritis",
       "description": "Chronic inflammatory disorder affecting joints.",
-      "metrics": []
+      "metrics": [],
+      "supplies": [
+        "Alcohol Swabs",
+        "Sharps Disposal Container"
+      ]
     },
     {
       "name": "Osteoporosis",
@@ -303,12 +342,24 @@
     {
       "name": "Crohn's Disease",
       "description": "Type of inflammatory bowel disease causing tract inflammation.",
-      "metrics": []
+      "metrics": [],
+      "supplies": [
+        "Alcohol Swabs",
+        "Sharps Disposal Container",
+        "Ostomy Bags",
+        "Ostomy Wafers/Skin Barriers"
+      ]
     },
     {
       "name": "Ulcerative Colitis",
       "description": "Inflammatory bowel disease causing long-lasting ulcers.",
-      "metrics": []
+      "metrics": [],
+      "supplies": [
+        "Alcohol Swabs",
+        "Sharps Disposal Container",
+        "Ostomy Bags",
+        "Ostomy Wafers/Skin Barriers"
+      ]
     }
   ],
   "Dermatological": [
@@ -325,7 +376,11 @@
     {
       "name": "Psoriasis",
       "description": "Skin disease causing red, itchy, scaly patches.",
-      "metrics": []
+      "metrics": [],
+      "supplies": [
+        "Alcohol Swabs",
+        "Sharps Disposal Container"
+      ]
     },
     {
       "name": "Contact Dermatitis",
@@ -429,7 +484,11 @@
     {
       "name": "Urinary Incontinence",
       "description": "Loss of bladder control causing accidental leakage.",
-      "metrics": []
+      "metrics": [],
+      "supplies": [
+        "Incontinence Pads",
+        "Intermittent Catheters"
+      ]
     },
     {
       "name": "Kidney Stones",

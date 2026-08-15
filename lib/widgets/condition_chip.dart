@@ -28,16 +28,23 @@ class ConditionChip extends StatefulWidget {
 class ConditionChipState extends State<ConditionChip> {
   @override
   Widget build(BuildContext context) {
+    // In Remission / Recovered fade the chip out — still identifiable by color and
+    // icon, but visually receding behind whatever's still Active. A faded fill reads
+    // poorly under white icon/text though, so those switch to the solid category color
+    // instead of staying white.
+    final bool isResolved = widget.patientCondition.status != ConditionStatus.active;
+    final Color contentColor = isResolved ? widget.color : AppTheme.onPrimaryColor;
+
     return RawChip(
       avatar: Icon(
         widget.icon, // Pass your Material Symbol or Icon here
         size: 16,
-        color: AppTheme.onPrimaryColor,
+        color: contentColor,
       ),
       label: Text(widget.patientCondition.name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-      labelStyle: TextStyle(color: AppTheme.onPrimaryColor),
-      backgroundColor: widget.color,
-      deleteIcon: Icon(Icons.cancel, size: 14, color: AppTheme.onPrimaryColor),
+      labelStyle: TextStyle(color: contentColor),
+      backgroundColor: isResolved ? widget.color.withValues(alpha: 0.4) : widget.color,
+      deleteIcon: Icon(Icons.cancel, size: 14, color: contentColor),
       onDeleted: () {
         int? id = widget.patientCondition.id;
         if (id != null) {

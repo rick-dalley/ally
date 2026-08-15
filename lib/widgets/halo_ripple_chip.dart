@@ -63,7 +63,9 @@ class HaloRippleChipState extends State<HaloRippleChip> with SingleTickerProvide
     const double iconContainerSize = 48.0; // Anchors the ripple bounds explicitly
 
     return Row(
-      mainAxisSize: MainAxisSize.min, // Prevents row from greedily stealing horizontal space
+      // No longer forced to shrink-wrap — a long category name (there's always going to
+      // be one eventually) needs somewhere to actually wrap to instead of overflowing
+      // the row, which `MainAxisSize.min` + an unconstrained Text can't provide.
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // Constrain the icon and its halo effects to a static box so it never offsets the text
@@ -87,9 +89,11 @@ class HaloRippleChipState extends State<HaloRippleChip> with SingleTickerProvide
           ),
         ),
         const SizedBox(width: 8), // Clean spacing padding
-        Text(
-          widget.text,
-          style: TextStyle(fontSize: 16, color: resolvedColor, fontWeight: FontWeight.w500),
+        Flexible(
+          child: Text(
+            widget.text,
+            style: TextStyle(fontSize: 16, color: resolvedColor, fontWeight: FontWeight.w500),
+          ),
         ),
       ],
     );

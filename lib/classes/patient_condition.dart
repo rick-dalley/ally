@@ -1,3 +1,4 @@
+import '../classes/listable.dart';
 
 class ConditionReference {
   final int id;
@@ -20,15 +21,73 @@ class ConditionReference {
   }
 }
 
+// Replaces the old Active/Historical boolean — a one-off event (a stroke) and a
+// relapsing-remitting condition (eczema) both end up "not currently active," but they
+// aren't the same thing, and a patient filling in their history knows the difference.
+enum ConditionStatus {
+  active,
+  inRemission,
+  recovered;
+
+  String get label {
+    switch (this) {
+      case ConditionStatus.active:
+        return "Active";
+      case ConditionStatus.inRemission:
+        return "In Remission";
+      case ConditionStatus.recovered:
+        return "Recovered";
+    }
+  }
+}
+
+// The unit for a patient-entered approximate duration ("about 3 years") — only used
+// when the onset date itself isn't known precisely enough to compute a real duration.
+enum DurationUnit implements Listable {
+  days,
+  weeks,
+  months,
+  years;
+
+  @override
+  String get label {
+    switch (this) {
+      case DurationUnit.days:
+        return "Days";
+      case DurationUnit.weeks:
+        return "Weeks";
+      case DurationUnit.months:
+        return "Months";
+      case DurationUnit.years:
+        return "Years";
+    }
+  }
+
+  @override
+  String get description => label;
+}
+
 class PatientCondition {
   final int? id; // Nullable if not yet inserted into SQLite
   final String patientUuid;
   final int conditionId;
   String name;
   String treatmentNotes;
-  int isActive; // 1 = Active, 0 = Historical
+  ConditionStatus status;
   DateTime? onset;
-  DateTime? recovery;
+
+  // The date the condition went into remission, or the date it was considered
+  // recovered — meaning depends on `status`. Deliberately left nullable: a patient may
+  // remember *that* they recovered without remembering exactly when.
+  DateTime? statusDate;
+
+  // Fallback for when onset isn't known precisely enough to compute a real duration —
+  // "I don't remember exactly when, but it was a few years." Only meaningful when
+  // `onset` is null; whenever onset is known, duration is computed instead, never
+  // entered, so the two can never contradict each other.
+  int? durationEstimateValue;
+  DurationUnit? durationEstimateUnit;
+
   DateTime recordedAt;
 
   PatientCondition({
@@ -36,20 +95,28 @@ class PatientCondition {
     required this.patientUuid,
     required this.conditionId,
     required this.name,
-    required this.isActive,
+    required this.status,
     this.treatmentNotes = "",
     this.onset,
-    this.recovery,
-  }) : recordedAt =  DateTime.now();
+    this.statusDate,
+    this.durationEstimateValue,
+    this.durationEstimateUnit,
+  }) : recordedAt = DateTime.now();
 
-  factory PatientCondition.fromCondition(String patientUuid, ConditionReference condition){
+  factory PatientCondition.fromCondition(String patientUuid, ConditionReference condition) {
     return PatientCondition(
-        patientUuid: patientUuid,
-        conditionId: condition.id,
-        name: condition.name,
-        isActive:1,
-        onset:DateTime.now());
+      patientUuid: patientUuid,
+      conditionId: condition.id,
+      name: condition.name,
+      status: ConditionStatus.active,
+      onset: DateTime.now(),
+    );
   }
+
+  // Only meaningful once onset is known — this is the single source of truth for
+  // duration whenever it's available, so the UI never lets a stored estimate compete
+  // with it.
+  Duration? get computedDuration => onset != null ? (statusDate ?? DateTime.now()).difference(onset!) : null;
 
   // Convert an engine database row straight into your clean object layout
   factory PatientCondition.fromMap(Map<String, dynamic> map) {
@@ -59,9 +126,13 @@ class PatientCondition {
       conditionId: map['condition_id'] as int,
       name: map['name'] as String? ?? "",
       treatmentNotes: map['treatment_notes'] as String? ?? "",
-      isActive: map['is_active'] as int? ?? 1,
+      status: ConditionStatus.values[map['status'] as int? ?? 0],
       onset: map['onset'] != null ? DateTime.parse(map['onset'].toString()) : null,
-      recovery: map['recovery'] != null ? DateTime.parse(map['recovery'].toString()) : null,
+      statusDate: map['status_date'] != null ? DateTime.parse(map['status_date'].toString()) : null,
+      durationEstimateValue: map['duration_estimate_value'] as int?,
+      durationEstimateUnit: map['duration_estimate_unit'] != null
+          ? DurationUnit.values[map['duration_estimate_unit'] as int]
+          : null,
     );
   }
 
@@ -72,9 +143,11 @@ class PatientCondition {
       'patient_uuid': patientUuid,
       'condition_id': conditionId,
       'treatment_notes': treatmentNotes,
-      'is_active': isActive,
+      'status': status.index,
       'onset': onset?.toIso8601String(),
-      'recovery': recovery?.toIso8601String(),
+      'status_date': statusDate?.toIso8601String(),
+      'duration_estimate_value': durationEstimateValue,
+      'duration_estimate_unit': durationEstimateUnit?.index,
     };
   }
 }
