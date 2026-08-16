@@ -6,6 +6,7 @@ import 'package:path/path.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:triage/classes/allergen.dart';
+import 'package:triage/classes/blood_type.dart';
 import 'package:triage/classes/patient_condition.dart';
 import 'package:triage/classes/patient_supply.dart';
 import 'package:triage/classes/provider.dart';
@@ -933,6 +934,19 @@ class DatabaseManager {
     required String firstName,
     required String lastName,
     required DateTime dob,
+    // All optional — the quick "Add a Family Member" entry point never sets these, only
+    // the first-run wizard (FirstPatientWizard) does, and even there every one of them
+    // is skippable. phn is UNIQUE, so an explicit blank string can't be used as "not
+    // provided" (every skip would collide) — falling back to the generated uuid, same
+    // as before, keeps that guarantee without a real card number.
+    String? phn,
+    AboType? abo,
+    RhFactor? rh,
+    String? streetAddress,
+    String? city,
+    String? province,
+    String? postalCode,
+    String? country,
   }) async {
     final db = await database;
     final String newPatientUuid = uuid.v4();
@@ -941,23 +955,19 @@ class DatabaseManager {
       'first_name': firstName,
       'last_name': lastName,
       'acuity': 0,
-      // A real health card number has to come from the patient later (clerical screen)
-      // — phn is UNIQUE, so this can't be left blank/shared across new patients either;
-      // the new uuid itself is already guaranteed unique and makes an honest, obviously-
-      // a-placeholder value rather than a fabricated-looking fake number.
-      'phn': newPatientUuid,
+      'phn': (phn == null || phn.isEmpty) ? newPatientUuid : phn,
       'phase_step_id': 0,
       'email': '',
       'ssn': '',
       'title': '',
-      'country': '',
+      'country': country ?? '',
       'dob': dob.toIso8601String(),
       'status': '',
       'path': '',
-      'street_address': '',
-      'city': '',
-      'province': '',
-      'postal_code': '',
+      'street_address': streetAddress ?? '',
+      'city': city ?? '',
+      'province': province ?? '',
+      'postal_code': postalCode ?? '',
       'phone': '',
       'contact_name': '',
       'relation': '',
@@ -968,8 +978,8 @@ class DatabaseManager {
       'pharmacy_phone': '',
       'pharmacy_fax': '',
       'narrative_hint': '',
-      'abo_type': 0,
-      'rh_factor': 0,
+      'abo_type': (abo ?? AboType.o).index,
+      'rh_factor': (rh ?? RhFactor.positive).index,
     });
     return newPatientUuid;
   }

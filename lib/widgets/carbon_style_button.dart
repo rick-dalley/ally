@@ -30,16 +30,29 @@ class CarbonButton extends StatelessWidget {
     final borderColor = CarbonTheme.getButtonBorderColor(buttonStyle);
 
     final size = this.size ?? CarbonButtons.medium;
-    final iconWidget = icon != null ? Icon(icon, size: 20, color: iconColor) : null;
+    final iconWidget = icon != null
+        ? Icon(icon, size: 20, color: iconColor)
+        : null;
     final textWidget = Text(
       label,
-      style: GoogleFonts.ibmPlexSans(fontSize: size.fontSize, fontWeight: FontWeight.w400, letterSpacing: 0.14),
+      style: GoogleFonts.ibmPlexSans(
+        fontSize: size.fontSize,
+        fontWeight: FontWeight.w400,
+        letterSpacing: 0.14,
+      ),
     );
     // Determine the list of children based on alignment
     // For 'Right' alignment, we place text first, then icon
+    // The spacer only makes sense when there's actually an icon to push away from the
+    // text — an icon-less button with a bare Spacer() in its Row collapses to zero
+    // width (Spacer needs a bounded width to resolve, which this Row doesn't have
+    // outside of center alignment's fixed SizedBox), rendering an invisible button.
     List<Widget> children = [
       textWidget,
-      alignment == MainAxisAlignment.center ? const SizedBox(width: 24) : const Spacer(),
+      if (iconWidget != null)
+        alignment == MainAxisAlignment.center
+            ? const SizedBox(width: 24)
+            : const Spacer(),
       ?iconWidget,
     ];
 
@@ -89,7 +102,9 @@ class CarbonIconButton extends StatelessWidget {
 
     carbonIconButton ?? CarbonIconButtons.medium.size;
     final Size size = carbonIconButton!.size;
-    final iconWidget = icon != null ? Icon(icon, size: carbonIconButton!.iconSize.height, color: iconColor) : null;
+    final iconWidget = icon != null
+        ? Icon(icon, size: carbonIconButton!.iconSize.height, color: iconColor)
+        : null;
 
     return SizedBox(
       height: size.height,
@@ -140,7 +155,10 @@ class CarbonAcceptButton extends StatelessWidget {
 
     final size = this.size ?? CarbonButtons.medium;
 
-    final textWidget = Text(label, style: CarbonTheme.carbonPrimaryButtonTextStyle);
+    final textWidget = Text(
+      label,
+      style: CarbonTheme.carbonPrimaryButtonTextStyle,
+    );
 
     return Container(
       color: buttonColor,
@@ -151,8 +169,14 @@ class CarbonAcceptButton extends StatelessWidget {
         children: [
           SizedBox(width: 16.0),
           Expanded(child: textWidget),
-          CarbonIconButton(onPressed: () => onAccepted(false), icon: Symbols.cancel),
-          CarbonIconButton(onPressed: () => onAccepted(true), icon: Symbols.check),
+          CarbonIconButton(
+            onPressed: () => onAccepted(false),
+            icon: Symbols.cancel,
+          ),
+          CarbonIconButton(
+            onPressed: () => onAccepted(true),
+            icon: Symbols.check,
+          ),
         ],
       ),
     );

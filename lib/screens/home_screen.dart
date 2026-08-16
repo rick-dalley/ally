@@ -5,6 +5,7 @@ import 'package:triage/classes/carbon_color_constants.dart';
 import 'package:triage/classes/carbon_theme_constants.dart';
 import 'package:triage/screens/add_patient_screen.dart';
 import 'package:triage/screens/add_patients_wheel.dart';
+import 'package:triage/screens/first_patient_wizard.dart';
 import 'package:triage/screens/metric_dashboard_screen.dart';
 import 'package:triage/screens/time_scroller.dart';
 import 'package:triage/screens/user_screen.dart';
@@ -208,10 +209,13 @@ class HomeScreenState extends State<HomeScreen> {
     Patient? patient;
     if (_isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    } else if (patients.isEmpty) {
+      // A real (non-debug) install has no seeded demo data — this is the very first
+      // thing a genuine user sees, since nothing else in the app has a patient to work
+      // with yet.
+      return FirstPatientWizard(onPatientCreated: loadPatientData);
     } else {
-      if (patients.isNotEmpty) {
-        patient = patients[_currentPageIndex];
-      }
+      patient = patients[_currentPageIndex];
     }
 
     // Define clear, action-oriented titles corresponding to your 6 bottom nav tabs (_currentIndex)
