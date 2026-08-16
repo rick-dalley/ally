@@ -31,7 +31,7 @@ class FirstPatientWizard extends StatefulWidget {
 }
 
 class _FirstPatientWizardState extends State<FirstPatientWizard> {
-  static const int _stepCount = 5;
+  static const int _stepCount = 6;
   final PageController _pageController = PageController();
   int _step = 0;
 
@@ -209,6 +209,7 @@ class _FirstPatientWizardState extends State<FirstPatientWizard> {
                 controller: _pageController,
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
+                  _welcomeStep(),
                   _nameStep(),
                   _phnStep(),
                   _bloodTypeStep(),
@@ -282,6 +283,46 @@ class _FirstPatientWizardState extends State<FirstPatientWizard> {
           ],
         ],
       ),
+    );
+  }
+
+  Widget _welcomeStep() {
+    return _page(
+      title: "Welcome to CWICare Partner.",
+      subtitle: "",
+      showSkip: false,
+      showBack: false,
+      nextLabel: "Get Started",
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "This app does more than track your health—it helps keep you "
+            "safe, deepens your understanding of your body and medical "
+            "conditions, and empowers you to have more meaningful "
+            "conversations with your care providers.",
+            style: CarbonTheme.carbonTextStyle,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            "Your privacy is paramount. All the data you collect stays "
+            "secure right here on your personal device. CWICare does not "
+            "partner with outside medical companies or share your "
+            "information in any way. We may ask your permission to provide "
+            "alerts and reminders, but those processes also remain "
+            "entirely on your device.",
+            style: CarbonTheme.carbonTextStyle,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            "Your foundation for a healthier, fuller life starts here.",
+            style: CarbonTheme.carbonTextStyle?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+      onNext: () => _goTo(_step + 1),
     );
   }
 

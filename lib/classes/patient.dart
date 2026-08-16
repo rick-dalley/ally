@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import 'package:triage/classes/acuity.dart';
@@ -14,7 +16,10 @@ class Patient {
   final String patientUuid; //'02039325-2425-4bf3-bf85-1ec81a797e25',
   final String firstName; //'Silvain',
   final String lastName; //'Saulter',
-  final String phn; //'807-831-0857',
+  // Not final — edited directly from UserScreen's "edit details" sheet the same way
+  // height/weight already are, then handed back via onMemberUpdate rather than
+  // reconstructing a whole new Patient for a handful of clerical fields.
+  String phn; //'807-831-0857',
   final int phaseStepId; //301,
   final String email; //'ssaulter0@spotify.com',
   final String ssn; //'305-41-7220',
@@ -30,13 +35,14 @@ class Patient {
   final String path; //'Custody',
   final int flags; //'Involuntary',
   final String phone; //'443-449-5848',
-  final String familyDoctorPhone; //'857-582-7784',
-  final String contactPhone; //'364-303-6922',
-  final String pharmacyPhone; //'433-729-8681',
-  final String pharmacyFax; //'509-196-1665',
-  final String familyDoctorName; //'Silvain Saulter',
+  String familyDoctorPhone; //'857-582-7784',
+  String contactPhone; //'364-303-6922',
+  String pharmacyPhone; //'433-729-8681',
+  String pharmacyFax; //'509-196-1665',
+  String familyDoctorName; //'Silvain Saulter',
   final String relation; //'Partner',
-  final String contactName; //'Silvain Saulter',
+  String contactName; //'Silvain Saulter',
+  Uint8List? avatar;
   String eyeColor;
   BloodType bloodType;
   PainLevel pain;
@@ -99,6 +105,7 @@ class Patient {
     this.eyeColor = "",
     this.isAWOL = false,
     this.bloodType = const BloodType(abo: AboType.o, rh: RhFactor.positive),
+    this.avatar,
   });
 
   factory Patient.fromJson(Map<String, dynamic> item) {
@@ -106,7 +113,8 @@ class Patient {
     // screen load — instead of reading the values actually stored in the database.
     final DateTime adm = DTUtilities.sqliteToDart(item['admitted']);
     final DateTime birth = DTUtilities.sqliteToDart(item['dob']);
-    const PainLevel pain = PainLevel.none; // No real pain-tracking source wired up yet.
+    const PainLevel pain =
+        PainLevel.none; // No real pain-tracking source wired up yet.
     int rawRhFactor = item["rh_factor"] ?? 0;
     RhFactor rhFactor = RhFactor.values[rawRhFactor];
     int rawAboType = item["abo_type"] ?? 0;
@@ -185,6 +193,7 @@ class Patient {
       pain: pain,
       eyeColor: "brown", //item["eye_color"],
       bloodType: BloodType(abo: aboType, rh: rhFactor),
+      avatar: item['avatar'] as Uint8List?,
     );
   }
   factory Patient.copy({required Patient patient}) {
@@ -225,10 +234,14 @@ class Patient {
       age: patient.age,
       narrativeHint: patient.narrativeHint,
       eyeColor: "brown",
+      avatar: patient.avatar,
     );
   }
 
-  Patient copyWithAcuity({required Patient oldPatient, required AcuityLevel acuityLevel}) {
+  Patient copyWithAcuity({
+    required Patient oldPatient,
+    required AcuityLevel acuityLevel,
+  }) {
     Patient patient = Patient.copy(patient: oldPatient);
     patient.acuityLevel = acuityLevel;
     return patient;

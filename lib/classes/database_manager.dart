@@ -123,6 +123,53 @@ class DatabaseManager {
     );
   }
 
+  // Stored as a BLOB directly on the patient row, same convention AvatarPicker already
+  // established for provider photos (see provider.dart's `image` field / `avatar`
+  // column) — not a file path, so there's nothing to keep in sync with the filesystem.
+  Future<void> updatePatientAvatar(
+    String patientUuid,
+    Uint8List? avatar,
+  ) async {
+    final db = await database;
+    await db.update(
+      'patient',
+      {'avatar': avatar},
+      where: 'patient_uuid = ?',
+      whereArgs: [patientUuid],
+    );
+  }
+
+  // The handful of clerical fields UserScreen only ever displayed until now — PHN,
+  // emergency contact, primary caregiver, pharmacy. phn is UNIQUE, so a collision with
+  // another patient's card number throws; callers should catch and surface that rather
+  // than let it look like a generic save failure.
+  Future<void> updatePatientDetails({
+    required String patientUuid,
+    required String phn,
+    required String contactName,
+    required String contactPhone,
+    required String familyDoctorName,
+    required String familyDoctorPhone,
+    required String pharmacyPhone,
+    required String pharmacyFax,
+  }) async {
+    final db = await database;
+    await db.update(
+      'patient',
+      {
+        'phn': phn,
+        'contact_name': contactName,
+        'contact_phone': contactPhone,
+        'family_doctor_name': familyDoctorName,
+        'family_doctor_phone': familyDoctorPhone,
+        'pharmacy_phone': pharmacyPhone,
+        'pharmacy_fax': pharmacyFax,
+      },
+      where: 'patient_uuid = ?',
+      whereArgs: [patientUuid],
+    );
+  }
+
   Future<bool> trackMoodChange(String patientUuid, int mood) async {
     final db = await database;
 

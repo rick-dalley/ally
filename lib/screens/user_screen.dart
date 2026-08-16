@@ -1,10 +1,13 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/blood_type.dart';
 import 'package:triage/classes/metric_value.dart';
+import 'package:triage/widgets/avatar_picker.dart';
 import 'package:triage/widgets/blood_type_selector.dart';
+import 'package:triage/widgets/carbon_button_compact.dart';
 import 'package:triage/widgets/carbon_style_button.dart';
 import 'package:triage/widgets/carbon_style_two_xl_button.dart';
 import '../app_theme.dart';
@@ -102,6 +105,166 @@ class UserScreenState extends State<UserScreen> {
     DatabaseManager().updateRhFactor(widget.user.patientUuid, rhFactor.index);
   }
 
+  void _onAvatarPicked(Uint8List? bytes) {
+    final Patient patient = patientController.patient;
+    patient.avatar = bytes;
+    DatabaseManager().updatePatientAvatar(patient.patientUuid, bytes);
+    setState(() {});
+    widget.onMemberUpdate(patient);
+  }
+
+  // The one pencil icon for everything UserScreen shows read-only but never let anyone
+  // touch: PHN, emergency contact, primary caregiver, pharmacy. Blood Type and BMI
+  // already have their own dedicated edit affordances (the tiles above), so those stay
+  // out of this sheet rather than being duplicated here.
+  Future<void> _showEditDetailsSheet(
+    BuildContext context,
+    Patient patient,
+  ) async {
+    final TextEditingController phnController = TextEditingController(
+      text: patient.phn,
+    );
+    final TextEditingController contactNameController = TextEditingController(
+      text: patient.contactName,
+    );
+    final TextEditingController contactPhoneController = TextEditingController(
+      text: patient.contactPhone,
+    );
+    final TextEditingController caregiverNameController = TextEditingController(
+      text: patient.familyDoctorName,
+    );
+    final TextEditingController caregiverPhoneController =
+        TextEditingController(text: patient.familyDoctorPhone);
+    final TextEditingController pharmacyPhoneController = TextEditingController(
+      text: patient.pharmacyPhone,
+    );
+    final TextEditingController pharmacyFaxController = TextEditingController(
+      text: patient.pharmacyFax,
+    );
+    String? error;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: AppTheme.scaffoldBackgroundColor,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (sheetContext, setSheetState) {
+            Future<void> save() async {
+              try {
+                await DatabaseManager().updatePatientDetails(
+                  patientUuid: patient.patientUuid,
+                  phn: phnController.text.trim(),
+                  contactName: contactNameController.text.trim(),
+                  contactPhone: contactPhoneController.text.trim(),
+                  familyDoctorName: caregiverNameController.text.trim(),
+                  familyDoctorPhone: caregiverPhoneController.text.trim(),
+                  pharmacyPhone: pharmacyPhoneController.text.trim(),
+                  pharmacyFax: pharmacyFaxController.text.trim(),
+                );
+                patient.phn = phnController.text.trim();
+                patient.contactName = contactNameController.text.trim();
+                patient.contactPhone = contactPhoneController.text.trim();
+                patient.familyDoctorName = caregiverNameController.text.trim();
+                patient.familyDoctorPhone = caregiverPhoneController.text
+                    .trim();
+                patient.pharmacyPhone = pharmacyPhoneController.text.trim();
+                patient.pharmacyFax = pharmacyFaxController.text.trim();
+                setState(() {});
+                widget.onMemberUpdate(patient);
+                if (sheetContext.mounted) Navigator.of(sheetContext).pop();
+              } catch (err) {
+                setSheetState(
+                  () => error =
+                      "Couldn't save — that health card number may already "
+                      "be in use.",
+                );
+              }
+            }
+
+            return SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "Edit Details",
+                      style: CarbonTheme.carbonHeadingTextStyle,
+                    ),
+                    const SizedBox(height: 24),
+                    CarbonTextInput(
+                      label: "Provincial Health #:",
+                      controller: phnController,
+                    ),
+                    const SizedBox(height: 16),
+                    CarbonTextInput(
+                      label: "CONTACT:",
+                      controller: contactNameController,
+                    ),
+                    const SizedBox(height: 16),
+                    CarbonTextInput(
+                      label: "PHONE:",
+                      controller: contactPhoneController,
+                    ),
+                    const SizedBox(height: 16),
+                    CarbonTextInput(
+                      label: "PRIMARY CAREGIVER:",
+                      controller: caregiverNameController,
+                    ),
+                    const SizedBox(height: 16),
+                    CarbonTextInput(
+                      label: "PHONE:",
+                      controller: caregiverPhoneController,
+                    ),
+                    const SizedBox(height: 16),
+                    CarbonTextInput(
+                      label: "PHARMACY:",
+                      controller: pharmacyPhoneController,
+                    ),
+                    const SizedBox(height: 16),
+                    CarbonTextInput(
+                      label: "FAX:",
+                      controller: pharmacyFaxController,
+                    ),
+                    if (error != null) ...[
+                      const SizedBox(height: 12),
+                      Text(error!, style: CarbonTheme.dangerTextStyle),
+                    ],
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: CarbonButton(
+                            label: "Cancel",
+                            alignment: MainAxisAlignment.center,
+                            style: CarbonButtonStyle.secondary,
+                            onPressed: () => Navigator.of(sheetContext).pop(),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: CarbonButton(
+                            label: "Save",
+                            alignment: MainAxisAlignment.center,
+                            style: CarbonButtonStyle.primary,
+                            onPressed: save,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     double bmi = MedicalMath.calculateBMI(
@@ -150,10 +313,35 @@ class UserScreenState extends State<UserScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       TrophyCase(patientUuid: patient.patientUuid),
-                      // Replace your existing Container child: Row(...) block with this:
-                      Text(
-                        patient.firstName,
-                        style: CarbonTheme.carbonHeadingTextStyle,
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          AvatarPicker(
+                            onPicked: _onAvatarPicked,
+                            rawImage: patient.avatar,
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  patient.firstName,
+                                  style: CarbonTheme.carbonHeadingTextStyle,
+                                ),
+                                const SizedBox(height: 4),
+                                CarbonCompactButton(
+                                  icon: Symbols.edit,
+                                  label: "Edit Details",
+                                  style: CarbonButtonStyle.ghost,
+                                  onTap: () =>
+                                      _showEditDetailsSheet(context, patient),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
 
                       const SizedBox(height: 32),
