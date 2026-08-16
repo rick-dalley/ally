@@ -10,7 +10,13 @@ class ScannerWidget extends StatefulWidget {
   final bool? isSimulationOnly;
   final Function(RecognizedText text)? onTextDetected;
 
-  const ScannerWidget({super.key, required this.scanFront, this.scanBack, this.isSimulationOnly, this.onTextDetected});
+  const ScannerWidget({
+    super.key,
+    required this.scanFront,
+    this.scanBack,
+    this.isSimulationOnly,
+    this.onTextDetected,
+  });
 
   @override
   State<StatefulWidget> createState() => ScannerWidgetState();
@@ -36,7 +42,9 @@ class ScannerWidgetState extends State<ScannerWidget> {
       backScannerPath = 'assets/screen_captures/license_back.png';
     }
     return Container(
-      height: MediaQuery.of(context).size.height * 0.45, // Slightly taller for vertical stack
+      height:
+          MediaQuery.of(context).size.height *
+          0.45, // Slightly taller for vertical stack
       width: double.infinity,
       color: Colors.black,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -123,12 +131,18 @@ class ScannerCardSlotState extends State<ScannerCardSlot> {
     String imagePath = widget.imagePath ?? '';
     return Expanded(
       child: Container(
-        width: double.infinity, // Forces the container to fill the Column's width
+        width:
+            double.infinity, // Forces the container to fill the Column's width
         margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
           color: Colors.grey.shade900,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: widget.isScanning ? Colors.cyanAccent : AppTheme.onPrimaryColor, width: 2),
+          border: Border.all(
+            color: widget.isScanning
+                ? Colors.cyanAccent
+                : AppTheme.onPrimaryColor,
+            width: 2,
+          ),
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(10),
@@ -142,7 +156,21 @@ class ScannerCardSlotState extends State<ScannerCardSlot> {
                   mockImagePath: imagePath,
                 )
               : widget.isAttached && widget.imagePath != null
-              ? Image.asset(imagePath, fit: BoxFit.contain)
+              ? Image.asset(
+                  imagePath,
+                  fit: BoxFit.contain,
+                  // The simulated scan no longer depends on a bundled photo (see
+                  // TextScanner._processMockImage) — this only guards against the
+                  // asset genuinely being missing, so it degrades to a plain
+                  // confirmation instead of a broken-image box.
+                  errorBuilder: (context, error, stackTrace) => Center(
+                    child: Icon(
+                      Icons.check_circle,
+                      color: Colors.greenAccent,
+                      size: 48,
+                    ),
+                  ),
+                )
               : InkWell(
                   onTap: widget.onTap,
                   child: SizedBox.expand(
@@ -150,7 +178,11 @@ class ScannerCardSlotState extends State<ScannerCardSlot> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.add_a_photo_outlined, color: AppTheme.onPrimaryColor, size: 32),
+                        Icon(
+                          Icons.add_a_photo_outlined,
+                          color: AppTheme.onPrimaryColor,
+                          size: 32,
+                        ),
                         const SizedBox(height: 8),
                         Text(
                           widget.label,

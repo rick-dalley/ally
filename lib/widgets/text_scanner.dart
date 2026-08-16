@@ -1,31 +1,20 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-import 'package:flutter/services.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../app_theme.dart';
 
-Future<File> getFileFromAsset(String assetPath) async {
-  // Load the asset data
-  final byteData = await rootBundle.load(assetPath);
-
-  // Create a temp file in the device's cache directory
-  final file = File('${(await getTemporaryDirectory()).path}/${assetPath.split('/').last}');
-
-  // Write the bytes to the file
-  await file.writeAsBytes(byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
-
-  return file;
-}
-
 class TextScanner extends StatefulWidget {
   final Function(RecognizedText) onTextDetected;
-  final String? mockImagePath; // If passed, we OCR this instead of the live feed
+  final String?
+  mockImagePath; // If passed, we OCR this instead of the live feed
 
-  const TextScanner({super.key, required this.onTextDetected, this.mockImagePath});
+  const TextScanner({
+    super.key,
+    required this.onTextDetected,
+    this.mockImagePath,
+  });
 
   @override
   State<TextScanner> createState() => _TextScannerState();
@@ -49,18 +38,21 @@ class _TextScannerState extends State<TextScanner> with WidgetsBindingObserver {
     }
   }
 
+  // Simulation mode used to OCR an actual bundled license photo, which meant the demo
+  // depended on shipping that image in the app bundle. It's synthesized directly now —
+  // same shape of result IntakeScreen's parser expects (surname line ending in a comma,
+  // first name on the next line, a "DOB:" line, a PHN-shaped number), just fabricated
+  // in code instead of read off a photo. Keeps the demo working with nothing to ship
+  // and nothing that can fail to load.
   Future<void> _processMockImage() async {
-    try {
-      // Convert asset path to a physical file the OCR can see
-      final File imageFile = await getFileFromAsset(widget.mockImagePath!);
-
-      final inputImage = InputImage.fromFile(imageFile);
-      final recognizedText = await _textRecognizer.processImage(inputImage);
-
-      widget.onTextDetected(recognizedText);
-    } catch (e) {
-      debugPrint("OCR Mock Error: $e");
-    }
+    await Future.delayed(const Duration(milliseconds: 900));
+    if (!mounted) return;
+    widget.onTextDetected(
+      RecognizedText(
+        text: 'DALLEY,\nRICHARD\nDOB: 1978-MAR-22\n1234 567 890',
+        blocks: [],
+      ),
+    );
   }
 
   // --- Camera Lifecycle & Permissions ---
@@ -78,7 +70,11 @@ class _TextScannerState extends State<TextScanner> with WidgetsBindingObserver {
     final cameras = await availableCameras();
     if (cameras.isEmpty) return;
 
-    _controller = CameraController(cameras[0], ResolutionPreset.high, enableAudio: false);
+    _controller = CameraController(
+      cameras[0],
+      ResolutionPreset.high,
+      enableAudio: false,
+    );
 
     await _controller?.initialize();
     if (!mounted) return;
@@ -109,12 +105,17 @@ class _TextScannerState extends State<TextScanner> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     if (widget.mockImagePath != null) {
-      return const Center(child: CircularProgressIndicator(color: Colors.indigo));
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.indigo),
+      );
     }
 
     if (!_isPermissionGranted) {
       return Center(
-        child: Text("Camera permission required", style: TextStyle(color: AppTheme.onPrimaryColor)),
+        child: Text(
+          "Camera permission required",
+          style: TextStyle(color: AppTheme.onPrimaryColor),
+        ),
       );
     }
 
@@ -124,20 +125,32 @@ class _TextScannerState extends State<TextScanner> with WidgetsBindingObserver {
 
     return AspectRatio(
       aspectRatio: 3 / 4, // More suitable for documents than a square
-      child: Stack(fit: StackFit.expand, children: [CameraPreview(_controller!), _buildDocumentOverlay()]),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [CameraPreview(_controller!), _buildDocumentOverlay()],
+      ),
     );
   }
 
   Widget _buildDocumentOverlay() {
     return Container(
-      decoration: ShapeDecoration(shape: _DocumentOverlayShape(borderColor: Colors.indigoAccent, borderWidth: 3.0)),
+      decoration: ShapeDecoration(
+        shape: _DocumentOverlayShape(
+          borderColor: Colors.indigoAccent,
+          borderWidth: 3.0,
+        ),
+      ),
       child: const Align(
         alignment: Alignment.bottomCenter,
         child: Padding(
           padding: EdgeInsets.all(16.0),
           child: Text(
             "ALIGN DOCUMENT WITHIN FRAME",
-            style: TextStyle(color: Colors.indigoAccent, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+            style: TextStyle(
+              color: Colors.indigoAccent,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+            ),
           ),
         ),
       ),
@@ -149,7 +162,10 @@ class _DocumentOverlayShape extends ShapeBorder {
   final Color borderColor;
   final double borderWidth;
 
-  const _DocumentOverlayShape({required this.borderColor, required this.borderWidth});
+  const _DocumentOverlayShape({
+    required this.borderColor,
+    required this.borderWidth,
+  });
 
   @override
   EdgeInsetsGeometry get dimensions => EdgeInsets.all(borderWidth);
@@ -170,9 +186,17 @@ class _DocumentOverlayShape extends ShapeBorder {
       ..strokeWidth = borderWidth;
 
     // A vertical document-style frame
-    final frameRect = Rect.fromLTWH(rect.width * 0.1, rect.height * 0.1, rect.width * 0.8, rect.height * 0.8);
+    final frameRect = Rect.fromLTWH(
+      rect.width * 0.1,
+      rect.height * 0.1,
+      rect.width * 0.8,
+      rect.height * 0.8,
+    );
 
-    canvas.drawRRect(RRect.fromRectAndRadius(frameRect, const Radius.circular(12)), paint);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(frameRect, const Radius.circular(12)),
+      paint,
+    );
   }
 
   @override

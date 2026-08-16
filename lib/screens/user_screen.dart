@@ -112,191 +112,210 @@ class UserScreenState extends State<UserScreen> {
     );
     BloodType bloodType = BloodType(abo: aboType, rh: rhFactor);
     String bmiLabel = bmi == 0 ? "Calculate" : bmi.toStringAsFixed(1);
-    return ListenableBuilder(
-      key: ValueKey(patientController.patient.acuityLevel),
-      listenable: patientController,
-      builder: (context, _) {
-        final patient = patientController.patient;
-
-        if (patient.medications > 0) {
-          switch (patient.medicationSafetyAudit) {
-            case MedicationSafetyAudit.interactionsNotDetected:
-              break;
-            case MedicationSafetyAudit.interactionsDetected:
-              break;
-            case MedicationSafetyAudit.auditNotPerformed:
-              // Keep default theme colors
-              break;
-          }
-        }
-
-        return SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TrophyCase(patientUuid: patient.patientUuid),
-                // Replace your existing Container child: Row(...) block with this:
-                Text(
-                  patient.firstName,
-                  style: CarbonTheme.carbonHeadingTextStyle,
-                ),
-
-                const SizedBox(height: 32),
-                Column(
-                  mainAxisSize: MainAxisSize
-                      .min, // Prevents Column from taking infinite height
-                  children: [
-                    Row(
-                      children: [
-                        CarbonStyle2xlButton(
-                          topLabel: "Blood Type",
-                          label: bloodType.label,
-                          width: 184,
-                          style: CarbonButtonStyle.tertiary,
-                          onTap: () {
-                            showBloodTypModal(
-                              context: context,
-                              patient: patient,
-                            );
-                          },
-                          icon: Symbols.bloodtype,
-                        ),
-                        Spacer(),
-                        CarbonStyle2xlButton(
-                          topLabel: "Body Mass Index",
-                          label: bmiLabel,
-                          width: 184,
-                          style: CarbonButtonStyle.tertiary,
-                          onTap: () {
-                            showMetricsEntryDialog(
-                              context: context,
-                              user: widget.user,
-                            );
-                          },
-                          icon: Symbols.body_fat,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                ),
-                Column(
-                  children: [
-                    CarbonTextInput(
-                      label: 'Provincial Health #:',
-                      helperText:
-                          "Enter your government issued health identification",
-                      value: _formatPHN(patient.phn.toString()),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Expanded(
-                          child: CarbonTextInput(
-                            label: "Born:",
-                            value: patient.formattedDateOfBirth,
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        Expanded(child: Text("(${patient.age} yrs)")),
-                      ],
-                    ),
-                    SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Expanded(
-                          child: CarbonTextInput(
-                            label: "HEIGHT",
-                            value: patient.height.toString(),
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        Expanded(child: Text("(${patient.heightUoM})")),
-                      ],
-                    ),
-                    SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Expanded(
-                          child: CarbonTextInput(
-                            label: "WEIGHT",
-                            value: patient.weight.toString(),
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: Align(
-                            alignment: AlignmentGeometry.centerLeft,
-                            child: Text("(${patient.weightUoM})"),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 16),
-                    CarbonTextInput(
-                      label: "CONTACT:",
-                      value: patient.contactName,
-                    ),
-                    SizedBox(height: 16),
-                    CarbonTextInput(
-                      label: "PHONE:",
-                      value: patient.contactPhone,
-                    ),
-                    SizedBox(height: 16),
-                    CarbonTextInput(
-                      label: "PRIMARY CAREGIVER:",
-                      value: patient.familyDoctorName,
-                    ),
-                    SizedBox(height: 16),
-                    CarbonTextInput(
-                      label: "PHONE:",
-                      value: patient.familyDoctorPhone,
-                    ),
-                    SizedBox(height: 16),
-                    CarbonTextInput(
-                      label: "PHARMACY:",
-                      value: patient.pharmacyPhone,
-                    ),
-                    SizedBox(height: 16),
-                    CarbonTextInput(label: "FAX:", value: patient.pharmacyFax),
-                  ],
-                ),
-                const SizedBox(height: 32),
-                const Divider(),
-                const SizedBox(height: 16),
-                Text(
-                  "Emergency Access",
-                  style: CarbonTheme.carbonLabelTextStyle,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  Platform.isIOS
-                      ? "Save your emergency QR as a Lock Screen wallpaper "
-                            "so responders can see it without unlocking your "
-                            "phone."
-                      : "Show your emergency QR directly on the lock screen, "
-                            "without unlocking your phone, for responders.",
-                  style: CarbonTheme.carbonHelperTextStyle,
-                ),
-                const SizedBox(height: 12),
-                CarbonButton(
-                  label: Platform.isIOS
-                      ? "Set Emergency QR as Lock Screen"
-                      : "Emergency Lock Screen Access",
-                  icon: Symbols.emergency,
-                  style: CarbonButtonStyle.danger,
-                  onPressed: () =>
-                      EmergencyLockScreen.present(context, patient),
-                ),
-              ],
-            ),
+    // Fixed close button up top, patient content scrolls independently below it — the
+    // sheet itself now fills the safe area (see showUserScreen in home_screen.dart), so
+    // dragging isn't the only way out anymore.
+    return Column(
+      children: [
+        Align(
+          alignment: Alignment.topRight,
+          child: IconButton(
+            icon: const Icon(Symbols.close),
+            onPressed: () => Navigator.of(context).pop(),
           ),
-        );
-      },
+        ),
+        Expanded(
+          child: ListenableBuilder(
+            key: ValueKey(patientController.patient.acuityLevel),
+            listenable: patientController,
+            builder: (context, _) {
+              final patient = patientController.patient;
+
+              if (patient.medications > 0) {
+                switch (patient.medicationSafetyAudit) {
+                  case MedicationSafetyAudit.interactionsNotDetected:
+                    break;
+                  case MedicationSafetyAudit.interactionsDetected:
+                    break;
+                  case MedicationSafetyAudit.auditNotPerformed:
+                    // Keep default theme colors
+                    break;
+                }
+              }
+
+              return SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TrophyCase(patientUuid: patient.patientUuid),
+                      // Replace your existing Container child: Row(...) block with this:
+                      Text(
+                        patient.firstName,
+                        style: CarbonTheme.carbonHeadingTextStyle,
+                      ),
+
+                      const SizedBox(height: 32),
+                      Column(
+                        mainAxisSize: MainAxisSize
+                            .min, // Prevents Column from taking infinite height
+                        children: [
+                          Row(
+                            children: [
+                              CarbonStyle2xlButton(
+                                topLabel: "Blood Type",
+                                label: bloodType.label,
+                                width: 184,
+                                style: CarbonButtonStyle.tertiary,
+                                onTap: () {
+                                  showBloodTypModal(
+                                    context: context,
+                                    patient: patient,
+                                  );
+                                },
+                                icon: Symbols.bloodtype,
+                              ),
+                              Spacer(),
+                              CarbonStyle2xlButton(
+                                topLabel: "Body Mass Index",
+                                label: bmiLabel,
+                                width: 184,
+                                style: CarbonButtonStyle.tertiary,
+                                onTap: () {
+                                  showMetricsEntryDialog(
+                                    context: context,
+                                    user: widget.user,
+                                  );
+                                },
+                                icon: Symbols.body_fat,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          CarbonTextInput(
+                            label: 'Provincial Health #:',
+                            helperText:
+                                "Enter your government issued health identification",
+                            value: _formatPHN(patient.phn.toString()),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Expanded(
+                                child: CarbonTextInput(
+                                  label: "Born:",
+                                  value: patient.formattedDateOfBirth,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Expanded(child: Text("(${patient.age} yrs)")),
+                            ],
+                          ),
+                          SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Expanded(
+                                child: CarbonTextInput(
+                                  label: "HEIGHT",
+                                  value: patient.height.toString(),
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Expanded(child: Text("(${patient.heightUoM})")),
+                            ],
+                          ),
+                          SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Expanded(
+                                child: CarbonTextInput(
+                                  label: "WEIGHT",
+                                  value: patient.weight.toString(),
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: Align(
+                                  alignment: AlignmentGeometry.centerLeft,
+                                  child: Text("(${patient.weightUoM})"),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 16),
+                          CarbonTextInput(
+                            label: "CONTACT:",
+                            value: patient.contactName,
+                          ),
+                          SizedBox(height: 16),
+                          CarbonTextInput(
+                            label: "PHONE:",
+                            value: patient.contactPhone,
+                          ),
+                          SizedBox(height: 16),
+                          CarbonTextInput(
+                            label: "PRIMARY CAREGIVER:",
+                            value: patient.familyDoctorName,
+                          ),
+                          SizedBox(height: 16),
+                          CarbonTextInput(
+                            label: "PHONE:",
+                            value: patient.familyDoctorPhone,
+                          ),
+                          SizedBox(height: 16),
+                          CarbonTextInput(
+                            label: "PHARMACY:",
+                            value: patient.pharmacyPhone,
+                          ),
+                          SizedBox(height: 16),
+                          CarbonTextInput(
+                            label: "FAX:",
+                            value: patient.pharmacyFax,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
+                      const Divider(),
+                      const SizedBox(height: 16),
+                      Text(
+                        "Emergency Access",
+                        style: CarbonTheme.carbonLabelTextStyle,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        Platform.isIOS
+                            ? "Save your emergency QR as a Lock Screen wallpaper "
+                                  "so responders can see it without unlocking your "
+                                  "phone."
+                            : "Show your emergency QR directly on the lock screen, "
+                                  "without unlocking your phone, for responders.",
+                        style: CarbonTheme.carbonHelperTextStyle,
+                      ),
+                      const SizedBox(height: 12),
+                      CarbonButton(
+                        label: Platform.isIOS
+                            ? "Set Emergency QR as Lock Screen"
+                            : "Emergency Lock Screen Access",
+                        icon: Symbols.emergency,
+                        style: CarbonButtonStyle.danger,
+                        onPressed: () =>
+                            EmergencyLockScreen.present(context, patient),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 

@@ -16,8 +16,6 @@ class IntakeScreen extends StatefulWidget {
 }
 
 class IntakeScreenState extends State<IntakeScreen> {
-  late String frontOfId = 'assets/screen_captures/license_front.png';
-  late String backOfId = 'assets/screen_captures/license_back.png';
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _phnController = TextEditingController();
@@ -31,7 +29,10 @@ class IntakeScreenState extends State<IntakeScreen> {
 
   void onTextDetected(RecognizedText recognizedText) {
     final String fullText = recognizedText.text;
-    final List<String> lines = fullText.split('\n').map((e) => e.trim()).toList();
+    final List<String> lines = fullText
+        .split('\n')
+        .map((e) => e.trim())
+        .toList();
 
     setState(() {
       // 1. PHN (Regex is robust, keep it)
@@ -52,7 +53,10 @@ class IntakeScreenState extends State<IntakeScreen> {
         // Since we know the Surname has a comma:
         if (line.contains(',')) {
           // Line with comma is likely: DALLEY,
-          _lastNameController.text = lines[i].replaceAll(',', '').trim().toUpperCase();
+          _lastNameController.text = lines[i]
+              .replaceAll(',', '')
+              .trim()
+              .toUpperCase();
 
           // The very next line is likely the First Name
           if (i + 1 < lines.length) {
@@ -73,19 +77,37 @@ class IntakeScreenState extends State<IntakeScreen> {
       appBar: AppBar(title: const Text("Patient Intake")),
       body: Column(
         children: [
-          ScannerWidget(scanFront: true, scanBack: true, isSimulationOnly: true, onTextDetected: onTextDetected),
+          ScannerWidget(
+            scanFront: true,
+            scanBack: true,
+            isSimulationOnly: true,
+            onTextDetected: onTextDetected,
+          ),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(20.0),
               children: [
                 SizedBox(height: 16.0),
-                CarbonTextInput(controller: _firstNameController, label: "First Name"),
+                CarbonTextInput(
+                  controller: _firstNameController,
+                  label: "First Name",
+                ),
                 SizedBox(height: 16.0),
-                CarbonTextInput(controller: _lastNameController, label: "Last Name"),
+                CarbonTextInput(
+                  controller: _lastNameController,
+                  label: "Last Name",
+                ),
                 SizedBox(height: 16.0),
-                CarbonTextInput(controller: _dobController, label: "Date of Birth (YYYY-MMM-DD)"),
+                CarbonTextInput(
+                  controller: _dobController,
+                  label: "Date of Birth (YYYY-MMM-DD)",
+                ),
                 SizedBox(height: 16.0),
-                CarbonTextInput(controller: _phnController, label: "PHN", keyboardType: TextInputType.number),
+                CarbonTextInput(
+                  controller: _phnController,
+                  label: "PHN",
+                  keyboardType: TextInputType.number,
+                ),
                 const SizedBox(height: 24),
                 Row(
                   children: [

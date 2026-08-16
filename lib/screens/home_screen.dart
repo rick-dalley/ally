@@ -96,13 +96,23 @@ class HomeScreenState extends State<HomeScreen> {
     if (user == null) {
       return;
     }
+    // isScrollControlled lifts the default ~half-screen cap; useSafeArea keeps it clear
+    // of the status bar/notch. FractionallySizedBox then claims all of that available
+    // height rather than shrink-wrapping to content, so the sheet always reaches the
+    // safe area instead of stopping partway and forcing a drag — there's too much on
+    // this screen for that, and it read as inconsistent with the rest of the app.
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: carbonColorScaffoldBackground,
-      builder: (context) => UserScreen(
-        user: user,
-        onMemberUpdate: (p) =>
-            updatePatient(patientIndex: _currentPageIndex, patient: p),
+      builder: (context) => FractionallySizedBox(
+        heightFactor: 1,
+        child: UserScreen(
+          user: user,
+          onMemberUpdate: (p) =>
+              updatePatient(patientIndex: _currentPageIndex, patient: p),
+        ),
       ),
     );
   }

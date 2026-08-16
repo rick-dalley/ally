@@ -53,8 +53,6 @@ flutter:
     - assets/conditions/
     - assets/drugs/
     - assets/images/
-    - assets/images/faces/staff/
-    - assets/images/faces/users/
     - assets/images/pills/
     - assets/interactions/
     - assets/medications/
@@ -65,7 +63,6 @@ flutter:
     - assets/providers/
     - assets/questionnaires/
     - assets/questions/
-    - assets/screen_captures/
     - assets/sql/
     - assets/tests/
 
