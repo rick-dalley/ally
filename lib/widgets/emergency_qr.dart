@@ -17,16 +17,27 @@ class EmergencyQRCodeView extends StatelessWidget {
 
   const EmergencyQRCodeView({super.key, required this.householdMember});
 
-  Future<Map<String, dynamic>> _buildEmergencyPayload() async {
-    final List<String> allergies = await DatabaseManager().getAllergyNames(householdMember.patientUuid);
-    final List<String> conditions = await DatabaseManager().getActiveConditionNames(householdMember.patientUuid);
+  // Public/static so EmergencyLockScreen's wallpaper generator builds the exact same
+  // payload as the live in-app view — one source of truth, no risk of the two drifting
+  // apart into showing different data for the same patient.
+  static Future<Map<String, dynamic>> buildEmergencyPayload(
+    Patient patient,
+  ) async {
+    final List<String> allergies = await DatabaseManager().getAllergyNames(
+      patient.patientUuid,
+    );
+    final List<String> conditions = await DatabaseManager()
+        .getActiveConditionNames(patient.patientUuid);
 
     return {
-      "name": "${householdMember.firstName} ${householdMember.lastName}",
-      "bloodType": householdMember.bloodType.label,
+      "name": "${patient.firstName} ${patient.lastName}",
+      "bloodType": patient.bloodType.label,
       "allergies": allergies,
       "conditions": conditions,
-      "emergencyContact": {"name": householdMember.contactName, "phone": householdMember.contactPhone},
+      "emergencyContact": {
+        "name": patient.contactName,
+        "phone": patient.contactPhone,
+      },
     };
   }
 
@@ -36,7 +47,10 @@ class EmergencyQRCodeView extends StatelessWidget {
     // fast, at arm's length, in bad lighting, possibly with someone else's hands
     // holding the phone. Bigger is strictly better here up to the point it no longer
     // fits the screen.
-    final double qrSize = (MediaQuery.sizeOf(context).width * 0.85).clamp(280.0, 480.0);
+    final double qrSize = (MediaQuery.sizeOf(context).width * 0.85).clamp(
+      280.0,
+      480.0,
+    );
 
     return Scaffold(
       extendBodyBehindAppBar: false,
@@ -44,23 +58,35 @@ class EmergencyQRCodeView extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: FutureBuilder<Map<String, dynamic>>(
-            future: _buildEmergencyPayload(),
+            future: buildEmergencyPayload(householdMember),
             builder: (context, snapshot) {
               if (snapshot.connectionState != ConnectionState.done) {
-                return CircularProgressIndicator(color: AppTheme.onPrimaryColor);
+                return CircularProgressIndicator(
+                  color: AppTheme.onPrimaryColor,
+                );
               }
               final String qrPayload = jsonEncode(snapshot.data ?? {});
               return Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text("Show this to emergency staff", style: TextStyle(fontSize: 18, color: AppTheme.onPrimaryColor)),
+                  Text(
+                    "Show this to emergency staff",
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: AppTheme.onPrimaryColor,
+                    ),
+                  ),
                   const SizedBox(height: 20),
                   Container(
                     width: qrSize,
                     height: qrSize,
                     padding: const EdgeInsets.all(16),
                     color: AppTheme.onPrimaryColor,
-                    child: QrImageView(data: qrPayload, version: QrVersions.auto, size: qrSize - 32),
+                    child: QrImageView(
+                      data: qrPayload,
+                      version: QrVersions.auto,
+                      size: qrSize - 32,
+                    ),
                   ),
                 ],
               );

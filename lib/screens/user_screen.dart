@@ -1,12 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/blood_type.dart';
 import 'package:triage/classes/metric_value.dart';
 import 'package:triage/widgets/blood_type_selector.dart';
+import 'package:triage/widgets/carbon_style_button.dart';
 import 'package:triage/widgets/carbon_style_two_xl_button.dart';
 import '../app_theme.dart';
 import '../classes/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
+import '../classes/emergency_lock_screen.dart';
 import '../classes/flyable.dart';
 import '../classes/listable.dart';
 import '../classes/medication_services.dart';
@@ -260,6 +264,33 @@ class UserScreenState extends State<UserScreen> {
                     SizedBox(height: 16),
                     CarbonTextInput(label: "FAX:", value: patient.pharmacyFax),
                   ],
+                ),
+                const SizedBox(height: 32),
+                const Divider(),
+                const SizedBox(height: 16),
+                Text(
+                  "Emergency Access",
+                  style: CarbonTheme.carbonLabelTextStyle,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  Platform.isIOS
+                      ? "Save your emergency QR as a Lock Screen wallpaper "
+                            "so responders can see it without unlocking your "
+                            "phone."
+                      : "Show your emergency QR directly on the lock screen, "
+                            "without unlocking your phone, for responders.",
+                  style: CarbonTheme.carbonHelperTextStyle,
+                ),
+                const SizedBox(height: 12),
+                CarbonButton(
+                  label: Platform.isIOS
+                      ? "Set Emergency QR as Lock Screen"
+                      : "Emergency Lock Screen Access",
+                  icon: Symbols.emergency,
+                  style: CarbonButtonStyle.danger,
+                  onPressed: () =>
+                      EmergencyLockScreen.present(context, patient),
                 ),
               ],
             ),
