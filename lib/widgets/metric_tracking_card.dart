@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/carbon_color_constants.dart';
+import 'package:triage/classes/database_manager.dart';
 import 'package:triage/widgets/carbon_checkbox.dart';
 import 'package:triage/widgets/carbon_style_button.dart';
 import 'package:triage/widgets/carbon_style_dropdown.dart';
 import 'package:triage/widgets/carbon_style_number_edit.dart';
 import 'package:triage/widgets/carbon_style_textbox.dart';
 import 'package:triage/widgets/high_low_close_capsule.dart';
+import 'package:triage/widgets/metric_scatter_chart.dart';
 import 'package:triage/widgets/metric_target_sheet.dart';
 import 'package:triage/widgets/metric_threshold_sheet.dart';
 import '../classes/carbon_theme_constants.dart';
@@ -23,6 +25,8 @@ class MetricExpandableCard extends StatefulWidget {
   final String whyItMatters;
   final IconData categoryIcon;
   final Function(bool) onTrackingChanged;
+  final bool onDashboard;
+  final Function(bool)? onDashboardChanged;
   // Called after the patient saves/removes a threshold or target — the parent owns the
   // source-of-truth maps this card was built from, so it needs to reload and rebuild
   // this card with the fresh data rather than this card tracking it independently.
@@ -38,6 +42,8 @@ class MetricExpandableCard extends StatefulWidget {
     required this.whyItMatters,
     required this.categoryIcon,
     required this.onTrackingChanged,
+    this.onDashboard = false,
+    this.onDashboardChanged,
     this.threshold,
     this.target,
     this.onDataChanged,
@@ -52,30 +58,33 @@ class MetricExpandableCard extends StatefulWidget {
 
 class MetricExpandableCardState extends State<MetricExpandableCard> {
   late bool tracked = widget.tracked;
+  late bool onDashboard = widget.onDashboard;
   bool expanded = false;
   bool showInfoView = false; // true if opened via '?' button
   final TextEditingController newValueController = TextEditingController();
   late final FocusNode newValueControllerFocusNode = FocusNode();
-  late List<Map<String, dynamic>> history;
   late Map<String, dynamic> config;
   late String title = widget.metric.name;
-  late MetricRange range = widget.range ?? MetricRange(id: widget.metric.id);
   late bool isNewValueEnabled = false;
 
   // Getters, not `late` fields — a `late` field computed from `widget.x` only ever
   // evaluates once (the first time it's read), so it goes stale the moment the parent
-  // reloads fresh threshold/target data and rebuilds this card with the same
-  // ValueKey(metric.id) (which keeps this State object alive rather than recreating
-  // it). A getter re-reads `widget.threshold`/`widget.target` on every access instead.
-  double get usl => widget.threshold?.dangerHigh ?? widget.metric.safeUpperValue ?? 0.0;
-  double get lsl => widget.threshold?.dangerLow ?? widget.metric.safeLowerValue ?? 0.0;
+  // reloads fresh data and rebuilds this card with the same ValueKey(metric.id) (which
+  // keeps this State object alive rather than recreating it). A getter re-reads
+  // `widget.x` on every access instead. `history`/`range` hit this exact trap — a saved
+  // reading never appeared because both were plain fields snapshotted once in initState.
+  double get usl =>
+      widget.threshold?.dangerHigh ?? widget.metric.safeUpperValue ?? 0.0;
+  double get lsl =>
+      widget.threshold?.dangerLow ?? widget.metric.safeLowerValue ?? 0.0;
+  List<Map<String, dynamic>> get history => widget.historicalValues ?? [];
+  MetricRange get range => widget.range ?? MetricRange(id: widget.metric.id);
 
   @override
   void initState() {
     super.initState();
     isNewValueEnabled = false;
 
-    history = widget.historicalValues ?? [];
     config = widget.savedConfig ?? {};
   }
 
@@ -110,6 +119,21 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
     if (saved == true) widget.onDataChanged?.call();
   }
 
+  Future<void> _saveNewReading() async {
+    final double? value = double.tryParse(newValueController.text.trim());
+    if (value == null) return;
+    await DatabaseManager().insertPatientMetricReading(
+      patientUuid: widget.patientUuid,
+      metricId: widget.metric.id,
+      value: value,
+    );
+    newValueController.clear();
+    // The parent owns range/history for this metric, same reasoning as threshold/target
+    // edits above — this card doesn't try to update its own copy, it asks the parent to
+    // reload and hand back fresh widget.range/widget.historicalValues.
+    widget.onDataChanged?.call();
+  }
+
   String _rangeLabel(double? low, double? high) {
     if (low == null && high == null) return "Not set";
     return "${low?.toStringAsFixed(1) ?? '—'} to ${high?.toStringAsFixed(1) ?? '—'}";
@@ -118,9 +142,18 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
   @override
   Widget build(BuildContext context) {
     MetricIcon metricIcon =
-        metricIcons[widget.metric.name] ?? MetricIcon(iconData: Symbols.unknown_2, color: carbonColorBorderSubtle03);
-    final Color borderColor = CarbonTheme.getTileBorderColor(CarbonTileStyle.expandable, tracked);
-    final Color tileColor = CarbonTheme.getTileColor(CarbonTileStyle.expandable);
+        metricIcons[widget.metric.name] ??
+        MetricIcon(
+          iconData: Symbols.unknown_2,
+          color: carbonColorBorderSubtle03,
+        );
+    final Color borderColor = CarbonTheme.getTileBorderColor(
+      CarbonTileStyle.expandable,
+      tracked,
+    );
+    final Color tileColor = CarbonTheme.getTileColor(
+      CarbonTileStyle.expandable,
+    );
 
     return Card(
       color: tileColor,
@@ -128,7 +161,9 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
       margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        decoration: BoxDecoration(border: Border.all(color: borderColor, width: 1)),
+        decoration: BoxDecoration(
+          border: Border.all(color: borderColor, width: 1),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -140,7 +175,9 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
                   padding: const EdgeInsets.all(16.0),
                   child: Icon(
                     metricIcon.iconData,
-                    color: tracked ? metricIcon.color : metricIcon.color.withValues(alpha: 0.4),
+                    color: tracked
+                        ? metricIcon.color
+                        : metricIcon.color.withValues(alpha: 0.4),
                     size: 24,
                   ),
                 ),
@@ -158,14 +195,20 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
                       SizedBox(height: 8.0),
                       Align(
                         alignment: AlignmentGeometry.centerLeft,
-                        child: Text(widget.description, style: CarbonTheme.carbonLabelTextStyle),
+                        child: Text(
+                          widget.description,
+                          style: CarbonTheme.carbonLabelTextStyle,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 if (tracked)
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 0.0,
+                    ),
                     child: HighLowCloseCapsule(
                       current: range.latest ?? 0.0,
                       historicalMin: range.minimum ?? 0.0,
@@ -195,11 +238,35 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
                   ),
               ],
             ),
+            // A metric can be actively tracked without cluttering the top summary panel —
+            // this is a deliberate subset, not a rename of "tracked", so it only appears
+            // once a metric is already being tracked at all.
+            if (tracked)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 8.0),
+                child: Row(
+                  children: [
+                    CarbonCheckbox(
+                      value: onDashboard,
+                      onChanged: (val) {
+                        setState(() => onDashboard = val ?? false);
+                        widget.onDashboardChanged?.call(onDashboard);
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      "Show on Dashboard",
+                      style: CarbonTheme.carbonLabelTextStyle,
+                    ),
+                  ],
+                ),
+              ),
             if (tracked)
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween, // Replaces Spacer safely
+                  mainAxisAlignment:
+                      MainAxisAlignment.spaceBetween, // Replaces Spacer safely
                   children: [
                     Expanded(
                       child: CarbonNumberInput(
@@ -245,7 +312,7 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
                                 });
                               });
                               newValueControllerFocusNode.unfocus();
-                              if (accepted) {}
+                              if (accepted) _saveNewReading();
                             },
                           ),
                         ),
@@ -256,7 +323,10 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
 
             // Second Line: Description on left, HLC or '?' bubble on right, and the arrow on the far right
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 16.0,
+              ),
               child: Row(
                 children: [
                   Spacer(),
@@ -281,10 +351,15 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
             ),
             // Expanded Body Section (Appears below the second line when expanded)
             if (expanded) ...[
-              const Padding(padding: EdgeInsets.symmetric(vertical: 8.0), child: Divider(height: 1, thickness: 1)),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.0),
+                child: Divider(height: 1, thickness: 1),
+              ),
               Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: showInfoView ? _buildInfoContent() : _buildTrackingDetailsContent(),
+                child: showInfoView
+                    ? _buildInfoContent()
+                    : _buildTrackingDetailsContent(),
               ),
             ],
           ],
@@ -345,28 +420,36 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
   Widget _buildTrackingDetailsContent() {
     final MetricThreshold? threshold = widget.threshold;
     final MetricTarget? target = widget.target;
-    final bool hasCustomSafe = threshold?.dangerLow != null || threshold?.dangerHigh != null;
-    final bool hasCustomHealthy = threshold?.healthyLow != null || threshold?.healthyHigh != null;
+    final bool hasCustomSafe =
+        threshold?.dangerLow != null || threshold?.dangerHigh != null;
+    final bool hasCustomHealthy =
+        threshold?.healthyLow != null || threshold?.healthyHigh != null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          height: 150,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: CarbonTheme.getTileColor(CarbonTileStyle.base),
-            border: Border.all(color: carbonColorBorderSubtle03),
-          ),
-          child: Center(
-            child: Text(
-              range.count == 0 ? "No data yet" : "Trend chart coming soon",
-              textAlign: TextAlign.center,
-              style: CarbonTheme.carbonTextStyle,
+        if (range.count == 0)
+          Container(
+            height: 150,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: CarbonTheme.getTileColor(CarbonTileStyle.base),
+              border: Border.all(color: carbonColorBorderSubtle03),
             ),
+            child: Center(
+              child: Text(
+                "No data yet",
+                textAlign: TextAlign.center,
+                style: CarbonTheme.carbonTextStyle,
+              ),
+            ),
+          )
+        else
+          MetricScatterChart(
+            historicalValues: history,
+            color: carbonColorPrimary04,
           ),
-        ),
         const SizedBox(height: 16),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -377,9 +460,14 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
                 children: [
                   Text("SAFE RANGE", style: CarbonTheme.carbonLabelTextStyle),
                   const SizedBox(height: 4),
-                  Text(_rangeLabel(lsl, usl), style: CarbonTheme.carbonTextStyle),
                   Text(
-                    hasCustomSafe ? "From ${threshold?.setBy ?? 'your doctor'}" : "General guideline",
+                    _rangeLabel(lsl, usl),
+                    style: CarbonTheme.carbonTextStyle,
+                  ),
+                  Text(
+                    hasCustomSafe
+                        ? "From ${threshold?.setBy ?? 'your doctor'}"
+                        : "General guideline",
                     style: CarbonTheme.carbonHelperTextStyle,
                   ),
                 ],
@@ -389,7 +477,10 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("HEALTHY RANGE", style: CarbonTheme.carbonLabelTextStyle),
+                  Text(
+                    "HEALTHY RANGE",
+                    style: CarbonTheme.carbonLabelTextStyle,
+                  ),
                   const SizedBox(height: 4),
                   Text(
                     _rangeLabel(
@@ -399,7 +490,9 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
                     style: CarbonTheme.carbonTextStyle,
                   ),
                   Text(
-                    hasCustomHealthy ? "From ${threshold?.setBy ?? 'your doctor'}" : "General guideline",
+                    hasCustomHealthy
+                        ? "From ${threshold?.setBy ?? 'your doctor'}"
+                        : "General guideline",
                     style: CarbonTheme.carbonHelperTextStyle,
                   ),
                 ],
@@ -413,7 +506,11 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
           child: TextButton.icon(
             onPressed: _editThresholds,
             icon: const Icon(Symbols.edit, size: 16),
-            label: Text(hasCustomSafe || hasCustomHealthy ? "Edit what your doctor told you" : "Record what your doctor told you"),
+            label: Text(
+              hasCustomSafe || hasCustomHealthy
+                  ? "Edit what your doctor told you"
+                  : "Record what your doctor told you",
+            ),
           ),
         ),
         const SizedBox(height: 8),
@@ -422,7 +519,9 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
         Text("TARGET", style: CarbonTheme.carbonLabelTextStyle),
         const SizedBox(height: 4),
         Text(
-          target != null ? "${target.direction.label} ${target.targetValue}" : "No target set",
+          target != null
+              ? "${target.direction.label} ${target.targetValue}"
+              : "No target set",
           style: CarbonTheme.carbonTextStyle,
         ),
         Align(

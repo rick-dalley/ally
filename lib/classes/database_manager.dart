@@ -17,7 +17,7 @@ import 'data_seeder.dart';
 import 'medication_services.dart';
 import 'metric_value.dart';
 
-bool overWrite = false;
+bool overWrite = true;
 
 class DatabaseManager {
   // Singleton pattern
@@ -1020,6 +1020,48 @@ class DatabaseManager {
     );
   }
 
+  // Records that a patient was shown a specific drug-drug interaction warning and chose
+  // to continue anyway — the audit trail a doctor may later want ("was the patient warned
+  // about this combination"). Keyed on a sorted name pair (via ConflictAlgorithm.replace on
+  // the table's UNIQUE constraint) so acknowledging from either medication's card hits the
+  // same row, and re-acknowledging after a dismissal cleanly clears dismissed_at again.
+  Future<void> acknowledgeInteraction({
+    required String patientUuid,
+    required String medicationA,
+    required String medicationB,
+  }) async {
+    final db = await database;
+    final List<String> sorted = [medicationA.toLowerCase().trim(), medicationB.toLowerCase().trim()]..sort();
+    await db.insert('interaction_acknowledgment', {
+      'patient_uuid': patientUuid,
+      'medication_a': sorted[0],
+      'medication_b': sorted[1],
+      'acknowledged_at': DateTime.now().toIso8601String(),
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  // Hides an already-acknowledged interaction chip. Doesn't delete the acknowledgment
+  // record — the "we showed them, they accepted it" audit trail should survive dismissal.
+  Future<void> dismissInteractionAcknowledgment({
+    required String patientUuid,
+    required String medicationA,
+    required String medicationB,
+  }) async {
+    final db = await database;
+    final List<String> sorted = [medicationA.toLowerCase().trim(), medicationB.toLowerCase().trim()]..sort();
+    await db.update(
+      'interaction_acknowledgment',
+      {'dismissed_at': DateTime.now().toIso8601String()},
+      where: 'patient_uuid = ? AND medication_a = ? AND medication_b = ?',
+      whereArgs: [patientUuid, sorted[0], sorted[1]],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getInteractionAcknowledgments(String patientUuid) async {
+    final db = await database;
+    return await db.query('interaction_acknowledgment', where: 'patient_uuid = ?', whereArgs: [patientUuid]);
+  }
+
   Future<void> deletePatientCondition(int id) async {
     // Guard clause: If the record doesn't have a database ID, there's nothing to drop
     final db = await database;
@@ -1943,6 +1985,20 @@ class DatabaseManager {
     );
   }
 
+  Future<void> setMetricOnDashboard({
+    required int metricId,
+    required String patientUuid,
+    required bool onDashboard,
+  }) async {
+    final db = await database;
+    await db.update(
+      'patient_metric_tracking',
+      {'on_dashboard': onDashboard ? 1 : 0},
+      where: 'metric_id = ? AND patient_uuid = ?',
+      whereArgs: [metricId, patientUuid],
+    );
+  }
+
   Future<void> deleteTrackingMetric({required int metricId, required String patientUuid}) async {
     final db = await database;
     await db.rawDelete(
@@ -1986,6 +2042,27 @@ class DatabaseManager {
   ''',
       [patientUuid],
     );
+  }
+
+  // The catalog-driven metric system (metric/patient_metric/patient_metric_tracking)
+  // had every read query already built — ranges, thresholds, targets, this table's own
+  // history query below — but no way to actually write a new reading into `patient_metric`
+  // at all. The card's "Add a Reading" button called this via a stub that did nothing.
+  Future<void> insertPatientMetricReading({
+    required String patientUuid,
+    required int metricId,
+    required double value,
+    String unitOfMeasure = '',
+  }) async {
+    final db = await database;
+    await db.insert('patient_metric', {
+      'id': const Uuid().v4(),
+      'metric_id': metricId,
+      'patient_uuid': patientUuid,
+      'value': value,
+      'unit_of_measure': unitOfMeasure,
+      'is_metric': 1,
+    });
   }
 
   Future<List<Map<String, dynamic>>> getPatientMetricValuesForMetric(String patientUuid, int metricId) async {
@@ -2213,28 +2290,13 @@ class DatabaseManager {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getProvidersFor({required String patientUuid}) async {
-    final db = await database;
-
-    // Use a LEFT JOIN to ensure we get the patient even if they have no vitals yet
-    return await db.rawQuery(
-      '''
-    SELECT s.*
-    FROM provider p
-    WHERE patient_uuid = ?
-  ''',
-      [patientUuid],
-    );
-  }
-
   Future<List<Map<String, dynamic>>> getProvider({required String id}) async {
     final db = await database;
 
-    // Use a LEFT JOIN to ensure we get the patient even if they have no vitals yet
     return await db.rawQuery(
       '''
-    SELECT s.*
-    FROM provider p
+    SELECT *
+    FROM provider
     WHERE provider_uuid = ?
   ''',
       [id],

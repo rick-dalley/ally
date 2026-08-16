@@ -309,7 +309,6 @@ class Frequency {
   final String? periodUoM;
   final int? period;
   final DateTime? start;
-  final DateTime? end;
   final bool alert;
 
   Frequency({
@@ -318,7 +317,6 @@ class Frequency {
     this.periodUoM,
     this.period,
     this.start,
-    this.end,
     required this.alert,
     this.occurrences,
   });
@@ -423,6 +421,11 @@ class ReminderPreference {
 }
 
 // InteractionConflict
+String normalizedInteractionPairKey(String a, String b) {
+  final List<String> sorted = [a.toLowerCase().trim(), b.toLowerCase().trim()]..sort();
+  return '${sorted[0]}|${sorted[1]}';
+}
+
 class InteractionConflict {
   final String primaryMedName;
   final String conflictingMedName;
@@ -452,6 +455,11 @@ class InteractionConflict {
 
   bool hasInteraction(String medicationName) =>
       ((primaryMedName == medicationName) && (primaryMedName != conflictingMedName));
+
+  // Order-independent key for this pair, so acknowledging from either medication's card
+  // (A's card sees "A conflicts with B", B's card sees "B conflicts with A") records and
+  // recognizes the same underlying acknowledgment.
+  String get pairKey => normalizedInteractionPairKey(primaryMedName, conflictingMedName);
   @override
   int get hashCode => primaryMedName.hashCode ^ conflictingMedName.hashCode ^ interaction.hashCode;
 

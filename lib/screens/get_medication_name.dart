@@ -50,10 +50,7 @@ class GetMedicationNameState extends State<GetMedicationName> {
           const SizedBox(height: 24),
           CarbonFullButton(
             label: 'SCAN',
-            onTap: () {
-              Navigator.pop(context); // Close modal
-              _startBarcodeScanner();
-            },
+            onTap: _startBarcodeScanner,
             style: CarbonButtonStyle.tertiary,
             icon: Symbols.barcode_scanner,
           ),

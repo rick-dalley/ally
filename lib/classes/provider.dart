@@ -200,8 +200,8 @@ class Provider {
   }
 
   Future<void> refresh() async {
-    dynamic result = await DatabaseManager().getProvider(id: id);
-    copy(Provider.fromJson(result));
+    final List<Map<String, dynamic>> rows = await DatabaseManager().getProvider(id: id);
+    if (rows.isNotEmpty) copy(Provider.fromJson(rows.first));
   }
 
   // Helper to convert back to Map for your SQLite insert methods

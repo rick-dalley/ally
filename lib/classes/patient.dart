@@ -134,7 +134,7 @@ class Patient {
       //'Belarus',
       streetAddress: item['street_address'],
       //'0565 Blue Bill Park Avenue',
-      state: item['state'] ?? "",
+      state: item['province'] ?? "",
       //null,
       postalCode: item['postal_code'] ?? "",
       //null,

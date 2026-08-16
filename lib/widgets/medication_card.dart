@@ -16,6 +16,10 @@ class MedicationCard extends StatefulWidget {
   final Medication medication;
   final List<InteractionConflict> interactions;
   final List<AllergyConflict> allergyConflicts;
+  final Set<String> acknowledgedInteractionPairs;
+  final Set<String> dismissedInteractionPairs;
+  final Future<void> Function(String medicationA, String medicationB) onAcknowledgeInteraction;
+  final Future<void> Function(String medicationA, String medicationB) onDismissInteraction;
   // Archives the medication (stops tracking it as active) rather than deleting its
   // history — the patient may go back on it later, and past dosing matters for the
   // therapy-impact timeline.
@@ -31,6 +35,10 @@ class MedicationCard extends StatefulWidget {
     required this.interactions,
     this.allergyConflicts = const [],
     required this.onArchive,
+    required this.acknowledgedInteractionPairs,
+    required this.dismissedInteractionPairs,
+    required this.onAcknowledgeInteraction,
+    required this.onDismissInteraction,
     this.onMedicationChanged,
     this.index,
     this.onExpansionChanged,
@@ -47,13 +55,20 @@ class _MedicationCardState extends State<MedicationCard> {
   @override
   void initState() {
     super.initState();
-    // If we already know the datasheet is local, get it immediately
+    // If we already know the datasheet is local, get it immediately. Deferred to after
+    // the current frame — triggerFetch's setState(_isFetching = true) runs before its
+    // first await, and calling it synchronously from initState throws "setState called
+    // during build" (same pattern hit and fixed elsewhere in the wizard/reminders code).
     if (widget.medication.hasLocalDataSheet) {
-      triggerFetch(
-        medicationId: widget.medication.id,
-        setId: widget.medication.setId!,
-        medicationName: widget.medication.name,
-      );
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          triggerFetch(
+            medicationId: widget.medication.id,
+            setId: widget.medication.setId!,
+            medicationName: widget.medication.name,
+          );
+        }
+      });
     }
   }
 
@@ -174,7 +189,14 @@ class _MedicationCardState extends State<MedicationCard> {
                 if (medicationInteractions.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 4.0),
-                    child: InteractionsChip(medicationName: medicationName, interactions: medicationInteractions),
+                    child: InteractionsChip(
+                      medicationName: medicationName,
+                      interactions: medicationInteractions,
+                      acknowledgedPairs: widget.acknowledgedInteractionPairs,
+                      dismissedPairs: widget.dismissedInteractionPairs,
+                      onAcknowledge: widget.onAcknowledgeInteraction,
+                      onDismiss: widget.onDismissInteraction,
+                    ),
                   ),
                 if (medicationAllergyConflicts.isNotEmpty)
                   Padding(

@@ -67,7 +67,11 @@ class UnitOfMeasure {
   // A map of target unit symbols to their respective conversion functions
   Map<String, UnitConverter> converters = {};
 
-  UnitOfMeasure({required this.symbol, required this.name, required this.converters});
+  UnitOfMeasure({
+    required this.symbol,
+    required this.name,
+    required this.converters,
+  });
 
   factory UnitOfMeasure.fromMap(Map<String, dynamic> item) {
     String rawSymbol = item['symbol'] ?? '';
@@ -86,14 +90,20 @@ class UnitOfMeasure {
       });
     }
 
-    return UnitOfMeasure(symbol: rawSymbol, name: rawName, converters: conversionFunctions);
+    return UnitOfMeasure(
+      symbol: rawSymbol,
+      name: rawName,
+      converters: conversionFunctions,
+    );
   }
 
   // Convert this unit to another target unit
   double convertTo(String targetSymbol, double value) {
     final conversionFunction = converters[targetSymbol];
     if (conversionFunction == null) {
-      throw UnsupportedError('No conversion path from $symbol to $targetSymbol');
+      throw UnsupportedError(
+        'No conversion path from $symbol to $targetSymbol',
+      );
     }
     return conversionFunction(value);
   }
@@ -195,7 +205,12 @@ class MetricValue {
   final String uom;
 
   // Standard constructor with named arguments
-  MetricValue({required this.value, required this.recorded, required this.uom, required this.metric});
+  MetricValue({
+    required this.value,
+    required this.recorded,
+    required this.uom,
+    required this.metric,
+  });
 
   /// Factory constructor to parse database raw maps cleanly
   factory MetricValue.fromMap(Map<String, dynamic> item) {
@@ -205,14 +220,23 @@ class MetricValue {
     final String? rawUom = item['uom'];
     final String uomValue = rawUom ?? "";
 
-    // Safely handle the string-to-date conversion parsing
+    // DTUtilities.sqliteToDart's fallback branch handles the UTC-marker correction for
+    // a raw SQLite DATETIME string — see that method for why it's needed.
     final dynamic rawDate = item['recorded_at'] ?? item['recorded'];
     final DateTime parsedDate = rawDate != null
-        ? DateTime.tryParse(rawDate.toString()) ?? DateTime.now()
+        ? DTUtilities.sqliteToDart(rawDate)
         : DateTime.now();
 
-    final int metricId = item['metric'] ?? 0;
-    return MetricValue(value: parsedValue, recorded: parsedDate, uom: uomValue, metric: metricId);
+    // `item['metric']` was never a real column on a raw `patient_metric` row (it's
+    // `metric_id`) — same "wrong column name, falls through to a hardcoded default"
+    // shape as the id/metric_id mix-up already fixed in getRangesFor.
+    final int metricId = (item['metric_id'] ?? item['metric']) ?? 0;
+    return MetricValue(
+      value: parsedValue,
+      recorded: parsedDate,
+      uom: uomValue,
+      metric: metricId,
+    );
   }
 
   /// Converts the model object back into a map structured for SQLite writes
@@ -221,7 +245,8 @@ class MetricValue {
       'id': id,
       'metric': metric,
       'metric_value': value,
-      'recorded_at': recorded.toIso8601String(), // Safe string format for database entries
+      'recorded_at': recorded
+          .toIso8601String(), // Safe string format for database entries
       'uom': uom,
     };
   }
@@ -235,7 +260,14 @@ class MetricRange {
   late double? maximum = 0;
   late DateTime? measured;
 
-  MetricRange({required this.id, this.minimum, this.maximum, this.latest, this.measured, this.count});
+  MetricRange({
+    required this.id,
+    this.minimum,
+    this.maximum,
+    this.latest,
+    this.measured,
+    this.count,
+  });
 
   factory MetricRange.fromMap(Map<String, dynamic> item) {
     int rwId = item["metric_id"] as int? ?? 0;
@@ -247,7 +279,12 @@ class MetricRange {
     // Safely parse count, ensuring it's an int (handling case where it might be returned as num)
     int rwCount = (item["count"] as num?)?.toInt() ?? 0;
 
-    return MetricRange(id: rwId, minimum: rwMinimum, maximum: rwMaximum, count: rwCount);
+    return MetricRange(
+      id: rwId,
+      minimum: rwMinimum,
+      maximum: rwMaximum,
+      count: rwCount,
+    );
   }
 }
 
@@ -304,7 +341,9 @@ class MetricThreshold {
       healthyLow: (item['healthy_low'] as num?)?.toDouble(),
       healthyHigh: (item['healthy_high'] as num?)?.toDouble(),
       setBy: item['set_by'] as String?,
-      setAt: item['set_at'] != null ? DateTime.tryParse(item['set_at'].toString()) : null,
+      setAt: item['set_at'] != null
+          ? DateTime.tryParse(item['set_at'].toString())
+          : null,
     );
   }
 }
@@ -318,14 +357,21 @@ class MetricTarget {
   final TargetDirection direction;
   final DateTime? setAt;
 
-  const MetricTarget({required this.metricId, required this.targetValue, required this.direction, this.setAt});
+  const MetricTarget({
+    required this.metricId,
+    required this.targetValue,
+    required this.direction,
+    this.setAt,
+  });
 
   factory MetricTarget.fromMap(Map<String, dynamic> item) {
     return MetricTarget(
       metricId: item['metric_id'] as int,
       targetValue: (item['target_value'] as num).toDouble(),
       direction: TargetDirection.values[item['direction'] as int? ?? 0],
-      setAt: item['set_at'] != null ? DateTime.tryParse(item['set_at'].toString()) : null,
+      setAt: item['set_at'] != null
+          ? DateTime.tryParse(item['set_at'].toString())
+          : null,
     );
   }
 }
@@ -334,6 +380,10 @@ class Metrics {
   Map<int, Metric> tracked = {};
   Map<int, Metric> untracked = {};
   Map<int, Metric> all = {};
+  // Which tracked metrics the patient has checked to show in the summary top panel —
+  // a subset of `tracked` (deliberately not everything tracked, so the panel doesn't
+  // get cluttered with every metric the patient happens to log).
+  Map<int, bool> onDashboard = {};
 
   Metrics();
 
@@ -358,12 +408,14 @@ class Metrics {
     final rawTracked = await DatabaseManager().getTrackedMetrics(patientUuid);
     tracked.clear();
     untracked.clear();
+    onDashboard.clear();
 
     for (Map<String, dynamic> rawMetric in rawTracked) {
       int metricId = rawMetric['metric_id'] ?? rawMetric['id'];
       Metric? metric = all[metricId];
       if (metric != null) {
         tracked[metric.id] = metric;
+        onDashboard[metric.id] = (rawMetric['on_dashboard'] as int?) == 1;
       }
     }
 
@@ -374,14 +426,20 @@ class Metrics {
     });
   }
 
-  Future<Map<int, Metric>> getTrackedMetricsFor(String patientUuid, bool refresh) async {
+  Future<Map<int, Metric>> getTrackedMetricsFor(
+    String patientUuid,
+    bool refresh,
+  ) async {
     if (refresh) {
       await buildMapsFor(patientUuid);
     }
     return tracked;
   }
 
-  Future<Map<int, Metric>> getUntrackedMetricsFor(String patientUuid, bool refresh) async {
+  Future<Map<int, Metric>> getUntrackedMetricsFor(
+    String patientUuid,
+    bool refresh,
+  ) async {
     if (refresh) {
       await buildMapsFor(patientUuid);
     }
@@ -389,16 +447,24 @@ class Metrics {
   }
 
   Future<Map<int, MetricRange>> getRangesFor(String patientUuid) async {
-    dynamic rawRanges = await DatabaseManager().getPatientMetricRanges(patientUuid);
-    dynamic rawRecent = await DatabaseManager().getRecentPatientMetrics(patientUuid);
+    dynamic rawRanges = await DatabaseManager().getPatientMetricRanges(
+      patientUuid,
+    );
+    dynamic rawRecent = await DatabaseManager().getRecentPatientMetrics(
+      patientUuid,
+    );
     Map<int, MetricRange> range = {};
     for (dynamic rng in rawRanges) {
       MetricRange metricRange = MetricRange.fromMap(rng);
       range[metricRange.id] = metricRange;
     }
     for (dynamic recent in rawRecent) {
-      int id = recent['id'];
-      double latest = recent['value'];
+      // `recent['id']` is the reading's own UUID primary key, not the metric's integer
+      // catalog id `range` is keyed by — that mismatch (int id = a UUID string) threw
+      // immediately once patient_metric actually had rows to return, which it never did
+      // before insertPatientMetricReading existed. `metric_id` is the right column.
+      int id = recent['metric_id'] as int;
+      double latest = (recent['value'] as num).toDouble();
       String rawDate = recent['measured'];
       DateTime measured = DTUtilities.sqliteToDart(rawDate);
       if (range[id] != null) {
@@ -411,16 +477,28 @@ class Metrics {
 
   Future<Map<int, MetricThreshold>> getThresholdsFor(String patientUuid) async {
     final rows = await DatabaseManager().getActiveThresholds(patientUuid);
-    return {for (final row in rows) row['metric_id'] as int: MetricThreshold.fromMap(row)};
+    return {
+      for (final row in rows)
+        row['metric_id'] as int: MetricThreshold.fromMap(row),
+    };
   }
 
   Future<Map<int, MetricTarget>> getTargetsFor(String patientUuid) async {
     final rows = await DatabaseManager().getActiveTargets(patientUuid);
-    return {for (final row in rows) row['metric_id'] as int: MetricTarget.fromMap(row)};
+    return {
+      for (final row in rows)
+        row['metric_id'] as int: MetricTarget.fromMap(row),
+    };
   }
 
-  Future<List<MetricValue>> getTrackedMetricValuesFor(String patientUuid, int metricId) async {
-    dynamic rawValues = await DatabaseManager().getPatientMetricValuesForMetric(patientUuid, metricId);
+  Future<List<MetricValue>> getTrackedMetricValuesFor(
+    String patientUuid,
+    int metricId,
+  ) async {
+    dynamic rawValues = await DatabaseManager().getPatientMetricValuesForMetric(
+      patientUuid,
+      metricId,
+    );
     List<MetricValue> metricValues = [];
     for (dynamic val in rawValues) {
       MetricValue mv = MetricValue.fromMap(val);
@@ -429,12 +507,48 @@ class Metrics {
     return metricValues;
   }
 
-  static void trackMetric({required int metricId, required String patientUuid}) async {
-    DatabaseManager().insertTrackingMetric(metricId: metricId, patientUuid: patientUuid);
+  // getTrackedMetricValuesFor above already existed and worked — it just had no caller.
+  // Every `Metric.history` stayed permanently empty (its only mutators are `add`/`update`,
+  // never invoked anywhere), so the scatter chart and any other consumer of a metric's
+  // full reading history always saw zero points regardless of what was actually in
+  // `patient_metric`. This is the one thing that actually populates it, from real rows.
+  Future<void> loadHistoryFor(String patientUuid) async {
+    for (final metric in tracked.values) {
+      final values = await getTrackedMetricValuesFor(patientUuid, metric.id);
+      metric.history = {for (final v in values) v.id: v};
+    }
   }
 
-  static void stopTrackingMetric({required int metricId, required String patientUuid}) async {
-    DatabaseManager().deleteTrackingMetric(metricId: metricId, patientUuid: patientUuid);
+  static void trackMetric({
+    required int metricId,
+    required String patientUuid,
+  }) async {
+    DatabaseManager().insertTrackingMetric(
+      metricId: metricId,
+      patientUuid: patientUuid,
+    );
+  }
+
+  static void stopTrackingMetric({
+    required int metricId,
+    required String patientUuid,
+  }) async {
+    DatabaseManager().deleteTrackingMetric(
+      metricId: metricId,
+      patientUuid: patientUuid,
+    );
+  }
+
+  static void setOnDashboard({
+    required int metricId,
+    required String patientUuid,
+    required bool onDashboard,
+  }) async {
+    DatabaseManager().setMetricOnDashboard(
+      metricId: metricId,
+      patientUuid: patientUuid,
+      onDashboard: onDashboard,
+    );
   }
 }
 
@@ -492,54 +606,183 @@ class MetricIcon {
 }
 
 Map<String, MetricIcon> metricIcons = {
-  "Blood Pressure - Systolic": MetricIcon(iconData: Symbols.blood_pressure, color: Colors.red),
-  "Blood Pressure - Diastolic": MetricIcon(iconData: Symbols.blood_pressure, color: Colors.red),
+  "Blood Pressure - Systolic": MetricIcon(
+    iconData: Symbols.blood_pressure,
+    color: Colors.red,
+  ),
+  "Blood Pressure - Diastolic": MetricIcon(
+    iconData: Symbols.blood_pressure,
+    color: Colors.red,
+  ),
   "Heart Rate": MetricIcon(iconData: Symbols.ecg_heart, color: Colors.red),
-  "Resting Heart Rate": MetricIcon(iconData: Symbols.hr_resting, color: Colors.red),
-  "Body Temperature": MetricIcon(iconData: Symbols.body_system, color: Colors.red),
+  "Resting Heart Rate": MetricIcon(
+    iconData: Symbols.hr_resting,
+    color: Colors.red,
+  ),
+  "Body Temperature": MetricIcon(
+    iconData: Symbols.body_system,
+    color: Colors.red,
+  ),
   "Body Weight": MetricIcon(iconData: Symbols.weight, color: Colors.red),
-  "Body Mass Index (BMI)": MetricIcon(iconData: Symbols.body_fat, color: Colors.red),
-  "Body Fat Percentage": MetricIcon(iconData: Symbols.body_fat, color: Colors.red),
-  "Waist Circumference": MetricIcon(iconData: Symbols.measuring_tape, color: Colors.red),
-  "Blood Oxygen Saturation (SpO2)": MetricIcon(iconData: Symbols.oxygen_saturation, color: Colors.red),
-  "Apnea-Hypopnea Index (AHI)": MetricIcon(iconData: Symbols.sleep_score, color: Colors.red),
-  "Peak Expiratory Flow Rate (PEFR)": MetricIcon(iconData: Symbols.air, color: Colors.red),
-  "Forced Expiratory Volume in 1 Second (FEV1)": MetricIcon(iconData: Symbols.pulmonology, color: Colors.red),
-  "Respiration Rate": MetricIcon(iconData: Symbols.respiratory_rate, color: Colors.red),
-  "CPAP Usage Duration": MetricIcon(iconData: Symbols.air_purifier, color: Colors.red),
-  "CPAP Mask Leak Rate": MetricIcon(iconData: Symbols.leak_add, color: Colors.red),
-  "Estimated Average Glucose (eAG)": MetricIcon(iconData: Symbols.glucose, color: Colors.red),
-  "Blood Glucose (Fasting / General)": MetricIcon(iconData: Symbols.glucose, color: Colors.red),
-  "Blood Glucose (Postprandial / Post-Meal)": MetricIcon(iconData: Symbols.glucose, color: Colors.red),
-  "Glycated Hemoglobin (HbA1c)": MetricIcon(iconData: Symbols.hematology, color: Colors.red),
+  "Body Mass Index (BMI)": MetricIcon(
+    iconData: Symbols.body_fat,
+    color: Colors.red,
+  ),
+  "Body Fat Percentage": MetricIcon(
+    iconData: Symbols.body_fat,
+    color: Colors.red,
+  ),
+  "Waist Circumference": MetricIcon(
+    iconData: Symbols.measuring_tape,
+    color: Colors.red,
+  ),
+  "Blood Oxygen Saturation (SpO2)": MetricIcon(
+    iconData: Symbols.oxygen_saturation,
+    color: Colors.red,
+  ),
+  "Apnea-Hypopnea Index (AHI)": MetricIcon(
+    iconData: Symbols.sleep_score,
+    color: Colors.red,
+  ),
+  "Peak Expiratory Flow Rate (PEFR)": MetricIcon(
+    iconData: Symbols.air,
+    color: Colors.red,
+  ),
+  "Forced Expiratory Volume in 1 Second (FEV1)": MetricIcon(
+    iconData: Symbols.pulmonology,
+    color: Colors.red,
+  ),
+  "Respiration Rate": MetricIcon(
+    iconData: Symbols.respiratory_rate,
+    color: Colors.red,
+  ),
+  "CPAP Usage Duration": MetricIcon(
+    iconData: Symbols.air_purifier,
+    color: Colors.red,
+  ),
+  "CPAP Mask Leak Rate": MetricIcon(
+    iconData: Symbols.leak_add,
+    color: Colors.red,
+  ),
+  "Estimated Average Glucose (eAG)": MetricIcon(
+    iconData: Symbols.glucose,
+    color: Colors.red,
+  ),
+  "Blood Glucose (Fasting / General)": MetricIcon(
+    iconData: Symbols.glucose,
+    color: Colors.red,
+  ),
+  "Blood Glucose (Postprandial / Post-Meal)": MetricIcon(
+    iconData: Symbols.glucose,
+    color: Colors.red,
+  ),
+  "Glycated Hemoglobin (HbA1c)": MetricIcon(
+    iconData: Symbols.hematology,
+    color: Colors.red,
+  ),
   "Blood Ketones": MetricIcon(iconData: Symbols.hematology, color: Colors.red),
   "Urine Ketones": MetricIcon(iconData: Symbols.urology, color: Colors.red),
-  "Insulin Dose Logged": MetricIcon(iconData: Symbols.glucose, color: Colors.red),
-  "Carbohydrate Intake": MetricIcon(iconData: Symbols.cookie, color: Colors.red),
-  "Total Cholesterol": MetricIcon(iconData: Symbols.lab_panel, color: Colors.red),
-  "Low-Density Lipoprotein (LDL)": MetricIcon(iconData: Symbols.body_fat, color: Colors.red),
-  "High-Density Lipoprotein (HDL)": MetricIcon(iconData: Symbols.body_fat, color: Colors.red),
+  "Insulin Dose Logged": MetricIcon(
+    iconData: Symbols.glucose,
+    color: Colors.red,
+  ),
+  "Carbohydrate Intake": MetricIcon(
+    iconData: Symbols.cookie,
+    color: Colors.red,
+  ),
+  "Total Cholesterol": MetricIcon(
+    iconData: Symbols.lab_panel,
+    color: Colors.red,
+  ),
+  "Low-Density Lipoprotein (LDL)": MetricIcon(
+    iconData: Symbols.body_fat,
+    color: Colors.red,
+  ),
+  "High-Density Lipoprotein (HDL)": MetricIcon(
+    iconData: Symbols.body_fat,
+    color: Colors.red,
+  ),
   "Triglycerides": MetricIcon(iconData: Symbols.body_fat, color: Colors.red),
-  "Prothrombin Time / INR": MetricIcon(iconData: Symbols.diagnosis, color: Colors.red),
-  "Heart Rate Variability (HRV)": MetricIcon(iconData: Symbols.cardio_load, color: Colors.red),
-  "Joint Pain Severity Score": MetricIcon(iconData: Symbols.rheumatology, color: Colors.red),
-  "Morning Joint Stiffness Duration": MetricIcon(iconData: Symbols.rheumatology, color: Colors.red),
-  "C-Reactive Protein (CRP)": MetricIcon(iconData: Symbols.experiment, color: Colors.red),
-  "Erythrocyte Sedimentation Rate (ESR)": MetricIcon(iconData: Symbols.experiment, color: Colors.red),
+  "Prothrombin Time / INR": MetricIcon(
+    iconData: Symbols.diagnosis,
+    color: Colors.red,
+  ),
+  "Heart Rate Variability (HRV)": MetricIcon(
+    iconData: Symbols.cardio_load,
+    color: Colors.red,
+  ),
+  "Joint Pain Severity Score": MetricIcon(
+    iconData: Symbols.rheumatology,
+    color: Colors.red,
+  ),
+  "Morning Joint Stiffness Duration": MetricIcon(
+    iconData: Symbols.rheumatology,
+    color: Colors.red,
+  ),
+  "C-Reactive Protein (CRP)": MetricIcon(
+    iconData: Symbols.experiment,
+    color: Colors.red,
+  ),
+  "Erythrocyte Sedimentation Rate (ESR)": MetricIcon(
+    iconData: Symbols.experiment,
+    color: Colors.red,
+  ),
   "Grip Strength": MetricIcon(iconData: Symbols.pan_tool, color: Colors.red),
-  "General Pain Level": MetricIcon(iconData: Symbols.symptoms, color: Colors.red),
-  "Serum Creatinine": MetricIcon(iconData: Symbols.hematology, color: Colors.red),
-  "Estimated Glomerular Filtration Rate (eGFR)": MetricIcon(iconData: Symbols.experiment, color: Colors.red),
-  "Blood Urea Nitrogen (BUN)": MetricIcon(iconData: Symbols.lab_panel, color: Colors.red),
-  "Urine Output Volume": MetricIcon(iconData: Symbols.water_drop, color: Colors.red),
-  "Water / Fluid Intake": MetricIcon(iconData: Symbols.water_bottle, color: Colors.red),
-  "Daily Caloric Intake": MetricIcon(iconData: Symbols.fastfood, color: Colors.red),
-  "Abdominal Pain Severity": MetricIcon(iconData: Symbols.symptoms, color: Colors.red),
-  "Stool Consistency (Bristol Scale)": MetricIcon(iconData: Symbols.total_dissolved_solids, color: Colors.red),
+  "General Pain Level": MetricIcon(
+    iconData: Symbols.symptoms,
+    color: Colors.red,
+  ),
+  "Serum Creatinine": MetricIcon(
+    iconData: Symbols.hematology,
+    color: Colors.red,
+  ),
+  "Estimated Glomerular Filtration Rate (eGFR)": MetricIcon(
+    iconData: Symbols.experiment,
+    color: Colors.red,
+  ),
+  "Blood Urea Nitrogen (BUN)": MetricIcon(
+    iconData: Symbols.lab_panel,
+    color: Colors.red,
+  ),
+  "Urine Output Volume": MetricIcon(
+    iconData: Symbols.water_drop,
+    color: Colors.red,
+  ),
+  "Water / Fluid Intake": MetricIcon(
+    iconData: Symbols.water_bottle,
+    color: Colors.red,
+  ),
+  "Daily Caloric Intake": MetricIcon(
+    iconData: Symbols.fastfood,
+    color: Colors.red,
+  ),
+  "Abdominal Pain Severity": MetricIcon(
+    iconData: Symbols.symptoms,
+    color: Colors.red,
+  ),
+  "Stool Consistency (Bristol Scale)": MetricIcon(
+    iconData: Symbols.total_dissolved_solids,
+    color: Colors.red,
+  ),
   "Sleep Duration": MetricIcon(iconData: Symbols.snooze, color: Colors.red),
-  "Sleep Quality Score": MetricIcon(iconData: Symbols.sleep_score, color: Colors.red),
-  "Headache / Migraine Severity": MetricIcon(iconData: Symbols.cognition, color: Colors.red),
-  "Daily Mood Score": MetricIcon(iconData: Symbols.add_reaction, color: Colors.red),
-  "Stress Level": MetricIcon(iconData: Symbols.sentiment_stressed, color: Colors.red),
-  "Cognitive Alertness": MetricIcon(iconData: Symbols.cognition_2, color: Colors.red),
+  "Sleep Quality Score": MetricIcon(
+    iconData: Symbols.sleep_score,
+    color: Colors.red,
+  ),
+  "Headache / Migraine Severity": MetricIcon(
+    iconData: Symbols.cognition,
+    color: Colors.red,
+  ),
+  "Daily Mood Score": MetricIcon(
+    iconData: Symbols.add_reaction,
+    color: Colors.red,
+  ),
+  "Stress Level": MetricIcon(
+    iconData: Symbols.sentiment_stressed,
+    color: Colors.red,
+  ),
+  "Cognitive Alertness": MetricIcon(
+    iconData: Symbols.cognition_2,
+    color: Colors.red,
+  ),
 };

@@ -34,7 +34,8 @@ class DTUtilities {
     int years = now.year - pastDate.year;
 
     // 2. Adjust downwards if the anniversary hasn't happened yet this year
-    if (now.month < pastDate.month || (now.month == pastDate.month && now.day < pastDate.day)) {
+    if (now.month < pastDate.month ||
+        (now.month == pastDate.month && now.day < pastDate.day)) {
       years--;
     }
 
@@ -78,8 +79,24 @@ class DTUtilities {
       return DateTime.fromMillisecondsSinceEpoch(value * 1000);
     }
 
-    // Fallback
-    return DateTime.tryParse(value.toString()) ?? DateTime.now();
+    // Fallback — a raw DATETIME column string, e.g. "2026-08-16 16:29:55" from SQLite's
+    // CURRENT_TIMESTAMP, which is always UTC but carries no timezone marker. Bare
+    // DateTime.tryParse treats an unmarked string as *local* time, silently shifting the
+    // real moment by the device's UTC offset — on a UTC-behind device that can push a
+    // reading's parsed time into the apparent future relative to DateTime.now(), which is
+    // exactly what made every reading vanish from the metric scatter chart's date-window
+    // filter. Appending 'Z' (skipped if the string already carries a marker — e.g. an
+    // ISO string round-tripped through .toIso8601String()) tells Dart these digits are
+    // already UTC instead of guessing.
+    final String raw = value.toString();
+    final String normalized = raw.contains('T')
+        ? raw
+        : raw.replaceFirst(' ', 'T');
+    final String withZone =
+        (normalized.endsWith('Z') || normalized.contains('+'))
+        ? normalized
+        : '${normalized}Z';
+    return DateTime.tryParse(withZone) ?? DateTime.now();
   }
 
   static int dateStringToUnixInt(String dateString) {
@@ -94,12 +111,24 @@ class DTUtilities {
       int min = int.parse(dateString.substring(14, 16));
       int sec = int.parse(dateString.substring(17, 19));
 
-      return DateTime.utc(year, month, day, hour, min, sec).millisecondsSinceEpoch ~/ 1000;
+      return DateTime.utc(
+            year,
+            month,
+            day,
+            hour,
+            min,
+            sec,
+          ).millisecondsSinceEpoch ~/
+          1000;
     } catch (e) {
       // Fallback for the slash format
       List<String> parts = dateString.split('/');
       if (parts.length == 3) {
-        return DateTime.utc(int.parse(parts[2]), int.parse(parts[0]), int.parse(parts[1])).millisecondsSinceEpoch ~/
+        return DateTime.utc(
+              int.parse(parts[2]),
+              int.parse(parts[0]),
+              int.parse(parts[1]),
+            ).millisecondsSinceEpoch ~/
             1000;
       }
       return DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
@@ -110,7 +139,15 @@ class DTUtilities {
     DateTime now = DateTime.timestamp();
 
     // 2. Subtract 1 from the year (handles leap years correctly)
-    DateTime oneYearAgo = DateTime(now.year - 1, now.month, now.day, now.hour, now.minute, now.second, now.millisecond);
+    DateTime oneYearAgo = DateTime(
+      now.year - 1,
+      now.month,
+      now.day,
+      now.hour,
+      now.minute,
+      now.second,
+      now.millisecond,
+    );
     return oneYearAgo;
   }
 
@@ -129,7 +166,15 @@ class DTUtilities {
     DateTime now = DateTime.timestamp();
 
     // 2. Subtract 1 from the year (handles leap years correctly)
-    DateTime aWhileAgo = DateTime(now.year, now.month - m, now.day, now.hour, now.minute, now.second, now.millisecond);
+    DateTime aWhileAgo = DateTime(
+      now.year,
+      now.month - m,
+      now.day,
+      now.hour,
+      now.minute,
+      now.second,
+      now.millisecond,
+    );
     return aWhileAgo;
   }
 
@@ -140,7 +185,15 @@ class DTUtilities {
   static DateTime aMonthAgo() {
     DateTime now = DateTime.timestamp();
     // Subtract 1 from the month (handles leap years correctly)
-    DateTime aMonthAgo = DateTime(now.year, now.month - 1, now.day, now.hour, now.minute, now.second, now.millisecond);
+    DateTime aMonthAgo = DateTime(
+      now.year,
+      now.month - 1,
+      now.day,
+      now.hour,
+      now.minute,
+      now.second,
+      now.millisecond,
+    );
     return aMonthAgo;
   }
 
@@ -151,7 +204,15 @@ class DTUtilities {
   static DateTime aWeekAgo() {
     DateTime now = DateTime.timestamp();
     // Subtract 1 from the month (handles leap years correctly)
-    DateTime aWeekAgo = DateTime(now.year, now.month, now.day - 7, now.hour, now.minute, now.second, now.millisecond);
+    DateTime aWeekAgo = DateTime(
+      now.year,
+      now.month,
+      now.day - 7,
+      now.hour,
+      now.minute,
+      now.second,
+      now.millisecond,
+    );
     return aWeekAgo;
   }
 
@@ -162,7 +223,15 @@ class DTUtilities {
   static DateTime yesterday() {
     DateTime now = DateTime.timestamp();
     // Subtract 1 from the month (handles leap years correctly)
-    DateTime yesterday = DateTime(now.year, now.month, now.day - 1, now.hour, now.minute, now.second, now.millisecond);
+    DateTime yesterday = DateTime(
+      now.year,
+      now.month,
+      now.day - 1,
+      now.hour,
+      now.minute,
+      now.second,
+      now.millisecond,
+    );
     return yesterday;
   }
 

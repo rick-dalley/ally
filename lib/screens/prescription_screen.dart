@@ -29,7 +29,8 @@ class PrescriptionScreenState extends State<PrescriptionScreen> {
   bool hasContraIndications = false;
   final bool hasAcceptedIndications = false;
   Map<String, Medication> medications = {};
-  late List<InteractionConflict> currentConflicts = []; // The source of truth for the UI
+  late List<InteractionConflict> currentConflicts =
+      []; // The source of truth for the UI
   bool audited = false;
 
   // Loaded once per screen visit (allergies don't change while this screen is open,
@@ -37,6 +38,13 @@ class PrescriptionScreenState extends State<PrescriptionScreen> {
   // build — cheap, synchronous, no per-pair DB round trip needed the way the drug-drug
   // interaction audit requires, so there's no separate imperative "run the audit" step.
   List<Map<String, dynamic>> _allergyRows = [];
+
+  // Pair keys (see InteractionConflict.pairKey) the patient has acknowledged/dismissed —
+  // loaded from interaction_acknowledgment, the audit trail of "shown this warning,
+  // accepted it anyway." Reloaded after every acknowledge/dismiss so every card and the
+  // top banner stay in sync with the real persisted state, not just local widget state.
+  Set<String> _acknowledgedPairs = {};
+  Set<String> _dismissedPairs = {};
 
   // These are derived flags
   final nameController = TextEditingController();
@@ -49,12 +57,64 @@ class PrescriptionScreenState extends State<PrescriptionScreen> {
     super.initState();
     loadMedsForPatient();
     _loadAllergies();
+    _loadInteractionAcknowledgments();
   }
 
   Future<void> _loadAllergies() async {
-    final rows = await DatabaseManager().getPatientAllergyNames(widget.patient.patientUuid);
+    final rows = await DatabaseManager().getPatientAllergyNames(
+      widget.patient.patientUuid,
+    );
     if (!mounted) return;
     setState(() => _allergyRows = rows);
+  }
+
+  Future<void> _loadInteractionAcknowledgments() async {
+    final rows = await DatabaseManager().getInteractionAcknowledgments(
+      widget.patient.patientUuid,
+    );
+    if (!mounted) return;
+    setState(() {
+      _acknowledgedPairs = {
+        for (final row in rows)
+          if (row['dismissed_at'] == null)
+            normalizedInteractionPairKey(
+              row['medication_a'],
+              row['medication_b'],
+            ),
+      };
+      _dismissedPairs = {
+        for (final row in rows)
+          if (row['dismissed_at'] != null)
+            normalizedInteractionPairKey(
+              row['medication_a'],
+              row['medication_b'],
+            ),
+      };
+    });
+  }
+
+  Future<void> _acknowledgeInteraction(
+    String medicationA,
+    String medicationB,
+  ) async {
+    await DatabaseManager().acknowledgeInteraction(
+      patientUuid: widget.patient.patientUuid,
+      medicationA: medicationA,
+      medicationB: medicationB,
+    );
+    await _loadInteractionAcknowledgments();
+  }
+
+  Future<void> _dismissInteraction(
+    String medicationA,
+    String medicationB,
+  ) async {
+    await DatabaseManager().dismissInteractionAcknowledgment(
+      patientUuid: widget.patient.patientUuid,
+      medicationA: medicationA,
+      medicationB: medicationB,
+    );
+    await _loadInteractionAcknowledgments();
   }
 
   void handleConflictsFound(List<InteractionConflict> conflicts) {
@@ -65,11 +125,17 @@ class PrescriptionScreenState extends State<PrescriptionScreen> {
 
   Future<void> loadMedsForPatient() async {
     try {
-      List<Map<String, dynamic>> prescription = await MedicationService.getPrescriptionFor(widget.patient.patientUuid);
+      List<Map<String, dynamic>> prescription =
+          await MedicationService.getPrescriptionFor(
+            widget.patient.patientUuid,
+          );
 
       final tempMap = <String, Medication>{};
       for (Map<String, dynamic> medicationData in prescription) {
-        Medication medication = Medication.fromMap(medicationData, widget.patient.patientUuid);
+        Medication medication = Medication.fromMap(
+          medicationData,
+          widget.patient.patientUuid,
+        );
         tempMap[medication.id] = medication;
       }
 
@@ -119,7 +185,9 @@ class PrescriptionScreenState extends State<PrescriptionScreen> {
 
       builder: (context) => Padding(
         padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom, // Moves with keyboard
+          bottom: MediaQuery.of(
+            context,
+          ).viewInsets.bottom, // Moves with keyboard
           left: 24,
           right: 24,
           top: 24,
@@ -166,7 +234,12 @@ class PrescriptionScreenState extends State<PrescriptionScreen> {
       ),
       body: Column(
         children: [
-          InteractionsWidget(medications: medications, onConflictsFound: handleConflictsFound),
+          InteractionsWidget(
+            medications: medications,
+            onConflictsFound: handleConflictsFound,
+            acknowledgedPairs: _acknowledgedPairs,
+            dismissedPairs: _dismissedPairs,
+          ),
           // CURRENT LIST: The Baseline
           Expanded(
             child: ListView.builder(
@@ -180,6 +253,10 @@ class PrescriptionScreenState extends State<PrescriptionScreen> {
                   allergyConflicts: allergyConflicts,
                   medication: med,
                   index: index,
+                  acknowledgedInteractionPairs: _acknowledgedPairs,
+                  dismissedInteractionPairs: _dismissedPairs,
+                  onAcknowledgeInteraction: _acknowledgeInteraction,
+                  onDismissInteraction: _dismissInteraction,
                   onArchive: () async {
                     // 1. Close it out in the database — sets stopped_taking, keeps the
                     // row (and its dose/interaction history) intact for later reference
@@ -191,7 +268,8 @@ class PrescriptionScreenState extends State<PrescriptionScreen> {
                     // reference to diff against in didUpdateWidget, so the automatic
                     // re-audit actually fires here too.
                     setState(() {
-                      medications = Map<String, Medication>.from(medications)..remove(med.id);
+                      medications = Map<String, Medication>.from(medications)
+                        ..remove(med.id);
                     });
                   },
                   onExpansionChanged: (isExpanded) {
@@ -247,7 +325,11 @@ class BannerData {
   final String message;
   final IconData icon;
 
-  const BannerData({required this.color, required this.message, required this.icon});
+  const BannerData({
+    required this.color,
+    required this.message,
+    required this.icon,
+  });
 
   Color get bannerColor => AppTheme.surfaceColor;
 }
@@ -255,7 +337,15 @@ class BannerData {
 class InteractionsWidget extends StatefulWidget {
   final Map<String, Medication> medications;
   final Function(List<InteractionConflict>) onConflictsFound;
-  const InteractionsWidget({super.key, required this.medications, required this.onConflictsFound});
+  final Set<String> acknowledgedPairs;
+  final Set<String> dismissedPairs;
+  const InteractionsWidget({
+    super.key,
+    required this.medications,
+    required this.onConflictsFound,
+    required this.acknowledgedPairs,
+    required this.dismissedPairs,
+  });
 
   @override
   State<StatefulWidget> createState() => InteractionsWidgetState();
@@ -264,9 +354,6 @@ class InteractionsWidget extends StatefulWidget {
 class InteractionsWidgetState extends State<InteractionsWidget> {
   late Map<String, Medication> medications;
   late bool audited;
-  late bool hasContraIndications;
-  late bool hasPrecautions;
-  late bool hasAcceptedIndications;
   late List<InteractionConflict> conflicts;
 
   void runSafetyAudit() async {
@@ -281,12 +368,16 @@ class InteractionsWidgetState extends State<InteractionsWidget> {
       final String nameA = medicationA.name;
       medicationA.hasInteractions = false;
 
-      if (nameA.isEmpty) continue; // 2. Skip audit logic if it has no FDA set_id synced yet
+      if (nameA.isEmpty)
+        continue; // 2. Skip audit logic if it has no FDA set_id synced yet
 
       for (var medicationB in medications.values) {
         final String nameB = medicationB.name;
         if (nameB.isEmpty || nameA == nameB) continue;
-        final String? interaction = await DatabaseManager().getInteractions(nameA, nameB);
+        final String? interaction = await DatabaseManager().getInteractions(
+          nameA,
+          nameB,
+        );
 
         if (interaction != null) {
           conflicts.add(
@@ -304,7 +395,6 @@ class InteractionsWidgetState extends State<InteractionsWidget> {
     if (mounted) {
       setState(() {
         audited = true;
-        hasContraIndications = conflicts.isNotEmpty;
       });
       // The banner above reads its own `conflicts`/`hasContraIndications` state, but the
       // per-card chips live in the parent (PrescriptionScreen) and only ever see what's
@@ -320,9 +410,6 @@ class InteractionsWidgetState extends State<InteractionsWidget> {
     conflicts = [];
     medications = widget.medications;
     audited = false;
-    hasContraIndications = false;
-    hasPrecautions = false;
-    hasAcceptedIndications = false;
     // Deferred: when there's 0 or 1 medication, runSafetyAudit's loop never reaches an
     // `await`, so it (and the ancestor setState in its onConflictsFound callback) would
     // otherwise run synchronously inside this initState — during the same build pass
@@ -338,7 +425,10 @@ class InteractionsWidgetState extends State<InteractionsWidget> {
     // PrescriptionScreen rebuilds (and so recreates this widget) for reasons unrelated to
     // the medication list too, so only re-run the audit when the actual set of medications
     // changed — otherwise every unrelated rebuild would re-fire an O(n^2) round of DB queries.
-    final bool medsChanged = !setEquals(oldWidget.medications.keys.toSet(), widget.medications.keys.toSet());
+    final bool medsChanged = !setEquals(
+      oldWidget.medications.keys.toSet(),
+      widget.medications.keys.toSet(),
+    );
     setState(() {
       medications = widget.medications;
     });
@@ -382,14 +472,24 @@ class InteractionsWidgetState extends State<InteractionsWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // Dismissed pairs are fully hidden (their audit record still lives in the DB, just
+    // not surfaced here); of what's left, any pair still missing an acknowledgment keeps
+    // the banner critical — acknowledging every visible conflict is what earns the calmer
+    // "Acknowledged & Accepted" state instead.
+    final List<InteractionConflict> visibleConflicts = conflicts
+        .where((c) => !widget.dismissedPairs.contains(c.pairKey))
+        .toList();
+    final bool hasUnacknowledgedConflicts = visibleConflicts.any(
+      (c) => !widget.acknowledgedPairs.contains(c.pairKey),
+    );
+    final bool hasAcceptedIndications =
+        visibleConflicts.isNotEmpty && !hasUnacknowledgedConflicts;
+
     BannerData bannerData;
-    // Example Logic check:
     if (!audited) {
       bannerData = banners[BannerType.unknown]!;
-    } else if (hasContraIndications) {
+    } else if (hasUnacknowledgedConflicts) {
       bannerData = banners[BannerType.critical]!;
-    } else if (hasPrecautions) {
-      bannerData = banners[BannerType.advisory]!;
     } else if (hasAcceptedIndications) {
       bannerData = banners[BannerType.acknowledged]!;
     } else {
@@ -403,7 +503,12 @@ class InteractionsWidgetState extends State<InteractionsWidget> {
         children: [
           Icon(bannerData.icon, color: bannerData.color, size: 20),
           const SizedBox(width: 16),
-          Expanded(child: Text(bannerData.message, style: CarbonTheme.carbonLabelTextStyle)),
+          Expanded(
+            child: Text(
+              bannerData.message,
+              style: CarbonTheme.carbonLabelTextStyle,
+            ),
+          ),
           Expanded(
             child: CarbonButton(
               label: "Check",

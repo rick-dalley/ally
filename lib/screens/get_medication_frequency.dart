@@ -20,7 +20,6 @@ class GetMedicationFrequency extends StatefulWidget {
 
 class _GetMedicationFrequencyState extends State<GetMedicationFrequency> {
   DateTime? start;
-  DateTime? end;
   DateTime? specificTime;
   String? latinRecurrence;
 
@@ -28,7 +27,6 @@ class _GetMedicationFrequencyState extends State<GetMedicationFrequency> {
   void initState() {
     super.initState();
     start = DateTime.now();
-    end = start?.add(const Duration(days: 30));
     latinRecurrence = FrequencyCodes.quaqueDie.latin;
     // Deferred: this page mounts mid-build as the wizard's PageView transitions to it,
     // so calling the parent's setState synchronously here would fire while the
@@ -43,7 +41,7 @@ class _GetMedicationFrequencyState extends State<GetMedicationFrequency> {
     // Reminder configuration (channels, lead time, etc.) lives on its own wizard step
     // now, not on Frequency — `alert` here is vestigial and always false.
     widget.onFrequencySelected(
-      Frequency(latinRecurrence: latinRecurrence, start: start, end: end, specificTime: specificTime, alert: false),
+      Frequency(latinRecurrence: latinRecurrence, start: start, specificTime: specificTime, alert: false),
     );
   }
 
@@ -76,48 +74,22 @@ class _GetMedicationFrequencyState extends State<GetMedicationFrequency> {
                 },
               ),
               SizedBox(height: CarbonSpacing.wide.height),
-              Row(
-                children: [
-                  Expanded(
-                    child: CarbonFullButton(
-                      icon: Symbols.calendar_clock,
-                      style: CarbonButtonStyle.tertiary,
-                      label: start != null ? "Start: ${start.toString().split(' ')[0]}" : "Start Date",
-                      onTap: () async {
-                        final date = await showDatePicker(
-                          context: context,
-                          initialDate: start ?? DateTime.now(),
-                          firstDate: DateTime.now(),
-                          lastDate: DateTime(2100),
-                        );
-                        if (date != null) {
-                          setState(() => start = date);
-                          _emitFrequency();
-                        }
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: CarbonFullButton(
-                      icon: Symbols.calendar_clock,
-                      style: CarbonButtonStyle.tertiary,
-                      label: end != null ? "End: ${end.toString().split(' ')[0]}" : "End Date",
-                      onTap: () async {
-                        final date = await showDatePicker(
-                          context: context,
-                          initialDate: end ?? DateTime.now(),
-                          firstDate: start ?? DateTime.now(),
-                          lastDate: DateTime(2100),
-                        );
-                        if (date != null) {
-                          setState(() => end = date);
-                          _emitFrequency();
-                        }
-                      },
-                    ),
-                  ),
-                ],
+              CarbonFullButton(
+                icon: Symbols.calendar_clock,
+                style: CarbonButtonStyle.tertiary,
+                label: start != null ? "Start: ${start.toString().split(' ')[0]}" : "Start Date",
+                onTap: () async {
+                  final date = await showDatePicker(
+                    context: context,
+                    initialDate: start ?? DateTime.now(),
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime(2100),
+                  );
+                  if (date != null) {
+                    setState(() => start = date);
+                    _emitFrequency();
+                  }
+                },
               ),
               const SizedBox(height: 16.0),
               ListTile(

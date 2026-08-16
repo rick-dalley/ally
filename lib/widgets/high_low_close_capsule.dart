@@ -27,12 +27,17 @@ class HighLowCloseCapsule extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const double capsuleWidth = 16.0;
-    const double margin = 16.0; // Extra padding top and bottom for floating out-of-bounds dots
+    const double margin =
+        16.0; // Extra padding top and bottom for floating out-of-bounds dots
     final double totalHeight = height + (margin * 2);
 
-    final bool isInactive = current == 0 && historicalMin == 0 && historicalMax == 0;
-    final bool isOutlier = !isInactive && (current > clinicalMax || current < clinicalMin);
-    final Color activeColor = isInactive ? inactiveColor : (isOutlier ? alertColor : color);
+    final bool isInactive =
+        current == 0 && historicalMin == 0 && historicalMax == 0;
+    final bool isOutlier =
+        !isInactive && (current > clinicalMax || current < clinicalMin);
+    final Color activeColor = isInactive
+        ? inactiveColor
+        : (isOutlier ? alertColor : color);
 
     return SizedBox(
       width: capsuleWidth,
@@ -99,7 +104,10 @@ class HlcCapsulePainter extends CustomPainter {
 
     if (isInactive) {
       final Rect clinicalRect = Rect.fromLTWH(0, 0, size.width, size.height);
-      final RRect clinicalRRect = RRect.fromRectAndRadius(clinicalRect, Radius.circular(radius));
+      final RRect clinicalRRect = RRect.fromRectAndRadius(
+        clinicalRect,
+        Radius.circular(radius),
+      );
 
       final Paint borderPaint = Paint()
         ..color = color.withAlpha(80)
@@ -120,7 +128,10 @@ class HlcCapsulePainter extends CustomPainter {
 
     // 1. Draw Outer Healthy Capsule (Clinical Min/Max bounds)
     final Rect clinicalRect = Rect.fromLTWH(0, 0, size.width, size.height);
-    final RRect clinicalRRect = RRect.fromRectAndRadius(clinicalRect, Radius.circular(radius));
+    final RRect clinicalRRect = RRect.fromRectAndRadius(
+      clinicalRect,
+      Radius.circular(radius),
+    );
 
     final Paint backgroundPaint = Paint()
       ..color = color.withAlpha(20)
@@ -142,8 +153,16 @@ class HlcCapsulePainter extends CustomPainter {
     final double spanHeight = bottomY - topY;
 
     if (spanHeight > 0) {
-      final Rect spanRect = Rect.fromLTRB(0, topY - radius, size.width, bottomY + radius);
-      final RRect spanRRect = RRect.fromRectAndRadius(spanRect, Radius.circular(radius));
+      final Rect spanRect = Rect.fromLTRB(
+        0,
+        topY - radius,
+        size.width,
+        bottomY + radius,
+      );
+      final RRect spanRRect = RRect.fromRectAndRadius(
+        spanRect,
+        Radius.circular(radius),
+      );
 
       final Paint spanPaint = Paint()
         ..color = color.withAlpha(90)
@@ -160,7 +179,11 @@ class HlcCapsulePainter extends CustomPainter {
         ..color = color
         ..style = PaintingStyle.fill;
 
-      canvas.drawCircle(Offset(size.width / 2, yCurrent), radius * 0.7, dotPaint);
+      canvas.drawCircle(
+        Offset(size.width / 2, yCurrent),
+        radius * 0.7,
+        dotPaint,
+      );
     }
   }
 
@@ -247,19 +270,24 @@ class HlcOutlierOverlay extends StatelessWidget {
 }
 
 class HlcRippleEffect extends StatefulWidget {
-  const HlcRippleEffect({super.key});
+  final Color? color;
+  const HlcRippleEffect({super.key, this.color});
 
   @override
   HlcRippleEffectState createState() => HlcRippleEffectState();
 }
 
-class HlcRippleEffectState extends State<HlcRippleEffect> with SingleTickerProviderStateMixin {
+class HlcRippleEffectState extends State<HlcRippleEffect>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 2000))..repeat();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat();
   }
 
   @override
@@ -284,7 +312,8 @@ class HlcRippleEffectState extends State<HlcRippleEffect> with SingleTickerProvi
           height: currentSize,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Theme.of(context).colorScheme.error.withValues(alpha: 0.5 * opacity),
+            color: (widget.color ?? Theme.of(context).colorScheme.error)
+                .withValues(alpha: 0.5 * opacity),
           ),
         );
       },
