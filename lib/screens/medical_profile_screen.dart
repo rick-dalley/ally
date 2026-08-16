@@ -7,7 +7,6 @@ import 'package:triage/screens/body_screen.dart';
 import 'package:triage/screens/eye_care_screen.dart';
 import 'package:triage/screens/reports_hub_screen.dart';
 import 'package:triage/screens/physical_health.dart';
-import 'package:triage/screens/prescription_screen.dart';
 import 'package:triage/screens/questionnaires_screen.dart';
 import 'package:triage/screens/supplies_screen.dart';
 import 'package:triage/screens/tests_screen.dart';
@@ -204,28 +203,6 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     onTap: () => launchPatientDiaryScreen(patient: widget.user),
                   ),
                   CarbonActionTile(
-                    title: "Immunizations",
-                    subtitle: "Immunization shots recommended in my locality",
-                    // Not vaccines_sharp — confirmed blank on Android release builds
-                    // (the glyph is present in the tree-shaken font subset at the
-                    // right codepoint, but doesn't paint) even though every other
-                    // "_sharp" icon on this same screen renders fine.
-                    icon: Symbols.vaccines,
-                    iconSize: Size(32.0, 32.0),
-                    outlineIcon: Symbols.vaccines,
-                    iconColor: AppDomain.immunizations.color,
-                    onTap: () => _launchImmunizationModal(context, widget.user),
-                  ),
-                  CarbonActionTile(
-                    title: "Prescriptions",
-                    subtitle: "Medications that have been prescribed for you",
-                    icon: Symbols.medication_sharp,
-                    iconSize: Size(32.0, 32.0),
-                    outlineIcon: Symbols.medication_sharp,
-                    iconColor: AppDomain.prescriptions.color,
-                    onTap: () => launchMedicationScreen(patient: widget.user),
-                  ),
-                  CarbonActionTile(
                     title: "Symptoms",
                     subtitle: "Things I'm feeling",
                     icon: Symbols.symptoms,
@@ -293,6 +270,23 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     onTap: () =>
                         launchQuestionnairesScreen(patient: widget.user),
                   ),
+                  // Deliberately last, not up near the top with the rest of the
+                  // clinical tiles — vaccines are a subject some people have strong
+                  // feelings about, and this list is scanned top-to-bottom on every
+                  // visit to this screen.
+                  CarbonActionTile(
+                    title: "Immunizations",
+                    subtitle: "Immunization shots recommended in my locality",
+                    // Not vaccines_sharp — confirmed blank on Android release builds
+                    // (the glyph is present in the tree-shaken font subset at the
+                    // right codepoint, but doesn't paint) even though every other
+                    // "_sharp" icon on this same screen renders fine.
+                    icon: Symbols.vaccines,
+                    iconSize: Size(32.0, 32.0),
+                    outlineIcon: Symbols.vaccines,
+                    iconColor: AppDomain.immunizations.color,
+                    onTap: () => _launchImmunizationModal(context, widget.user),
+                  ),
                 ],
               ),
             ),
@@ -300,47 +294,6 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
         ),
       ),
     );
-  }
-
-  void launchMedicationScreen({required Patient patient}) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true, // Allows the sheet to take full height
-      useSafeArea: true, // Respects the device notch and safe areas
-      backgroundColor: AppTheme.surfaceColor,
-      // Set to zero for the strict, sharp-cornered Carbon aesthetic
-      shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
-      builder: (context) {
-        return Column(
-          children: [
-            // Header: Consistent with your other Carbon-style modals
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8.0,
-                vertical: 8.0,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    icon: const Icon(
-                      Symbols.close,
-                      color: Colors.grey,
-                      size: 28,
-                    ),
-                    onPressed: () => Navigator.pop(context, false),
-                  ),
-                ],
-              ),
-            ),
-
-            // Content: Expanded to fill the remaining vertical space
-            Expanded(child: PrescriptionScreen(patient: patient)),
-          ],
-        );
-      },
-    );
-    //
   }
 
   void launchSymptoms({required Patient patient}) {
