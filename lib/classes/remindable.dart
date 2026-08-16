@@ -397,10 +397,12 @@ class ImmunizationReminder implements Remindable {
   String get title => 'Immunization due: $vaccineName';
   @override
   String get subtitle => 'Due ${_formatWhen(dueDate)}';
-  // Same icon as the Immunizations action tile (medical_profile_screen.dart) — the
-  // exact "_sharp" variant, not the plain one, to match it precisely.
+  // Same icon as the Immunizations action tile (medical_profile_screen.dart). Plain
+  // (Outlined) variant, not "_sharp" — the Sharp glyph for this icon renders as a blank
+  // space on Android release builds despite the font subset containing the codepoint;
+  // every other tile on that screen already uses a non-"_sharp" icon successfully.
   @override
-  IconData get icon => Symbols.vaccines_sharp;
+  IconData get icon => Symbols.vaccines;
   @override
   Color get color => AppDomain.immunizations.color;
   @override

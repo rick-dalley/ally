@@ -54,7 +54,10 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
     }
     // First time this patient has ever opened this screen — seed a real starting
     // row at calm rather than just holding an unsaved default in memory.
-    await DatabaseManager().trackMoodChange(widget.user.patientUuid, Sentiment.calm.index);
+    await DatabaseManager().trackMoodChange(
+      widget.user.patientUuid,
+      Sentiment.calm.index,
+    );
   }
 
   Future<void> _askMoodReason() async {
@@ -69,11 +72,22 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Why do you feel ${sentiment.label.toLowerCase()}?", style: CarbonTheme.carbonHeadingTextStyle),
+              Text(
+                "Why do you feel ${sentiment.label.toLowerCase()}?",
+                style: CarbonTheme.carbonHeadingTextStyle,
+              ),
               const SizedBox(height: 8),
-              Text("Totally optional — only saved if you write something.", style: CarbonTheme.carbonHintTextStyle),
+              Text(
+                "Totally optional — only saved if you write something.",
+                style: CarbonTheme.carbonHintTextStyle,
+              ),
               const SizedBox(height: 16),
-              CarbonTextInput(label: "Reason (optional)", controller: controller, maxLines: 3, onChanged: (_) {}),
+              CarbonTextInput(
+                label: "Reason (optional)",
+                controller: controller,
+                maxLines: 3,
+                onChanged: (_) {},
+              ),
               const SizedBox(height: 16),
               CarbonCompactButton(
                 icon: Symbols.check,
@@ -94,7 +108,10 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
       ),
     );
     if (reason != null && reason.trim().isNotEmpty) {
-      await DatabaseManager().setMoodReason(widget.user.patientUuid, reason.trim());
+      await DatabaseManager().setMoodReason(
+        widget.user.patientUuid,
+        reason.trim(),
+      );
     }
   }
 
@@ -123,10 +140,14 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                 children: [
                   Container(
                     // color: AppTheme.surfaceColor,
-                    decoration: BoxDecoration(color: AppTheme.onPrimaryColor, borderRadius: BorderRadius.zero),
+                    decoration: BoxDecoration(
+                      color: AppTheme.onPrimaryColor,
+                      borderRadius: BorderRadius.zero,
+                    ),
                     // padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
                     child: Stack(
-                      clipBehavior: Clip.none, // Allows the widget to draw outside its bounds
+                      clipBehavior: Clip
+                          .none, // Allows the widget to draw outside its bounds
                       alignment: Alignment.centerRight,
                       children: [
                         Row(children: [SizedBox(height: 64)]),
@@ -148,7 +169,10 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                               setState(() {
                                 Sentiment newSentiment = item as Sentiment;
                                 sentiment = newSentiment;
-                                DatabaseManager().trackMoodChange(widget.user.patientUuid, sentiment.index);
+                                DatabaseManager().trackMoodChange(
+                                  widget.user.patientUuid,
+                                  sentiment.index,
+                                );
                               });
                             },
                             selectedItem: sentiment.index,
@@ -165,7 +189,10 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.diagnosis_sharp,
                     iconColor: AppDomain.conditions.color,
-                    onTap: () => _launchPhysicalHealthChecklist(context, widget.user.patientUuid),
+                    onTap: () => _launchPhysicalHealthChecklist(
+                      context,
+                      widget.user.patientUuid,
+                    ),
                   ),
                   CarbonActionTile(
                     title: "Medical Diary",
@@ -179,9 +206,13 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                   CarbonActionTile(
                     title: "Immunizations",
                     subtitle: "Immunization shots recommended in my locality",
-                    icon: Symbols.vaccines_sharp,
+                    // Not vaccines_sharp — confirmed blank on Android release builds
+                    // (the glyph is present in the tree-shaken font subset at the
+                    // right codepoint, but doesn't paint) even though every other
+                    // "_sharp" icon on this same screen renders fine.
+                    icon: Symbols.vaccines,
                     iconSize: Size(32.0, 32.0),
-                    outlineIcon: Symbols.vaccines_sharp,
+                    outlineIcon: Symbols.vaccines,
                     iconColor: AppDomain.immunizations.color,
                     onTap: () => _launchImmunizationModal(context, widget.user),
                   ),
@@ -227,7 +258,10 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.allergy,
                     iconColor: AppDomain.allergies.color,
-                    onTap: () => _launchAllergiesChecklist(context, widget.user.patientUuid),
+                    onTap: () => _launchAllergiesChecklist(
+                      context,
+                      widget.user.patientUuid,
+                    ),
                   ),
                   CarbonActionTile(
                     title: "Eye Care",
@@ -240,7 +274,8 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                   ),
                   CarbonActionTile(
                     title: "Supplies",
-                    subtitle: "Needles, swabs, test strips, and other consumables",
+                    subtitle:
+                        "Needles, swabs, test strips, and other consumables",
                     icon: Symbols.inventory_2,
                     iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.inventory_2,
@@ -249,12 +284,14 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                   ),
                   CarbonActionTile(
                     title: "Mental Wellness Questionnaires",
-                    subtitle: "Questionnaires to help your care giver assess your current mental health",
+                    subtitle:
+                        "Questionnaires to help your care giver assess your current mental health",
                     icon: Symbols.ballot_sharp,
                     iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.ballot_sharp,
                     iconColor: AppDomain.questionnaires.color,
-                    onTap: () => launchQuestionnairesScreen(patient: widget.user),
+                    onTap: () =>
+                        launchQuestionnairesScreen(patient: widget.user),
                   ),
                 ],
               ),
@@ -278,12 +315,19 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
           children: [
             // Header: Consistent with your other Carbon-style modals
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 8.0,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   IconButton(
-                    icon: const Icon(Symbols.close, color: Colors.grey, size: 28),
+                    icon: const Icon(
+                      Symbols.close,
+                      color: Colors.grey,
+                      size: 28,
+                    ),
                     onPressed: () => Navigator.pop(context, false),
                   ),
                 ],
@@ -325,12 +369,19 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
           children: [
             // Header: Consistent with your other Carbon-style modals
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 8.0,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   IconButton(
-                    icon: const Icon(Symbols.close, color: Colors.grey, size: 28),
+                    icon: const Icon(
+                      Symbols.close,
+                      color: Colors.grey,
+                      size: 28,
+                    ),
                     onPressed: () => Navigator.pop(context, false),
                   ),
                 ],
@@ -358,12 +409,19 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
           children: [
             // Header: Consistent with your other Carbon-style modals
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 8.0,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   IconButton(
-                    icon: const Icon(Symbols.close, color: Colors.grey, size: 28),
+                    icon: const Icon(
+                      Symbols.close,
+                      color: Colors.grey,
+                      size: 28,
+                    ),
                     onPressed: () => Navigator.pop(context, false),
                   ),
                 ],
@@ -392,12 +450,19 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
           children: [
             // Header: Consistent with your other Carbon-style modals
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 8.0,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   IconButton(
-                    icon: const Icon(Symbols.close, color: Colors.grey, size: 28),
+                    icon: const Icon(
+                      Symbols.close,
+                      color: Colors.grey,
+                      size: 28,
+                    ),
                     onPressed: () => Navigator.pop(context, false),
                   ),
                 ],
@@ -425,12 +490,19 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
           children: [
             // Header: Consistent with your other Carbon-style modals
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 8.0,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   IconButton(
-                    icon: const Icon(Symbols.close, color: Colors.grey, size: 28),
+                    icon: const Icon(
+                      Symbols.close,
+                      color: Colors.grey,
+                      size: 28,
+                    ),
                     onPressed: () => Navigator.pop(context, false),
                   ),
                 ],
@@ -458,12 +530,19 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
           children: [
             // Header: Consistent with your other Carbon-style modals
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 8.0,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   IconButton(
-                    icon: const Icon(Symbols.close, color: Colors.grey, size: 28),
+                    icon: const Icon(
+                      Symbols.close,
+                      color: Colors.grey,
+                      size: 28,
+                    ),
                     onPressed: () => Navigator.pop(context, false),
                   ),
                 ],
@@ -491,12 +570,19 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
           children: [
             // Header: Consistent with your other Carbon-style modals
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 8.0,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   IconButton(
-                    icon: const Icon(Symbols.close, color: Colors.grey, size: 28),
+                    icon: const Icon(
+                      Symbols.close,
+                      color: Colors.grey,
+                      size: 28,
+                    ),
                     onPressed: () => Navigator.pop(context, false),
                   ),
                 ],
@@ -511,7 +597,10 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
     );
   }
 
-  Future<void> _launchAllergiesChecklist(BuildContext context, String patientUuid) async {
+  Future<void> _launchAllergiesChecklist(
+    BuildContext context,
+    String patientUuid,
+  ) async {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true, // Allows the sheet to take full height
@@ -524,12 +613,19 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
           children: [
             // Header: Consistent with your other Carbon-style modals
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 8.0,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   IconButton(
-                    icon: const Icon(Symbols.close, color: Colors.grey, size: 28),
+                    icon: const Icon(
+                      Symbols.close,
+                      color: Colors.grey,
+                      size: 28,
+                    ),
                     onPressed: () => Navigator.pop(context, false),
                   ),
                 ],
@@ -537,14 +633,22 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
             ),
 
             // Content: Expanded to fill the remaining vertical space
-            Expanded(child: AllergiesScreen(patientUuid: patientUuid, scrollController: ScrollController())),
+            Expanded(
+              child: AllergiesScreen(
+                patientUuid: patientUuid,
+                scrollController: ScrollController(),
+              ),
+            ),
           ],
         );
       },
     );
   }
 
-  Future<void> _launchPhysicalHealthChecklist(BuildContext context, String patientUuid) async {
+  Future<void> _launchPhysicalHealthChecklist(
+    BuildContext context,
+    String patientUuid,
+  ) async {
     final result = await showModalBottomSheet(
       context: context,
       isScrollControlled: true, // Allows the sheet to take full height
@@ -557,12 +661,19 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
           children: [
             // Header: Consistent with your other Carbon-style modals
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 8.0,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   IconButton(
-                    icon: const Icon(Symbols.close, color: Colors.grey, size: 28),
+                    icon: const Icon(
+                      Symbols.close,
+                      color: Colors.grey,
+                      size: 28,
+                    ),
                     onPressed: () => Navigator.pop(context, false),
                   ),
                 ],
@@ -588,7 +699,6 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
       });
     }
   }
-
 
   void _launchImmunizationModal(BuildContext context, Patient householdMember) {
     showModalBottomSheet(
@@ -621,13 +731,20 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                       Container(
                         width: 40,
                         height: 4,
-                        decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                       // nified Top-Right Dismiss Button
                       Align(
                         alignment: Alignment.centerRight,
                         child: IconButton(
-                          icon: const Icon(Icons.close, color: Colors.grey, size: 22),
+                          icon: const Icon(
+                            Icons.close,
+                            color: Colors.grey,
+                            size: 22,
+                          ),
                           onPressed: () => Navigator.pop(context, false),
                         ),
                       ),

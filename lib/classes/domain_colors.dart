@@ -63,7 +63,9 @@ enum AppDomain {
       case AppDomain.diary:
         return Symbols.clinical_notes_sharp;
       case AppDomain.immunizations:
-        return Symbols.vaccines_sharp;
+        // Not vaccines_sharp — that glyph renders blank on Android release builds
+        // despite being present in the tree-shaken font subset.
+        return Symbols.vaccines;
       case AppDomain.prescriptions:
         return Symbols.medication_sharp;
       case AppDomain.symptoms:
