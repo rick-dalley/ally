@@ -358,32 +358,42 @@ class UserScreenState extends State<UserScreen> {
                             children: [
                               Row(
                                 children: [
-                                  CarbonStyle2xlButton(
-                                    topLabel: "Blood Type",
-                                    label: bloodType.label,
-                                    width: 184,
-                                    style: CarbonButtonStyle.tertiary,
-                                    onTap: () {
-                                      showBloodTypModal(
-                                        context: context,
-                                        patient: patient,
-                                      );
-                                    },
-                                    icon: Symbols.bloodtype,
+                                  // Expanded, not a fixed width: 184 — two
+                                  // fixed-width cards plus a Spacer() don't
+                                  // reliably fit narrower phone widths (this
+                                  // was overflowing on-device). 184 stays as
+                                  // the widget's ideal/preferred width but
+                                  // gets compressed to fit here instead.
+                                  Expanded(
+                                    child: CarbonStyle2xlButton(
+                                      topLabel: "Blood Type",
+                                      label: bloodType.label,
+                                      width: 184,
+                                      style: CarbonButtonStyle.tertiary,
+                                      onTap: () {
+                                        showBloodTypModal(
+                                          context: context,
+                                          patient: patient,
+                                        );
+                                      },
+                                      icon: Symbols.bloodtype,
+                                    ),
                                   ),
-                                  Spacer(),
-                                  CarbonStyle2xlButton(
-                                    topLabel: "Body Mass Index",
-                                    label: bmiLabel,
-                                    width: 184,
-                                    style: CarbonButtonStyle.tertiary,
-                                    onTap: () {
-                                      showMetricsEntryDialog(
-                                        context: context,
-                                        user: widget.user,
-                                      );
-                                    },
-                                    icon: Symbols.body_fat,
+                                  SizedBox(width: CarbonSpacing.medium.width),
+                                  Expanded(
+                                    child: CarbonStyle2xlButton(
+                                      topLabel: "Body Mass Index",
+                                      label: bmiLabel,
+                                      width: 184,
+                                      style: CarbonButtonStyle.tertiary,
+                                      onTap: () {
+                                        showMetricsEntryDialog(
+                                          context: context,
+                                          user: widget.user,
+                                        );
+                                      },
+                                      icon: Symbols.body_fat,
+                                    ),
                                   ),
                                 ],
                               ),

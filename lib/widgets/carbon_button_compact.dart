@@ -46,20 +46,40 @@ class CarbonCompactButtonState extends State<CarbonCompactButton> {
       child: OutlinedButton(
         onPressed: widget.onTap,
         style: OutlinedButton.styleFrom(
-          minimumSize: const Size(0, 56),
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
+          minimumSize: Size(0, widget.height ?? CarbonButtons.small.height),
+          padding: EdgeInsets.symmetric(
+            vertical: CarbonButtons.small.verticalPadding,
+            horizontal: CarbonSpacing.narrow.width,
+          ),
           foregroundColor: fontColor,
           side: BorderSide(color: borderColor, width: 1),
           backgroundColor: buttonColor,
           shape: ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
         ),
-        child: Column(
+        // Carbon requires icon and label on the same row, icon trailing the
+        // text — never stacked. Stacking them (the previous layout) is what
+        // forced the font down to 12px and the icon down to a cramped,
+        // made-up size just to fit; sized from the same CarbonButtons/
+        // CarbonIcons/CarbonSpacing token scale the rest of the button
+        // family already uses.
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(widget.icon, size: 22), // Slightly larger icon
-            const SizedBox(height: 4),
-            Text(widget.label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400), maxLines: 1),
+            Flexible(
+              child: Text(
+                widget.label,
+                style: TextStyle(
+                  fontSize: CarbonButtons.extraSmall.fontSize,
+                  fontWeight: FontWeight.w400,
+                  color: fontColor,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            SizedBox(width: CarbonSpacing.narrow.width),
+            Icon(widget.icon, size: CarbonIcons.small.size.width, color: fontColor),
           ],
         ),
       ),
