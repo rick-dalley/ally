@@ -17,7 +17,7 @@ import 'data_seeder.dart';
 import 'medication_services.dart';
 import 'metric_value.dart';
 
-bool overWrite = false;
+bool overWrite = true;
 
 class DatabaseManager {
   // Singleton pattern

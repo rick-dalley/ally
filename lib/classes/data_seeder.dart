@@ -30,7 +30,9 @@ class DataSeeder {
   }
 
   static Future<void> _seedInteractions(Database db) async {
-    final rawData = await rootBundle.loadString('assets/interactions/db_drug_interactions.csv');
+    final rawData = await rootBundle.loadString(
+      'assets/interactions/db_drug_interactions.csv',
+    );
 
     //Parse the CSV (assumes first row is header)
     List<List<dynamic>> rows = const CsvToListConverter(
@@ -39,26 +41,41 @@ class DataSeeder {
       shouldParseNumbers: false,
     ).convert(rawData);
 
-    //Batch insert using a transaction
+    // This CSV has 190k+ rows. Individually awaiting txn.insert() per row meant one
+    // platform-channel round trip per row — 190k of them, which is what actually made
+    // a fresh install/seed take minutes on a slower device. Batch.insert() queues the
+    // statement locally (no await, no round trip) and commit() sends a whole chunk in
+    // one channel call; noResult:true skips building per-statement results nobody
+    // reads. Chunked rather than one giant 190k-statement batch, so a single channel
+    // message doesn't balloon in size.
+    const int chunkSize = 2000;
     await db.transaction((txn) async {
       // Skip the header row (index 0)
-      for (int i = 1; i < rows.length; i++) {
-        var row = rows[i];
-        await txn.insert('interaction', {
-          // 'id': row[0].toString(),
-          // 'rx_norm_id': '',
-          'name_a': row[0].toString(),
-          'name_b': row[1].toString(),
-          'explanation': row[2].toString(),
-          // 'local_datasheet_id': row[5].toString(),
-        }, conflictAlgorithm: ConflictAlgorithm.replace);
+      for (
+        int chunkStart = 1;
+        chunkStart < rows.length;
+        chunkStart += chunkSize
+      ) {
+        final int chunkEnd = (chunkStart + chunkSize).clamp(0, rows.length);
+        final Batch batch = txn.batch();
+        for (int i = chunkStart; i < chunkEnd; i++) {
+          var row = rows[i];
+          batch.insert('interaction', {
+            'name_a': row[0].toString(),
+            'name_b': row[1].toString(),
+            'explanation': row[2].toString(),
+          }, conflictAlgorithm: ConflictAlgorithm.replace);
+        }
+        await batch.commit(noResult: true);
       }
     });
   }
 
   static Future<void> _seedProviders(Database db) async {
     // 1. Verify if the master table has already been populated
-    final List<Map<String, dynamic>> existingRecords = await db.rawQuery("SELECT COUNT(*) as total FROM provider");
+    final List<Map<String, dynamic>> existingRecords = await db.rawQuery(
+      "SELECT COUNT(*) as total FROM provider",
+    );
 
     if (existingRecords.first['total'] as int > 0) {
       return; // Catalog is already successfully configured!
@@ -66,7 +83,9 @@ class DataSeeder {
 
     try {
       // 2. Read raw condition data groups from json asset bundle
-      final String jsonString = await rootBundle.loadString('assets/providers/providers.json');
+      final String jsonString = await rootBundle.loadString(
+        'assets/providers/providers.json',
+      );
       final List<dynamic> data = jsonDecode(jsonString);
 
       Batch batch = db.batch();
@@ -103,16 +122,23 @@ class DataSeeder {
 
   static Future<void> _seedMetricsAndUnits(Database db) async {
     // 1. Verify if the master tables have already been populated
-    final List<Map<String, dynamic>> existingMetrics = await db.rawQuery("SELECT COUNT(*) as total FROM metric");
-    final List<Map<String, dynamic>> existingUnits = await db.rawQuery("SELECT COUNT(*) as total FROM unit_of_measure");
+    final List<Map<String, dynamic>> existingMetrics = await db.rawQuery(
+      "SELECT COUNT(*) as total FROM metric",
+    );
+    final List<Map<String, dynamic>> existingUnits = await db.rawQuery(
+      "SELECT COUNT(*) as total FROM unit_of_measure",
+    );
 
-    if ((existingMetrics.first['total'] as int > 0) || (existingUnits.first['total'] as int > 0)) {
+    if ((existingMetrics.first['total'] as int > 0) ||
+        (existingUnits.first['total'] as int > 0)) {
       return; // Catalogs are already successfully configured!
     }
 
     try {
       // 2. Read raw metrics data groups from json asset bundle
-      final String jsonString = await rootBundle.loadString('assets/metrics/metrics.json');
+      final String jsonString = await rootBundle.loadString(
+        'assets/metrics/metrics.json',
+      );
       final Map<String, dynamic> rootData = jsonDecode(jsonString);
       final List<dynamic> categories = rootData['categories'] ?? [];
 
@@ -135,7 +161,9 @@ class DataSeeder {
           metricBatch.insert('metric', {
             'id': metric['id'],
             'name': metric['name'],
-            'symbol': metric['units_of_measure'] != null && metric['units_of_measure'].isNotEmpty
+            'symbol':
+                metric['units_of_measure'] != null &&
+                    metric['units_of_measure'].isNotEmpty
                 ? metric['units_of_measure'][0]['symbol']
                 : '',
             'category': categoryName,
@@ -190,7 +218,9 @@ class DataSeeder {
 
   static Future<void> _seedConditionsCatalog(Database db) async {
     // 1. Verify if the master table has already been populated
-    final List<Map<String, dynamic>> existingRecords = await db.rawQuery("SELECT COUNT(*) as total FROM condition");
+    final List<Map<String, dynamic>> existingRecords = await db.rawQuery(
+      "SELECT COUNT(*) as total FROM condition",
+    );
 
     if (existingRecords.first['total'] as int > 0) {
       return; // Catalog is already successfully configured!
@@ -198,7 +228,9 @@ class DataSeeder {
 
     try {
       // 2. Read raw condition data groups from json asset bundle
-      final String jsonString = await rootBundle.loadString('assets/conditions/conditions.json');
+      final String jsonString = await rootBundle.loadString(
+        'assets/conditions/conditions.json',
+      );
       final Map<String, dynamic> parsedJson = jsonDecode(jsonString);
 
       // 3. Open an atomic batch block for high-performance writing
@@ -229,13 +261,17 @@ class DataSeeder {
   // allergens: [{name, description}]} objects — different from conditions.json's
   // {categoryKey: [...]} map shape, so this doesn't reuse _seedConditionsCatalog's loop.
   static Future<void> _seedAllergensCatalog(Database db) async {
-    final List<Map<String, dynamic>> existingRecords = await db.rawQuery("SELECT COUNT(*) as total FROM allergen");
+    final List<Map<String, dynamic>> existingRecords = await db.rawQuery(
+      "SELECT COUNT(*) as total FROM allergen",
+    );
     if (existingRecords.first['total'] as int > 0) {
       return; // Catalog is already successfully configured!
     }
 
     try {
-      final String jsonString = await rootBundle.loadString('assets/conditions/allergies.json');
+      final String jsonString = await rootBundle.loadString(
+        'assets/conditions/allergies.json',
+      );
       final List<dynamic> parsedJson = jsonDecode(jsonString);
 
       final Batch migrationBatch = db.batch();
@@ -287,13 +323,17 @@ class DataSeeder {
   // after _seedConditionsCatalog so `condition` rows already have real ids to link
   // against.
   static Future<void> _seedSuppliesCatalog(Database db) async {
-    final List<Map<String, dynamic>> existingRecords = await db.rawQuery("SELECT COUNT(*) as total FROM supply");
+    final List<Map<String, dynamic>> existingRecords = await db.rawQuery(
+      "SELECT COUNT(*) as total FROM supply",
+    );
     if (existingRecords.first['total'] as int > 0) {
       return; // Catalog is already successfully configured!
     }
 
     try {
-      final String jsonString = await rootBundle.loadString('assets/conditions/conditions.json');
+      final String jsonString = await rootBundle.loadString(
+        'assets/conditions/conditions.json',
+      );
       final Map<String, dynamic> parsedJson = jsonDecode(jsonString);
 
       final Batch supplyBatch = db.batch();
@@ -325,9 +365,12 @@ class DataSeeder {
       final Map<String, int> supplyIdByName = {
         for (final row in supplyRows) row['name'] as String: row['id'] as int,
       };
-      final List<Map<String, dynamic>> conditionRows = await db.query('condition');
+      final List<Map<String, dynamic>> conditionRows = await db.query(
+        'condition',
+      );
       final Map<String, int> conditionIdByName = {
-        for (final row in conditionRows) row['name'] as String: row['id'] as int,
+        for (final row in conditionRows)
+          row['name'] as String: row['id'] as int,
       };
 
       final Batch joinBatch = db.batch();
@@ -361,13 +404,17 @@ class DataSeeder {
   // system this catalog doesn't have. Not an attempt to cover every possible medical
   // test, just a common list to pick from, same spirit as _seedConditionsCatalog.
   static Future<void> _seedTestCatalog(Database db) async {
-    final List<Map<String, dynamic>> existingRecords = await db.rawQuery("SELECT COUNT(*) as total FROM test_catalog");
+    final List<Map<String, dynamic>> existingRecords = await db.rawQuery(
+      "SELECT COUNT(*) as total FROM test_catalog",
+    );
     if (existingRecords.first['total'] as int > 0) {
       return; // Catalog is already successfully configured!
     }
 
     try {
-      final String jsonString = await rootBundle.loadString('assets/tests/tests.json');
+      final String jsonString = await rootBundle.loadString(
+        'assets/tests/tests.json',
+      );
       final List<dynamic> data = jsonDecode(jsonString);
 
       final Batch batch = db.batch();
@@ -385,7 +432,9 @@ class DataSeeder {
   }
 
   static Future<void> _seedObservations(Database db) async {
-    final String response = await rootBundle.loadString('assets/observations/observations.json');
+    final String response = await rootBundle.loadString(
+      'assets/observations/observations.json',
+    );
     final List<dynamic> data = json.decode(response);
 
     Batch batch = db.batch();
@@ -413,7 +462,9 @@ class DataSeeder {
   static Future<void> _seedPatientData(Database db) async {
     // Parse the master JSON array
     // 1. Read the raw data directly from your local asset storage
-    final String rawJsonString = await rootBundle.loadString('assets/patients/patients.json');
+    final String rawJsonString = await rootBundle.loadString(
+      'assets/patients/patients.json',
+    );
     final List<dynamic> decodedData = jsonDecode(rawJsonString);
 
     // Use a batch transaction block for optimal safety and insert velocity
@@ -426,7 +477,8 @@ class DataSeeder {
         // 1. Build the clean Patient record map for insertion
         // We explicitly pull the top-level keys matching your core schema
         final Map<String, dynamic> patientRow = {
-          'patient_uuid': patientUuid, // maps patient_uuid to local primary key id
+          'patient_uuid':
+              patientUuid, // maps patient_uuid to local primary key id
           'first_name': item['first_name'],
           'last_name': item['last_name'],
           'acuity': item['acuity'],
@@ -458,7 +510,11 @@ class DataSeeder {
         };
 
         // Write parent row down first to satisfy foreign key constraints
-        await txn.insert('patient', patientRow, conflictAlgorithm: ConflictAlgorithm.replace);
+        await txn.insert(
+          'patient',
+          patientRow,
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
 
         // Extract and Seed the Nested Medications ('prescription' array)
         if (item['prescription'] != null && item['prescription'] is List) {
@@ -467,18 +523,23 @@ class DataSeeder {
             // Clean out the ghost formula string error gracefully on insert
             String frequency = med['freq'] ?? 'PRN';
             if (frequency.contains('Syntax error')) {
-              frequency = 'PRN'; // Default fallback until the UI toggle is saved
+              frequency =
+                  'PRN'; // Default fallback until the UI toggle is saved
             }
 
             final String medicationId = '${patientUuid}_med_${med['id']}';
             final int medIndex = (med['id'] as num?)?.toInt() ?? 1;
 
             // Stagger start dates so medications don't all appear to begin the same day.
-            final DateTime startedTaking = DateTime.now().subtract(Duration(days: 5 + (medIndex * 11)));
+            final DateTime startedTaking = DateTime.now().subtract(
+              Duration(days: 5 + (medIndex * 11)),
+            );
             // One medication per patient is seeded as a completed/discontinued course,
             // so the timeline and history views have something other than "currently active" to show.
             final bool discontinued = medIndex == 2;
-            final DateTime? stoppedTaking = discontinued ? startedTaking.add(const Duration(days: 30)) : null;
+            final DateTime? stoppedTaking = discontinued
+                ? startedTaking.add(const Duration(days: 30))
+                : null;
 
             await txn.insert('medication', {
               'id': medicationId, // Unique compound string key
@@ -499,7 +560,9 @@ class DataSeeder {
             if (!discontinued) {
               // The hero demo patient's BP combo (med id 3) gets a deliberate recent
               // adherence decline, to demo the "declining adherence" story end to end.
-              final bool simulateDecline = patientUuid == '02039325-2425-4bf3-bf85-1ec81a797e25' && medIndex == 3;
+              final bool simulateDecline =
+                  patientUuid == '02039325-2425-4bf3-bf85-1ec81a797e25' &&
+                  medIndex == 3;
               await _seedMedicationDoseLog(
                 txn,
                 medicationId: medicationId,
@@ -511,7 +574,6 @@ class DataSeeder {
             }
           }
         }
-
       }
     });
   }
@@ -535,17 +597,29 @@ class DataSeeder {
 
     final DateTime today = DateTime.now();
     final DateTime windowStart = today.subtract(const Duration(days: 7));
-    final DateTime effectiveStart = startedTaking.isAfter(windowStart) ? startedTaking : windowStart;
+    final DateTime effectiveStart = startedTaking.isAfter(windowStart)
+        ? startedTaking
+        : windowStart;
 
     // Seeded per-medication so re-running the seeder produces the same demo history.
     final Random rng = Random(medicationId.hashCode);
 
-    for (DateTime day = effectiveStart; day.isBefore(today); day = day.add(const Duration(days: 1))) {
+    for (
+      DateTime day = effectiveStart;
+      day.isBefore(today);
+      day = day.add(const Duration(days: 1))
+    ) {
       final int daysAgo = today.difference(day).inDays;
 
       for (final String time in doseTimes) {
         final List<String> parts = time.split(':');
-        final DateTime scheduledFor = DateTime(day.year, day.month, day.day, int.parse(parts[0]), int.parse(parts[1]));
+        final DateTime scheduledFor = DateTime(
+          day.year,
+          day.month,
+          day.day,
+          int.parse(parts[0]),
+          int.parse(parts[1]),
+        );
 
         final String status;
         if (simulateDecline && daysAgo <= 3) {
@@ -561,7 +635,9 @@ class DataSeeder {
           'patient_uuid': patientUuid,
           'scheduled_for': scheduledFor.toIso8601String(),
           'status': status,
-          'responded_at': status == 'taken' ? scheduledFor.add(const Duration(minutes: 5)).toIso8601String() : null,
+          'responded_at': status == 'taken'
+              ? scheduledFor.add(const Duration(minutes: 5)).toIso8601String()
+              : null,
         }, conflictAlgorithm: ConflictAlgorithm.replace);
       }
     }
