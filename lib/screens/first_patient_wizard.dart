@@ -6,25 +6,37 @@ import '../app_theme.dart';
 import '../classes/blood_type.dart';
 import '../classes/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
+import '../classes/family_relation.dart';
 import '../classes/listable.dart';
 import '../widgets/blood_type_selector.dart';
 import '../widgets/body_metrics_entry_widget.dart';
 import '../widgets/carbon_button_compact.dart';
+import '../widgets/carbon_style_autocomplete.dart';
 import '../widgets/carbon_style_button.dart';
 import '../widgets/carbon_style_textbox.dart';
 
-// The very first thing a real (non-demo) install shows. With zero patients in the
-// roster every other screen has nothing to work with — see the "is my app bloated"
-// investigation that surfaced this: DataSeeder is gated behind kDebugMode, so a real
-// release build boots to a permanently blank roster with no way in. One small ask per
-// page rather than the dense UserScreen this is deliberately avoiding replicating; name
-// and date of birth are the only required step (matching AddPatientScreen's existing
-// "quick add a family member" bar), everything else is skippable and can always be
-// filled in later from UserScreen itself.
+// Two entry points share this one wizard. (1) The very first thing a real (non-demo)
+// install shows — with zero patients in the roster every other screen has nothing to
+// work with (DataSeeder is gated behind kDebugMode, so a real release build boots to a
+// permanently blank roster with no way in) — that flow shows the welcome step and calls
+// onPatientCreated in place, no navigation involved. (2) Adding another family member
+// to an existing roster (from the top-corner avatar's long-press wheel, or the "Add
+// Family Member" button on UserScreen) — that flow is always pushed as a route, skips
+// the welcome step in favor of an upfront "how are they related to you" step, and pops
+// itself with the new patient's uuid instead of calling onPatientCreated, so the caller
+// can jump straight to the new profile. One small ask per page rather than the dense
+// UserScreen this is deliberately avoiding replicating; name and date of birth are the
+// only required step, everything else is skippable and can always be filled in later
+// from UserScreen itself.
 class FirstPatientWizard extends StatefulWidget {
-  final VoidCallback onPatientCreated;
+  final VoidCallback? onPatientCreated;
+  final bool addingFamilyMember;
 
-  const FirstPatientWizard({super.key, required this.onPatientCreated});
+  const FirstPatientWizard({
+    super.key,
+    this.onPatientCreated,
+    this.addingFamilyMember = false,
+  });
 
   @override
   State<FirstPatientWizard> createState() => _FirstPatientWizardState();
@@ -43,6 +55,7 @@ class _FirstPatientWizardState extends State<FirstPatientWizard> {
   final TextEditingController _provinceController = TextEditingController();
   final TextEditingController _postalCodeController = TextEditingController();
 
+  String _relation = '';
   DateTime? _dob;
   AboType _abo = AboType.o;
   RhFactor _rh = RhFactor.positive;
@@ -165,6 +178,7 @@ class _FirstPatientWizardState extends State<FirstPatientWizard> {
         city: _cityController.text.trim(),
         province: _provinceController.text.trim(),
         postalCode: _postalCodeController.text.trim(),
+        relation: widget.addingFamilyMember ? _relation.trim() : '',
       );
       if (_weight != null && _weight! > 0) {
         await DatabaseManager().insertPatientMetric(
@@ -180,7 +194,11 @@ class _FirstPatientWizardState extends State<FirstPatientWizard> {
           'height',
         );
       }
-      widget.onPatientCreated();
+      if (widget.addingFamilyMember) {
+        if (mounted) Navigator.of(context).pop(patientUuid);
+      } else {
+        widget.onPatientCreated?.call();
+      }
     } catch (error) {
       setState(() {
         _saving = false;
@@ -208,14 +226,23 @@ class _FirstPatientWizardState extends State<FirstPatientWizard> {
               child: PageView(
                 controller: _pageController,
                 physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  _welcomeStep(),
-                  _nameStep(),
-                  _phnStep(),
-                  _bloodTypeStep(),
-                  _metricsStep(),
-                  _addressStep(),
-                ],
+                children: widget.addingFamilyMember
+                    ? [
+                        _relationStep(),
+                        _nameStep(),
+                        _phnStep(),
+                        _bloodTypeStep(),
+                        _metricsStep(),
+                        _addressStep(),
+                      ]
+                    : [
+                        _welcomeStep(),
+                        _nameStep(),
+                        _phnStep(),
+                        _bloodTypeStep(),
+                        _metricsStep(),
+                        _addressStep(),
+                      ],
               ),
             ),
           ],
@@ -326,11 +353,28 @@ class _FirstPatientWizardState extends State<FirstPatientWizard> {
     );
   }
 
+  Widget _relationStep() {
+    return _page(
+      title: "Who is this?",
+      subtitle: "How are they related to you?",
+      showBack: false,
+      child: CarbonAutocomplete(
+        label: "Relation",
+        options: FamilyRelation.values,
+        placeholder: "e.g. Daughter, Foster Child, Ward...",
+        helperText: "Pick a common relation or type your own.",
+        onChanged: (value) => _relation = value,
+      ),
+      onNext: () => _goTo(_step + 1),
+    );
+  }
+
   Widget _nameStep() {
     return _page(
       title: "Let's get started",
-      subtitle:
-          "Who is this profile for? We just need a name and date of birth.",
+      subtitle: widget.addingFamilyMember
+          ? "We just need their name and date of birth."
+          : "Who is this profile for? We just need a name and date of birth.",
       showSkip: false,
       showBack: false,
       child: Column(

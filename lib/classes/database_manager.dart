@@ -981,9 +981,9 @@ class DatabaseManager {
     required String firstName,
     required String lastName,
     required DateTime dob,
-    // All optional — the quick "Add a Family Member" entry point never sets these, only
-    // the first-run wizard (FirstPatientWizard) does, and even there every one of them
-    // is skippable. phn is UNIQUE, so an explicit blank string can't be used as "not
+    // All optional — FirstPatientWizard is the only caller (both the first-run flow and
+    // the "add a family member" flow reuse it now), and every one of these is skippable
+    // there. phn is UNIQUE, so an explicit blank string can't be used as "not
     // provided" (every skip would collide) — falling back to the generated uuid, same
     // as before, keeps that guarantee without a real card number.
     String? phn,
@@ -994,6 +994,7 @@ class DatabaseManager {
     String? province,
     String? postalCode,
     String? country,
+    String? relation,
   }) async {
     final db = await database;
     final String newPatientUuid = uuid.v4();
@@ -1017,7 +1018,7 @@ class DatabaseManager {
       'postal_code': postalCode ?? '',
       'phone': '',
       'contact_name': '',
-      'relation': '',
+      'relation': relation ?? '',
       'contact_phone': '',
       'family_doctor_name': '',
       'family_doctor_phone': '',

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/carbon_color_constants.dart';
 import 'package:triage/classes/carbon_theme_constants.dart';
-import 'package:triage/screens/add_patient_screen.dart';
 import 'package:triage/screens/add_patients_wheel.dart';
 import 'package:triage/screens/first_patient_wizard.dart';
 import 'package:triage/screens/metric_dashboard_screen.dart';
@@ -113,6 +112,7 @@ class HomeScreenState extends State<HomeScreen> {
           user: user,
           onMemberUpdate: (p) =>
               updatePatient(patientIndex: _currentPageIndex, patient: p),
+          onAddFamilyMember: _launchAddPatient,
         ),
       ),
     );
@@ -181,7 +181,10 @@ class HomeScreenState extends State<HomeScreen> {
   Future<void> _launchAddPatient() async {
     final String? newPatientUuid = await Navigator.push<String>(
       context,
-      MaterialPageRoute(builder: (context) => const AddPatientScreen()),
+      MaterialPageRoute(
+        builder: (context) =>
+            const FirstPatientWizard(addingFamilyMember: true),
+      ),
     );
     if (newPatientUuid == null) return;
     await loadPatientData();
@@ -197,11 +200,20 @@ class HomeScreenState extends State<HomeScreen> {
   void _jumpToPatient(String patientUuid) {
     final int index = patients.indexWhere((p) => p.patientUuid == patientUuid);
     if (index == -1 || index == _currentPageIndex) return;
-    _pageController.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
+    // Right after a setState that grew `patients` (e.g. a freshly-added family
+    // member), the PageView hasn't actually rebuilt with the new itemCount on
+    // screen yet — that happens next frame. Calling animateToPage immediately
+    // targets a page index the live PageView doesn't have yet and silently
+    // clamps to the old last page instead, landing on the wrong patient.
+    // Deferring to the post-frame callback guarantees the rebuild has happened.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _pageController.animateToPage(
+        index,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    });
   }
 
   @override
