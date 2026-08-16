@@ -345,12 +345,36 @@ class HomeScreenState extends State<HomeScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _navButton(index: 0, icon: Symbols.conditions),
-                      _navButton(index: 1, icon: Symbols.medication),
-                      _navButton(index: 2, icon: Symbols.health_metrics),
-                      _navButton(index: 3, icon: Symbols.diversity_4),
-                      _navButton(index: 4, icon: Symbols.qr_code_2),
-                      _navButton(index: 5, icon: Symbols.view_object_track),
+                      _navButton(
+                        index: 0,
+                        icon: Symbols.conditions,
+                        label: "Profile",
+                      ),
+                      _navButton(
+                        index: 1,
+                        icon: Symbols.medication,
+                        label: "Meds",
+                      ),
+                      _navButton(
+                        index: 2,
+                        icon: Symbols.health_metrics,
+                        label: "Metrics",
+                      ),
+                      _navButton(
+                        index: 3,
+                        icon: Symbols.diversity_4,
+                        label: "Providers",
+                      ),
+                      _navButton(
+                        index: 4,
+                        icon: Symbols.qr_code_2,
+                        label: "Emergency",
+                      ),
+                      _navButton(
+                        index: 5,
+                        icon: Symbols.view_object_track,
+                        label: "Timeline",
+                      ),
                     ],
                   ),
                 ),
@@ -362,25 +386,44 @@ class HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _navButton({required int index, required IconData icon}) {
+  // Icon-only nav asks a patient to remember what six glyphs mean, permanently — real
+  // cognitive load for the elderly/crisis-context audience this app is built for (and,
+  // Richard's own words, enough that even he pauses on it sometimes). A short label
+  // under each icon removes that memory burden entirely.
+  Widget _navButton({
+    required int index,
+    required IconData icon,
+    required String label,
+  }) {
     final bool isSelected = _currentIndex == index;
+    final Color color = isSelected
+        ? carbonColorButtonOnPrimary
+        : carbonColorButtonPrimary;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: isSelected ? carbonColorButtonPrimary : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
       ),
       child: InkWell(
         onTap: () => setState(() => _currentIndex = index),
-        child: Icon(
-          icon,
-          size: 32,
-          color: isSelected
-              ? carbonColorButtonOnPrimary
-              : carbonColorButtonPrimary,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 26, color: color),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ],
         ),
       ),
     );

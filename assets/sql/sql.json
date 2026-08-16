@@ -170,7 +170,7 @@
     },
     {
       "table": "patient_condition",
-      "query": "CREATE TABLE patient_condition (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_uuid TEXT, condition_id int, treatment_notes TEXT, status INTEGER DEFAULT 0, onset DATETIME, status_date DATETIME, duration_estimate_value INTEGER, duration_estimate_unit INTEGER, recorded_at DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (patient_uuid) REFERENCES patient (patient_uuid) ON DELETE CASCADE, FOREIGN KEY (condition_id) REFERENCES condition (id) ON DELETE RESTRICT );"
+      "query": "CREATE TABLE patient_condition (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_uuid TEXT, condition_id int, treatment_notes TEXT, status INTEGER DEFAULT 0, onset DATETIME, status_date DATETIME, duration_estimate_value INTEGER, duration_estimate_unit INTEGER, treatment_reviewed_at DATETIME, recorded_at DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (patient_uuid) REFERENCES patient (patient_uuid) ON DELETE CASCADE, FOREIGN KEY (condition_id) REFERENCES condition (id) ON DELETE RESTRICT );"
     },
     {
       "table": "supply",

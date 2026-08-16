@@ -88,6 +88,12 @@ class PatientCondition {
   int? durationEstimateValue;
   DurationUnit? durationEstimateUnit;
 
+  // Set once the patient has engaged with the "how are you treating this?" prompt
+  // (tapped through to Medications/Tests/Metrics for this condition) — not proof they
+  // actually added anything, just that they've been through the flow at least once.
+  // Drives the small badge on this condition's chip so they can find their way back.
+  DateTime? treatmentReviewedAt;
+
   DateTime recordedAt;
 
   PatientCondition({
@@ -101,9 +107,13 @@ class PatientCondition {
     this.statusDate,
     this.durationEstimateValue,
     this.durationEstimateUnit,
+    this.treatmentReviewedAt,
   }) : recordedAt = DateTime.now();
 
-  factory PatientCondition.fromCondition(String patientUuid, ConditionReference condition) {
+  factory PatientCondition.fromCondition(
+    String patientUuid,
+    ConditionReference condition,
+  ) {
     return PatientCondition(
       patientUuid: patientUuid,
       conditionId: condition.id,
@@ -116,7 +126,8 @@ class PatientCondition {
   // Only meaningful once onset is known — this is the single source of truth for
   // duration whenever it's available, so the UI never lets a stored estimate compete
   // with it.
-  Duration? get computedDuration => onset != null ? (statusDate ?? DateTime.now()).difference(onset!) : null;
+  Duration? get computedDuration =>
+      onset != null ? (statusDate ?? DateTime.now()).difference(onset!) : null;
 
   // Convert an engine database row straight into your clean object layout
   factory PatientCondition.fromMap(Map<String, dynamic> map) {
@@ -127,11 +138,18 @@ class PatientCondition {
       name: map['name'] as String? ?? "",
       treatmentNotes: map['treatment_notes'] as String? ?? "",
       status: ConditionStatus.values[map['status'] as int? ?? 0],
-      onset: map['onset'] != null ? DateTime.parse(map['onset'].toString()) : null,
-      statusDate: map['status_date'] != null ? DateTime.parse(map['status_date'].toString()) : null,
+      onset: map['onset'] != null
+          ? DateTime.parse(map['onset'].toString())
+          : null,
+      statusDate: map['status_date'] != null
+          ? DateTime.parse(map['status_date'].toString())
+          : null,
       durationEstimateValue: map['duration_estimate_value'] as int?,
       durationEstimateUnit: map['duration_estimate_unit'] != null
           ? DurationUnit.values[map['duration_estimate_unit'] as int]
+          : null,
+      treatmentReviewedAt: map['treatment_reviewed_at'] != null
+          ? DateTime.parse(map['treatment_reviewed_at'].toString())
           : null,
     );
   }
