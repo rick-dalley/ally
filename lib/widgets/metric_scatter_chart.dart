@@ -48,11 +48,23 @@ class _ScatterPoint {
 class MetricScatterChart extends StatefulWidget {
   final List<Map<String, dynamic>> historicalValues;
   final Color color;
+  // All optional and independent — a metric might have a target but no custom safe
+  // bounds, or vice versa. Null just means that reference line isn't drawn.
+  final double? safeMin;
+  final double? safeMax;
+  final double? healthyMin;
+  final double? healthyMax;
+  final double? targetValue;
 
   const MetricScatterChart({
     super.key,
     required this.historicalValues,
     required this.color,
+    this.safeMin,
+    this.safeMax,
+    this.healthyMin,
+    this.healthyMax,
+    this.targetValue,
   });
 
   @override
@@ -116,6 +128,11 @@ class _MetricScatterChartState extends State<MetricScatterChart> {
                     rangeStart: start,
                     rangeEnd: end,
                     color: widget.color,
+                    safeMin: widget.safeMin,
+                    safeMax: widget.safeMax,
+                    healthyMin: widget.healthyMin,
+                    healthyMax: widget.healthyMax,
+                    targetValue: widget.targetValue,
                   ),
                 ),
         ),
@@ -129,12 +146,22 @@ class _ScatterPainter extends CustomPainter {
   final DateTime rangeStart;
   final DateTime rangeEnd;
   final Color color;
+  final double? safeMin;
+  final double? safeMax;
+  final double? healthyMin;
+  final double? healthyMax;
+  final double? targetValue;
 
   _ScatterPainter({
     required this.points,
     required this.rangeStart,
     required this.rangeEnd,
     required this.color,
+    this.safeMin,
+    this.safeMax,
+    this.healthyMin,
+    this.healthyMax,
+    this.targetValue,
   });
 
   static const double _leftPadding = 40;
@@ -155,6 +182,20 @@ class _ScatterPainter extends CustomPainter {
     double valueMax = points
         .map((p) => p.value)
         .reduce((a, b) => a > b ? a : b);
+    // Fold every reference line into the axis range too — a Safe bound the readings
+    // never get close to should still be visible on the chart, not clipped off just
+    // because the actual data happens to sit well inside it.
+    for (final bound in [
+      safeMin,
+      safeMax,
+      healthyMin,
+      healthyMax,
+      targetValue,
+    ]) {
+      if (bound == null) continue;
+      if (bound < valueMin) valueMin = bound;
+      if (bound > valueMax) valueMax = bound;
+    }
     if (valueMax == valueMin) {
       // A flat line of identical readings still needs vertical room to plot in, not a
       // zero-height range that collapses every dot onto the same pixel.
@@ -195,6 +236,36 @@ class _ScatterPainter extends CustomPainter {
       Offset(plotRight, plotBottom),
       axisPaint,
     );
+
+    // Manual dash stepping — Canvas has no built-in dashed-stroke primitive.
+    void drawDashedHLine(double y, Color lineColor) {
+      const double dashWidth = 4;
+      const double dashGap = 3;
+      final Paint dashPaint = Paint()
+        ..color = lineColor
+        ..strokeWidth = 1.0;
+      double x = plotLeft;
+      while (x < plotRight) {
+        final double segmentEnd = (x + dashWidth).clamp(plotLeft, plotRight);
+        canvas.drawLine(Offset(x, y), Offset(segmentEnd, y), dashPaint);
+        x += dashWidth + dashGap;
+      }
+    }
+
+    // Safe/Healthy each draw as a pair of bounds when both are known; Target is a
+    // single line. Colors match the semantics already established for DualBoundCapsule
+    // — red for Safe, amber for Healthy — so the same color always means the same
+    // thing across the dashboard panel and this chart.
+    if (safeMin != null)
+      drawDashedHLine(yFor(safeMin!), carbonColorSupportError);
+    if (safeMax != null)
+      drawDashedHLine(yFor(safeMax!), carbonColorSupportError);
+    if (healthyMin != null)
+      drawDashedHLine(yFor(healthyMin!), carbonColorSupportWarning);
+    if (healthyMax != null)
+      drawDashedHLine(yFor(healthyMax!), carbonColorSupportWarning);
+    if (targetValue != null)
+      drawDashedHLine(yFor(targetValue!), carbonColorSupportSuccess);
 
     void drawLabel(
       String text,
@@ -237,6 +308,11 @@ class _ScatterPainter extends CustomPainter {
     return oldDelegate.points != points ||
         oldDelegate.rangeStart != rangeStart ||
         oldDelegate.rangeEnd != rangeEnd ||
-        oldDelegate.color != color;
+        oldDelegate.color != color ||
+        oldDelegate.safeMin != safeMin ||
+        oldDelegate.safeMax != safeMax ||
+        oldDelegate.healthyMin != healthyMin ||
+        oldDelegate.healthyMax != healthyMax ||
+        oldDelegate.targetValue != targetValue;
   }
 }

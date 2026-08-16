@@ -104,12 +104,22 @@ class DatabaseManager {
 
   Future<void> updateAboType(String patientUuid, int aboType) async {
     final db = await database;
-    await db.update('patient', {'abo_type': aboType}, where: 'patient_uuid = ?', whereArgs: [patientUuid]);
+    await db.update(
+      'patient',
+      {'abo_type': aboType},
+      where: 'patient_uuid = ?',
+      whereArgs: [patientUuid],
+    );
   }
 
   Future<void> updateRhFactor(String patientUuid, int rhFactor) async {
     final db = await database;
-    await db.update('patient', {'rh_factor': rhFactor}, where: 'patient_uuid = ?', whereArgs: [patientUuid]);
+    await db.update(
+      'patient',
+      {'rh_factor': rhFactor},
+      where: 'patient_uuid = ?',
+      whereArgs: [patientUuid],
+    );
   }
 
   Future<bool> trackMoodChange(String patientUuid, int mood) async {
@@ -133,7 +143,12 @@ class DatabaseManager {
 
         // 2. If it's different, close the old one
         if (lastMoodValue != mood) {
-          await txn.update('patient_mood', {'end_date': now}, where: 'id = ?', whereArgs: [lastMood['id']]);
+          await txn.update(
+            'patient_mood',
+            {'end_date': now},
+            where: 'id = ?',
+            whereArgs: [lastMood['id']],
+          );
 
           // 3. Insert the new one
           await txn.insert('patient_mood', {
@@ -146,7 +161,11 @@ class DatabaseManager {
         // Else: mood is the same, do nothing (as you requested)
       } else {
         // 4. First time ever logging? Just insert.
-        await txn.insert('patient_mood', {'patient_uuid': patientUuid, 'mood': mood, 'start_date': now});
+        await txn.insert('patient_mood', {
+          'patient_uuid': patientUuid,
+          'mood': mood,
+          'start_date': now,
+        });
       }
     });
     return true;
@@ -173,16 +192,24 @@ class DatabaseManager {
     final current = await getCurrentMood(patientUuid);
     if (current == null) return;
     final db = await database;
-    await db.update('patient_mood', {'reason': reason}, where: 'id = ?', whereArgs: [current['id']]);
+    await db.update(
+      'patient_mood',
+      {'reason': reason},
+      where: 'id = ?',
+      whereArgs: [current['id']],
+    );
   }
 
-  Future<List<Map<String, dynamic>>> getPatientVaccinations(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getPatientVaccinations(
+    String patientUuid,
+  ) async {
     final db = await database;
     dynamic result = await db.query(
       'patient_vaccination',
       where: 'patient_uuid = ?',
       whereArgs: [patientUuid],
-      orderBy: 'received DESC', // You can adjust this to your custom sorting logic
+      orderBy:
+          'received DESC', // You can adjust this to your custom sorting logic
     );
     return result;
   }
@@ -209,7 +236,9 @@ class DatabaseManager {
   // Vaccine.expirationDate) — but TODO(data): that interval field is currently placeholder data
   // (uniformly 1 year for every vaccine in immunizations.json, not clinically reviewed), so due
   // dates surfaced here may be wrong until that data is corrected.
-  Future<List<Map<String, dynamic>>> getVaccinationsWithReminders(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getVaccinationsWithReminders(
+    String patientUuid,
+  ) async {
     final db = await database;
     return await db.query(
       'patient_vaccination',
@@ -220,7 +249,10 @@ class DatabaseManager {
 
   // Clears next_due (stops reminding) and records the actual received date — "Done"
   // on an immunization reminder.
-  Future<void> markVaccinationReceived(int vaccinationId, DateTime receivedOn) async {
+  Future<void> markVaccinationReceived(
+    int vaccinationId,
+    DateTime receivedOn,
+  ) async {
     final db = await database;
     await db.update(
       'patient_vaccination',
@@ -230,7 +262,10 @@ class DatabaseManager {
     );
   }
 
-  Future<void> rescheduleVaccinationReminder(int vaccinationId, DateTime newDueDate) async {
+  Future<void> rescheduleVaccinationReminder(
+    int vaccinationId,
+    DateTime newDueDate,
+  ) async {
     final db = await database;
     await db.update(
       'patient_vaccination',
@@ -240,7 +275,10 @@ class DatabaseManager {
     );
   }
 
-  Future<int> deleteVaccination(String vaccinationName, String patientUuid) async {
+  Future<int> deleteVaccination(
+    String vaccinationName,
+    String patientUuid,
+  ) async {
     final db = await database;
     return await db.delete(
       'patient_vaccination',
@@ -257,21 +295,36 @@ class DatabaseManager {
 
   Future<List<Map<String, dynamic>>> getPatientTests(String patientUuid) async {
     final db = await database;
-    return await db.query('patient_test', where: 'patient_uuid = ?', whereArgs: [patientUuid], orderBy: 'name');
+    return await db.query(
+      'patient_test',
+      where: 'patient_uuid = ?',
+      whereArgs: [patientUuid],
+      orderBy: 'name',
+    );
   }
 
-  Future<int> addPatientTest(String patientUuid, Map<String, dynamic> row) async {
+  Future<int> addPatientTest(
+    String patientUuid,
+    Map<String, dynamic> row,
+  ) async {
     final db = await database;
-    final Map<String, dynamic> withPatient = Map<String, dynamic>.from(row)..['patient_uuid'] = patientUuid;
+    final Map<String, dynamic> withPatient = Map<String, dynamic>.from(row)
+      ..['patient_uuid'] = patientUuid;
     return await db.insert('patient_test', withPatient);
   }
 
   // Tests with a next-due date set — same "explicitly set, not derived from a
   // clinical schedule" honesty as getVaccinationsWithReminders; this catalog has no
   // recommended-frequency data to compute one from.
-  Future<List<Map<String, dynamic>>> getTestsWithReminders(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getTestsWithReminders(
+    String patientUuid,
+  ) async {
     final db = await database;
-    return await db.query('patient_test', where: 'patient_uuid = ? AND next_due IS NOT NULL', whereArgs: [patientUuid]);
+    return await db.query(
+      'patient_test',
+      where: 'patient_uuid = ? AND next_due IS NOT NULL',
+      whereArgs: [patientUuid],
+    );
   }
 
   // Clears next_due (stops reminding) and records the actual done date — "Done" on a
@@ -306,7 +359,12 @@ class DatabaseManager {
 
   Future<void> rescheduleTestReminder(int testId, DateTime newDueDate) async {
     final db = await database;
-    await db.update('patient_test', {'next_due': newDueDate.toIso8601String()}, where: 'id = ?', whereArgs: [testId]);
+    await db.update(
+      'patient_test',
+      {'next_due': newDueDate.toIso8601String()},
+      where: 'id = ?',
+      whereArgs: [testId],
+    );
   }
 
   Future<void> deletePatientTest(int testId) async {
@@ -326,7 +384,9 @@ class DatabaseManager {
   // (via condition_supply), minus anything they're already tracking — so a diabetes
   // diagnosis can surface "test strips, lancets" as one-tap suggestions instead of
   // making the patient dig through the full catalog.
-  Future<List<Map<String, dynamic>>> getSuggestedSupplies(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getSuggestedSupplies(
+    String patientUuid,
+  ) async {
     final db = await database;
     return await db.rawQuery(
       '''
@@ -342,20 +402,36 @@ class DatabaseManager {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getPatientSupplies(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getPatientSupplies(
+    String patientUuid,
+  ) async {
     final db = await database;
-    return await db.query('patient_supply', where: 'patient_uuid = ?', whereArgs: [patientUuid], orderBy: 'name');
+    return await db.query(
+      'patient_supply',
+      where: 'patient_uuid = ?',
+      whereArgs: [patientUuid],
+      orderBy: 'name',
+    );
   }
 
-  Future<int> insertPatientSupply(String patientUuid, PatientSupply record) async {
+  Future<int> insertPatientSupply(
+    String patientUuid,
+    PatientSupply record,
+  ) async {
     final db = await database;
-    final Map<String, dynamic> row = Map<String, dynamic>.from(record.toRow())..['patient_uuid'] = patientUuid;
+    final Map<String, dynamic> row = Map<String, dynamic>.from(record.toRow())
+      ..['patient_uuid'] = patientUuid;
     return await db.insert('patient_supply', row);
   }
 
   Future<void> updatePatientSupply(PatientSupply record) async {
     final db = await database;
-    await db.update('patient_supply', record.toRow(), where: 'id = ?', whereArgs: [record.id]);
+    await db.update(
+      'patient_supply',
+      record.toRow(),
+      where: 'id = ?',
+      whereArgs: [record.id],
+    );
   }
 
   Future<void> deletePatientSupply(int id) async {
@@ -367,7 +443,12 @@ class DatabaseManager {
   // deleting the row, so it still tracks quantity, just only alerts once truly at zero.
   Future<void> updateSupplyThreshold(int id, int threshold) async {
     final db = await database;
-    await db.update('patient_supply', {'reorder_threshold': threshold}, where: 'id = ?', whereArgs: [id]);
+    await db.update(
+      'patient_supply',
+      {'reorder_threshold': threshold},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   // Due for a reorder right now — not a forecast, a plain threshold check. See
@@ -384,7 +465,9 @@ class DatabaseManager {
   // not a tracked/dosed thing, deliberately kept out of the medication wizard. See
   // vision_prescription.dart for the full reasoning.
 
-  Future<List<Map<String, dynamic>>> getVisionPrescriptionsForPatient(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getVisionPrescriptionsForPatient(
+    String patientUuid,
+  ) async {
     final db = await database;
     return await db.query(
       'vision_prescription',
@@ -401,7 +484,12 @@ class DatabaseManager {
 
   Future<void> updateVisionPrescription(VisionPrescription record) async {
     final db = await database;
-    await db.update('vision_prescription', record.toRow(), where: 'id = ?', whereArgs: [record.id]);
+    await db.update(
+      'vision_prescription',
+      record.toRow(),
+      where: 'id = ?',
+      whereArgs: [record.id],
+    );
   }
 
   Future<void> deleteVisionPrescription(int id) async {
@@ -413,7 +501,10 @@ class DatabaseManager {
   String _dateOnly(DateTime date) =>
       '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
-  Future<Map<String, dynamic>?> getDiaryEntry(String patientUuid, DateTime date) async {
+  Future<Map<String, dynamic>?> getDiaryEntry(
+    String patientUuid,
+    DateTime date,
+  ) async {
     final db = await database;
     final rows = await db.query(
       'patient_diary_entry',
@@ -425,7 +516,11 @@ class DatabaseManager {
 
   // Upsert keyed on the (patient_uuid, entry_date) unique constraint — one entry per
   // patient per day, matching the "no entry for a day you didn't write in" rule.
-  Future<void> saveDiaryEntry(String patientUuid, DateTime date, String content) async {
+  Future<void> saveDiaryEntry(
+    String patientUuid,
+    DateTime date,
+    String content,
+  ) async {
     final db = await database;
     final String now = DateTime.now().toIso8601String();
     final existing = await getDiaryEntry(patientUuid, date);
@@ -458,7 +553,11 @@ class DatabaseManager {
     );
   }
 
-  Future<Set<String>> getDiaryEntryDatesForMonth(String patientUuid, int year, int month) async {
+  Future<Set<String>> getDiaryEntryDatesForMonth(
+    String patientUuid,
+    int year,
+    int month,
+  ) async {
     final db = await database;
     final String prefix = '$year-${month.toString().padLeft(2, '0')}';
     final rows = await db.query(
@@ -474,7 +573,10 @@ class DatabaseManager {
   // pulls from — medication doses, appointments, symptoms, mood, and test completions.
   // Returned as raw rows per category (not a unified model) so DiaryDayEvent's factory
   // constructors stay the single place that knows how to render each shape.
-  Future<Map<String, List<Map<String, dynamic>>>> getDayEvents(String patientUuid, DateTime date) async {
+  Future<Map<String, List<Map<String, dynamic>>>> getDayEvents(
+    String patientUuid,
+    DateTime date,
+  ) async {
     final db = await database;
     final DateTime start = DateTime(date.year, date.month, date.day);
     final DateTime end = start.add(const Duration(days: 1));
@@ -516,7 +618,8 @@ class DatabaseManager {
     // "what was my mood on this day" should answer correctly even if it didn't change.
     final moods = await db.query(
       'patient_mood',
-      where: 'patient_uuid = ? AND start_date < ? AND (end_date IS NULL OR end_date >= ?)',
+      where:
+          'patient_uuid = ? AND start_date < ? AND (end_date IS NULL OR end_date >= ?)',
       whereArgs: [patientUuid, endIso, startIso],
       orderBy: 'start_date',
     );
@@ -528,13 +631,23 @@ class DatabaseManager {
       orderBy: 'completed_on',
     );
 
-    return {'doses': doses, 'appointments': appointments, 'symptoms': symptoms, 'moods': moods, 'tests': tests};
+    return {
+      'doses': doses,
+      'appointments': appointments,
+      'symptoms': symptoms,
+      'moods': moods,
+      'tests': tests,
+    };
   }
 
   // Which dates in a month have at least one event, across all five sources — for the
   // month view's "something happened" marker, shown independent of whether a diary
   // entry was ever written for that day.
-  Future<Set<String>> getEventDatesForMonth(String patientUuid, int year, int month) async {
+  Future<Set<String>> getEventDatesForMonth(
+    String patientUuid,
+    int year,
+    int month,
+  ) async {
     final db = await database;
     final DateTime monthStart = DateTime(year, month);
     final DateTime monthEnd = DateTime(year, month + 1);
@@ -547,7 +660,9 @@ class DatabaseManager {
 
     void addDatesFromIso(List<Map<String, dynamic>> rows, String column) {
       for (final row in rows) {
-        final DateTime? parsed = DateTime.tryParse(row[column] as String? ?? '');
+        final DateTime? parsed = DateTime.tryParse(
+          row[column] as String? ?? '',
+        );
         if (parsed != null) dates.add(_dateOnly(parsed));
       }
     }
@@ -579,7 +694,11 @@ class DatabaseManager {
       [patientUuid, startEpoch, endEpoch],
     );
     for (final row in symptomRows) {
-      dates.add(_dateOnly(DateTime.fromMillisecondsSinceEpoch((row['recorded'] as int) * 1000)));
+      dates.add(
+        _dateOnly(
+          DateTime.fromMillisecondsSinceEpoch((row['recorded'] as int) * 1000),
+        ),
+      );
     }
 
     // Only the day a mood actually *changed*, not every day of an ongoing period —
@@ -616,7 +735,9 @@ class DatabaseManager {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getAllInteractionsForDrug(String drugName) async {
+  Future<List<Map<String, dynamic>>> getAllInteractionsForDrug(
+    String drugName,
+  ) async {
     final db = await database;
 
     // Query both columns to capture every interaction regardless of entry order
@@ -639,7 +760,10 @@ class DatabaseManager {
 
   // Returns the generated row id (BodyMarker.id) — needed later to mark a marker
   // resolved or record that we've checked in on it.
-  Future<int> insertBodyMarker(String patientUuid, Map<String, dynamic> marker) async {
+  Future<int> insertBodyMarker(
+    String patientUuid,
+    Map<String, dynamic> marker,
+  ) async {
     final db = await database;
     Map<String, dynamic> row = Map<String, dynamic>.from(marker);
     row['patient_uuid'] = patientUuid;
@@ -654,20 +778,34 @@ class DatabaseManager {
     await db.update('markers', marker, where: 'id = ?', whereArgs: [id]);
   }
 
-  Future<void> insertMarkersBatch(String tableName, List<Map<String, dynamic>> rows) async {
+  Future<void> insertMarkersBatch(
+    String tableName,
+    List<Map<String, dynamic>> rows,
+  ) async {
     final db = await database;
     await db.transaction((txn) async {
       for (var row in rows) {
-        await txn.insert(tableName, row, conflictAlgorithm: ConflictAlgorithm.replace);
+        await txn.insert(
+          tableName,
+          row,
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
       }
     });
   }
 
-  Future<List<Map<String, dynamic>>> getMarkersForPatient(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getMarkersForPatient(
+    String patientUuid,
+  ) async {
     final db = await database;
 
     // Fetch all markers for the patient, sorted by most recent first
-    return await db.query('markers', where: 'patient_uuid = ?', whereArgs: [patientUuid], orderBy: 'recorded DESC');
+    return await db.query(
+      'markers',
+      where: 'patient_uuid = ?',
+      whereArgs: [patientUuid],
+      orderBy: 'recorded DESC',
+    );
   }
 
   // Markers due for an "is this still bothering you?" check-in: not yet resolved,
@@ -698,7 +836,11 @@ class DatabaseManager {
     final db = await database;
     await db.update(
       'markers',
-      {'resolved': 1, 'resolved_at': DateTime.now().toIso8601String(), 'dismissal_reason': reason},
+      {
+        'resolved': 1,
+        'resolved_at': DateTime.now().toIso8601String(),
+        'dismissal_reason': reason,
+      },
       where: 'id = ?',
       whereArgs: [markerId],
     );
@@ -722,7 +864,10 @@ class DatabaseManager {
   }
 
   // Inside your classes/database_manager.dart file
-  Future<bool> updatePatientProcessStep({required String uuid, required int targetStepId}) async {
+  Future<bool> updatePatientProcessStep({
+    required String uuid,
+    required int targetStepId,
+  }) async {
     try {
       // 1. Get a handle to your initialized database engine instance
       final db = await database;
@@ -732,7 +877,8 @@ class DatabaseManager {
         'patient',
         {
           'phase_step_id': targetStepId,
-          'last_update': DateTime.now().toIso8601String(), // Optional: if you track transaction records
+          'last_update': DateTime.now()
+              .toIso8601String(), // Optional: if you track transaction records
         },
         where: 'patient_uuid = ?',
         whereArgs: [uuid],
@@ -763,9 +909,15 @@ class DatabaseManager {
   // Retired the LEFT JOIN patient_metrics (2026-08-14) — that table and the vitals
   // subsystem built on it are gone; current-reading data now lives entirely in the
   // catalog-driven metric/patient_metric tables (see getPatientMetricRanges etc.).
-  Future<List<Map<String, dynamic>>> getPatientWithVitals({required String patientUuid}) async {
+  Future<List<Map<String, dynamic>>> getPatientWithVitals({
+    required String patientUuid,
+  }) async {
     final db = await database;
-    return await db.query('patient', where: 'patient_uuid = ?', whereArgs: [patientUuid]);
+    return await db.query(
+      'patient',
+      where: 'patient_uuid = ?',
+      whereArgs: [patientUuid],
+    );
   }
 
   // Adding a new family member from the patient wheel's center "+" button — deliberately
@@ -777,7 +929,11 @@ class DatabaseManager {
   // Patient.fromJson reads most of them straight into non-nullable String fields with no
   // ?? fallback, so a NULL here wouldn't just look empty in the UI, it would throw and
   // take down patient loading entirely the next time the app started.
-  Future<String> insertPatient({required String firstName, required String lastName, required DateTime dob}) async {
+  Future<String> insertPatient({
+    required String firstName,
+    required String lastName,
+    required DateTime dob,
+  }) async {
     final db = await database;
     final String newPatientUuid = uuid.v4();
     await db.insert('patient', {
@@ -826,7 +982,10 @@ class DatabaseManager {
     required String setBu, // Assuming this is the 'set by user' identifier
   }) async {
     final db = await database;
-    await updatePatientAcuity(patientUuid: patientUuid, newAcuityLevel: acuityLevel);
+    await updatePatientAcuity(
+      patientUuid: patientUuid,
+      newAcuityLevel: acuityLevel,
+    );
 
     // Use a UUID package to generate the primary key
     final String id = const Uuid().v4();
@@ -847,7 +1006,10 @@ class DatabaseManager {
     }
   }
 
-  Future<void> updatePatientAcuity({required String patientUuid, required AcuityLevel newAcuityLevel}) async {
+  Future<void> updatePatientAcuity({
+    required String patientUuid,
+    required AcuityLevel newAcuityLevel,
+  }) async {
     final db = await database; // Or your specific DB instance accessor
 
     try {
@@ -867,7 +1029,10 @@ class DatabaseManager {
     final db = await database;
 
     // Fetch all conditions ordered alphabetically by category and name
-    final List<Map<String, dynamic>> maps = await db.query('condition', orderBy: 'category ASC, name ASC');
+    final List<Map<String, dynamic>> maps = await db.query(
+      'condition',
+      orderBy: 'category ASC, name ASC',
+    );
 
     // Reconstruct our grouped layout pattern dynamically
     final Map<String, List<ConditionReference>> catalog = {};
@@ -886,7 +1051,11 @@ class DatabaseManager {
     return catalog;
   }
 
-  Future<void> insertPatientMetric(String patientUuid, double value, String metricType) async {
+  Future<void> insertPatientMetric(
+    String patientUuid,
+    double value,
+    String metricType,
+  ) async {
     final db = await database;
     final sanitizedType = metricType.toLowerCase().trim();
     final String metricEventUuid = const Uuid().v4();
@@ -927,7 +1096,10 @@ class DatabaseManager {
   // insertPatientMetric/getLatestMetric/getNextReadingId below are unrelated —
   // real, live methods still used by user_screen.dart for height/weight — kept.
 
-  Future<MetricValue?> getLatestMetric(String patientUuid, String metricType) async {
+  Future<MetricValue?> getLatestMetric(
+    String patientUuid,
+    String metricType,
+  ) async {
     final db = await database;
 
     final List<Map<String, dynamic>> maps = await db.query(
@@ -954,7 +1126,12 @@ class DatabaseManager {
   // categories without needing a special icon/color lookup path.
   Future<int> getOrCreateCustomCondition(String name) async {
     final db = await database;
-    final existing = await db.query('condition', where: 'name = ?', whereArgs: [name], limit: 1);
+    final existing = await db.query(
+      'condition',
+      where: 'name = ?',
+      whereArgs: [name],
+      limit: 1,
+    );
     if (existing.isNotEmpty) return existing.first['id'] as int;
     return await db.insert('condition', {'name': name, 'category': 'Custom'});
   }
@@ -963,7 +1140,10 @@ class DatabaseManager {
 
   Future<Map<String, List<AllergenReference>>> getAllergensCatalog() async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query('allergen', orderBy: 'category ASC, name ASC');
+    final List<Map<String, dynamic>> maps = await db.query(
+      'allergen',
+      orderBy: 'category ASC, name ASC',
+    );
     final Map<String, List<AllergenReference>> catalog = {};
     for (final row in maps) {
       final reference = AllergenReference.fromMap(row);
@@ -974,12 +1154,19 @@ class DatabaseManager {
 
   Future<int> getOrCreateCustomAllergen(String name) async {
     final db = await database;
-    final existing = await db.query('allergen', where: 'name = ?', whereArgs: [name], limit: 1);
+    final existing = await db.query(
+      'allergen',
+      where: 'name = ?',
+      whereArgs: [name],
+      limit: 1,
+    );
     if (existing.isNotEmpty) return existing.first['id'] as int;
     return await db.insert('allergen', {'name': name, 'category': 'Custom'});
   }
 
-  Future<List<PatientAllergy>> getAllergiesForPatient(String patientUuid) async {
+  Future<List<PatientAllergy>> getAllergiesForPatient(
+    String patientUuid,
+  ) async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
       'patient_allergy',
@@ -996,7 +1183,12 @@ class DatabaseManager {
 
   Future<void> updatePatientAllergy(PatientAllergy record) async {
     final db = await database;
-    await db.update('patient_allergy', record.toMap(), where: 'id = ?', whereArgs: [record.id]);
+    await db.update(
+      'patient_allergy',
+      record.toMap(),
+      where: 'id = ?',
+      whereArgs: [record.id],
+    );
   }
 
   Future<void> deletePatientAllergy(int id) async {
@@ -1007,7 +1199,9 @@ class DatabaseManager {
   // The names + severities behind the drug-allergy cross-check on the medication safety
   // audit (see prescription_screen.dart) — a patient's recorded allergies, joined back
   // to the catalog for the actual allergen name (patient_allergy only stores allergen_id).
-  Future<List<Map<String, dynamic>>> getPatientAllergyNames(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getPatientAllergyNames(
+    String patientUuid,
+  ) async {
     final db = await database;
     return await db.rawQuery(
       '''
@@ -1031,7 +1225,10 @@ class DatabaseManager {
     required String medicationB,
   }) async {
     final db = await database;
-    final List<String> sorted = [medicationA.toLowerCase().trim(), medicationB.toLowerCase().trim()]..sort();
+    final List<String> sorted = [
+      medicationA.toLowerCase().trim(),
+      medicationB.toLowerCase().trim(),
+    ]..sort();
     await db.insert('interaction_acknowledgment', {
       'patient_uuid': patientUuid,
       'medication_a': sorted[0],
@@ -1048,7 +1245,10 @@ class DatabaseManager {
     required String medicationB,
   }) async {
     final db = await database;
-    final List<String> sorted = [medicationA.toLowerCase().trim(), medicationB.toLowerCase().trim()]..sort();
+    final List<String> sorted = [
+      medicationA.toLowerCase().trim(),
+      medicationB.toLowerCase().trim(),
+    ]..sort();
     await db.update(
       'interaction_acknowledgment',
       {'dismissed_at': DateTime.now().toIso8601String()},
@@ -1057,9 +1257,15 @@ class DatabaseManager {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getInteractionAcknowledgments(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getInteractionAcknowledgments(
+    String patientUuid,
+  ) async {
     final db = await database;
-    return await db.query('interaction_acknowledgment', where: 'patient_uuid = ?', whereArgs: [patientUuid]);
+    return await db.query(
+      'interaction_acknowledgment',
+      where: 'patient_uuid = ?',
+      whereArgs: [patientUuid],
+    );
   }
 
   Future<void> deletePatientCondition(int id) async {
@@ -1103,7 +1309,9 @@ class DatabaseManager {
     );
   }
 
-  Future<List<PatientCondition>> getConditionsForPatient(String patientUuid) async {
+  Future<List<PatientCondition>> getConditionsForPatient(
+    String patientUuid,
+  ) async {
     final db = await database;
 
     final List<Map<String, dynamic>> maps = await db.query(
@@ -1150,7 +1358,9 @@ class DatabaseManager {
   // Full history, every status — a new doctor reading a letter of introduction wants
   // the whole picture, not just what's currently active (unlike the Emergency QR,
   // which deliberately only shows active conditions for a fast-triage context).
-  Future<List<Map<String, dynamic>>> getConditionHistoryRows(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getConditionHistoryRows(
+    String patientUuid,
+  ) async {
     final db = await database;
     return await db.rawQuery(
       '''
@@ -1164,7 +1374,9 @@ class DatabaseManager {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getActiveMedicationRows(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getActiveMedicationRows(
+    String patientUuid,
+  ) async {
     final db = await database;
     return await db.query(
       'medication',
@@ -1175,7 +1387,9 @@ class DatabaseManager {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getAllergyDetailRows(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getAllergyDetailRows(
+    String patientUuid,
+  ) async {
     final db = await database;
     return await db.rawQuery(
       '''
@@ -1190,7 +1404,9 @@ class DatabaseManager {
 
   // "Current concerns" for the letter of introduction — whatever's still bothering the
   // patient right now, not the full symptom history.
-  Future<List<Map<String, dynamic>>> getActiveSymptomRows(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getActiveSymptomRows(
+    String patientUuid,
+  ) async {
     final db = await database;
     return await db.query(
       'markers',
@@ -1236,12 +1452,16 @@ class DatabaseManager {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getMetricReadingsInRange(String patientUuid, DateTime start, DateTime end) async {
+  Future<List<Map<String, dynamic>>> getMetricReadingsInRange(
+    String patientUuid,
+    DateTime start,
+    DateTime end,
+  ) async {
     final db = await database;
     return await db.rawQuery(
       '''
-      SELECT pm.value, pm.measured, pm.unit_of_measure, m.name AS metric_name,
-             m.safe_lower_limit, m.safe_upper_limit
+      SELECT pm.value, pm.measured, pm.unit_of_measure, m.id AS metric_id, m.name AS metric_name,
+             m.safe_lower_limit, m.safe_upper_limit, m.healthy_lower_limit, m.healthy_upper_limit
       FROM patient_metric pm
       JOIN metric m ON m.id = pm.metric_id
       WHERE pm.patient_uuid = ? AND pm.measured BETWEEN ? AND ?
@@ -1251,7 +1471,11 @@ class DatabaseManager {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getMoodEntriesInRange(String patientUuid, DateTime start, DateTime end) async {
+  Future<List<Map<String, dynamic>>> getMoodEntriesInRange(
+    String patientUuid,
+    DateTime start,
+    DateTime end,
+  ) async {
     final db = await database;
     return await db.query(
       'patient_mood',
@@ -1261,17 +1485,29 @@ class DatabaseManager {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getSymptomEntriesInRange(String patientUuid, DateTime start, DateTime end) async {
+  Future<List<Map<String, dynamic>>> getSymptomEntriesInRange(
+    String patientUuid,
+    DateTime start,
+    DateTime end,
+  ) async {
     final db = await database;
     return await db.query(
       'markers',
       where: 'patient_uuid = ? AND recorded BETWEEN ? AND ?',
-      whereArgs: [patientUuid, start.millisecondsSinceEpoch ~/ 1000, end.millisecondsSinceEpoch ~/ 1000],
+      whereArgs: [
+        patientUuid,
+        start.millisecondsSinceEpoch ~/ 1000,
+        end.millisecondsSinceEpoch ~/ 1000,
+      ],
       orderBy: 'recorded',
     );
   }
 
-  Future<List<Map<String, dynamic>>> getTestsCompletedInRange(String patientUuid, DateTime start, DateTime end) async {
+  Future<List<Map<String, dynamic>>> getTestsCompletedInRange(
+    String patientUuid,
+    DateTime start,
+    DateTime end,
+  ) async {
     final db = await database;
     return await db.query(
       'test_completion_log',
@@ -1281,17 +1517,24 @@ class DatabaseManager {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getDiaryEntriesInRange(String patientUuid, DateTime start, DateTime end) async {
+  Future<List<Map<String, dynamic>>> getDiaryEntriesInRange(
+    String patientUuid,
+    DateTime start,
+    DateTime end,
+  ) async {
     final db = await database;
     return await db.query(
       'patient_diary_entry',
-      where: "patient_uuid = ? AND entry_date BETWEEN ? AND ? AND content != ''",
+      where:
+          "patient_uuid = ? AND entry_date BETWEEN ? AND ? AND content != ''",
       whereArgs: [patientUuid, _dateOnly(start), _dateOnly(end)],
       orderBy: 'entry_date',
     );
   }
 
-  Future<List<Map<String, dynamic>>> getObservationsForPatient(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getObservationsForPatient(
+    String patientUuid,
+  ) async {
     final db = await database;
 
     return await db.query(
@@ -1319,13 +1562,23 @@ class DatabaseManager {
 
   Future<int> updateObservation(int id, Map<String, dynamic> row) async {
     final db = await database;
-    return await db.update('observations', row, where: 'id = ?', whereArgs: [id]);
+    return await db.update(
+      'observations',
+      row,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   // Retrieve all vital readings for a specific patient, newest first
   Future<List<Map<String, dynamic>>> getPatientEvents(String uuid) async {
     final db = await database;
-    return await db.query('patient_events', where: 'patient_uuid = ?', whereArgs: [uuid], orderBy: 'timestamp DESC');
+    return await db.query(
+      'patient_events',
+      where: 'patient_uuid = ?',
+      whereArgs: [uuid],
+      orderBy: 'timestamp DESC',
+    );
   }
 
   Future<Map<String, dynamic>?> getStoredDatasheet(String setId) async {
@@ -1340,7 +1593,9 @@ class DatabaseManager {
     if (results.isEmpty) return null;
 
     // 1. Start with the database row (includes 'classes', 'set_id', etc.)
-    final Map<String, dynamic> fullRow = Map<String, dynamic>.from(results.first);
+    final Map<String, dynamic> fullRow = Map<String, dynamic>.from(
+      results.first,
+    );
 
     final String? blob = fullRow['raw_json_blob'];
 
@@ -1362,7 +1617,10 @@ class DatabaseManager {
   }
 
   // Internal helper to avoid calling 'await database' during initialization
-  Future<void> rawInsertMedication(Database db, Map<String, dynamic> medication) async {
+  Future<void> rawInsertMedication(
+    Database db,
+    Map<String, dynamic> medication,
+  ) async {
     await db.insert('medication', {
       'id': medication['id'],
       'patient_uuid': medication['patient_uuid'],
@@ -1445,11 +1703,18 @@ class DatabaseManager {
         'reason': reason,
       });
 
-      await txn.update('medication', {'dose': ?newDose, 'freq': ?newFreq}, where: 'id = ?', whereArgs: [medicationId]);
+      await txn.update(
+        'medication',
+        {'dose': ?newDose, 'freq': ?newFreq},
+        where: 'id = ?',
+        whereArgs: [medicationId],
+      );
     });
   }
 
-  Future<List<Map<String, dynamic>>> getMedicationChangeHistory(String medicationId) async {
+  Future<List<Map<String, dynamic>>> getMedicationChangeHistory(
+    String medicationId,
+  ) async {
     final db = await database;
     return await db.query(
       'medication_change_log',
@@ -1470,21 +1735,27 @@ class DatabaseManager {
     required int leadMinutes,
   }) async {
     final db = await database;
-    await db.insert('medication_reminder_preference', {
-      'medication_id': medicationId,
-      'patient_uuid': patientUuid,
-      'enabled': enabled ? 1 : 0,
-      'chime_enabled': channels.contains(ReminderChannel.chime) ? 1 : 0,
-      'text_enabled': channels.contains(ReminderChannel.text) ? 1 : 0,
-      'email_enabled': channels.contains(ReminderChannel.email) ? 1 : 0,
-      'wearable_enabled': channels.contains(ReminderChannel.wearable) ? 1 : 0,
-      'wearable_mode': wearableMode?.name,
-      'lead_minutes': leadMinutes,
-      'updated_at': DateTime.now().toIso8601String(),
-    }, conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert(
+      'medication_reminder_preference',
+      {
+        'medication_id': medicationId,
+        'patient_uuid': patientUuid,
+        'enabled': enabled ? 1 : 0,
+        'chime_enabled': channels.contains(ReminderChannel.chime) ? 1 : 0,
+        'text_enabled': channels.contains(ReminderChannel.text) ? 1 : 0,
+        'email_enabled': channels.contains(ReminderChannel.email) ? 1 : 0,
+        'wearable_enabled': channels.contains(ReminderChannel.wearable) ? 1 : 0,
+        'wearable_mode': wearableMode?.name,
+        'lead_minutes': leadMinutes,
+        'updated_at': DateTime.now().toIso8601String(),
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
-  Future<Map<String, dynamic>?> getMedicationReminderPreference(String medicationId) async {
+  Future<Map<String, dynamic>?> getMedicationReminderPreference(
+    String medicationId,
+  ) async {
     final db = await database;
     final List<Map<String, dynamic>> results = await db.query(
       'medication_reminder_preference',
@@ -1495,7 +1766,10 @@ class DatabaseManager {
     return results.isEmpty ? null : results.first;
   }
 
-  Future<void> saveDatasheet(Map<String, dynamic> fdaJson, String? classes) async {
+  Future<void> saveDatasheet(
+    Map<String, dynamic> fdaJson,
+    String? classes,
+  ) async {
     final db = await database;
 
     // Extract metadata for dedicated columns
@@ -1506,11 +1780,16 @@ class DatabaseManager {
       'version': fdaJson['version'],
       'classes': classes,
       // RXCUI is often an array in openfda, grab the first one
-      'rxcui': (openfda['rxcui'] != null && openfda['rxcui'].isNotEmpty) ? openfda['rxcui'][0] : null,
-      'brand_name': (openfda['brand_name'] != null && openfda['brand_name'].isNotEmpty)
+      'rxcui': (openfda['rxcui'] != null && openfda['rxcui'].isNotEmpty)
+          ? openfda['rxcui'][0]
+          : null,
+      'brand_name':
+          (openfda['brand_name'] != null && openfda['brand_name'].isNotEmpty)
           ? openfda['brand_name'][0]
           : null,
-      'generic_name': (openfda['generic_name'] != null && openfda['generic_name'].isNotEmpty)
+      'generic_name':
+          (openfda['generic_name'] != null &&
+              openfda['generic_name'].isNotEmpty)
           ? openfda['generic_name'][0]
           : null,
       'raw_json_blob': json.encode(fdaJson),
@@ -1539,10 +1818,17 @@ class DatabaseManager {
 
   Future<void> updateDatasheetClasses(String setId, String classes) async {
     final db = await database;
-    await db.update('datasheet', {'classes': classes}, where: 'set_id = ?', whereArgs: [setId]);
+    await db.update(
+      'datasheet',
+      {'classes': classes},
+      where: 'set_id = ?',
+      whereArgs: [setId],
+    );
   }
 
-  Future<List<Map<String, dynamic>>> scanLocalDatasheetsForContraindications(List<String> drugNames) async {
+  Future<List<Map<String, dynamic>>> scanLocalDatasheetsForContraindications(
+    List<String> drugNames,
+  ) async {
     List<Map<String, dynamic>> found = [];
     for (var name in drugNames) {
       // 1. Get the local blob for this drug
@@ -1571,7 +1857,8 @@ class DatabaseManager {
             'drugB': otherName,
             'severity': 'high', // Contraindications are always high risk
             'type': 'contraindication',
-            'description': 'Interaction found in $name label regarding $otherName.',
+            'description':
+                'Interaction found in $name label regarding $otherName.',
           });
         }
       }
@@ -1590,7 +1877,9 @@ class DatabaseManager {
 
     return await db.query(
       'medication',
-      where: includeArchived ? 'patient_uuid = ?' : 'patient_uuid = ? AND stopped_taking IS NULL',
+      where: includeArchived
+          ? 'patient_uuid = ?'
+          : 'patient_uuid = ? AND stopped_taking IS NULL',
       whereArgs: [patientUuid],
       // Optional: Sort by name so the list doesn't jump around
       orderBy: 'name ASC',
@@ -1631,7 +1920,12 @@ class DatabaseManager {
     final db = await database; // Your getter for the Database instance
 
     // We query the specific table for the single row matching the ID
-    final List<Map<String, dynamic>> results = await db.query('medication', where: 'id = ?', whereArgs: [id], limit: 1);
+    final List<Map<String, dynamic>> results = await db.query(
+      'medication',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
 
     if (results.isNotEmpty) {
       return results.first;
@@ -1677,10 +1971,15 @@ class DatabaseManager {
     );
 
     // Convert the list of rows into a Map: {'PHQ-9': 1, 'GAD-7': 0, ...}
-    return {for (var row in results) row['assessment_id'] as String: row['total'] as int};
+    return {
+      for (var row in results)
+        row['assessment_id'] as String: row['total'] as int,
+    };
   }
 
-  Future<Map<String, CompletedQuestionnaire>> getCompletedAssessments(String patientId) async {
+  Future<Map<String, CompletedQuestionnaire>> getCompletedAssessments(
+    String patientId,
+  ) async {
     final db = await database;
 
     // We query the table directly using the assessment_id column as our key
@@ -1698,7 +1997,10 @@ class DatabaseManager {
     );
 
     // Convert the list of rows into a Map: {'PHQ-9': 1, 'GAD-7': 0, ...}
-    return {for (var row in results) row['assessment_id'] as String: CompletedQuestionnaire.fromJson(row)};
+    return {
+      for (var row in results)
+        row['assessment_id'] as String: CompletedQuestionnaire.fromJson(row),
+    };
   }
 
   Future<void> saveAssessmentResults({
@@ -1717,7 +2019,8 @@ class DatabaseManager {
         'id': completedAssessmentId,
         'assessment_id': assessmentId,
         'patient_id': patientId,
-        'date_started': now, // In a real flow, you might track actual start time
+        'date_started':
+            now, // In a real flow, you might track actual start time
         'complete': isComplete ? 1 : 0,
         'date_completed': isComplete ? now : null,
         'last_modified': now,
@@ -1760,7 +2063,10 @@ class DatabaseManager {
     );
 
     // Reconstruct the Map<String, String> (question_id -> answer)
-    return {for (var row in questionMaps) row['question_id'] as String: row['answer'] as String};
+    return {
+      for (var row in questionMaps)
+        row['question_id'] as String: row['answer'] as String,
+    };
   }
   //
   // Future<(bool, String)> checkInteractions(String primarySetId, String otherSetId) async {
@@ -1830,7 +2136,9 @@ class DatabaseManager {
     return id;
   }
 
-  Future<List<Map<String, dynamic>>> getAppointmentsForPatient(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getAppointmentsForPatient(
+    String patientUuid,
+  ) async {
     final db = await database;
     return await db.query(
       'appointment',
@@ -1843,7 +2151,10 @@ class DatabaseManager {
   // Every appointment booked with one specific provider — used by the caregiver card
   // to find the one worth showing as a chip (soonest upcoming, or most recent past if
   // nothing's upcoming) without pulling every appointment across every provider.
-  Future<List<Map<String, dynamic>>> getAppointmentsForProvider(String patientUuid, String providerUuid) async {
+  Future<List<Map<String, dynamic>>> getAppointmentsForProvider(
+    String patientUuid,
+    String providerUuid,
+  ) async {
     final db = await database;
     return await db.query(
       'appointment',
@@ -1855,7 +2166,9 @@ class DatabaseManager {
 
   // Active medications that have reminders turned on, joined with their preference row
   // — the Remindable feed's source for medication reminders.
-  Future<List<Map<String, dynamic>>> getMedicationsWithReminders(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getMedicationsWithReminders(
+    String patientUuid,
+  ) async {
     final db = await database;
     return await db.rawQuery(
       '''
@@ -1901,11 +2214,24 @@ class DatabaseManager {
 
   // Today's logged doses for every medication a patient has — used to keep a reminder
   // from resurfacing once that specific dose has already been marked done/skipped.
-  Future<List<Map<String, dynamic>>> getTodaysMedicationDoseLog(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getTodaysMedicationDoseLog(
+    String patientUuid,
+  ) async {
     final db = await database;
     final DateTime now = DateTime.now();
-    final String todayStart = DateTime(now.year, now.month, now.day).toIso8601String();
-    final String todayEnd = DateTime(now.year, now.month, now.day, 23, 59, 59).toIso8601String();
+    final String todayStart = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).toIso8601String();
+    final String todayEnd = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      23,
+      59,
+      59,
+    ).toIso8601String();
     return await db.query(
       'medication_dose_log',
       where: 'patient_uuid = ? AND scheduled_for >= ? AND scheduled_for <= ?',
@@ -1925,12 +2251,23 @@ class DatabaseManager {
     );
   }
 
-  Future<void> updateAppointmentStatus(String appointmentId, String status) async {
+  Future<void> updateAppointmentStatus(
+    String appointmentId,
+    String status,
+  ) async {
     final db = await database;
-    await db.update('appointment', {'status': status}, where: 'id = ?', whereArgs: [appointmentId]);
+    await db.update(
+      'appointment',
+      {'status': status},
+      where: 'id = ?',
+      whereArgs: [appointmentId],
+    );
   }
 
-  Future<void> rescheduleAppointment(String appointmentId, DateTime newTime) async {
+  Future<void> rescheduleAppointment(
+    String appointmentId,
+    DateTime newTime,
+  ) async {
     final db = await database;
     await db.update(
       'appointment',
@@ -1952,13 +2289,21 @@ class DatabaseManager {
     final db = await database;
     await db.update(
       'appointment',
-      {'scheduled_for': scheduledFor.toIso8601String(), 'reason': reason, 'notes': notes, 'status': 'scheduled'},
+      {
+        'scheduled_for': scheduledFor.toIso8601String(),
+        'reason': reason,
+        'notes': notes,
+        'status': 'scheduled',
+      },
       where: 'id = ?',
       whereArgs: [appointmentId],
     );
   }
 
-  Future<void> addPatientMedicalDevice(String deviceId, String patientId) async {
+  Future<void> addPatientMedicalDevice(
+    String deviceId,
+    String patientId,
+  ) async {
     final db = await database;
 
     // Use a LEFT JOIN to ensure we get the patient even if they have no vitals yet
@@ -1971,7 +2316,10 @@ class DatabaseManager {
     );
   }
 
-  Future<void> deletePatientMedicalDevice(String deviceId, String patientId) async {
+  Future<void> deletePatientMedicalDevice(
+    String deviceId,
+    String patientId,
+  ) async {
     final db = await database;
 
     // Use a LEFT JOIN to ensure we get the patient even if they have no vitals yet
@@ -1984,7 +2332,10 @@ class DatabaseManager {
     );
   }
 
-  Future<void> insertTrackingMetric({required int metricId, required String patientUuid}) async {
+  Future<void> insertTrackingMetric({
+    required int metricId,
+    required String patientUuid,
+  }) async {
     final db = await database;
     db.rawInsert(
       '''
@@ -2032,20 +2383,32 @@ class DatabaseManager {
   // `measures` -> metric.id) with zero Dart code ever touching it. Recording device
   // choices here means the picker's "Your devices" suggestions are the patient's own real
   // history, not just a generic catalog guess — a much better second-time suggestion.
-  Future<void> recordDeviceUsage({required String patientUuid, required String name, required int metricId}) async {
+  Future<void> recordDeviceUsage({
+    required String patientUuid,
+    required String name,
+    required int metricId,
+  }) async {
     final db = await database;
     final existing = await db.query(
       'device',
       columns: ['id'],
-      where: 'patient_uuid = ? AND name = ? AND measures = ? AND stopped_using IS NULL',
+      where:
+          'patient_uuid = ? AND name = ? AND measures = ? AND stopped_using IS NULL',
       whereArgs: [patientUuid, name, metricId],
       limit: 1,
     );
     if (existing.isNotEmpty) return;
-    await db.insert('device', {'patient_uuid': patientUuid, 'name': name, 'measures': metricId});
+    await db.insert('device', {
+      'patient_uuid': patientUuid,
+      'name': name,
+      'measures': metricId,
+    });
   }
 
-  Future<List<String>> getDeviceNamesForMetric({required String patientUuid, required int metricId}) async {
+  Future<List<String>> getDeviceNamesForMetric({
+    required String patientUuid,
+    required int metricId,
+  }) async {
     final db = await database;
     final rows = await db.query(
       'device',
@@ -2102,12 +2465,21 @@ class DatabaseManager {
   // Bulk form, same shape as getActiveThresholds/getActiveTargets — so the dashboard
   // screen can load every reminder preference for the patient in one query rather than
   // one round trip per tracked metric.
-  Future<List<Map<String, dynamic>>> getAllMetricReminderPreferences(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getAllMetricReminderPreferences(
+    String patientUuid,
+  ) async {
     final db = await database;
-    return await db.query('metric_reminder_preference', where: 'patient_uuid = ?', whereArgs: [patientUuid]);
+    return await db.query(
+      'metric_reminder_preference',
+      where: 'patient_uuid = ?',
+      whereArgs: [patientUuid],
+    );
   }
 
-  Future<void> muteMetricReminder({required int metricId, required String patientUuid}) async {
+  Future<void> muteMetricReminder({
+    required int metricId,
+    required String patientUuid,
+  }) async {
     final db = await database;
     await db.update(
       'metric_reminder_preference',
@@ -2122,7 +2494,9 @@ class DatabaseManager {
   // they actually last logged one rather than a fixed daily slot (the metric equivalent
   // of MedicationReminder's dose-log exclusion, but generalized to any cadence instead
   // of only "today").
-  Future<List<Map<String, dynamic>>> getMetricsWithReminders(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getMetricsWithReminders(
+    String patientUuid,
+  ) async {
     final db = await database;
     return await db.rawQuery(
       '''
@@ -2138,7 +2512,10 @@ class DatabaseManager {
     );
   }
 
-  Future<void> deleteTrackingMetric({required int metricId, required String patientUuid}) async {
+  Future<void> deleteTrackingMetric({
+    required int metricId,
+    required String patientUuid,
+  }) async {
     final db = await database;
     await db.rawDelete(
       '''
@@ -2158,7 +2535,9 @@ class DatabaseManager {
   ''');
   }
 
-  Future<List<Map<String, dynamic>>> getTrackedMetrics(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getTrackedMetrics(
+    String patientUuid,
+  ) async {
     final db = await database;
     return await db.rawQuery(
       '''
@@ -2170,7 +2549,9 @@ class DatabaseManager {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getAllPatientMetricValues(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getAllPatientMetricValues(
+    String patientUuid,
+  ) async {
     final db = await database;
     return await db.rawQuery(
       '''
@@ -2214,10 +2595,18 @@ class DatabaseManager {
     String? icon,
   }) async {
     final db = await database;
-    await db.insert('achievement', {'patient_uuid': patientUuid, 'name': name, 'reason': reason, 'icon': icon});
+    await db.insert('achievement', {
+      'patient_uuid': patientUuid,
+      'name': name,
+      'reason': reason,
+      'icon': icon,
+    });
   }
 
-  Future<bool> hasAchievement({required String patientUuid, required String name}) async {
+  Future<bool> hasAchievement({
+    required String patientUuid,
+    required String name,
+  }) async {
     final db = await database;
     final rows = await db.query(
       'achievement',
@@ -2266,7 +2655,10 @@ class DatabaseManager {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getPatientMetricValuesForMetric(String patientUuid, int metricId) async {
+  Future<List<Map<String, dynamic>>> getPatientMetricValuesForMetric(
+    String patientUuid,
+    int metricId,
+  ) async {
     final db = await database;
     return await db.rawQuery(
       '''
@@ -2280,7 +2672,9 @@ class DatabaseManager {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getPatientMetricRanges(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getPatientMetricRanges(
+    String patientUuid,
+  ) async {
     final db = await database;
     return await db.rawQuery(
       '''
@@ -2299,7 +2693,9 @@ class DatabaseManager {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getRecentPatientMetrics(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getRecentPatientMetrics(
+    String patientUuid,
+  ) async {
     final db = await database;
     return await db.rawQuery(
       '''
@@ -2322,7 +2718,9 @@ class DatabaseManager {
   // for why these are two separate concepts (doctor-communicated safety bounds vs. a
   // personal single-point goal) rather than one shape.
 
-  Future<List<Map<String, dynamic>>> getActiveThresholds(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getActiveThresholds(
+    String patientUuid,
+  ) async {
     final db = await database;
     return await db.query(
       'patient_metric_threshold',
@@ -2365,9 +2763,15 @@ class DatabaseManager {
     });
   }
 
-  Future<List<Map<String, dynamic>>> getActiveTargets(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getActiveTargets(
+    String patientUuid,
+  ) async {
     final db = await database;
-    return await db.query('patient_metric_target', where: 'patient_uuid = ? AND active = 1', whereArgs: [patientUuid]);
+    return await db.query(
+      'patient_metric_target',
+      where: 'patient_uuid = ? AND active = 1',
+      whereArgs: [patientUuid],
+    );
   }
 
   Future<void> setPatientMetricTarget({
@@ -2394,7 +2798,10 @@ class DatabaseManager {
     });
   }
 
-  Future<void> clearPatientMetricTarget(String patientUuid, int metricId) async {
+  Future<void> clearPatientMetricTarget(
+    String patientUuid,
+    int metricId,
+  ) async {
     final db = await database;
     await db.update(
       'patient_metric_target',
@@ -2425,14 +2832,17 @@ class DatabaseManager {
       [patientUuid, patientUuid, patientUuid, patientUuid, patientUuid],
     );
     if (rows.length < 5) return false;
-    final List<DateTime> dates = rows.map((r) => DateTime.parse(r['d'] as String)).toList()..sort();
+    final List<DateTime> dates =
+        rows.map((r) => DateTime.parse(r['d'] as String)).toList()..sort();
     return dates.last.difference(dates.first).inDays >= 7;
   }
 
   // Same five categories the Patient Diary already aggregates per-day (see
   // DatabaseManager.getDayEvents) — this is the all-time version, since the timeline
   // windows by scrolling rather than by a single selected date.
-  Future<Map<String, List<Map<String, dynamic>>>> getTimelineEventRows(String patientUuid) async {
+  Future<Map<String, List<Map<String, dynamic>>>> getTimelineEventRows(
+    String patientUuid,
+  ) async {
     final db = await database;
     final doses = await db.rawQuery(
       '''
@@ -2452,13 +2862,33 @@ class DatabaseManager {
       ''',
       [patientUuid],
     );
-    final symptoms = await db.query('markers', where: 'patient_uuid = ?', whereArgs: [patientUuid]);
-    final moods = await db.query('patient_mood', where: 'patient_uuid = ?', whereArgs: [patientUuid]);
-    final tests = await db.query('test_completion_log', where: 'patient_uuid = ?', whereArgs: [patientUuid]);
-    return {'doses': doses, 'appointments': appointments, 'symptoms': symptoms, 'moods': moods, 'tests': tests};
+    final symptoms = await db.query(
+      'markers',
+      where: 'patient_uuid = ?',
+      whereArgs: [patientUuid],
+    );
+    final moods = await db.query(
+      'patient_mood',
+      where: 'patient_uuid = ?',
+      whereArgs: [patientUuid],
+    );
+    final tests = await db.query(
+      'test_completion_log',
+      where: 'patient_uuid = ?',
+      whereArgs: [patientUuid],
+    );
+    return {
+      'doses': doses,
+      'appointments': appointments,
+      'symptoms': symptoms,
+      'moods': moods,
+      'tests': tests,
+    };
   }
 
-  Future<List<Map<String, dynamic>>> getMedicationSpanRows(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getMedicationSpanRows(
+    String patientUuid,
+  ) async {
     final db = await database;
     return await db.query(
       'medication',
@@ -2468,7 +2898,9 @@ class DatabaseManager {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getConditionSpanRows(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getConditionSpanRows(
+    String patientUuid,
+  ) async {
     final db = await database;
     return await db.rawQuery(
       '''
@@ -2481,11 +2913,19 @@ class DatabaseManager {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getProviderSpanRows(String patientUuid) async {
+  Future<List<Map<String, dynamic>>> getProviderSpanRows(
+    String patientUuid,
+  ) async {
     final db = await database;
     return await db.query(
       'provider',
-      columns: ['provider_uuid', 'first_name', 'last_name', 'started_seeing', 'stopped_seeing'],
+      columns: [
+        'provider_uuid',
+        'first_name',
+        'last_name',
+        'started_seeing',
+        'stopped_seeing',
+      ],
       where: 'patient_uuid = ? AND started_seeing IS NOT NULL',
       whereArgs: [patientUuid],
     );
@@ -2507,31 +2947,74 @@ class DatabaseManager {
   // The wizard generates medicationId up front (see AddMedicationWizard) so every
   // subsequent add* call below can target the exact row by primary key instead of
   // guessing which row "this patient's medication named X" refers to.
-  Future<void> addMedication({required String medicationId, required String name, required String patientUuid}) async {
-    await insertMedication({'id': medicationId, 'patient_uuid': patientUuid, 'name': name});
+  Future<void> addMedication({
+    required String medicationId,
+    required String name,
+    required String patientUuid,
+  }) async {
+    await insertMedication({
+      'id': medicationId,
+      'patient_uuid': patientUuid,
+      'name': name,
+    });
   }
 
-  Future<void> addDosage({required String medicationId, required String dosage}) async {
+  Future<void> addDosage({
+    required String medicationId,
+    required String dosage,
+  }) async {
     final db = await database;
-    await db.update('medication', {'dose': dosage}, where: 'id = ?', whereArgs: [medicationId]);
+    await db.update(
+      'medication',
+      {'dose': dosage},
+      where: 'id = ?',
+      whereArgs: [medicationId],
+    );
   }
 
-  Future<void> addMedicationType({required String medicationId, required MedicationTypes type}) async {
+  Future<void> addMedicationType({
+    required String medicationId,
+    required MedicationTypes type,
+  }) async {
     final db = await database;
-    await db.update('medication', {'type': type.name}, where: 'id = ?', whereArgs: [medicationId]);
+    await db.update(
+      'medication',
+      {'type': type.name},
+      where: 'id = ?',
+      whereArgs: [medicationId],
+    );
   }
 
-  Future<void> addMedicationShape({required String medicationId, required TabletShapes shape}) async {
+  Future<void> addMedicationShape({
+    required String medicationId,
+    required TabletShapes shape,
+  }) async {
     final db = await database;
-    await db.update('medication', {'shape': shape.name}, where: 'id = ?', whereArgs: [medicationId]);
+    await db.update(
+      'medication',
+      {'shape': shape.name},
+      where: 'id = ?',
+      whereArgs: [medicationId],
+    );
   }
 
-  Future<void> addMedicationColor({required String medicationId, required TabletColors color}) async {
+  Future<void> addMedicationColor({
+    required String medicationId,
+    required TabletColors color,
+  }) async {
     final db = await database;
-    await db.update('medication', {'color': color.name}, where: 'id = ?', whereArgs: [medicationId]);
+    await db.update(
+      'medication',
+      {'color': color.name},
+      where: 'id = ?',
+      whereArgs: [medicationId],
+    );
   }
 
-  Future<void> addFrequency({required String medicationId, required Frequency frequency}) async {
+  Future<void> addFrequency({
+    required String medicationId,
+    required Frequency frequency,
+  }) async {
     final db = await database;
 
     final String? latin = frequency.latinRecurrence;
@@ -2558,7 +3041,11 @@ class DatabaseManager {
 
     await db.update(
       'medication',
-      {'freq': freqLabel, 'started_taking': frequency.start?.toIso8601String(), 'reminder_time': reminderTime},
+      {
+        'freq': freqLabel,
+        'started_taking': frequency.start?.toIso8601String(),
+        'reminder_time': reminderTime,
+      },
       where: 'id = ?',
       whereArgs: [medicationId],
     );
@@ -2581,6 +3068,10 @@ class DatabaseManager {
     // Convert your Provider object to a Map (assuming you have a .toMap() method)
     final Map<String, dynamic> providerMap = provider.toMap();
 
-    await db.insert('provider', providerMap, conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert(
+      'provider',
+      providerMap,
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 }

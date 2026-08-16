@@ -19,6 +19,36 @@ import '../classes/carbon_theme_constants.dart';
 import '../classes/metric_source.dart';
 import '../classes/metric_value.dart';
 
+// The header capsule zooms into one of these on tap. Colors reuse the same semantics
+// established for the scatter chart's dashed reference lines and DualBoundCapsule —
+// red for Safe, amber for Healthy, green for Target — so the same color always means
+// the same thing everywhere a metric shows bounds.
+enum _CapsuleTier { safe, healthy, target }
+
+extension _CapsuleTierDisplay on _CapsuleTier {
+  String get label {
+    switch (this) {
+      case _CapsuleTier.safe:
+        return "Safe";
+      case _CapsuleTier.healthy:
+        return "Healthy";
+      case _CapsuleTier.target:
+        return "Target";
+    }
+  }
+
+  Color get color {
+    switch (this) {
+      case _CapsuleTier.safe:
+        return carbonColorSupportError;
+      case _CapsuleTier.healthy:
+        return carbonColorSupportWarning;
+      case _CapsuleTier.target:
+        return carbonColorSupportSuccess;
+    }
+  }
+}
+
 class MetricExpandableCard extends StatefulWidget {
   final String patientUuid;
   final bool tracked;
@@ -75,6 +105,11 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
   late String? selectedSourceDetail = widget.source?.sourceDetail;
   bool expanded = false;
   bool showInfoView = false; // true if opened via '?' button
+  // Which tier the header capsule is currently zoomed into — cycles Safe -> Healthy ->
+  // Target on tap. Index rather than the enum itself so it survives a tier disappearing
+  // (e.g. target removed) without needing to be reset; it just wraps against whatever
+  // tiers are available on the next build.
+  int _capsuleTierIndex = 0;
   final TextEditingController newValueController = TextEditingController();
   late final FocusNode newValueControllerFocusNode = FocusNode();
   late Map<String, dynamic> config;
@@ -91,8 +126,34 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
       widget.threshold?.dangerHigh ?? widget.metric.safeUpperValue ?? 0.0;
   double get lsl =>
       widget.threshold?.dangerLow ?? widget.metric.safeLowerValue ?? 0.0;
+  double? get healthyLow =>
+      widget.threshold?.healthyLow ?? widget.metric.healthyLowerValue;
+  double? get healthyHigh =>
+      widget.threshold?.healthyHigh ?? widget.metric.healthyUpperValue;
   List<Map<String, dynamic>> get history => widget.historicalValues ?? [];
   MetricRange get range => widget.range ?? MetricRange(id: widget.metric.id);
+
+  // Which tiers the header capsule can zoom into — only ones the patient actually has
+  // data for. Safe is always available (it falls back to 0.0/0.0 like the rest of the
+  // card does), Healthy and Target only appear once they're actually set.
+  List<_CapsuleTier> get _availableCapsuleTiers {
+    final List<_CapsuleTier> tiers = [_CapsuleTier.safe];
+    if (healthyLow != null || healthyHigh != null) {
+      tiers.add(_CapsuleTier.healthy);
+    }
+    if (widget.target != null) tiers.add(_CapsuleTier.target);
+    return tiers;
+  }
+
+  // A tap-to-zoom band around the target, since a target is a single value rather than
+  // a range. Reuses whatever real range is already on hand so the "zoom" actually means
+  // something, rather than inventing an arbitrary window.
+  double get _targetBandHalfWidth {
+    final double? hl = healthyLow, hh = healthyHigh;
+    if (hl != null && hh != null && hh > hl) return (hh - hl) / 2;
+    if (usl > lsl) return (usl - lsl) / 2;
+    return (widget.target?.targetValue ?? 0).abs() * 0.1 + 1;
+  }
 
   @override
   void initState() {
@@ -333,20 +394,64 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
                   ),
                 ),
                 if (tracked)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 0.0,
-                    ),
-                    child: HighLowCloseCapsule(
-                      current: range.latest ?? 0.0,
-                      historicalMin: range.minimum ?? 0.0,
-                      historicalMax: range.maximum ?? 0.0,
-                      clinicalMin: lsl,
-                      clinicalMax: usl,
-                      height: 60,
-                      color: carbonColorPrimary04,
-                    ),
+                  Builder(
+                    builder: (context) {
+                      final List<_CapsuleTier> tiers = _availableCapsuleTiers;
+                      final _CapsuleTier activeTier =
+                          tiers[_capsuleTierIndex % tiers.length];
+                      final double clinicalMin;
+                      final double clinicalMax;
+                      switch (activeTier) {
+                        case _CapsuleTier.safe:
+                          clinicalMin = lsl;
+                          clinicalMax = usl;
+                          break;
+                        case _CapsuleTier.healthy:
+                          clinicalMin = healthyLow ?? lsl;
+                          clinicalMax = healthyHigh ?? usl;
+                          break;
+                        case _CapsuleTier.target:
+                          final double target = widget.target!.targetValue;
+                          final double band = _targetBandHalfWidth;
+                          clinicalMin = target - band;
+                          clinicalMax = target + band;
+                          break;
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 0.0,
+                        ),
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: tiers.length > 1
+                              ? () => setState(() => _capsuleTierIndex++)
+                              : null,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              HighLowCloseCapsule(
+                                current: range.latest ?? 0.0,
+                                historicalMin: range.minimum ?? 0.0,
+                                historicalMax: range.maximum ?? 0.0,
+                                clinicalMin: clinicalMin,
+                                clinicalMax: clinicalMax,
+                                height: 60,
+                                color: carbonColorPrimary04,
+                              ),
+                              if (tiers.length > 1) ...[
+                                const SizedBox(height: 2),
+                                Text(
+                                  activeTier.label,
+                                  style: CarbonTheme.carbonHelperTextStyle
+                                      ?.copyWith(color: activeTier.color),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 if (!tracked)
                   Align(
@@ -578,6 +683,11 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
           MetricScatterChart(
             historicalValues: history,
             color: carbonColorPrimary04,
+            safeMin: lsl,
+            safeMax: usl,
+            healthyMin: healthyLow,
+            healthyMax: healthyHigh,
+            targetValue: widget.target?.targetValue,
           ),
         const SizedBox(height: 16),
         Row(
@@ -612,10 +722,7 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _rangeLabel(
-                      threshold?.healthyLow ?? widget.metric.healthyLowerValue,
-                      threshold?.healthyHigh ?? widget.metric.healthyUpperValue,
-                    ),
+                    _rangeLabel(healthyLow, healthyHigh),
                     style: CarbonTheme.carbonTextStyle,
                   ),
                   Text(
