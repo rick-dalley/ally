@@ -1,32 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/carbon_color_constants.dart';
 import 'dart:ui' as ui;
 import '../app_theme.dart';
+import '../classes/database_manager.dart';
 import '../classes/patient_action.dart';
+import '../classes/timeline_span.dart';
+import '../widgets/timeline_span_picker_sheet.dart';
 
-class TherapyPeriod {
-  final DateTime startDate;
-  final DateTime endDate;
-  final String name;
-  final Color color;
-  final IconData icon;
-
-  TherapyPeriod({
-    required this.startDate,
-    required this.endDate,
-    required this.name,
-    required this.color,
-    required this.icon,
-  });
-}
+// Colors are assigned by lane position, not baked into the span itself — up to three
+// spans render together and need to stay visually distinct no matter which categories
+// the patient actually picks (three medications picked together shouldn't all be the
+// same color). Real Carbon semantic tokens, not invented hex values.
+const List<Color> _laneColors = [carbonColorSupportInfo, carbonColorSupportSuccess, carbonColorSupportCautionMajor];
 
 class TimelineScrollerWidget extends StatefulWidget {
-  final List<PatientAction> actions;
-  final DateTime startTime;
-  final DateTime endTime;
+  final String patientUuid;
 
-  const TimelineScrollerWidget({super.key, required this.actions, required this.startTime, required this.endTime});
+  const TimelineScrollerWidget({super.key, required this.patientUuid});
 
   @override
   State<TimelineScrollerWidget> createState() => TimelineScrollerWidgetState();
@@ -38,26 +30,93 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
   final ValueNotifier<PatientAction?> _activeAction = ValueNotifier<PatientAction?>(null);
   final double timelineHeight = 2000.0;
 
-  late int minMs;
-  late int maxMs;
-  late int rangeMs;
-  List<TherapyPeriod> periods = [];
+  bool _loading = true;
+  bool _isExample = false;
+  List<PatientAction> actions = [];
+  List<TimelineSpan> availableSpans = [];
+  List<TimelineSpan> selectedSpans = [];
+  late DateTime startTime;
+  late DateTime endTime;
+
   @override
   void initState() {
     super.initState();
-    periods = getMockPeriods();
     _scrollController.addListener(_updateNeedleTime);
+    _load();
+  }
+
+  Future<void> _load() async {
+    final bool sufficient = await DatabaseManager().hasSufficientTimelineData(widget.patientUuid);
+
+    if (sufficient) {
+      final rows = await DatabaseManager().getTimelineEventRows(widget.patientUuid);
+      final List<PatientAction> loadedActions =
+          [
+            ...rows['doses']!.map(PatientAction.medicationDose),
+            ...rows['appointments']!.map(PatientAction.appointment),
+            ...rows['symptoms']!.map(PatientAction.symptom),
+            ...rows['moods']!.map(PatientAction.mood),
+            ...rows['tests']!.map(PatientAction.test),
+          ]..sort((a, b) => a.occurred.compareTo(b.occurred));
+
+      final medRows = await DatabaseManager().getMedicationSpanRows(widget.patientUuid);
+      final conditionRows = await DatabaseManager().getConditionSpanRows(widget.patientUuid);
+      final providerRows = await DatabaseManager().getProviderSpanRows(widget.patientUuid);
+      final List<TimelineSpan> loadedSpans =
+          [
+            ...medRows.map(PeriodSpan.medication),
+            ...conditionRows.map(PeriodSpan.condition),
+            ...providerRows.map(PeriodSpan.provider),
+          ]..sort((a, b) => b.startDate.compareTo(a.startDate));
+
+      final DateTime earliest = [
+        loadedActions.first.occurred,
+        ...loadedSpans.map((s) => s.startDate),
+      ].reduce((a, b) => a.isBefore(b) ? a : b);
+
+      if (!mounted) return;
+      setState(() {
+        actions = loadedActions;
+        availableSpans = loadedSpans;
+        selectedSpans = loadedSpans.take(3).toList();
+        startTime = earliest;
+        endTime = DateTime.now();
+        _isExample = false;
+        _loading = false;
+      });
+    } else {
+      final example = TimelineExampleData.build();
+      if (!mounted) return;
+      setState(() {
+        actions = example.actions;
+        availableSpans = example.spans;
+        selectedSpans = example.spans;
+        startTime = example.startTime;
+        endTime = example.endTime;
+        _isExample = true;
+        _loading = false;
+      });
+    }
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
-        // Jump to the bottom instantly
         _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
       }
     });
   }
 
-  void _updateNeedleTime() {
-    if (!_scrollController.hasClients) return;
+  Future<void> _openPicker() async {
+    final List<TimelineSpan>? result = await showModalBottomSheet<List<TimelineSpan>>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+      builder: (context) => TimelineSpanPickerSheet(available: availableSpans, initiallySelected: selectedSpans),
+    );
+    if (result != null) setState(() => selectedSpans = result);
+  }
 
+  void _updateNeedleTime() {
     if (!_scrollController.hasClients) return;
 
     // Get the viewport center in global screen coordinates
@@ -72,10 +131,10 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
     final double progress = (needleY / 2000.0).clamp(0.0, 1.0);
 
     // Derive the time using native DateTime duration math
-    final Duration totalDuration = widget.endTime.difference(widget.startTime);
+    final Duration totalDuration = endTime.difference(startTime);
 
     // Calculate the time at the needle position
-    final DateTime currentDateTime = widget.startTime.add(totalDuration * progress);
+    final DateTime currentDateTime = startTime.add(totalDuration * progress);
 
     _needleTime.value = DateFormat('MMM d, HH:mm').format(currentDateTime);
 
@@ -83,10 +142,9 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
     PatientAction? closest;
     double minDistance = 25.0;
 
-    for (var action in widget.actions) {
+    for (var action in actions) {
       // Calculate how far this action is from the start time as a ratio
-      final double actionProgress =
-          action.occurred.difference(widget.startTime).inMilliseconds / totalDuration.inMilliseconds;
+      final double actionProgress = action.occurred.difference(startTime).inMilliseconds / totalDuration.inMilliseconds;
       final double actionY = timelineHeight * actionProgress;
 
       if ((actionY - needleY).abs() < minDistance) {
@@ -105,37 +163,10 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
     super.dispose();
   }
 
-  List<TherapyPeriod> getMockPeriods() {
-    final Duration totalDuration = widget.endTime.difference(widget.startTime);
-
-    return [
-      TherapyPeriod(
-        name: "Perindopril",
-        color: Colors.red,
-        // Use the duration multiplication and addition directly on the DateTime
-        startDate: widget.startTime.add(totalDuration * 0.1),
-        endDate: widget.startTime.add(totalDuration * 0.4),
-        icon: Icons.medication,
-      ),
-      TherapyPeriod(
-        name: "CPAP",
-        color: Colors.green,
-        startDate: widget.startTime.add(totalDuration * 0.3),
-        endDate: widget.startTime.add(totalDuration * 0.7),
-        icon: Icons.air,
-      ),
-      TherapyPeriod(
-        name: "Physical Therapy",
-        color: Colors.blue,
-        startDate: widget.startTime.add(totalDuration * 0.75),
-        endDate: widget.startTime.add(totalDuration * 0.95),
-        icon: Icons.fitness_center,
-      ),
-    ];
-  }
-
   @override
   Widget build(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator());
+
     final double screenWidth = MediaQuery.sizeOf(context).width;
     return Stack(
       children: [
@@ -151,10 +182,10 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
                 children: [
                   CustomPaint(
                     painter: TherapyPeriodPainter(
-                      periods: periods,
+                      spans: selectedSpans,
                       canvasHeight: 2000,
-                      startTime: widget.startTime,
-                      endTime: widget.endTime,
+                      startTime: startTime,
+                      endTime: endTime,
                       scrollOffset: _scrollController.hasClients ? _scrollController.offset : 0.0,
                     ),
                     size: Size.infinite,
@@ -164,9 +195,9 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
                     builder: (context, activeAction, child) {
                       return CustomPaint(
                         painter: TimeLinePainter(
-                          actions: widget.actions,
-                          startTime: widget.startTime,
-                          endTime: widget.endTime,
+                          actions: actions,
+                          startTime: startTime,
+                          endTime: endTime,
                           activeAction: activeAction,
                         ),
                       );
@@ -177,16 +208,14 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
             ),
           ),
         ),
-        ...List.generate(periods.length, (i) {
-          final period = periods[i];
-          // Calculate yTop here using the same math you used in your painter
-          final Duration totalDuration = widget.endTime.difference(widget.startTime);
+        ...List.generate(selectedSpans.length, (i) {
+          final span = selectedSpans[i];
+          final Duration totalDuration = endTime.difference(startTime);
           final double totalMs = totalDuration.inMilliseconds.toDouble();
-          final double startProgress = period.startDate.difference(widget.startTime).inMilliseconds / totalMs;
+          final double startProgress = span.startDate.difference(startTime).inMilliseconds / totalMs;
           final double yTop = (2000.0 * startProgress.clamp(0.0, 1.0));
           final double xPos = 100.0 + (i * 100.0);
-          final double endProgress =
-              period.endDate.difference(widget.startTime).inMilliseconds / totalDuration.inMilliseconds.toDouble();
+          final double endProgress = span.endDate.difference(startTime).inMilliseconds / totalMs;
           final double yBottom = (2000.0 * endProgress.clamp(0.0, 1.0));
           return AnimatedBuilder(
             animation: _scrollController,
@@ -197,9 +226,9 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
                 child: CustomPaint(
                   size: const Size(72, 120),
                   painter: CapsuleSliderBubble(
-                    icon: period.icon,
-                    label: period.name,
-                    color: period.color,
+                    icon: span.category.icon,
+                    label: span.label,
+                    color: _laneColors[i % _laneColors.length],
                     scrollOffset: _scrollController.offset,
                     yTop: yTop,
                     yBottom: yBottom,
@@ -259,11 +288,45 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
                   children: [
                     Text(DateFormat('MMM d, HH:mm').format(action.occurred)),
                     Container(width: 1, height: 20, color: Colors.grey, margin: EdgeInsets.symmetric(horizontal: 10)),
-                    Text(action.label, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Expanded(child: Text(action.description, style: const TextStyle(fontWeight: FontWeight.bold))),
                   ],
                 ),
               );
             },
+          ),
+        ),
+        // Example-data banner — unmissable while example data is showing, gone the
+        // instant real data clears the threshold (see hasSufficientTimelineData).
+        if (_isExample)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              bottom: false,
+              child: Container(
+                width: double.infinity,
+                color: carbonColorSupportCautionMajor,
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                child: Text(
+                  "Showing example data — keep logging for about a week and this fills in with yours.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: carbonColorButtonOnPrimary, fontWeight: FontWeight.w600, fontSize: 12),
+                ),
+              ),
+            ),
+          ),
+        Positioned(
+          top: _isExample ? 40 : 8,
+          right: 8,
+          child: SafeArea(
+            bottom: false,
+            child: FloatingActionButton.small(
+              heroTag: "timeline_compare",
+              onPressed: _isExample ? null : _openPicker,
+              tooltip: "Choose what to compare",
+              child: const Icon(Symbols.compare_arrows),
+            ),
           ),
         ),
         Positioned(
@@ -276,10 +339,10 @@ class TimelineScrollerWidgetState extends State<TimelineScrollerWidget> {
             child: HorizontalMiniMap(
               controller: _scrollController,
               totalTimelineHeight: 2000.0,
-              periods: periods,
+              spans: selectedSpans,
               height: 80,
-              minDate: widget.startTime, // Use the injected start
-              maxDate: widget.endTime, // Use the injected end
+              minDate: startTime,
+              maxDate: endTime,
             ),
           ),
         ),
@@ -372,7 +435,7 @@ class TimeLinePainter extends CustomPainter {
 }
 
 class TherapyPeriodPainter extends CustomPainter {
-  final List<TherapyPeriod> periods;
+  final List<TimelineSpan> spans;
   final DateTime startTime;
   final DateTime endTime;
   final double canvasHeight;
@@ -380,7 +443,7 @@ class TherapyPeriodPainter extends CustomPainter {
   final double topPadding;
 
   TherapyPeriodPainter({
-    required this.periods,
+    required this.spans,
     required this.startTime,
     required this.endTime,
     required this.canvasHeight,
@@ -393,11 +456,12 @@ class TherapyPeriodPainter extends CustomPainter {
     final Duration totalDuration = endTime.difference(startTime);
     final double totalMs = totalDuration.inMilliseconds.toDouble();
 
-    for (int i = 0; i < periods.length; i++) {
-      final period = periods[i];
+    for (int i = 0; i < spans.length; i++) {
+      final span = spans[i];
+      final Color color = _laneColors[i % _laneColors.length];
 
-      final double startProgress = period.startDate.difference(startTime).inMilliseconds / totalMs;
-      final double endProgress = period.endDate.difference(startTime).inMilliseconds / totalMs;
+      final double startProgress = span.startDate.difference(startTime).inMilliseconds / totalMs;
+      final double endProgress = span.endDate.difference(startTime).inMilliseconds / totalMs;
 
       final double yTop = canvasHeight * startProgress.clamp(0.0, 1.0);
       final double yBottom = canvasHeight * endProgress.clamp(0.0, 1.0);
@@ -407,14 +471,14 @@ class TherapyPeriodPainter extends CustomPainter {
 
       // Draw the capsule
       final rect = RRect.fromRectAndRadius(Rect.fromLTWH(xPos, yTop, 80, height), const Radius.circular(32));
-      canvas.drawRRect(rect, Paint()..color = period.color.withValues(alpha: 0.2));
+      canvas.drawRRect(rect, Paint()..color = color.withValues(alpha: 0.2));
     }
   }
 
   @override
   bool shouldRepaint(covariant TherapyPeriodPainter oldDelegate) {
     return oldDelegate.scrollOffset != scrollOffset ||
-        oldDelegate.periods != periods ||
+        oldDelegate.spans != spans ||
         oldDelegate.startTime != startTime ||
         oldDelegate.endTime != endTime;
   }
@@ -423,7 +487,7 @@ class TherapyPeriodPainter extends CustomPainter {
 class HorizontalMiniMap extends StatelessWidget {
   final ScrollController controller;
   final double totalTimelineHeight;
-  final List<TherapyPeriod> periods;
+  final List<TimelineSpan> spans;
   final DateTime minDate;
   final DateTime maxDate;
   final double? height;
@@ -432,7 +496,7 @@ class HorizontalMiniMap extends StatelessWidget {
     super.key,
     required this.controller,
     required this.totalTimelineHeight,
-    required this.periods,
+    required this.spans,
     required this.minDate,
     required this.maxDate,
     this.height,
@@ -520,8 +584,8 @@ class HorizontalMiniMap extends StatelessWidget {
                         ),
 
                         // Inside your Stack, in HorizontalMiniMap:
-                        ...List.generate(periods.length, (i) {
-                          final period = periods[i];
+                        ...List.generate(spans.length, (i) {
+                          final Color color = _laneColors[i % _laneColors.length];
 
                           // 1. Fixed height and spacing logic
                           const double capsuleHeight = 20.0;
@@ -531,7 +595,7 @@ class HorizontalMiniMap extends StatelessWidget {
                           // 2. Proportional Horizontal Mapping
                           // Divide the track into equal slots based on the number of periods
                           // This removes the "100px" offset and spreads them across the full width
-                          final int totalPeriods = periods.length;
+                          final int totalPeriods = spans.length;
                           final double slotWidth = constraints.maxWidth / totalPeriods;
                           final double capsuleWidth = 80.0; // Your desired width
 
@@ -547,14 +611,13 @@ class HorizontalMiniMap extends StatelessWidget {
                                 width: capsuleWidth,
                                 height: capsuleHeight,
                                 decoration: BoxDecoration(
-                                  border: Border.all(color: period.color, width: 1.0),
+                                  border: Border.all(color: color, width: 1.0),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
                             ),
                           );
                         }),
-                        // The Interactive Handle (Thumb)
                         // The Interactive Handle (Thumb)
                         Positioned(
                           left: padding + (scrollProgress * (activeTrackWidth - effectiveHandleWidth)),
@@ -622,54 +685,6 @@ class DashedLinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class VerticalMiniMap extends StatelessWidget {
-  final ScrollController controller;
-  final double totalHeight;
-
-  const VerticalMiniMap({super.key, required this.controller, this.totalHeight = 2000.0});
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      bottom: 20,
-      right: 20,
-      width: 40,
-      height: 200, // Fixed height for the mini-map
-      child: AnimatedBuilder(
-        animation: controller,
-        builder: (context, child) {
-          final double viewportHeight = MediaQuery.of(context).size.height;
-          // Calculate the proportional handle height
-          final double handleHeight = (viewportHeight / totalHeight) * 200;
-
-          // Calculate the handle offset
-          final double scrollProgress = controller.hasClients
-              ? (controller.offset / (totalHeight - viewportHeight)).clamp(0.0, 1.0)
-              : 0.0;
-          final double topOffset = scrollProgress * (200 - handleHeight);
-
-          return Container(
-            decoration: BoxDecoration(color: Colors.black26, borderRadius: BorderRadius.circular(4)),
-            child: Stack(
-              children: [
-                Positioned(
-                  top: topOffset,
-                  left: 2,
-                  right: 2,
-                  child: Container(
-                    height: handleHeight,
-                    decoration: BoxDecoration(color: AppTheme.primaryColor, borderRadius: BorderRadius.circular(2)),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
 }
 
 class CapsuleSliderBubble extends CustomPainter {

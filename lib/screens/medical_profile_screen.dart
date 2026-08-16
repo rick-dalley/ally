@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/carbon_color_constants.dart';
+import 'package:triage/classes/domain_colors.dart';
 import 'package:triage/screens/allergies_screen.dart';
 import 'package:triage/screens/body_screen.dart';
 import 'package:triage/screens/eye_care_screen.dart';
+import 'package:triage/screens/reports_hub_screen.dart';
 import 'package:triage/screens/physical_health.dart';
 import 'package:triage/screens/prescription_screen.dart';
 import 'package:triage/screens/questionnaires_screen.dart';
@@ -162,6 +164,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     icon: Symbols.diagnosis_sharp,
                     iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.diagnosis_sharp,
+                    iconColor: AppDomain.conditions.color,
                     onTap: () => _launchPhysicalHealthChecklist(context, widget.user.patientUuid),
                   ),
                   CarbonActionTile(
@@ -170,6 +173,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     icon: Symbols.clinical_notes_sharp,
                     iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.clinical_notes_sharp,
+                    iconColor: AppDomain.diary.color,
                     onTap: () => launchPatientDiaryScreen(patient: widget.user),
                   ),
                   CarbonActionTile(
@@ -178,6 +182,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     icon: Symbols.vaccines_sharp,
                     iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.vaccines_sharp,
+                    iconColor: AppDomain.immunizations.color,
                     onTap: () => _launchImmunizationModal(context, widget.user),
                   ),
                   CarbonActionTile(
@@ -186,6 +191,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     icon: Symbols.medication_sharp,
                     iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.medication_sharp,
+                    iconColor: AppDomain.prescriptions.color,
                     onTap: () => launchMedicationScreen(patient: widget.user),
                   ),
                   CarbonActionTile(
@@ -193,6 +199,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     subtitle: "Things I'm feeling",
                     icon: Symbols.symptoms,
                     iconSize: Size(32, 32),
+                    iconColor: AppDomain.symptoms.color,
                     onTap: () => launchSymptoms(patient: widget.user),
                   ),
                   CarbonActionTile(
@@ -201,7 +208,17 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     icon: Symbols.lab_panel,
                     iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.lab_panel,
+                    iconColor: AppDomain.tests.color,
                     onTap: () => launchTestsScreen(patient: widget.user),
+                  ),
+                  CarbonActionTile(
+                    title: "Reports",
+                    subtitle: "Documents to share with a doctor",
+                    icon: Symbols.description,
+                    iconSize: Size(32.0, 32.0),
+                    outlineIcon: Symbols.description,
+                    iconColor: AppDomain.reports.color,
+                    onTap: () => launchReportsScreen(patient: widget.user),
                   ),
                   CarbonActionTile(
                     title: "Allergies",
@@ -209,6 +226,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     icon: Symbols.allergy,
                     iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.allergy,
+                    iconColor: AppDomain.allergies.color,
                     onTap: () => _launchAllergiesChecklist(context, widget.user.patientUuid),
                   ),
                   CarbonActionTile(
@@ -217,6 +235,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     icon: Symbols.ophthalmology,
                     iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.ophthalmology,
+                    iconColor: AppDomain.eyeCare.color,
                     onTap: () => launchEyeCareScreen(patient: widget.user),
                   ),
                   CarbonActionTile(
@@ -225,6 +244,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     icon: Symbols.inventory_2,
                     iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.inventory_2,
+                    iconColor: AppDomain.supplies.color,
                     onTap: () => launchSuppliesScreen(patient: widget.user),
                   ),
                   CarbonActionTile(
@@ -233,6 +253,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     icon: Symbols.ballot_sharp,
                     iconSize: Size(32.0, 32.0),
                     outlineIcon: Symbols.ballot_sharp,
+                    iconColor: AppDomain.questionnaires.color,
                     onTap: () => launchQuestionnairesScreen(patient: widget.user),
                   ),
                 ],
@@ -356,6 +377,39 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
       },
     );
     //
+  }
+
+  void launchReportsScreen({required Patient patient}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Allows the sheet to take full height
+      useSafeArea: true, // Respects the device notch and safe areas
+      backgroundColor: AppTheme.surfaceColor,
+      // Set to zero for the strict, sharp-cornered Carbon aesthetic
+      shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
+      builder: (context) {
+        return Column(
+          children: [
+            // Header: Consistent with your other Carbon-style modals
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    icon: const Icon(Symbols.close, color: Colors.grey, size: 28),
+                    onPressed: () => Navigator.pop(context, false),
+                  ),
+                ],
+              ),
+            ),
+
+            // Content: Expanded to fill the remaining vertical space
+            Expanded(child: ReportsHubScreen(patient: patient)),
+          ],
+        );
+      },
+    );
   }
 
   void launchEyeCareScreen({required Patient patient}) {

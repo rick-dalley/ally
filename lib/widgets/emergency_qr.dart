@@ -4,43 +4,67 @@ import 'dart:convert';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../app_theme.dart';
+import '../classes/database_manager.dart';
 import '../classes/patient.dart';
 
+// The one screen in the app whose actual user is often not the patient — a first
+// responder or bystander in a crisis, scanning this with no familiarity with the app.
+// Every field in the payload has to be real: this used to hold hardcoded literal
+// allergies/conditions regardless of the patient's actual record, which is a genuine
+// safety problem for a screen whose entire purpose is emergency medical information.
 class EmergencyQRCodeView extends StatelessWidget {
   final Patient householdMember;
-  // This represents your normalized Emergency Passport data
 
   const EmergencyQRCodeView({super.key, required this.householdMember});
 
-  @override
-  Widget build(BuildContext context) {
-    // 1. Serialize data to JSON string
-    final Map<String, dynamic> emergencyData = {
+  Future<Map<String, dynamic>> _buildEmergencyPayload() async {
+    final List<String> allergies = await DatabaseManager().getAllergyNames(householdMember.patientUuid);
+    final List<String> conditions = await DatabaseManager().getActiveConditionNames(householdMember.patientUuid);
+
+    return {
       "name": "${householdMember.firstName} ${householdMember.lastName}",
-      "bloodType": "O+", //householdMember.bloodType,
-      "allergies": ["NSAIDS", "Penicillin"], //householdMember.allergies,
-      "conditions": ["hypertensive"], //householdMember.conditions,
+      "bloodType": householdMember.bloodType.label,
+      "allergies": allergies,
+      "conditions": conditions,
       "emergencyContact": {"name": householdMember.contactName, "phone": householdMember.contactPhone},
     };
-    final String qrPayload = jsonEncode(emergencyData);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Sized relative to screen width instead of a fixed 300px — this needs to scan
+    // fast, at arm's length, in bad lighting, possibly with someone else's hands
+    // holding the phone. Bigger is strictly better here up to the point it no longer
+    // fits the screen.
+    final double qrSize = (MediaQuery.sizeOf(context).width * 0.85).clamp(280.0, 480.0);
+
     return Scaffold(
       extendBodyBehindAppBar: false,
       backgroundColor: AppTheme.primaryColor,
       body: SafeArea(
-        // This ensures the content respects notches and system UI
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text("Show this to emergency staff", style: TextStyle(fontSize: 18, color: AppTheme.onPrimaryColor)),
-              const SizedBox(height: 20),
-              Container(
-                width: 300,
-                height: 300,
-                color: AppTheme.onPrimaryColor,
-                child: QrImageView(data: qrPayload, version: QrVersions.auto, size: 300.0),
-              ),
-            ],
+          child: FutureBuilder<Map<String, dynamic>>(
+            future: _buildEmergencyPayload(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState != ConnectionState.done) {
+                return CircularProgressIndicator(color: AppTheme.onPrimaryColor);
+              }
+              final String qrPayload = jsonEncode(snapshot.data ?? {});
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("Show this to emergency staff", style: TextStyle(fontSize: 18, color: AppTheme.onPrimaryColor)),
+                  const SizedBox(height: 20),
+                  Container(
+                    width: qrSize,
+                    height: qrSize,
+                    padding: const EdgeInsets.all(16),
+                    color: AppTheme.onPrimaryColor,
+                    child: QrImageView(data: qrPayload, version: QrVersions.auto, size: qrSize - 32),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),

@@ -1,78 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:triage/classes/carbon_color_constants.dart';
 import '../app_theme.dart';
+import '../classes/carbon_color_constants.dart';
 import '../classes/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
+import '../classes/medical_category_colors.dart';
 import '../classes/patient_condition.dart';
 import '../widgets/condition_chip.dart';
-import 'package:material_symbols_icons/symbols.dart';
 import '../widgets/carbon_quick_entry_field.dart';
 import '../widgets/halo_ripple_chip.dart';
 
-class MedicalCategory {
-  final IconData iconData;
-  final Color color;
-  final Color textColor;
-  MedicalCategory({required this.iconData, required this.color, required this.textColor});
-}
-
-Map<String, MedicalCategory> categoryIcons = {
-  "Cardiovascular": MedicalCategory(
-    iconData: Symbols.cardiology,
-    color: Color(0xFFBA0000),
-    textColor: AppTheme.onPrimaryColor,
-  ),
-  "Dermatological": MedicalCategory(
-    iconData: Symbols.dermatology,
-    color: Color(0xFFBA5D00),
-    textColor: AppTheme.onPrimaryColor,
-  ),
-  "Gastrointestinal": MedicalCategory(
-    iconData: Symbols.gastroenterology,
-    color: Color(0xFF64008C),
-    textColor: AppTheme.onPrimaryColor,
-  ),
-  "Infectious and Immunological": MedicalCategory(
-    iconData: Symbols.microbiology,
-    color: Color(0xFFBA8002),
-    textColor: AppTheme.onPrimaryColor,
-  ),
-  "Mental and Behavioral Health": MedicalCategory(
-    iconData: Symbols.psychiatry,
-    color: Color(0xFF187303),
-    textColor: AppTheme.onPrimaryColor,
-  ),
-  "Metabolic & Endocrine": MedicalCategory(
-    iconData: Symbols.metabolism,
-    color: Color(0xFF730350),
-    textColor: AppTheme.onPrimaryColor,
-  ),
-  "Musculoskeletal": MedicalCategory(
-    iconData: Symbols.orthopedics,
-    color: Color(0xFF636363),
-    textColor: AppTheme.onPrimaryColor,
-  ),
-  "Neurological": MedicalCategory(
-    iconData: Symbols.neurology,
-    color: Color(0xFF215A8A),
-    textColor: AppTheme.onPrimaryColor,
-  ),
-  "Respiratory": MedicalCategory(
-    iconData: Symbols.pulmonology,
-    color: Color(0xFF0298BA),
-    textColor: AppTheme.onPrimaryColor,
-  ),
-  "Urological and Reproductive": MedicalCategory(
-    iconData: Symbols.urology,
-    color: Color(0xFF8A346C),
-    textColor: AppTheme.onPrimaryColor,
-  ),
-  "Custom": MedicalCategory(
-    iconData: Symbols.medical_information,
-    color: carbonColorButtonPrimary,
-    textColor: AppTheme.onPrimaryColor,
-  ),
-};
+// categoryIcons now lives in medical_category_colors.dart as medicalCategoryColors —
+// kept as a local alias so this screen's many existing references don't all need
+// renaming for what's purely a "moved to a shared file" change.
+Map<String, MedicalCategory> get categoryIcons => medicalCategoryColors;
 
 class ExistingMedicalConditionsScreen extends StatefulWidget {
   final String patientUuid;

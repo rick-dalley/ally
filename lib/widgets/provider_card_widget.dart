@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/carbon_color_constants.dart';
 import 'package:triage/classes/carbon_theme_constants.dart';
+import 'package:triage/classes/medical_category_colors.dart';
 import 'package:triage/classes/phone.dart';
 import 'package:triage/classes/provider.dart';
 import 'package:triage/widgets/avatar_picker.dart';
@@ -120,6 +121,10 @@ class ProviderCardState extends State<ProviderCard> {
     String pager = provider.getPhone(phoneType: PhoneTypes.pager);
     String qualifications = "${provider.specialities ?? 'General'} - ${provider.department ?? 'Family Medicine'}";
     String name = "${provider.firstName} ${provider.lastName}";
+    // Same body-system palette as Conditions/Allergies — a cardiologist's card and a
+    // cardiovascular condition sharing a color is a real, meaningful association, not
+    // a collision, unlike reusing a Carbon semantic color would be.
+    final MedicalCategory category = categoryForSpecialty(provider.specialities ?? provider.position);
     Phone? phone = provider.getAvailablePhone(preferred: PhoneTypes.office);
     String phoneInformation = '';
     if (phone != null) {
@@ -136,14 +141,19 @@ class ProviderCardState extends State<ProviderCard> {
             Container(
               height: 48.0,
               width: double.infinity,
-              color: carbonColorButtonPrimary, //provider.color?.color,
+              color: category.color,
               alignment: Alignment.center, // This centers the Row within the Container
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center, // This centers the children inside the Row
                 mainAxisSize: MainAxisSize.max,
                 children: [
-                  Icon(Symbols.medication, color: carbonColorButtonPrimary, size: 24),
-                  Expanded(child: Text(qualifications, style: CarbonTheme.carbonLabelOnPrimary)),
+                  Icon(category.iconData, color: category.textColor, size: 24),
+                  Expanded(
+                    child: Text(
+                      qualifications,
+                      style: CarbonTheme.carbonLabelOnPrimary?.copyWith(color: category.textColor),
+                    ),
+                  ),
                   CarbonIconButton(onPressed: handleDelete, icon: Symbols.close),
                 ],
               ),

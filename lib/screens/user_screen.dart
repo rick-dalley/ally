@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/blood_type.dart';
 import 'package:triage/classes/metric_value.dart';
-import 'package:triage/classes/patient_action.dart';
-import 'package:triage/screens/patient_timeline_screen.dart';
 import 'package:triage/widgets/blood_type_selector.dart';
 import 'package:triage/widgets/carbon_style_two_xl_button.dart';
 import '../app_theme.dart';
@@ -78,20 +76,6 @@ class UserScreenState extends State<UserScreen> {
         selectedRh: patient.bloodType.rh,
         onAboChanged: onAboChanged,
         onRhChanged: onRhChanged,
-      ),
-    );
-  }
-
-  Future<void> showTimeLineScreen(BuildContext context, String uuid, String patientName) async {
-    // Assuming this returns a List or an empty list
-    final actions = patientActions;
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => FractionallySizedBox(
-        heightFactor: 1.0, // Near full screen
-        child: PatientTimelineScreen(actions: actions, patientName: patientName),
       ),
     );
   }

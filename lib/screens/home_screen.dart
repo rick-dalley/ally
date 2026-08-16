@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:triage/classes/carbon_color_constants.dart';
 import 'package:triage/classes/carbon_theme_constants.dart';
-import 'package:triage/classes/patient_action.dart';
+import 'package:triage/screens/add_patient_screen.dart';
 import 'package:triage/screens/add_patients_wheel.dart';
 import 'package:triage/screens/metric_dashboard_screen.dart';
 import 'package:triage/screens/time_scroller.dart';
@@ -101,9 +101,6 @@ class HomeScreenState extends State<HomeScreen> {
 
   List<Widget> _getPages(int patientIndex) {
     final patient = patients[patientIndex];
-    final List<PatientAction> actions = patientActions;
-    final startTime = actions.first.occurred.toUtc();
-    final endTime = actions.last.until;
 
     return [
       MedicalProfileScreen(user: patient),
@@ -115,23 +112,65 @@ class HomeScreenState extends State<HomeScreen> {
       ),
       ProviderRosterScreen(user: patient),
       EmergencyQRCodeView(householdMember: patient),
-      TimelineScrollerWidget(actions: actions, startTime: startTime, endTime: endTime),
+      TimelineScrollerWidget(patientUuid: patient.patientUuid),
     ];
   }
 
   void _showMemberJumpList(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      // AddPatientsWheel is built assuming it owns the whole screen (its close
+      // button sits at a literal top:50, the radial wheel needs real room to lay
+      // out) — without isScrollControlled the sheet caps itself to a fraction of
+      // the screen height by default, which was squashing all of this into a tiny
+      // sliver rather than the full-screen overlay it's actually designed as.
+      isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => AddPatientsWheel(
-        familyMembers: patients,
-        onDismiss: () {
-          Navigator.pop(context);
-        },
-        onUserSelected: (dynamic patientUuid) {},
-        onAddMember: () {},
+      builder: (sheetContext) => SizedBox.expand(
+        child: AddPatientsWheel(
+          familyMembers: patients,
+          onDismiss: () {
+            Navigator.pop(sheetContext);
+          },
+          onUserSelected: (patientUuid) {
+            // Pop the sheet before acting on the selection — a page-change here
+            // triggers a ReminderRegistry reload for the new patient, and popping
+            // after a state change that can itself trigger UI (this session's
+            // established "pop before refresh" rule) has repeatedly caused stuck
+            // sheets elsewhere in this app when done the other way around.
+            Navigator.pop(sheetContext);
+            _jumpToPatient(patientUuid);
+          },
+          onAddMember: () {
+            Navigator.pop(sheetContext);
+            _launchAddPatient();
+          },
+        ),
       ),
     );
+  }
+
+  Future<void> _launchAddPatient() async {
+    final String? newPatientUuid = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(builder: (context) => const AddPatientScreen()),
+    );
+    if (newPatientUuid == null) return;
+    await loadPatientData();
+    if (mounted) _jumpToPatient(newPatientUuid);
+  }
+
+  // Tapping a family member in the jump list should land on their data with
+  // whatever tab you were already on preserved — not reset to a specific screen.
+  // Reuses the exact same page-change path swiping between patients already goes
+  // through (PageView's onPageChanged), rather than duplicating the
+  // setState/ReminderRegistry-reload logic here and risking the two paths drifting
+  // apart from each other.
+  void _jumpToPatient(String patientUuid) {
+    final int index = patients.indexWhere((p) => p.patientUuid == patientUuid);
+    if (index == -1 || index == _currentPageIndex) return;
+    _pageController.animateToPage(index, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
   }
 
   @override

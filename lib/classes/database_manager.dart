@@ -17,7 +17,7 @@ import 'data_seeder.dart';
 import 'medication_services.dart';
 import 'metric_value.dart';
 
-bool overWrite = true;
+bool overWrite = false;
 
 class DatabaseManager {
   // Singleton pattern
@@ -768,6 +768,56 @@ class DatabaseManager {
     return await db.query('patient', where: 'patient_uuid = ?', whereArgs: [patientUuid]);
   }
 
+  // Adding a new family member from the patient wheel's center "+" button — deliberately
+  // minimal (first/last name, DOB), matching what a home-care patient actually needs to
+  // start tracking someone, not the full ward-triage-era clerical intake form this
+  // schema still carries columns for (government health card number, address, primary
+  // caregiver, etc. — that's the separate "clerical screen needs love" task, not this
+  // one). Every text column gets an explicit empty string rather than being left NULL:
+  // Patient.fromJson reads most of them straight into non-nullable String fields with no
+  // ?? fallback, so a NULL here wouldn't just look empty in the UI, it would throw and
+  // take down patient loading entirely the next time the app started.
+  Future<String> insertPatient({required String firstName, required String lastName, required DateTime dob}) async {
+    final db = await database;
+    final String newPatientUuid = uuid.v4();
+    await db.insert('patient', {
+      'patient_uuid': newPatientUuid,
+      'first_name': firstName,
+      'last_name': lastName,
+      'acuity': 0,
+      // A real health card number has to come from the patient later (clerical screen)
+      // — phn is UNIQUE, so this can't be left blank/shared across new patients either;
+      // the new uuid itself is already guaranteed unique and makes an honest, obviously-
+      // a-placeholder value rather than a fabricated-looking fake number.
+      'phn': newPatientUuid,
+      'phase_step_id': 0,
+      'email': '',
+      'ssn': '',
+      'title': '',
+      'country': '',
+      'dob': dob.toIso8601String(),
+      'status': '',
+      'path': '',
+      'street_address': '',
+      'city': '',
+      'province': '',
+      'postal_code': '',
+      'phone': '',
+      'contact_name': '',
+      'relation': '',
+      'contact_phone': '',
+      'family_doctor_name': '',
+      'family_doctor_phone': '',
+      'pharmacy_name': '',
+      'pharmacy_phone': '',
+      'pharmacy_fax': '',
+      'narrative_hint': '',
+      'abo_type': 0,
+      'rh_factor': 0,
+    });
+    return newPatientUuid;
+  }
+
   Future<void> insertAcuity({
     required String patientUuid,
     required AcuityLevel acuityLevel,
@@ -1016,6 +1066,177 @@ class DatabaseManager {
     return List.generate(maps.length, (i) {
       return PatientCondition.fromMap(maps[i]);
     });
+  }
+
+  // For the Emergency QR card — real names only, joined against the catalog directly
+  // rather than round-tripping through the full PatientCondition/PatientAllergy models
+  // (which don't carry name as a stored column — see physical_health.dart's manual
+  // catalog join for why). Only active conditions: something resolved years ago isn't
+  // relevant to a first responder in a crisis.
+  Future<List<String>> getActiveConditionNames(String patientUuid) async {
+    final db = await database;
+    final rows = await db.rawQuery(
+      'SELECT c.name FROM patient_condition pc JOIN condition c ON c.id = pc.condition_id '
+      'WHERE pc.patient_uuid = ? AND pc.status = ?',
+      [patientUuid, ConditionStatus.active.index],
+    );
+    return rows.map((r) => r['name'] as String).toList();
+  }
+
+  Future<List<String>> getAllergyNames(String patientUuid) async {
+    final db = await database;
+    final rows = await db.rawQuery(
+      'SELECT a.name FROM patient_allergy pa JOIN allergen a ON a.id = pa.allergen_id WHERE pa.patient_uuid = ?',
+      [patientUuid],
+    );
+    return rows.map((r) => r['name'] as String).toList();
+  }
+
+  // Reports — data assembled for the three doctor-facing PDF reports (see
+  // pdf_report_builder.dart and the report generators in lib/classes/reports/).
+
+  // Full history, every status — a new doctor reading a letter of introduction wants
+  // the whole picture, not just what's currently active (unlike the Emergency QR,
+  // which deliberately only shows active conditions for a fast-triage context).
+  Future<List<Map<String, dynamic>>> getConditionHistoryRows(String patientUuid) async {
+    final db = await database;
+    return await db.rawQuery(
+      '''
+      SELECT c.name, pc.status, pc.onset, pc.status_date
+      FROM patient_condition pc
+      JOIN condition c ON c.id = pc.condition_id
+      WHERE pc.patient_uuid = ?
+      ORDER BY pc.onset DESC
+      ''',
+      [patientUuid],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getActiveMedicationRows(String patientUuid) async {
+    final db = await database;
+    return await db.query(
+      'medication',
+      columns: ['id', 'name', 'dose', 'freq'],
+      where: 'patient_uuid = ? AND stopped_taking IS NULL',
+      whereArgs: [patientUuid],
+      orderBy: 'name',
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getAllergyDetailRows(String patientUuid) async {
+    final db = await database;
+    return await db.rawQuery(
+      '''
+      SELECT a.name, pa.severity, pa.reaction
+      FROM patient_allergy pa
+      JOIN allergen a ON a.id = pa.allergen_id
+      WHERE pa.patient_uuid = ?
+      ''',
+      [patientUuid],
+    );
+  }
+
+  // "Current concerns" for the letter of introduction — whatever's still bothering the
+  // patient right now, not the full symptom history.
+  Future<List<Map<String, dynamic>>> getActiveSymptomRows(String patientUuid) async {
+    final db = await database;
+    return await db.query(
+      'markers',
+      where: 'patient_uuid = ? AND (resolved IS NULL OR resolved = 0)',
+      whereArgs: [patientUuid],
+      orderBy: 'recorded DESC',
+    );
+  }
+
+  // Any medication that overlapped the report window at all — not just what's active
+  // today, since a therapy stopped partway through the window still needs its
+  // adherence shown for the days it was actually being taken.
+  Future<List<Map<String, dynamic>>> getMedicationsActiveInRange(
+    String patientUuid,
+    DateTime start,
+    DateTime end,
+  ) async {
+    final db = await database;
+    return await db.rawQuery(
+      '''
+      SELECT id, name, dose, freq, started_taking, stopped_taking
+      FROM medication
+      WHERE patient_uuid = ? AND started_taking <= ? AND (stopped_taking IS NULL OR stopped_taking >= ?)
+      ''',
+      [patientUuid, end.toIso8601String(), start.toIso8601String()],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getMedicationDoseCountsInRange(
+    String patientUuid,
+    DateTime start,
+    DateTime end,
+  ) async {
+    final db = await database;
+    return await db.rawQuery(
+      '''
+      SELECT medication_id, COUNT(*) as taken_count
+      FROM medication_dose_log
+      WHERE patient_uuid = ? AND status = 'taken' AND scheduled_for BETWEEN ? AND ?
+      GROUP BY medication_id
+      ''',
+      [patientUuid, start.toIso8601String(), end.toIso8601String()],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getMetricReadingsInRange(String patientUuid, DateTime start, DateTime end) async {
+    final db = await database;
+    return await db.rawQuery(
+      '''
+      SELECT pm.value, pm.measured, pm.unit_of_measure, m.name AS metric_name,
+             m.safe_lower_limit, m.safe_upper_limit
+      FROM patient_metric pm
+      JOIN metric m ON m.id = pm.metric_id
+      WHERE pm.patient_uuid = ? AND pm.measured BETWEEN ? AND ?
+      ORDER BY pm.measured
+      ''',
+      [patientUuid, start.toIso8601String(), end.toIso8601String()],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getMoodEntriesInRange(String patientUuid, DateTime start, DateTime end) async {
+    final db = await database;
+    return await db.query(
+      'patient_mood',
+      where: 'patient_uuid = ? AND start_date BETWEEN ? AND ?',
+      whereArgs: [patientUuid, start.toIso8601String(), end.toIso8601String()],
+      orderBy: 'start_date',
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getSymptomEntriesInRange(String patientUuid, DateTime start, DateTime end) async {
+    final db = await database;
+    return await db.query(
+      'markers',
+      where: 'patient_uuid = ? AND recorded BETWEEN ? AND ?',
+      whereArgs: [patientUuid, start.millisecondsSinceEpoch ~/ 1000, end.millisecondsSinceEpoch ~/ 1000],
+      orderBy: 'recorded',
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getTestsCompletedInRange(String patientUuid, DateTime start, DateTime end) async {
+    final db = await database;
+    return await db.query(
+      'test_completion_log',
+      where: 'patient_uuid = ? AND completed_on BETWEEN ? AND ?',
+      whereArgs: [patientUuid, start.toIso8601String(), end.toIso8601String()],
+      orderBy: 'completed_on',
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getDiaryEntriesInRange(String patientUuid, DateTime start, DateTime end) async {
+    final db = await database;
+    return await db.query(
+      'patient_diary_entry',
+      where: "patient_uuid = ? AND entry_date BETWEEN ? AND ? AND content != ''",
+      whereArgs: [patientUuid, _dateOnly(start), _dateOnly(end)],
+      orderBy: 'entry_date',
+    );
   }
 
   Future<List<Map<String, dynamic>>> getObservationsForPatient(String patientUuid) async {
@@ -1902,6 +2123,93 @@ class DatabaseManager {
       {'active': 0},
       where: 'patient_uuid = ? AND metric_id = ? AND active = 1',
       whereArgs: [patientUuid, metricId],
+    );
+  }
+
+  // Timeline — real dots and comparison spans, replacing the widget's old
+  // never-touches-the-database mock data (see patient_action.dart / timeline_span.dart).
+
+  // At least 5 distinct days with something recorded, spanning at least a week — below
+  // this, a real graph is mostly empty space and misleadingly sparse rather than
+  // informative, so the widget shows labeled example data instead until it's cleared.
+  Future<bool> hasSufficientTimelineData(String patientUuid) async {
+    final db = await database;
+    final rows = await db.rawQuery(
+      '''
+      SELECT DISTINCT date(occurred) as d FROM (
+        SELECT scheduled_for as occurred FROM medication_dose_log WHERE patient_uuid = ? AND status = 'taken'
+        UNION ALL SELECT scheduled_for FROM appointment WHERE patient_uuid = ? AND status != 'scheduled'
+        UNION ALL SELECT datetime(recorded, 'unixepoch') FROM markers WHERE patient_uuid = ?
+        UNION ALL SELECT start_date FROM patient_mood WHERE patient_uuid = ?
+        UNION ALL SELECT completed_on FROM test_completion_log WHERE patient_uuid = ?
+      )
+      ''',
+      [patientUuid, patientUuid, patientUuid, patientUuid, patientUuid],
+    );
+    if (rows.length < 5) return false;
+    final List<DateTime> dates = rows.map((r) => DateTime.parse(r['d'] as String)).toList()..sort();
+    return dates.last.difference(dates.first).inDays >= 7;
+  }
+
+  // Same five categories the Patient Diary already aggregates per-day (see
+  // DatabaseManager.getDayEvents) — this is the all-time version, since the timeline
+  // windows by scrolling rather than by a single selected date.
+  Future<Map<String, List<Map<String, dynamic>>>> getTimelineEventRows(String patientUuid) async {
+    final db = await database;
+    final doses = await db.rawQuery(
+      '''
+      SELECT d.scheduled_for, m.name AS medication_name
+      FROM medication_dose_log d
+      JOIN medication m ON m.id = d.medication_id
+      WHERE d.patient_uuid = ? AND d.status = 'taken'
+      ''',
+      [patientUuid],
+    );
+    final appointments = await db.rawQuery(
+      '''
+      SELECT a.scheduled_for, a.reason, p.first_name || ' ' || p.last_name AS provider_name
+      FROM appointment a
+      LEFT JOIN provider p ON p.provider_uuid = a.provider_uuid
+      WHERE a.patient_uuid = ? AND a.status != 'scheduled'
+      ''',
+      [patientUuid],
+    );
+    final symptoms = await db.query('markers', where: 'patient_uuid = ?', whereArgs: [patientUuid]);
+    final moods = await db.query('patient_mood', where: 'patient_uuid = ?', whereArgs: [patientUuid]);
+    final tests = await db.query('test_completion_log', where: 'patient_uuid = ?', whereArgs: [patientUuid]);
+    return {'doses': doses, 'appointments': appointments, 'symptoms': symptoms, 'moods': moods, 'tests': tests};
+  }
+
+  Future<List<Map<String, dynamic>>> getMedicationSpanRows(String patientUuid) async {
+    final db = await database;
+    return await db.query(
+      'medication',
+      columns: ['id', 'name', 'started_taking', 'stopped_taking'],
+      where: 'patient_uuid = ? AND started_taking IS NOT NULL',
+      whereArgs: [patientUuid],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getConditionSpanRows(String patientUuid) async {
+    final db = await database;
+    return await db.rawQuery(
+      '''
+      SELECT pc.id, c.name, pc.onset, pc.status_date
+      FROM patient_condition pc
+      JOIN condition c ON c.id = pc.condition_id
+      WHERE pc.patient_uuid = ? AND pc.onset IS NOT NULL
+      ''',
+      [patientUuid],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getProviderSpanRows(String patientUuid) async {
+    final db = await database;
+    return await db.query(
+      'provider',
+      columns: ['provider_uuid', 'first_name', 'last_name', 'started_seeing', 'stopped_seeing'],
+      where: 'patient_uuid = ? AND started_seeing IS NOT NULL',
+      whereArgs: [patientUuid],
     );
   }
 

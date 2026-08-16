@@ -3,14 +3,23 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/widgets/avatar_action_widget.dart';
 import '../app_theme.dart';
+import '../classes/carbon_color_constants.dart';
 import '../classes/patient.dart';
 
-class AddPatientsWheel extends StatefulWidget {
+// Long-press on the top-corner avatar opens this: every current family member arranged
+// in a circle, a round "+" centered inside the circle to add someone new, tap any
+// avatar to jump straight to their data. Rewritten from scratch rather than patched
+// again — the previous version appended the add-button into the same list the circular
+// polar-math layout iterates over, so it became the Nth slice of the circle instead of
+// a distinct centered element; the type declared on every onTap didn't match what was
+// actually being passed (a patientUuid String coerced through a Function(int)), and the
+// add-member layouts that existed only covered 1- and 2-person households, silently
+// vanishing entirely for anyone with 3 or more family members.
+class AddPatientsWheel extends StatelessWidget {
   final List<Patient> familyMembers;
   final VoidCallback onDismiss;
-  final Function(int) onUserSelected;
+  final ValueChanged<String> onUserSelected; // patientUuid
   final VoidCallback onAddMember;
 
   const AddPatientsWheel({
@@ -21,176 +30,115 @@ class AddPatientsWheel extends StatefulWidget {
     required this.onAddMember,
   });
 
-  @override
-  AddPatientsWheelState createState() => AddPatientsWheelState();
-}
+  static const double _circleRadius = 110.0;
+  static const double _avatarSize = 72.0;
+  static const double _centerButtonSize = 64.0;
 
-class AddPatientsWheelState extends State<AddPatientsWheel> {
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // 1. The Blur Layer
-        BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(color: AppTheme.surfaceColor.withValues(alpha: 0.2)),
+        Positioned.fill(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(color: AppTheme.surfaceColor.withValues(alpha: 0.2)),
+          ),
         ),
-
-        // 2. The Close Button (The X)
         Positioned(
           top: 50,
           right: 20,
           child: IconButton(
             icon: Icon(Icons.close, size: 40, color: AppTheme.onPrimaryColor),
-            onPressed: widget.onDismiss,
+            onPressed: onDismiss,
           ),
         ),
-
-        // 3. The Responsive Content Area
-        Center(child: _buildLayoutBasedOnCount()),
+        Center(
+          child: SizedBox(
+            // Enough room for the circle's full diameter plus an avatar's own size at
+            // the edge, so nothing clips even at the widest point.
+            width: (_circleRadius * 2) + _avatarSize,
+            height: (_circleRadius * 2) + _avatarSize,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                for (int i = 0; i < familyMembers.length; i++) _buildAvatar(familyMembers[i], i, familyMembers.length),
+                // Deliberately the last child, outside the circle-position loop above —
+                // an untranslated Stack child sits at dead center by construction,
+                // which is what actually guarantees this is centered rather than
+                // computed to merely look centered.
+                _buildAddButton(),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildLayoutBasedOnCount() {
-    int count = widget.familyMembers.length;
+  Widget _buildAvatar(Patient patient, int index, int total) {
+    final double angle = (2 * pi / total) * index - (pi / 2);
+    final double x = _circleRadius * cos(angle);
+    final double y = _circleRadius * sin(angle);
 
-    if (count == 1) {
-      return Column(
-        children: [
-          AvatarActionWidget(
-            label: widget.familyMembers[0].firstName,
-            value: widget.familyMembers[0].patientUuid,
-            onTap: (dynamic p1) {},
-          ),
-          Text("Add a Family Member to Track", style: TextStyle(color: AppTheme.onPrimaryColor)),
-          AvatarActionWidget(
-            onTap: (int p1) {
-              launchAddMember();
-            },
-            avatar: Icon(Symbols.plus_one),
-          ),
-        ],
-      );
-    } else if (count == 2) {
-      final avatarWidget1 = widget.familyMembers[0].hasCustomAvatar
-          ? ClipOval(
-              child: Image.asset("assets/images/faces/users/${widget.familyMembers[0].name}.png", fit: BoxFit.cover),
-            )
-          : Text(
-              widget.familyMembers[0].initials,
-              style: TextStyle(color: AppTheme.onPrimaryColor, fontWeight: FontWeight.bold),
-            );
-      final avatarWidget2 = widget.familyMembers[1].hasCustomAvatar
-          ? ClipOval(
-              child: Image.asset("assets/images/faces/users/${widget.familyMembers[1].name}.png", fit: BoxFit.cover),
-            )
-          : Text(
-              widget.familyMembers[1].initials,
-              style: TextStyle(color: AppTheme.onPrimaryColor, fontWeight: FontWeight.bold),
-            );
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          AvatarActionWidget(
-            label: widget.familyMembers[0].firstName,
-            value: widget.familyMembers[0].patientUuid,
-            onTap: (dynamic p1) {},
-            avatar: avatarWidget1,
-          ), // Helper to build existing avatars
-          const SizedBox(width: 20),
-          AvatarActionWidget(
-            onTap: (int p1) {
-              launchAddMember();
-            },
-            avatar: Icon(Symbols.plus_one),
-          ),
-          AvatarActionWidget(
-            label: widget.familyMembers[1].firstName,
-            value: widget.familyMembers[0].patientUuid,
-            onTap: (dynamic p1) {},
-            avatar: avatarWidget2,
-          ),
-        ],
-      );
-    } else {
-      return buildRadialCircle(); // The full circle layout
-    }
-  }
-
-  Widget buildRadialCircle() {
-    List<Widget> items = [];
-    // 1. Add your existing members as AvatarActionWidgets
-    for (int i = 0; i < widget.familyMembers.length; i++) {
-      final user = widget.familyMembers[i];
-
-      // Logic: Check if image exists (you might need a helper method here)
-      // For now, let's pass a Widget directly
-      final avatarWidget = user.hasCustomAvatar
-          ? ClipOval(child: Image.asset("assets/images/faces/users/${user.name}.png", fit: BoxFit.cover))
-          : Text(
-              user.initials,
-              style: TextStyle(color: AppTheme.onPrimaryColor, fontWeight: FontWeight.bold),
-            );
-
-      items.add(
-        AvatarActionWidget(
-          onTap: (val) => widget.onUserSelected(val), // Pass the user object, not index
-          label: user.name,
-          value: user.patientUuid, //changed value to dynamic to support using uuids
-          avatar: avatarWidget, // Now this is a Widget
+    return Transform.translate(
+      offset: Offset(x, y),
+      child: SizedBox(
+        width: _avatarSize,
+        height: _avatarSize + 24, // room for the label below the circle
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            InkWell(
+              onTap: () => onUserSelected(patient.patientUuid),
+              borderRadius: BorderRadius.circular(_avatarSize / 2),
+              child: Container(
+                width: _avatarSize,
+                height: _avatarSize,
+                decoration: BoxDecoration(color: AppTheme.primaryColor, shape: BoxShape.circle),
+                child: ClipOval(child: _avatarContent(patient)),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              patient.firstName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: AppTheme.onPrimaryColor, fontWeight: FontWeight.bold, fontSize: 12),
+            ),
+          ],
         ),
-      );
-    }
-    return RadialCircleLayout(children: items);
-  }
-
-  void launchAddMember() {}
-}
-
-class RadialCircleLayout extends StatelessWidget {
-  final List<Widget> children;
-  final double radius;
-
-  const RadialCircleLayout({super.key, required this.children, this.radius = 120.0});
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return Stack(
-          alignment: Alignment.center,
-          children: List.generate(children.length, (index) {
-            // Calculate angle: distribute items evenly around the circle
-            final angle = (2 * pi / children.length) * index - (pi / 2);
-
-            // Convert polar to cartesian coordinates
-            final x = radius * cos(angle);
-            final y = radius * sin(angle);
-
-            return Transform.translate(offset: Offset(x, y), child: children[index]);
-          }),
-        );
-      },
+      ),
     );
   }
-}
 
-class DottedPlaceholder extends StatelessWidget {
-  const DottedPlaceholder({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 64,
-      height: 64,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: AppTheme.onPrimaryColor, width: 2, style: BorderStyle.solid),
-        // Note: For a true dashed border, you'd use a CustomPainter,
-        // but a simple dashed-looking border works well for UI.
+  Widget _avatarContent(Patient patient) {
+    return Image.asset(
+      "assets/images/faces/users/${patient.name}.png",
+      fit: BoxFit.cover,
+      // hasCustomAvatar is unconditionally true on Patient today, so this asset is
+      // attempted for every patient regardless of whether the file actually exists —
+      // true for the seeded demo patients, never true for a freshly-created one. A
+      // broken-image exception here would take out the whole wheel, not just one
+      // avatar, so this falls back to initials rather than assuming the asset exists.
+      errorBuilder: (context, error, stackTrace) => Center(
+        child: Text(
+          patient.initials,
+          style: TextStyle(color: AppTheme.onPrimaryColor, fontWeight: FontWeight.bold),
+        ),
       ),
-      child: Icon(Icons.add, color: AppTheme.onPrimaryColor),
+    );
+  }
+
+  Widget _buildAddButton() {
+    return InkWell(
+      onTap: onAddMember,
+      borderRadius: BorderRadius.circular(_centerButtonSize / 2),
+      child: Container(
+        width: _centerButtonSize,
+        height: _centerButtonSize,
+        decoration: BoxDecoration(color: carbonColorButtonPrimary, shape: BoxShape.circle),
+        child: Icon(Symbols.add, color: carbonColorButtonOnPrimary, size: 32),
+      ),
     );
   }
 }

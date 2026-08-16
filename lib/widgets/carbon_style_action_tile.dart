@@ -24,10 +24,16 @@ class CarbonActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color borderColor = CarbonTheme.getButtonBorderColor(CarbonButtonStyle.tertiary);
     Color fontColor = CarbonTheme.getButtonFontColor(CarbonButtonStyle.tertiary);
     Size size = iconSize ?? Size(24, 24);
     Color activeColor = iconColor ?? fontColor;
+    // An explicit iconColor means this tile has a real domain identity — let the title
+    // and border carry it too, not just the icon. Icon-only color was the icon doing
+    // all the work of "which feature is this" alone, which barely moves the needle:
+    // title and border tie the whole tile together as one recognizable unit instead.
+    Color borderColor = iconColor != null
+        ? activeColor.withValues(alpha: 0.4)
+        : CarbonTheme.getButtonBorderColor(CarbonButtonStyle.tertiary);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -61,7 +67,7 @@ class CarbonActionTile extends StatelessWidget {
               // The vertical divider
             ],
           ),
-          title: Text(title, style: CarbonTheme.carbonTertiaryButtonTextStyle),
+          title: Text(title, style: CarbonTheme.carbonTertiaryButtonTextStyle.copyWith(color: activeColor)),
           subtitle: Text(subtitle ?? "", style: CarbonTheme.carbonHintTextStyle),
           onTap: onTap,
         ),
