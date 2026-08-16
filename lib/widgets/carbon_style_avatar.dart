@@ -17,7 +17,11 @@ class CarbonAvatar extends StatelessWidget {
       alignment: Alignment.center,
       child: Text(
         user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
-        style: CarbonTheme.carbonTextStyle,
+        // carbonTextStyle defaults to the dark body-text color, illegible on this
+        // circle's blue fill — needs the on-primary (white) color instead.
+        style: CarbonTheme.carbonTextStyle?.copyWith(
+          color: carbonColorButtonOnPrimary,
+        ),
       ),
     );
   }

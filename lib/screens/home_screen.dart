@@ -231,8 +231,11 @@ class HomeScreenState extends State<HomeScreen> {
     }
 
     // Define clear, action-oriented titles corresponding to your 6 bottom nav tabs (_currentIndex)
+    // Profile tab is named for whoever's on screen — with the whole family on one
+    // device (see FirstPatientWizard's "add a family member" flow), a bare "Medical
+    // Profile" heading gives no cue you're looking at the wrong person's data.
     final List<String> pageActionTitles = [
-      'Medical Profile',
+      "${patient.firstName}'s Medical Profile",
       'Manage Prescriptions',
       'Review Metrics',
       'My Health Care Team',
