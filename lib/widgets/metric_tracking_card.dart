@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:triage/classes/achievement_badge.dart';
 import 'package:triage/classes/carbon_color_constants.dart';
 import 'package:triage/classes/database_manager.dart';
+import 'package:triage/classes/reminder_registry.dart';
 import 'package:triage/widgets/carbon_checkbox.dart';
 import 'package:triage/widgets/carbon_style_button.dart';
-import 'package:triage/widgets/carbon_style_dropdown.dart';
 import 'package:triage/widgets/carbon_style_number_edit.dart';
 import 'package:triage/widgets/carbon_style_textbox.dart';
+import 'package:triage/widgets/carbon_segmented_control.dart';
 import 'package:triage/widgets/high_low_close_capsule.dart';
+import 'package:triage/widgets/metric_reminder_sheet.dart';
 import 'package:triage/widgets/metric_scatter_chart.dart';
+import 'package:triage/widgets/metric_source_picker_sheet.dart';
 import 'package:triage/widgets/metric_target_sheet.dart';
 import 'package:triage/widgets/metric_threshold_sheet.dart';
 import '../classes/carbon_theme_constants.dart';
+import '../classes/metric_source.dart';
 import '../classes/metric_value.dart';
 
 class MetricExpandableCard extends StatefulWidget {
@@ -27,6 +32,8 @@ class MetricExpandableCard extends StatefulWidget {
   final Function(bool) onTrackingChanged;
   final bool onDashboard;
   final Function(bool)? onDashboardChanged;
+  final MetricSourceSelection? source;
+  final MetricReminderPreference reminderPreference;
   // Called after the patient saves/removes a threshold or target — the parent owns the
   // source-of-truth maps this card was built from, so it needs to reload and rebuild
   // this card with the fresh data rather than this card tracking it independently.
@@ -44,6 +51,8 @@ class MetricExpandableCard extends StatefulWidget {
     required this.onTrackingChanged,
     this.onDashboard = false,
     this.onDashboardChanged,
+    this.source,
+    this.reminderPreference = const MetricReminderPreference(),
     this.threshold,
     this.target,
     this.onDataChanged,
@@ -59,6 +68,11 @@ class MetricExpandableCard extends StatefulWidget {
 class MetricExpandableCardState extends State<MetricExpandableCard> {
   late bool tracked = widget.tracked;
   late bool onDashboard = widget.onDashboard;
+  // Purely a display default until the patient actually picks something — nothing is
+  // written to the DB until _pickSource/_pickSourceDetail runs.
+  late MetricSourceType selectedSource =
+      widget.source?.source ?? MetricSourceType.observation;
+  late String? selectedSourceDetail = widget.source?.sourceDetail;
   bool expanded = false;
   bool showInfoView = false; // true if opened via '?' button
   final TextEditingController newValueController = TextEditingController();
@@ -119,6 +133,52 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
     if (saved == true) widget.onDataChanged?.call();
   }
 
+  Future<void> _stopTrackingTarget() async {
+    await DatabaseManager().clearPatientMetricTarget(
+      widget.patientUuid,
+      widget.metric.id,
+    );
+    widget.onDataChanged?.call();
+  }
+
+  // Signed so "still to go" reads naturally regardless of which side of the target
+  // counts as on-track — positive always means "not there yet", never negative once met.
+  double _distanceValue(MetricTarget target, double current) {
+    switch (target.direction) {
+      case TargetDirection.atLeast:
+        return target.targetValue - current;
+      case TargetDirection.atMost:
+        return current - target.targetValue;
+      case TargetDirection.exact:
+        return (target.targetValue - current).abs();
+    }
+  }
+
+  String _distanceToTarget(MetricTarget target) {
+    final double? current = range.latest;
+    if (current == null) return "No readings yet";
+    final double distance = _distanceValue(target, current);
+    if (distance <= 0) return "Target met";
+    return distance.toStringAsFixed(1);
+  }
+
+  Future<void> _editReminder() async {
+    final bool? saved = await showDialog<bool>(
+      context: context,
+      builder: (context) => MetricReminderSheet(
+        patientUuid: widget.patientUuid,
+        metric: widget.metric,
+        existing: widget.reminderPreference,
+      ),
+    );
+    if (saved == true) {
+      widget.onDataChanged?.call();
+      // Without this, a just-enabled reminder wouldn't show up until the registry's
+      // next 5-minute poll — same reasoning as every other reminder-creating flow.
+      await ReminderRegistry.instance.refresh();
+    }
+  }
+
   Future<void> _saveNewReading() async {
     final double? value = double.tryParse(newValueController.text.trim());
     if (value == null) return;
@@ -128,10 +188,79 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
       value: value,
     );
     newValueController.clear();
+    await _checkTargetAchievement(value);
     // The parent owns range/history for this metric, same reasoning as threshold/target
     // edits above — this card doesn't try to update its own copy, it asks the parent to
     // reload and hand back fresh widget.range/widget.historicalValues.
     widget.onDataChanged?.call();
+  }
+
+  // Awarded once per target, not once per qualifying reading — hasAchievement guards
+  // against a second (or hundredth) reading that still meets an already-won target
+  // minting another trophy. Reaching a *new* target after editing it can win again,
+  // since it's a genuinely different name ("Reached target for X" is the same string
+  // regardless of the target's value, so changing the target value doesn't itself
+  // re-open it — only removing and setting a fresh target does, same as the rest of
+  // this card's "target" concept treats an edit vs a new target).
+  Future<void> _checkTargetAchievement(double value) async {
+    final MetricTarget? target = widget.target;
+    if (target == null) return;
+    if (_distanceValue(target, value) > 0) return;
+
+    final String name = "Reached target for ${widget.metric.name}";
+    if (await DatabaseManager().hasAchievement(
+      patientUuid: widget.patientUuid,
+      name: name,
+    ))
+      return;
+
+    await DatabaseManager().insertAchievement(
+      patientUuid: widget.patientUuid,
+      name: name,
+      reason:
+          "${target.direction.label} ${target.targetValue} — reached with a reading of $value",
+      icon: "🏆",
+    );
+    // Without this the avatar ripple wouldn't appear until the next patient switch —
+    // this is the moment that's actually supposed to make them curious to go look.
+    await AchievementBadge.instance.refresh();
+  }
+
+  void _persistSource() {
+    Metrics.setSource(
+      metricId: widget.metric.id,
+      patientUuid: widget.patientUuid,
+      source: selectedSource,
+      sourceDetail: selectedSourceDetail,
+    );
+    widget.onDataChanged?.call();
+  }
+
+  void _changeSourceType(MetricSourceType type) {
+    setState(() {
+      selectedSource = type;
+      selectedSourceDetail = null;
+    });
+    // Deliberately doesn't persist yet — flipping the segment alone ("Device") without
+    // saying which device isn't a complete answer worth recording; only picking the
+    // detail below actually writes anything.
+  }
+
+  Future<void> _pickSourceDetail() async {
+    final String? picked = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (context) => MetricSourcePickerSheet(
+        sourceType: selectedSource,
+        metricCategory: widget.metric.category,
+        patientUuid: widget.patientUuid,
+        metricId: widget.metric.id,
+      ),
+    );
+    if (picked == null) return;
+    setState(() => selectedSourceDetail = picked);
+    _persistSource();
   }
 
   String _rangeLabel(double? low, double? high) {
@@ -516,30 +645,90 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
         const SizedBox(height: 8),
         const Divider(height: 1),
         const SizedBox(height: 8),
-        Text("TARGET", style: CarbonTheme.carbonLabelTextStyle),
+        if (target == null)
+          CarbonCheckboxListTile(
+            value: false,
+            onChanged: (val) {
+              if (val == true) _editTarget();
+            },
+            title: const Text("Do you wish to set a target?"),
+          )
+        else ...[
+          Text(
+            "Target: ${target.targetValue}",
+            style: CarbonTheme.carbonTextStyle,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            "Distance to target: ${_distanceToTarget(target)}",
+            style: CarbonTheme.carbonHelperTextStyle,
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Symbols.edit, size: 18),
+                onPressed: _editTarget,
+                tooltip: "Change target",
+              ),
+              IconButton(
+                icon: const Icon(Symbols.close, size: 18),
+                onPressed: _stopTrackingTarget,
+                tooltip: "Stop tracking this target",
+              ),
+            ],
+          ),
+        ],
+        const SizedBox(height: 8),
+        const Divider(height: 1),
+        const SizedBox(height: 8),
+        Text("REMINDER", style: CarbonTheme.carbonLabelTextStyle),
         const SizedBox(height: 4),
         Text(
-          target != null
-              ? "${target.direction.label} ${target.targetValue}"
-              : "No target set",
+          widget.reminderPreference.enabled
+              ? "${widget.reminderPreference.cadence.description}, ${widget.reminderPreference.reminderTime ?? ''}"
+              : "No reminder set",
           style: CarbonTheme.carbonTextStyle,
         ),
         Align(
           alignment: Alignment.centerLeft,
           child: TextButton.icon(
-            onPressed: _editTarget,
+            onPressed: _editReminder,
             icon: const Icon(Symbols.edit, size: 16),
-            label: Text(target != null ? "Edit target" : "Set a target"),
+            label: Text(
+              widget.reminderPreference.enabled
+                  ? "Edit reminder"
+                  : "Remind me to take readings",
+            ),
           ),
         ),
         const SizedBox(height: 8),
         const Divider(height: 1),
         const SizedBox(height: 16),
-        CarbonDropdown<JourneySupports>(
-          label: 'Link Journey Support',
-          items: JourneySupports.values,
-          onChanged: (value) {},
-          value: JourneySupports.values.first,
+        Text(
+          "How are these readings captured?",
+          style: CarbonTheme.carbonLabelTextStyle,
+        ),
+        const SizedBox(height: 8),
+        CarbonSegmentedControl<MetricSourceType>(
+          options: MetricSourceType.values,
+          value: selectedSource,
+          labelBuilder: (s) => s.label,
+          onChanged: _changeSourceType,
+        ),
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            onPressed: _pickSourceDetail,
+            icon: const Icon(Symbols.search, size: 16),
+            label: Text(
+              selectedSourceDetail ??
+                  (selectedSource == MetricSourceType.device
+                      ? "Which device?"
+                      : "How was this observed?"),
+            ),
+          ),
         ),
       ],
     );

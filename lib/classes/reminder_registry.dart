@@ -6,6 +6,7 @@ import 'body_markers.dart';
 import 'database_manager.dart';
 import 'frequency_codes.dart';
 import 'medication_services.dart';
+import 'metric_value.dart';
 import 'remindable.dart';
 import 'vision_prescription.dart';
 
@@ -34,6 +35,9 @@ class ReminderRegistry extends ChangeNotifier {
 
   // Same idea again for a bumped eye-care reminder. Keyed by vision_prescription id.
   final Map<int, DateTime> _eyeCareSnoozes = {};
+
+  // Same idea again for a bumped metric reading reminder. Keyed by metric id.
+  final Map<int, DateTime> _metricSnoozes = {};
 
   String? _patientUuid;
   List<Remindable> _reminders = [];
@@ -66,6 +70,7 @@ class ReminderRegistry extends ChangeNotifier {
     collected.addAll(await _loadTestReminders(patientUuid));
     collected.addAll(await _loadSupplyReminders(patientUuid));
     collected.addAll(await _loadEyeCareReminders(patientUuid));
+    collected.addAll(await _loadMetricReminders(patientUuid));
     collected.sort((a, b) => a.nextReminder.compareTo(b.nextReminder));
 
     _reminders = collected;
@@ -76,16 +81,31 @@ class ReminderRegistry extends ChangeNotifier {
   // status, resolved marker, received vaccination), handles the one case that needs
   // extra in-memory bookkeeping (a medication bump), then reloads everything fresh so
   // the UI reflects the consequence immediately rather than waiting for the next poll.
-  Future<void> handleAction(Remindable reminder, ReminderAction action, {DateTime? bumpTo}) async {
+  Future<void> handleAction(
+    Remindable reminder,
+    ReminderAction action, {
+    DateTime? bumpTo,
+  }) async {
     await reminder.handleAction(action, bumpTo: bumpTo);
-    if (reminder is MedicationReminder && action == ReminderAction.bumped && bumpTo != null) {
+    if (reminder is MedicationReminder &&
+        action == ReminderAction.bumped &&
+        bumpTo != null) {
       _medicationSnoozes[reminder.medicationId] = bumpTo;
     }
-    if (reminder is SupplyReminder && action == ReminderAction.bumped && bumpTo != null) {
+    if (reminder is SupplyReminder &&
+        action == ReminderAction.bumped &&
+        bumpTo != null) {
       _supplySnoozes[reminder.supplyId] = bumpTo;
     }
-    if (reminder is EyeCareReminder && action == ReminderAction.bumped && bumpTo != null) {
+    if (reminder is EyeCareReminder &&
+        action == ReminderAction.bumped &&
+        bumpTo != null) {
       _eyeCareSnoozes[reminder.prescriptionId] = bumpTo;
+    }
+    if (reminder is MetricReminder &&
+        action == ReminderAction.bumped &&
+        bumpTo != null) {
+      _metricSnoozes[reminder.metricId] = bumpTo;
     }
     await refresh();
   }
@@ -98,24 +118,33 @@ class ReminderRegistry extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<List<AppointmentReminder>> _loadAppointmentReminders(String patientUuid) async {
-    final appointmentRows = await DatabaseManager().getAppointmentsForPatient(patientUuid);
+  Future<List<AppointmentReminder>> _loadAppointmentReminders(
+    String patientUuid,
+  ) async {
+    final appointmentRows = await DatabaseManager().getAppointmentsForPatient(
+      patientUuid,
+    );
     if (appointmentRows.isEmpty) return const [];
 
     final providerRows = await DatabaseManager().getProviders(patientUuid);
     final Map<String, String> providerNames = {
       for (final row in providerRows)
-        (row['provider_uuid'] as String): '${row['first_name'] ?? ''} ${row['last_name'] ?? ''}'.trim(),
+        (row['provider_uuid'] as String):
+            '${row['first_name'] ?? ''} ${row['last_name'] ?? ''}'.trim(),
     };
 
     final DateTime now = DateTime.now();
     final List<AppointmentReminder> reminders = [];
     for (final row in appointmentRows) {
       final String status = (row['status'] as String?) ?? 'scheduled';
-      if (status != 'scheduled') continue; // already handled (attended/missed) — not a reminder anymore
+      if (status != 'scheduled')
+        continue; // already handled (attended/missed) — not a reminder anymore
 
-      final DateTime? scheduledFor = DateTime.tryParse(row['scheduled_for'] as String? ?? '');
-      if (scheduledFor == null || scheduledFor.isBefore(now)) continue; // past and never actioned — not surfaced here
+      final DateTime? scheduledFor = DateTime.tryParse(
+        row['scheduled_for'] as String? ?? '',
+      );
+      if (scheduledFor == null || scheduledFor.isBefore(now))
+        continue; // past and never actioned — not surfaced here
       reminders.add(
         AppointmentReminder(
           appointmentId: row['id'] as String,
@@ -130,18 +159,27 @@ class ReminderRegistry extends ChangeNotifier {
     return reminders;
   }
 
-  Future<List<MedicationReminder>> _loadMedicationReminders(String patientUuid) async {
-    final rows = await DatabaseManager().getMedicationsWithReminders(patientUuid);
+  Future<List<MedicationReminder>> _loadMedicationReminders(
+    String patientUuid,
+  ) async {
+    final rows = await DatabaseManager().getMedicationsWithReminders(
+      patientUuid,
+    );
     if (rows.isEmpty) return const [];
 
     // Today's already-logged doses, so a dose just marked Done/Skipped doesn't
     // immediately resurface within its own grace window.
-    final doseLogRows = await DatabaseManager().getTodaysMedicationDoseLog(patientUuid);
+    final doseLogRows = await DatabaseManager().getTodaysMedicationDoseLog(
+      patientUuid,
+    );
     final Set<String> handledToday = {};
     for (final logRow in doseLogRows) {
-      final DateTime? scheduledFor = DateTime.tryParse(logRow['scheduled_for'] as String? ?? '');
+      final DateTime? scheduledFor = DateTime.tryParse(
+        logRow['scheduled_for'] as String? ?? '',
+      );
       if (scheduledFor == null) continue;
-      final String hhmm = '${scheduledFor.hour.toString().padLeft(2, '0')}:${scheduledFor.minute.toString().padLeft(2, '0')}';
+      final String hhmm =
+          '${scheduledFor.hour.toString().padLeft(2, '0')}:${scheduledFor.minute.toString().padLeft(2, '0')}';
       handledToday.add('${logRow['medication_id']}|$hhmm');
     }
 
@@ -157,7 +195,9 @@ class ReminderRegistry extends ChangeNotifier {
         if (now.isBefore(snoozeUntil.add(const Duration(minutes: 1)))) {
           next = snoozeUntil;
         } else {
-          _medicationSnoozes.remove(medicationId); // snooze has passed — fall back to the normal schedule
+          _medicationSnoozes.remove(
+            medicationId,
+          ); // snooze has passed — fall back to the normal schedule
         }
       }
 
@@ -165,18 +205,25 @@ class ReminderRegistry extends ChangeNotifier {
         // A patient-chosen specific time (from the frequency screen's time picker)
         // takes priority over the frequency code's fixed defaults when one was set.
         final String? explicitTime = row['reminder_time'] as String?;
-        final List<String> times = (explicitTime != null && explicitTime.isNotEmpty)
+        final List<String> times =
+            (explicitTime != null && explicitTime.isNotEmpty)
             ? [explicitTime]
             : FrequencySchedule.dailyTimesFor(row['freq'] as String?);
-        next = _nextOccurrence(times, excludeTodayTimes: handledToday, medicationId: medicationId);
+        next = _nextOccurrence(
+          times,
+          excludeTodayTimes: handledToday,
+          medicationId: medicationId,
+        );
       }
-      if (next == null) continue; // e.g. PRN, unrecognized freq, or today's only slot already handled
+      if (next == null)
+        continue; // e.g. PRN, unrecognized freq, or today's only slot already handled
 
       final Set<ReminderChannel> channels = {
         if ((row['chime_enabled'] as int? ?? 0) == 1) ReminderChannel.chime,
         if ((row['text_enabled'] as int? ?? 0) == 1) ReminderChannel.text,
         if ((row['email_enabled'] as int? ?? 0) == 1) ReminderChannel.email,
-        if ((row['wearable_enabled'] as int? ?? 0) == 1) ReminderChannel.wearable,
+        if ((row['wearable_enabled'] as int? ?? 0) == 1)
+          ReminderChannel.wearable,
       };
 
       WearableAlertMode? wearableMode;
@@ -206,29 +253,46 @@ class ReminderRegistry extends ChangeNotifier {
     return reminders;
   }
 
-  Future<List<SymptomRecheckReminder>> _loadSymptomRecheckReminders(String patientUuid) async {
+  Future<List<SymptomRecheckReminder>> _loadSymptomRecheckReminders(
+    String patientUuid,
+  ) async {
     final rows = await DatabaseManager().getMarkersDueForFollowUp(patientUuid);
     final List<SymptomRecheckReminder> reminders = [];
     for (final row in rows) {
       final BodyMarker marker = BodyMarker.fromRow(row);
       if (marker.id == null) continue;
       final DateTime baseline =
-          marker.lastCheckedAt ?? DateTime.fromMillisecondsSinceEpoch(marker.recorded * 1000);
+          marker.lastCheckedAt ??
+          DateTime.fromMillisecondsSinceEpoch(marker.recorded * 1000);
       reminders.add(
-        SymptomRecheckReminder(markerId: marker.id!, bodyPart: marker.name, dueAt: baseline.add(const Duration(days: 3))),
+        SymptomRecheckReminder(
+          markerId: marker.id!,
+          bodyPart: marker.name,
+          dueAt: baseline.add(const Duration(days: 3)),
+        ),
       );
     }
     return reminders;
   }
 
-  Future<List<ImmunizationReminder>> _loadImmunizationReminders(String patientUuid) async {
-    final rows = await DatabaseManager().getVaccinationsWithReminders(patientUuid);
+  Future<List<ImmunizationReminder>> _loadImmunizationReminders(
+    String patientUuid,
+  ) async {
+    final rows = await DatabaseManager().getVaccinationsWithReminders(
+      patientUuid,
+    );
     final List<ImmunizationReminder> reminders = [];
     for (final row in rows) {
-      final DateTime? dueDate = DateTime.tryParse(row['next_due'] as String? ?? '');
+      final DateTime? dueDate = DateTime.tryParse(
+        row['next_due'] as String? ?? '',
+      );
       if (dueDate == null) continue;
       reminders.add(
-        ImmunizationReminder(vaccinationId: row['id'] as int, vaccineName: row['name'] as String, dueDate: dueDate),
+        ImmunizationReminder(
+          vaccinationId: row['id'] as int,
+          vaccineName: row['name'] as String,
+          dueDate: dueDate,
+        ),
       );
     }
     return reminders;
@@ -238,7 +302,9 @@ class ReminderRegistry extends ChangeNotifier {
     final rows = await DatabaseManager().getTestsWithReminders(patientUuid);
     final List<TestReminder> reminders = [];
     for (final row in rows) {
-      final DateTime? dueDate = DateTime.tryParse(row['next_due'] as String? ?? '');
+      final DateTime? dueDate = DateTime.tryParse(
+        row['next_due'] as String? ?? '',
+      );
       if (dueDate == null) continue;
       reminders.add(
         TestReminder(
@@ -260,11 +326,16 @@ class ReminderRegistry extends ChangeNotifier {
       final int id = row['id'] as int;
       final DateTime? snoozeUntil = _supplySnoozes[id];
       if (snoozeUntil != null) {
-        if (now.isBefore(snoozeUntil)) continue; // still snoozed — skip this refresh
+        if (now.isBefore(snoozeUntil))
+          continue; // still snoozed — skip this refresh
         _supplySnoozes.remove(id); // snooze has passed
       }
       reminders.add(
-        SupplyReminder(supplyId: id, supplyName: row['name'] as String, category: row['category'] as String?),
+        SupplyReminder(
+          supplyId: id,
+          supplyName: row['name'] as String,
+          category: row['category'] as String?,
+        ),
       );
     }
     return reminders;
@@ -274,15 +345,20 @@ class ReminderRegistry extends ChangeNotifier {
   // old, already-superseded prescription shouldn't also nag once a newer one exists.
   // Rows arrive latest-first (getVisionPrescriptionsForPatient orders by issued_date
   // DESC), so the first row seen per type is the one that matters.
-  Future<List<EyeCareReminder>> _loadEyeCareReminders(String patientUuid) async {
-    final rows = await DatabaseManager().getVisionPrescriptionsForPatient(patientUuid);
+  Future<List<EyeCareReminder>> _loadEyeCareReminders(
+    String patientUuid,
+  ) async {
+    final rows = await DatabaseManager().getVisionPrescriptionsForPatient(
+      patientUuid,
+    );
     final Set<int> seenTypes = {};
     final DateTime now = DateTime.now();
     final List<EyeCareReminder> reminders = [];
 
     for (final row in rows) {
       final int typeIndex = row['type'] as int? ?? 0;
-      if (!seenTypes.add(typeIndex)) continue; // already have the latest of this type
+      if (!seenTypes.add(typeIndex))
+        continue; // already have the latest of this type
 
       final DateTime? expiryDate = row['expiry_date'] != null
           ? DateTime.tryParse(row['expiry_date'] as String)
@@ -297,7 +373,92 @@ class ReminderRegistry extends ChangeNotifier {
       }
 
       reminders.add(
-        EyeCareReminder(prescriptionId: id, type: VisionPrescriptionType.values[typeIndex], expiryDate: expiryDate),
+        EyeCareReminder(
+          prescriptionId: id,
+          type: VisionPrescriptionType.values[typeIndex],
+          expiryDate: expiryDate,
+        ),
+      );
+    }
+    return reminders;
+  }
+
+  // Next due = the patient's last real reading + their chosen cadence, with the
+  // chosen time-of-day applied — the metric equivalent of MedicationReminder's
+  // dose-log exclusion, but generalized to any interval instead of hardcoded to "today"
+  // (a metric's cadence can be weekly or monthly, where "already handled today" isn't
+  // the right question). Never having logged a reading at all counts as due now, so an
+  // enabled reminder actually nudges a patient to start rather than waiting a full
+  // cadence period before ever firing once.
+  Future<List<MetricReminder>> _loadMetricReminders(String patientUuid) async {
+    final rows = await DatabaseManager().getMetricsWithReminders(patientUuid);
+    final DateTime now = DateTime.now();
+    final List<MetricReminder> reminders = [];
+
+    for (final row in rows) {
+      final int metricId = row['metric_id'] as int;
+
+      final DateTime? snoozeUntil = _metricSnoozes[metricId];
+      if (snoozeUntil != null) {
+        if (now.isBefore(snoozeUntil)) continue;
+        _metricSnoozes.remove(metricId);
+      }
+
+      final String rawCadence =
+          (row['cadence'] as String?) ?? MetricReminderCadence.daily.name;
+      MetricReminderCadence cadence = MetricReminderCadence.daily;
+      for (final c in MetricReminderCadence.values) {
+        if (c.name == rawCadence) {
+          cadence = c;
+          break;
+        }
+      }
+
+      final DateTime? lastMeasured = row['last_measured'] != null
+          ? DateTime.tryParse(row['last_measured'] as String)
+          : null;
+      final DateTime base = lastMeasured ?? now.subtract(cadence.interval);
+      DateTime due = base.add(cadence.interval);
+
+      final String? reminderTime = row['reminder_time'] as String?;
+      if (reminderTime != null && reminderTime.contains(':')) {
+        final List<String> parts = reminderTime.split(':');
+        final int? hour = int.tryParse(parts[0]);
+        final int? minute = parts.length > 1 ? int.tryParse(parts[1]) : null;
+        if (hour != null && minute != null) {
+          due = DateTime(due.year, due.month, due.day, hour, minute);
+        }
+      }
+
+      final Set<ReminderChannel> channels = {
+        if ((row['chime_enabled'] as int? ?? 0) == 1) ReminderChannel.chime,
+        if ((row['text_enabled'] as int? ?? 0) == 1) ReminderChannel.text,
+        if ((row['email_enabled'] as int? ?? 0) == 1) ReminderChannel.email,
+        if ((row['wearable_enabled'] as int? ?? 0) == 1)
+          ReminderChannel.wearable,
+      };
+
+      WearableAlertMode? wearableMode;
+      final String? rawMode = row['wearable_mode'] as String?;
+      if (rawMode != null) {
+        for (final mode in WearableAlertMode.values) {
+          if (mode.name == rawMode) {
+            wearableMode = mode;
+            break;
+          }
+        }
+      }
+
+      reminders.add(
+        MetricReminder(
+          metricId: metricId,
+          patientUuid: patientUuid,
+          metricName: row['name'] as String,
+          dueAt: due,
+          cadenceInterval: cadence.interval,
+          reminderChannels: channels,
+          reminderWearableMode: wearableMode,
+        ),
       );
     }
     return reminders;
@@ -327,7 +488,9 @@ class ReminderRegistry extends ChangeNotifier {
     for (int dayOffset = -1; dayOffset <= 1; dayOffset++) {
       final DateTime day = now.add(Duration(days: dayOffset));
       for (final String raw in dailyTimes) {
-        if (dayOffset == 0 && medicationId != null && excludeTodayTimes.contains('$medicationId|$raw')) {
+        if (dayOffset == 0 &&
+            medicationId != null &&
+            excludeTodayTimes.contains('$medicationId|$raw')) {
           continue; // already logged for today
         }
 
@@ -337,16 +500,25 @@ class ReminderRegistry extends ChangeNotifier {
         final int? minute = int.tryParse(parts[1]);
         if (hour == null || minute == null) continue;
 
-        final DateTime candidate = DateTime(day.year, day.month, day.day, hour, minute);
+        final DateTime candidate = DateTime(
+          day.year,
+          day.month,
+          day.day,
+          hour,
+          minute,
+        );
         if (candidate.isAfter(now)) {
-          if (soonestFuture == null || candidate.isBefore(soonestFuture)) soonestFuture = candidate;
+          if (soonestFuture == null || candidate.isBefore(soonestFuture))
+            soonestFuture = candidate;
         } else {
-          if (mostRecentPast == null || candidate.isAfter(mostRecentPast)) mostRecentPast = candidate;
+          if (mostRecentPast == null || candidate.isAfter(mostRecentPast))
+            mostRecentPast = candidate;
         }
       }
     }
 
-    if (mostRecentPast != null && now.difference(mostRecentPast) <= _recentGrace) {
+    if (mostRecentPast != null &&
+        now.difference(mostRecentPast) <= _recentGrace) {
       return mostRecentPast;
     }
     return soonestFuture;

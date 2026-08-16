@@ -1,0 +1,52 @@
+{
+  "categories": {
+    "Vitals & General Health": {
+      "devices": [
+        "Blood Pressure Monitor (automatic, e.g. Omron)",
+        "Blood Pressure Monitor (manual cuff + stethoscope)",
+        "Digital Thermometer",
+        "Bluetooth Body Scale",
+        "Pulse Oximeter",
+        "Fitness Tracker / Smartwatch"
+      ],
+      "observations": ["Manual pulse count", "Visual/touch temperature check", "Standard bathroom scale"]
+    },
+    "Sleep Apnea & Respiratory": {
+      "devices": [
+        "CPAP Machine",
+        "BiPAP Machine",
+        "Pulse Oximeter",
+        "Peak Flow Meter",
+        "Home Spirometer",
+        "Sleep Tracker / Smartwatch"
+      ],
+      "observations": ["Sleep diary / self-report", "Partner-observed breathing pauses"]
+    },
+    "Diabetes & Metabolic": {
+      "devices": ["Glucometer (fingerstick)", "Continuous Glucose Monitor (CGM)", "Blood Ketone Meter"],
+      "observations": ["Urine Test Strips (glucose)", "Urine Test Strips (ketones)"]
+    },
+    "Cardiovascular & Circulation": {
+      "devices": ["Home Lipid Panel Test Kit", "Home INR Monitor (e.g. CoaguChek)", "Heart Rate Variability Chest Strap"],
+      "observations": ["Lab result (reported from bloodwork)"]
+    },
+    "Rheumatism, Orthopedic & Pain Management": {
+      "devices": ["Hand Dynamometer (grip strength)", "Goniometer (joint range of motion)"],
+      "observations": ["Self-reported pain scale", "Visual joint swelling check", "Stopwatch (stiffness duration)"]
+    },
+    "Renal & Urinary Function": {
+      "devices": [],
+      "observations": ["Urine Test Strips", "Measuring container (urine output volume)", "Lab result (reported from bloodwork)"]
+    },
+    "Gastrointestinal & Nutritional": {
+      "devices": ["Smart Water Bottle", "Food / Calorie Tracking App"],
+      "observations": ["Measuring cup / journal (fluid intake)", "Food diary", "Visual stool assessment (Bristol Scale)"]
+    },
+    "Neurological & Mental Wellness": {
+      "devices": ["Sleep Tracker / Smartwatch", "EEG Headband"],
+      "observations": ["Self-report / journal", "Mood diary"]
+    }
+  },
+  "defaultDevices": ["Fitness Tracker / Smartwatch", "Bluetooth Body Scale"],
+  "defaultObservations": ["Self-report / journal", "Visual assessment", "Tape measure"]
+}

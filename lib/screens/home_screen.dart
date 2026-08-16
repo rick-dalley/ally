@@ -9,11 +9,13 @@ import 'package:triage/screens/metric_dashboard_screen.dart';
 import 'package:triage/screens/time_scroller.dart';
 import 'package:triage/screens/user_screen.dart';
 import '../app_theme.dart';
+import '../classes/achievement_badge.dart';
 import '../classes/database_manager.dart';
 import '../classes/patient.dart';
 import '../classes/reminder_registry.dart';
 import '../widgets/carbon_style_avatar.dart';
 import '../widgets/emergency_qr.dart';
+import '../widgets/avatar_ripple_effect.dart';
 import '../widgets/reminder_sheet.dart';
 import 'prescription_screen.dart';
 import 'providers_screen.dart';
@@ -40,13 +42,19 @@ class HomeScreenState extends State<HomeScreen> {
     _pageController = PageController();
     loadPatientData();
     ReminderRegistry.instance.addListener(_maybeShowReminders);
+    AchievementBadge.instance.addListener(_onAchievementBadgeChanged);
   }
 
   @override
   void dispose() {
     ReminderRegistry.instance.removeListener(_maybeShowReminders);
+    AchievementBadge.instance.removeListener(_onAchievementBadgeChanged);
     _pageController.dispose();
     super.dispose();
+  }
+
+  void _onAchievementBadgeChanged() {
+    if (mounted) setState(() {});
   }
 
   // Reminders float over the screen as a modal sheet rather than living inline in the
@@ -74,7 +82,12 @@ class HomeScreenState extends State<HomeScreen> {
         _isLoading = false;
       });
       if (patients.isNotEmpty) {
-        ReminderRegistry.instance.loadForPatient(patients[_currentPageIndex].patientUuid);
+        ReminderRegistry.instance.loadForPatient(
+          patients[_currentPageIndex].patientUuid,
+        );
+        AchievementBadge.instance.loadForPatient(
+          patients[_currentPageIndex].patientUuid,
+        );
       }
     }
   }
@@ -88,7 +101,8 @@ class HomeScreenState extends State<HomeScreen> {
       backgroundColor: carbonColorScaffoldBackground,
       builder: (context) => UserScreen(
         user: user,
-        onMemberUpdate: (p) => updatePatient(patientIndex: _currentPageIndex, patient: p),
+        onMemberUpdate: (p) =>
+            updatePatient(patientIndex: _currentPageIndex, patient: p),
       ),
     );
   }
@@ -107,8 +121,10 @@ class HomeScreenState extends State<HomeScreen> {
       PrescriptionScreen(patient: patient),
       MetricsDashboardScreen(
         user: patient,
-        onVitalsUpdate: (p) => updatePatient(patientIndex: _currentPageIndex, patient: p),
-        onMemberUpdate: (p) => updatePatient(patientIndex: _currentPageIndex, patient: p),
+        onVitalsUpdate: (p) =>
+            updatePatient(patientIndex: _currentPageIndex, patient: p),
+        onMemberUpdate: (p) =>
+            updatePatient(patientIndex: _currentPageIndex, patient: p),
       ),
       ProviderRosterScreen(user: patient),
       EmergencyQRCodeView(householdMember: patient),
@@ -170,7 +186,11 @@ class HomeScreenState extends State<HomeScreen> {
   void _jumpToPatient(String patientUuid) {
     final int index = patients.indexWhere((p) => p.patientUuid == patientUuid);
     if (index == -1 || index == _currentPageIndex) return;
-    _pageController.animateToPage(index, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
   }
 
   @override
@@ -205,20 +225,70 @@ class HomeScreenState extends State<HomeScreen> {
             // Top Context Bar: Page Action Title (Left) & Active Patient Avatar (Right)
             if (patient != null)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 8.0,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     // Action / Purpose Title
-                    Text(currentActionTitle, style: CarbonTheme.carbonExpressiveTextStyle),
+                    Text(
+                      currentActionTitle,
+                      style: CarbonTheme.carbonExpressiveTextStyle,
+                    ),
 
-                    // Patient Avatar (Tap for profile, Long press for roster jump)
+                    // Patient Avatar (Tap for profile, Long press for roster jump) —
+                    // a halo ripples out from the avatar's own edge while there's an
+                    // unacknowledged trophy (see AchievementBadge), nudging them to go
+                    // look at the new Trophy Case on the personal-details screen; it
+                    // stops the moment they open it.
+                    //
+                    // The outer SizedBox pins this slot's layout footprint to the
+                    // avatar's own fixed size, permanently — the ripple animates well
+                    // past that size every frame, and without this the Stack would
+                    // keep resizing to fit its largest current frame, visibly shoving
+                    // the title text next to it back and forth. OverflowBox then lets
+                    // the ripple actually paint beyond that fixed box: it reports its
+                    // own size as whatever OverflowBox is told to be (the avatar size,
+                    // from the SizedBox), while sizing and centering its child freely
+                    // up to maxWidth/maxHeight — the standard way to let something
+                    // visually overflow without it ever affecting a parent's layout,
+                    // and it needs no manual x/y offset math the way Positioned would.
                     GestureDetector(
                       onLongPress: () => _showMemberJumpList(context),
                       onTap: () => showUserScreen(user: patient),
                       child: KeyedSubtree(
                         key: ValueKey(patient.name),
-                        child: CarbonAvatar(user: patient),
+                        child: SizedBox(
+                          width: CarbonIcons.extraExtraLarge.size.width,
+                          height: CarbonIcons.extraExtraLarge.size.height,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            clipBehavior: Clip.none,
+                            children: [
+                              if (AchievementBadge.instance.hasUnacknowledged)
+                                OverflowBox(
+                                  maxWidth:
+                                      CarbonIcons.extraExtraLarge.size.width *
+                                      1.45,
+                                  maxHeight:
+                                      CarbonIcons.extraExtraLarge.size.height *
+                                      1.45,
+                                  child: IgnorePointer(
+                                    child: AvatarRippleEffect(
+                                      size: CarbonIcons
+                                          .extraExtraLarge
+                                          .size
+                                          .width,
+                                      color: const Color(0xFFFFA000),
+                                    ),
+                                  ),
+                                ),
+                              CarbonAvatar(user: patient),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -234,10 +304,18 @@ class HomeScreenState extends State<HomeScreen> {
                   setState(() {
                     _currentPageIndex = index;
                   });
-                  ReminderRegistry.instance.loadForPatient(patients[index].patientUuid);
+                  ReminderRegistry.instance.loadForPatient(
+                    patients[index].patientUuid,
+                  );
+                  AchievementBadge.instance.loadForPatient(
+                    patients[index].patientUuid,
+                  );
                 },
                 itemBuilder: (context, index) {
-                  return IndexedStack(index: _currentIndex, children: _getPages(index));
+                  return IndexedStack(
+                    index: _currentIndex,
+                    children: _getPages(index),
+                  );
                 },
               ),
             ),
@@ -261,7 +339,9 @@ class HomeScreenState extends State<HomeScreen> {
                 filter: ui.ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
                 child: Container(
                   height: 90,
-                  color: AppTheme.lightTheme.canvasColor.withValues(alpha: 0.25),
+                  color: AppTheme.lightTheme.canvasColor.withValues(
+                    alpha: 0.25,
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -295,7 +375,13 @@ class HomeScreenState extends State<HomeScreen> {
       ),
       child: InkWell(
         onTap: () => setState(() => _currentIndex = index),
-        child: Icon(icon, size: 32, color: isSelected ? carbonColorButtonOnPrimary : carbonColorButtonPrimary),
+        child: Icon(
+          icon,
+          size: 32,
+          color: isSelected
+              ? carbonColorButtonOnPrimary
+              : carbonColorButtonPrimary,
+        ),
       ),
     );
   }

@@ -46,7 +46,8 @@ extension ReminderActionDetails on ReminderAction {
 // — appointments, medication doses, symptom recheck prompts, immunizations due, and
 // (later, once that data model exists) lab/test due dates and self-tracked metrics.
 abstract interface class Remindable {
-  String get remindableId; // stable key for dismiss/dedupe, e.g. "medication:<id>:<time>"
+  String
+  get remindableId; // stable key for dismiss/dedupe, e.g. "medication:<id>:<time>"
   String get title;
   String get subtitle;
   IconData get icon;
@@ -57,8 +58,10 @@ abstract interface class Remindable {
   // reminder except reading the text.
   Color get color;
   DateTime get nextReminder; // the actual target/event time, not when to alert
-  Duration get advanceNotice; // how far ahead of nextReminder this should start surfacing
-  Duration? get cadence; // null = one-time; otherwise roughly how often it repeats
+  Duration
+  get advanceNotice; // how far ahead of nextReminder this should start surfacing
+  Duration?
+  get cadence; // null = one-time; otherwise roughly how often it repeats
   Set<ReminderChannel> get channels;
   WearableAlertMode? get wearableMode;
   bool get isDue;
@@ -75,7 +78,9 @@ abstract interface class Remindable {
 // `implements` doesn't inherit a default body the way `extends` would, so each
 // concrete Remindable below delegates its `isDue` here instead of repeating the logic.
 bool isRemindableDue(Remindable reminder) {
-  return DateTime.now().isAfter(reminder.nextReminder.subtract(reminder.advanceNotice));
+  return DateTime.now().isAfter(
+    reminder.nextReminder.subtract(reminder.advanceNotice),
+  );
 }
 
 class AppointmentReminder implements Remindable {
@@ -95,7 +100,9 @@ class AppointmentReminder implements Remindable {
   String get remindableId => 'appointment:$appointmentId';
   @override
   String get title {
-    final String reasonPart = (reason != null && reason!.isNotEmpty) ? ' re $reason' : '';
+    final String reasonPart = (reason != null && reason!.isNotEmpty)
+        ? ' re $reason'
+        : '';
     return 'You have an appointment with $providerName$reasonPart ${_relativeDay(scheduledFor)} at ${_formatTime(scheduledFor)}';
   }
 
@@ -125,15 +132,25 @@ class AppointmentReminder implements Remindable {
 
   // No "mute" — there's no recurring reminder on a one-time appointment to silence.
   @override
-  List<ReminderAction> get availableActions => const [ReminderAction.done, ReminderAction.skipped, ReminderAction.bumped];
+  List<ReminderAction> get availableActions => const [
+    ReminderAction.done,
+    ReminderAction.skipped,
+    ReminderAction.bumped,
+  ];
 
   @override
   Future<void> handleAction(ReminderAction action, {DateTime? bumpTo}) async {
     switch (action) {
       case ReminderAction.done:
-        await DatabaseManager().updateAppointmentStatus(appointmentId, 'attended');
+        await DatabaseManager().updateAppointmentStatus(
+          appointmentId,
+          'attended',
+        );
       case ReminderAction.skipped:
-        await DatabaseManager().updateAppointmentStatus(appointmentId, 'missed');
+        await DatabaseManager().updateAppointmentStatus(
+          appointmentId,
+          'missed',
+        );
       case ReminderAction.bumped:
         if (bumpTo != null) {
           await DatabaseManager().rescheduleAppointment(appointmentId, bumpTo);
@@ -166,11 +183,14 @@ class MedicationReminder implements Remindable {
   });
 
   @override
-  String get remindableId => 'medication:$medicationId:${doseTime.toIso8601String()}';
+  String get remindableId =>
+      'medication:$medicationId:${doseTime.toIso8601String()}';
   @override
   String get title => 'Take $medicationName';
   @override
-  String get subtitle => dose != null && dose!.isNotEmpty ? 'Dose: $dose' : "It's time for your dose";
+  String get subtitle => dose != null && dose!.isNotEmpty
+      ? 'Dose: $dose'
+      : "It's time for your dose";
   // Same icon as the Medications tab on the bottom nav bar (home_screen.dart) — already
   // matched before this pass, kept as the reference point for the other four.
   @override
@@ -224,12 +244,92 @@ class MedicationReminder implements Remindable {
   }
 }
 
+// A metric reading has no honest one-tap "done" the way a dose or an appointment does —
+// "done" would need a real value, which isn't something a swipe or a generic action-sheet
+// tap can supply. Same reasoning as SupplyReminder: only muted/bumped are offered, and
+// the actual reading still has to happen on the Metrics screen itself. `dueAt` is computed
+// from the patient's last real reading + the chosen cadence (see
+// ReminderRegistry._loadMetricReminders) rather than a fixed daily slot, so it works the
+// same way regardless of whether the cadence is daily, weekly, or monthly.
+class MetricReminder implements Remindable {
+  final int metricId;
+  final String patientUuid;
+  final String metricName;
+  final DateTime dueAt;
+  final Duration cadenceInterval;
+  final Set<ReminderChannel> reminderChannels;
+  final WearableAlertMode? reminderWearableMode;
+
+  const MetricReminder({
+    required this.metricId,
+    required this.patientUuid,
+    required this.metricName,
+    required this.dueAt,
+    required this.cadenceInterval,
+    required this.reminderChannels,
+    this.reminderWearableMode,
+  });
+
+  @override
+  String get remindableId => 'metric:$metricId';
+  @override
+  String get title => 'Log your $metricName reading';
+  @override
+  String get subtitle => "It's time to take a reading";
+  // Same icon as the Metrics tab on the bottom nav bar (home_screen.dart).
+  @override
+  IconData get icon => Symbols.health_metrics;
+  @override
+  Color get color => AppDomain.metrics.color;
+  @override
+  DateTime get nextReminder => dueAt;
+  // dueAt already accounts for the cadence — nothing to lead ahead of, same reasoning as
+  // SymptomRecheckReminder.
+  @override
+  Duration get advanceNotice => Duration.zero;
+  @override
+  Duration? get cadence => cadenceInterval;
+  @override
+  Set<ReminderChannel> get channels => reminderChannels;
+  @override
+  WearableAlertMode? get wearableMode => reminderWearableMode;
+  @override
+  bool get isDue => isRemindableDue(this);
+
+  @override
+  List<ReminderAction> get availableActions => const [
+    ReminderAction.muted,
+    ReminderAction.bumped,
+  ];
+
+  @override
+  Future<void> handleAction(ReminderAction action, {DateTime? bumpTo}) async {
+    switch (action) {
+      case ReminderAction.muted:
+        await DatabaseManager().muteMetricReminder(
+          metricId: metricId,
+          patientUuid: patientUuid,
+        );
+      case ReminderAction.bumped:
+        break; // Nothing to persist — ReminderRegistry tracks the snooze in memory,
+      // same as MedicationReminder/SupplyReminder.
+      case ReminderAction.done:
+      case ReminderAction.skipped:
+        break; // not offered — see availableActions
+    }
+  }
+}
+
 class SymptomRecheckReminder implements Remindable {
   final int markerId;
   final String bodyPart;
   final DateTime dueAt;
 
-  const SymptomRecheckReminder({required this.markerId, required this.bodyPart, required this.dueAt});
+  const SymptomRecheckReminder({
+    required this.markerId,
+    required this.bodyPart,
+    required this.dueAt,
+  });
 
   @override
   String get remindableId => 'symptom:$markerId';
@@ -261,7 +361,10 @@ class SymptomRecheckReminder implements Remindable {
   // (shown separately when opening the Symptoms screen directly) offers — kept simple
   // and consistent rather than special-casing this type's tap behavior.
   @override
-  List<ReminderAction> get availableActions => const [ReminderAction.done, ReminderAction.skipped];
+  List<ReminderAction> get availableActions => const [
+    ReminderAction.done,
+    ReminderAction.skipped,
+  ];
 
   @override
   Future<void> handleAction(ReminderAction action, {DateTime? bumpTo}) async {
@@ -282,7 +385,11 @@ class ImmunizationReminder implements Remindable {
   final String vaccineName;
   final DateTime dueDate;
 
-  const ImmunizationReminder({required this.vaccinationId, required this.vaccineName, required this.dueDate});
+  const ImmunizationReminder({
+    required this.vaccinationId,
+    required this.vaccineName,
+    required this.dueDate,
+  });
 
   @override
   String get remindableId => 'immunization:$vaccinationId';
@@ -313,16 +420,25 @@ class ImmunizationReminder implements Remindable {
   // a distinct "chose not to" event against (unlike medication doses). "Done" or
   // "bump the due date" are the two honest options with this schema.
   @override
-  List<ReminderAction> get availableActions => const [ReminderAction.done, ReminderAction.bumped];
+  List<ReminderAction> get availableActions => const [
+    ReminderAction.done,
+    ReminderAction.bumped,
+  ];
 
   @override
   Future<void> handleAction(ReminderAction action, {DateTime? bumpTo}) async {
     switch (action) {
       case ReminderAction.done:
-        await DatabaseManager().markVaccinationReceived(vaccinationId, DateTime.now());
+        await DatabaseManager().markVaccinationReceived(
+          vaccinationId,
+          DateTime.now(),
+        );
       case ReminderAction.bumped:
         if (bumpTo != null) {
-          await DatabaseManager().rescheduleVaccinationReminder(vaccinationId, bumpTo);
+          await DatabaseManager().rescheduleVaccinationReminder(
+            vaccinationId,
+            bumpTo,
+          );
         }
       case ReminderAction.skipped:
       case ReminderAction.muted:
@@ -340,7 +456,12 @@ class TestReminder implements Remindable, Schedulable {
   final String? category;
   final DateTime dueDate;
 
-  const TestReminder({required this.testId, required this.testName, this.category, required this.dueDate});
+  const TestReminder({
+    required this.testId,
+    required this.testName,
+    this.category,
+    required this.dueDate,
+  });
 
   @override
   String get remindableId => 'test:$testId';
@@ -373,7 +494,10 @@ class TestReminder implements Remindable, Schedulable {
   // No "skipped" — same reasoning as ImmunizationReminder: there's no dedicated
   // history log to record a distinct "chose not to" event against.
   @override
-  List<ReminderAction> get availableActions => const [ReminderAction.done, ReminderAction.bumped];
+  List<ReminderAction> get availableActions => const [
+    ReminderAction.done,
+    ReminderAction.bumped,
+  ];
 
   @override
   Future<void> handleAction(ReminderAction action, {DateTime? bumpTo}) async {
@@ -409,7 +533,11 @@ class SupplyReminder implements Remindable {
   final String supplyName;
   final String? category;
 
-  const SupplyReminder({required this.supplyId, required this.supplyName, this.category});
+  const SupplyReminder({
+    required this.supplyId,
+    required this.supplyName,
+    this.category,
+  });
 
   @override
   String get remindableId => 'supply:$supplyId';
@@ -436,7 +564,10 @@ class SupplyReminder implements Remindable {
   bool get isDue => true;
 
   @override
-  List<ReminderAction> get availableActions => const [ReminderAction.muted, ReminderAction.bumped];
+  List<ReminderAction> get availableActions => const [
+    ReminderAction.muted,
+    ReminderAction.bumped,
+  ];
 
   @override
   Future<void> handleAction(ReminderAction action, {DateTime? bumpTo}) async {
@@ -464,7 +595,11 @@ class EyeCareReminder implements Remindable {
   final VisionPrescriptionType type;
   final DateTime expiryDate;
 
-  const EyeCareReminder({required this.prescriptionId, required this.type, required this.expiryDate});
+  const EyeCareReminder({
+    required this.prescriptionId,
+    required this.type,
+    required this.expiryDate,
+  });
 
   @override
   String get remindableId => 'vision:$prescriptionId';

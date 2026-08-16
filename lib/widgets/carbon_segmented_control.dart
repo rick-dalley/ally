@@ -12,6 +12,10 @@ class CarbonSegmentedControl<T> extends StatelessWidget {
   final T value;
   final String Function(T) labelBuilder;
   final ValueChanged<T> onChanged;
+  // Null keeps carbonTextStyle's own size — only set this when a control has enough
+  // segments/label length that the default size pushes it onto two lines and grows
+  // the whole control taller than intended.
+  final double? fontSize;
 
   const CarbonSegmentedControl({
     super.key,
@@ -19,6 +23,7 @@ class CarbonSegmentedControl<T> extends StatelessWidget {
     required this.value,
     required this.labelBuilder,
     required this.onChanged,
+    this.fontSize,
   });
 
   @override
@@ -32,22 +37,43 @@ class CarbonSegmentedControl<T> extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
-                  color: option == value ? carbonColorButtonPrimary : carbonColorField,
+                  color: option == value
+                      ? carbonColorButtonPrimary
+                      : carbonColorField,
                   border: Border(
-                    top: const BorderSide(color: carbonColorBorderStrong03, width: 1),
-                    bottom: const BorderSide(color: carbonColorBorderStrong03, width: 1),
-                    left: const BorderSide(color: carbonColorBorderStrong03, width: 1),
+                    top: const BorderSide(
+                      color: carbonColorBorderStrong03,
+                      width: 1,
+                    ),
+                    bottom: const BorderSide(
+                      color: carbonColorBorderStrong03,
+                      width: 1,
+                    ),
+                    left: const BorderSide(
+                      color: carbonColorBorderStrong03,
+                      width: 1,
+                    ),
                     right: option == options.last
-                        ? const BorderSide(color: carbonColorBorderStrong03, width: 1)
+                        ? const BorderSide(
+                            color: carbonColorBorderStrong03,
+                            width: 1,
+                          )
                         : BorderSide.none,
                   ),
                 ),
                 child: Text(
                   labelBuilder(option),
                   textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: CarbonTheme.carbonTextStyle?.copyWith(
-                    color: option == value ? carbonColorButtonOnPrimary : carbonColorTextPrimary,
-                    fontWeight: option == value ? FontWeight.w600 : FontWeight.w400,
+                    color: option == value
+                        ? carbonColorButtonOnPrimary
+                        : carbonColorTextPrimary,
+                    fontWeight: option == value
+                        ? FontWeight.w600
+                        : FontWeight.w400,
+                    fontSize: fontSize,
                   ),
                 ),
               ),

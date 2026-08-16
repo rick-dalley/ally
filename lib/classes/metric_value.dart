@@ -5,39 +5,126 @@ import 'package:triage/classes/date_time_utilities.dart';
 import 'package:triage/classes/uuid.dart';
 
 import 'listable.dart';
+import 'medication_services.dart';
+import 'metric_source.dart';
 
-enum JourneySupports implements Listable {
-  device,
-  medication,
-  activity,
-  specialist;
+// A separate, simpler cadence than FrequencyCodes' Latin dosing vocabulary — that's the
+// right fit for "how often is a pill taken," but a metric reading cadence is a different
+// concept (weight weekly, glucose several times a day, BP daily) and forcing "Bis in die"
+// onto a scale reading would just be borrowed terminology that doesn't fit.
+enum MetricReminderCadence implements Listable {
+  daily,
+  twiceDaily,
+  weekly,
+  biweekly,
+  monthly;
 
-  @override
-  String get description {
+  Duration get interval {
     switch (this) {
-      case JourneySupports.device:
-        return "Connected BLE Device";
-      case JourneySupports.medication:
-        return "Associated Medication";
-      case JourneySupports.activity:
-        return "Physical Activity Routine";
-      case JourneySupports.specialist:
-        return "Assigned Care Specialist";
+      case MetricReminderCadence.daily:
+        return const Duration(days: 1);
+      case MetricReminderCadence.twiceDaily:
+        return const Duration(hours: 12);
+      case MetricReminderCadence.weekly:
+        return const Duration(days: 7);
+      case MetricReminderCadence.biweekly:
+        return const Duration(days: 14);
+      case MetricReminderCadence.monthly:
+        return const Duration(days: 30);
     }
   }
 
   @override
+  // Kept to single-character-ish codes deliberately — the segmented control has 5
+  // options in one row, and full words ("Biweekly") wrap to a second line and grow the
+  // whole control taller. "2W" rather than "2xW" for biweekly on purpose: "2xW" reads
+  // as "twice a week" (more often than weekly), the opposite of what biweekly means
+  // here (every 2 weeks, less often than weekly) — same ambiguity "biweekly" itself
+  // notoriously has in plain English. The full description (used in the card's summary
+  // line, not here) spells it out unambiguously.
   String get label {
     switch (this) {
-      case JourneySupports.device:
-        return "device";
-      case JourneySupports.medication:
-        return "medication";
-      case JourneySupports.activity:
-        return "activity";
-      case JourneySupports.specialist:
-        return "specialist";
+      case MetricReminderCadence.daily:
+        return "D";
+      case MetricReminderCadence.twiceDaily:
+        return "2xD";
+      case MetricReminderCadence.weekly:
+        return "W";
+      case MetricReminderCadence.biweekly:
+        return "2W";
+      case MetricReminderCadence.monthly:
+        return "M";
     }
+  }
+
+  @override
+  String get description {
+    switch (this) {
+      case MetricReminderCadence.daily:
+        return "Once a day";
+      case MetricReminderCadence.twiceDaily:
+        return "Twice a day, roughly 12 hours apart";
+      case MetricReminderCadence.weekly:
+        return "Once a week";
+      case MetricReminderCadence.biweekly:
+        return "Once every two weeks";
+      case MetricReminderCadence.monthly:
+        return "Once a month";
+    }
+  }
+}
+
+// UI-layer bundle, same shape as medication_services.dart's ReminderPreference — not a
+// database row, just what the reminder-settings sheet hands back to persist.
+class MetricReminderPreference {
+  final bool enabled;
+  final Set<ReminderChannel> channels;
+  final WearableAlertMode? wearableMode;
+  final MetricReminderCadence cadence;
+  final String? reminderTime; // "HH:mm"
+
+  const MetricReminderPreference({
+    this.enabled = false,
+    this.channels = const {},
+    this.wearableMode,
+    this.cadence = MetricReminderCadence.daily,
+    this.reminderTime,
+  });
+
+  factory MetricReminderPreference.fromMap(Map<String, dynamic>? row) {
+    if (row == null) return const MetricReminderPreference();
+    final Set<ReminderChannel> channels = {
+      if ((row['chime_enabled'] as int? ?? 0) == 1) ReminderChannel.chime,
+      if ((row['text_enabled'] as int? ?? 0) == 1) ReminderChannel.text,
+      if ((row['email_enabled'] as int? ?? 0) == 1) ReminderChannel.email,
+      if ((row['wearable_enabled'] as int? ?? 0) == 1) ReminderChannel.wearable,
+    };
+    final String? rawMode = row['wearable_mode'] as String?;
+    WearableAlertMode? wearableMode;
+    if (rawMode != null) {
+      for (final mode in WearableAlertMode.values) {
+        if (mode.name == rawMode) {
+          wearableMode = mode;
+          break;
+        }
+      }
+    }
+    final String rawCadence =
+        (row['cadence'] as String?) ?? MetricReminderCadence.daily.name;
+    MetricReminderCadence cadence = MetricReminderCadence.daily;
+    for (final c in MetricReminderCadence.values) {
+      if (c.name == rawCadence) {
+        cadence = c;
+        break;
+      }
+    }
+    return MetricReminderPreference(
+      enabled: (row['enabled'] as int? ?? 0) == 1,
+      channels: channels,
+      wearableMode: wearableMode,
+      cadence: cadence,
+      reminderTime: row['reminder_time'] as String?,
+    );
   }
 }
 
@@ -384,6 +471,9 @@ class Metrics {
   // a subset of `tracked` (deliberately not everything tracked, so the panel doesn't
   // get cluttered with every metric the patient happens to log).
   Map<int, bool> onDashboard = {};
+  // How each tracked metric's readings are actually being captured — device vs.
+  // observation, and which device — see MetricSourceSelection.
+  Map<int, MetricSourceSelection> sources = {};
 
   Metrics();
 
@@ -399,7 +489,11 @@ class Metrics {
     final rawList = await DatabaseManager().getAllMetrics();
     all.clear();
     for (var rawMetric in rawList) {
-      Metric metric = Metric.fromMap(rawMetric, "");
+      // Metric.fromMap takes category as a separate param rather than reading it off
+      // `items` itself — the one call site here was passing a hardcoded "", so
+      // Metric.category was silently empty for every metric ever loaded from the DB,
+      // despite the real category sitting right there in the row already.
+      Metric metric = Metric.fromMap(rawMetric, rawMetric['category'] ?? '');
       all[metric.id] = metric;
     }
   }
@@ -409,6 +503,7 @@ class Metrics {
     tracked.clear();
     untracked.clear();
     onDashboard.clear();
+    sources.clear();
 
     for (Map<String, dynamic> rawMetric in rawTracked) {
       int metricId = rawMetric['metric_id'] ?? rawMetric['id'];
@@ -416,6 +511,7 @@ class Metrics {
       if (metric != null) {
         tracked[metric.id] = metric;
         onDashboard[metric.id] = (rawMetric['on_dashboard'] as int?) == 1;
+        sources[metric.id] = MetricSourceSelection.fromMap(rawMetric);
       }
     }
 
@@ -480,6 +576,32 @@ class Metrics {
     return {
       for (final row in rows)
         row['metric_id'] as int: MetricThreshold.fromMap(row),
+    };
+  }
+
+  // Independent of buildMapsFor so a save inside a card can refresh just this, the same
+  // way getThresholdsFor/getTargetsFor above do, without a full tracked/untracked rebuild.
+  Future<Map<int, MetricSourceSelection>> getSourcesFor(
+    String patientUuid,
+  ) async {
+    final rows = await DatabaseManager().getTrackedMetrics(patientUuid);
+    return {
+      for (final row in rows)
+        (row['metric_id'] ?? row['id']) as int: MetricSourceSelection.fromMap(
+          row,
+        ),
+    };
+  }
+
+  Future<Map<int, MetricReminderPreference>> getReminderPreferencesFor(
+    String patientUuid,
+  ) async {
+    final rows = await DatabaseManager().getAllMetricReminderPreferences(
+      patientUuid,
+    );
+    return {
+      for (final row in rows)
+        row['metric_id'] as int: MetricReminderPreference.fromMap(row),
     };
   }
 
@@ -549,6 +671,32 @@ class Metrics {
       patientUuid: patientUuid,
       onDashboard: onDashboard,
     );
+  }
+
+  static void setSource({
+    required int metricId,
+    required String patientUuid,
+    required MetricSourceType source,
+    String? sourceDetail,
+  }) async {
+    DatabaseManager().setMetricSource(
+      metricId: metricId,
+      patientUuid: patientUuid,
+      source: source.name,
+      sourceDetail: sourceDetail,
+    );
+    // Only a device has real identity worth remembering across visits (a reusable
+    // "Omron BP710", not a one-off observation phrase) — this is what makes the
+    // picker's "Your devices" list grow from the patient's own actual history.
+    if (source == MetricSourceType.device &&
+        sourceDetail != null &&
+        sourceDetail.isNotEmpty) {
+      DatabaseManager().recordDeviceUsage(
+        patientUuid: patientUuid,
+        name: sourceDetail,
+        metricId: metricId,
+      );
+    }
   }
 }
 

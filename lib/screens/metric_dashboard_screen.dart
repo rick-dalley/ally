@@ -4,6 +4,7 @@ import 'package:triage/classes/carbon_theme_constants.dart';
 import 'package:triage/widgets/carbon_style_search_field.dart';
 import '../app_theme.dart';
 import '../classes/carbon_color_constants.dart';
+import '../classes/metric_source.dart';
 import '../classes/metric_value.dart';
 import '../classes/patient.dart';
 import '../widgets/dual_bound_capsule.dart';
@@ -38,6 +39,8 @@ class MetricsDashboardScreenState extends State<MetricsDashboardScreen> {
   Map<int, MetricThreshold> thresholds = {};
   Map<int, MetricTarget> targets = {};
   Map<int, bool> onDashboard = {};
+  Map<int, MetricSourceSelection> sources = {};
+  Map<int, MetricReminderPreference> reminderPreferences = {};
 
   @override
   void initState() {
@@ -66,6 +69,8 @@ class MetricsDashboardScreenState extends State<MetricsDashboardScreen> {
     thresholds = await metrics.getThresholdsFor(userUuid);
     targets = await metrics.getTargetsFor(userUuid);
     onDashboard = metrics.onDashboard;
+    sources = metrics.sources;
+    reminderPreferences = await metrics.getReminderPreferencesFor(userUuid);
     await metrics.loadHistoryFor(userUuid);
   }
 
@@ -81,12 +86,18 @@ class MetricsDashboardScreenState extends State<MetricsDashboardScreen> {
     final freshThresholds = await metrics.getThresholdsFor(userUuid);
     final freshTargets = await metrics.getTargetsFor(userUuid);
     final freshRanges = await metrics.getRangesFor(userUuid);
+    final freshSources = await metrics.getSourcesFor(userUuid);
+    final freshReminderPreferences = await metrics.getReminderPreferencesFor(
+      userUuid,
+    );
     await metrics.loadHistoryFor(userUuid);
     if (!mounted) return;
     setState(() {
       thresholds = freshThresholds;
       targets = freshTargets;
       ranges = freshRanges;
+      sources = freshSources;
+      reminderPreferences = freshReminderPreferences;
     });
   }
 
@@ -316,6 +327,10 @@ class MetricsDashboardScreenState extends State<MetricsDashboardScreen> {
                           onDashboardChanged: (isOnDashboard) {
                             handleDashboardChanged(metric.id, isOnDashboard);
                           },
+                          source: sources[metric.id],
+                          reminderPreference:
+                              reminderPreferences[metric.id] ??
+                              const MetricReminderPreference(),
                         ),
                     ],
                     if (filteredUntrackedList.isNotEmpty) ...[

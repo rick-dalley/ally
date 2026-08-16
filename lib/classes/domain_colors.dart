@@ -22,7 +22,8 @@ enum AppDomain {
   eyeCare,
   supplies,
   questionnaires,
-  careTeam;
+  careTeam,
+  metrics;
 
   Color get color {
     switch (this) {
@@ -50,6 +51,8 @@ enum AppDomain {
         return const Color(0xFFAB47BC); // light purple
       case AppDomain.careTeam:
         return const Color(0xFF6D4C41); // dark brown
+      case AppDomain.metrics:
+        return const Color(0xFFFFA000); // amber
     }
   }
 
@@ -79,6 +82,8 @@ enum AppDomain {
         return Symbols.ballot_sharp;
       case AppDomain.careTeam:
         return Symbols.diversity_4;
+      case AppDomain.metrics:
+        return Symbols.health_metrics;
     }
   }
 }

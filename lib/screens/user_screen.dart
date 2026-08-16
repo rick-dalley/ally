@@ -16,6 +16,7 @@ import '../classes/patient_sentiment.dart';
 import '../widgets/body_metrics_entry_widget.dart';
 import 'body_screen.dart';
 import '../widgets/carbon_style_textbox.dart';
+import '../widgets/trophy_case.dart';
 
 class UserScreen extends StatefulWidget {
   // Pass the initial patient snapshot down from the roster list
@@ -65,7 +66,10 @@ class UserScreenState extends State<UserScreen> {
     setState(() {});
   }
 
-  void showBloodTypModal({required BuildContext context, required Patient patient}) {
+  void showBloodTypModal({
+    required BuildContext context,
+    required Patient patient,
+  }) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -128,12 +132,17 @@ class UserScreenState extends State<UserScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                TrophyCase(patientUuid: patient.patientUuid),
                 // Replace your existing Container child: Row(...) block with this:
-                Text(patient.firstName, style: CarbonTheme.carbonHeadingTextStyle),
+                Text(
+                  patient.firstName,
+                  style: CarbonTheme.carbonHeadingTextStyle,
+                ),
 
                 const SizedBox(height: 32),
                 Column(
-                  mainAxisSize: MainAxisSize.min, // Prevents Column from taking infinite height
+                  mainAxisSize: MainAxisSize
+                      .min, // Prevents Column from taking infinite height
                   children: [
                     Row(
                       children: [
@@ -143,7 +152,10 @@ class UserScreenState extends State<UserScreen> {
                           width: 184,
                           style: CarbonButtonStyle.tertiary,
                           onTap: () {
-                            showBloodTypModal(context: context, patient: patient);
+                            showBloodTypModal(
+                              context: context,
+                              patient: patient,
+                            );
                           },
                           icon: Symbols.bloodtype,
                         ),
@@ -154,7 +166,10 @@ class UserScreenState extends State<UserScreen> {
                           width: 184,
                           style: CarbonButtonStyle.tertiary,
                           onTap: () {
-                            showMetricsEntryDialog(context: context, user: widget.user);
+                            showMetricsEntryDialog(
+                              context: context,
+                              user: widget.user,
+                            );
                           },
                           icon: Symbols.body_fat,
                         ),
@@ -167,14 +182,18 @@ class UserScreenState extends State<UserScreen> {
                   children: [
                     CarbonTextInput(
                       label: 'Provincial Health #:',
-                      helperText: "Enter your government issued health identification",
+                      helperText:
+                          "Enter your government issued health identification",
                       value: _formatPHN(patient.phn.toString()),
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         Expanded(
-                          child: CarbonTextInput(label: "Born:", value: patient.formattedDateOfBirth),
+                          child: CarbonTextInput(
+                            label: "Born:",
+                            value: patient.formattedDateOfBirth,
+                          ),
                         ),
                         SizedBox(width: 8),
                         Expanded(child: Text("(${patient.age} yrs)")),
@@ -185,7 +204,10 @@ class UserScreenState extends State<UserScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         Expanded(
-                          child: CarbonTextInput(label: "HEIGHT", value: patient.height.toString()),
+                          child: CarbonTextInput(
+                            label: "HEIGHT",
+                            value: patient.height.toString(),
+                          ),
                         ),
                         SizedBox(width: 8),
                         Expanded(child: Text("(${patient.heightUoM})")),
@@ -196,24 +218,45 @@ class UserScreenState extends State<UserScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         Expanded(
-                          child: CarbonTextInput(label: "WEIGHT", value: patient.weight.toString()),
+                          child: CarbonTextInput(
+                            label: "WEIGHT",
+                            value: patient.weight.toString(),
+                          ),
                         ),
                         SizedBox(width: 8),
                         Expanded(
-                          child: Align(alignment: AlignmentGeometry.centerLeft, child: Text("(${patient.weightUoM})")),
+                          child: Align(
+                            alignment: AlignmentGeometry.centerLeft,
+                            child: Text("(${patient.weightUoM})"),
+                          ),
                         ),
                       ],
                     ),
                     SizedBox(height: 16),
-                    CarbonTextInput(label: "CONTACT:", value: patient.contactName),
+                    CarbonTextInput(
+                      label: "CONTACT:",
+                      value: patient.contactName,
+                    ),
                     SizedBox(height: 16),
-                    CarbonTextInput(label: "PHONE:", value: patient.contactPhone),
+                    CarbonTextInput(
+                      label: "PHONE:",
+                      value: patient.contactPhone,
+                    ),
                     SizedBox(height: 16),
-                    CarbonTextInput(label: "PRIMARY CAREGIVER:", value: patient.familyDoctorName),
+                    CarbonTextInput(
+                      label: "PRIMARY CAREGIVER:",
+                      value: patient.familyDoctorName,
+                    ),
                     SizedBox(height: 16),
-                    CarbonTextInput(label: "PHONE:", value: patient.familyDoctorPhone),
+                    CarbonTextInput(
+                      label: "PHONE:",
+                      value: patient.familyDoctorPhone,
+                    ),
                     SizedBox(height: 16),
-                    CarbonTextInput(label: "PHARMACY:", value: patient.pharmacyPhone),
+                    CarbonTextInput(
+                      label: "PHARMACY:",
+                      value: patient.pharmacyPhone,
+                    ),
                     SizedBox(height: 16),
                     CarbonTextInput(label: "FAX:", value: patient.pharmacyFax),
                   ],
@@ -234,13 +277,18 @@ class UserScreenState extends State<UserScreen> {
       builder: (BuildContext context) {
         return SizedBox(
           height: MediaQuery.of(context).size.height, // 90% screen height
-          child: BodyOutlineScreen(patient: user), // The Stateful Widget from before
+          child: BodyOutlineScreen(
+            patient: user,
+          ), // The Stateful Widget from before
         );
       },
     );
   }
 
-  void showMetricsEntryDialog({required BuildContext context, required Patient user}) {
+  void showMetricsEntryDialog({
+    required BuildContext context,
+    required Patient user,
+  }) {
     final double? cleanHeight = (user.height == 0.0) ? null : user.height;
     final double? cleanWeight = (user.weight == 0.0) ? null : user.weight;
     final String normalizedHeightUom = user.heightUoM.toLowerCase();
@@ -251,7 +299,10 @@ class UserScreenState extends State<UserScreen> {
       barrierDismissible: true,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: Text('Update Patient Metrics', style: AppTheme.defaultHeadingStyle),
+          title: Text(
+            'Update Patient Metrics',
+            style: AppTheme.defaultHeadingStyle,
+          ),
           shape: ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
           content: SizedBox(
             width: 400,
@@ -267,7 +318,11 @@ class UserScreenState extends State<UserScreen> {
                     //Pop the UI instantly so the app feels snappy
                     Navigator.pop(dialogContext);
                     Future.microtask(() {
-                      onMetricsChanged(newWeight: newWeightValue, newHeight: newHeightValue, patient: widget.user);
+                      onMetricsChanged(
+                        newWeight: newWeightValue,
+                        newHeight: newHeightValue,
+                        patient: widget.user,
+                      );
                     });
                   },
                 ),
@@ -288,15 +343,24 @@ class UserScreenState extends State<UserScreen> {
     return rawPhn; // Fallback if format differs
   }
 
-  void onMetricsChanged({double? newHeight, double? newWeight, required Patient patient}) async {
+  void onMetricsChanged({
+    double? newHeight,
+    double? newWeight,
+    required Patient patient,
+  }) async {
     final String patientUuid = patient.patientUuid;
     if (patientUuid.isEmpty) return;
 
     if (newHeight != null && newHeight > 0) {
-      final MetricValue? lastHeightMetric = await DatabaseManager().getLatestMetric(patientUuid, 'height');
+      final MetricValue? lastHeightMetric = await DatabaseManager()
+          .getLatestMetric(patientUuid, 'height');
 
       if (lastHeightMetric == null || lastHeightMetric.value != newHeight) {
-        await DatabaseManager().insertPatientMetric(patientUuid, newHeight, 'height');
+        await DatabaseManager().insertPatientMetric(
+          patientUuid,
+          newHeight,
+          'height',
+        );
         setState(() {
           patient.height = newHeight;
         });
@@ -305,18 +369,26 @@ class UserScreenState extends State<UserScreen> {
 
     // --- HANDLE WEIGHT FILTER ---
     if (newWeight != null && newWeight > 0) {
-      final MetricValue? lastWeightMetric = await DatabaseManager().getLatestMetric(patientUuid, 'weight');
+      final MetricValue? lastWeightMetric = await DatabaseManager()
+          .getLatestMetric(patientUuid, 'weight');
       bool shouldWriteWeight = true;
 
       if (lastWeightMetric != null) {
-        final Duration timeSinceLastLog = DateTime.now().difference(lastWeightMetric.recorded);
-        if (lastWeightMetric.value == newWeight && timeSinceLastLog.inHours < 23) {
+        final Duration timeSinceLastLog = DateTime.now().difference(
+          lastWeightMetric.recorded,
+        );
+        if (lastWeightMetric.value == newWeight &&
+            timeSinceLastLog.inHours < 23) {
           shouldWriteWeight = false;
         }
       }
 
       if (shouldWriteWeight) {
-        await DatabaseManager().insertPatientMetric(patientUuid, newWeight, 'weight');
+        await DatabaseManager().insertPatientMetric(
+          patientUuid,
+          newWeight,
+          'weight',
+        );
         setState(() {
           patient.weight = newWeight;
         });

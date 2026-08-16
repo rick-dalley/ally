@@ -42,7 +42,7 @@
     },
     {
       "table": "patient_metric_tracking",
-      "query": "CREATE TABLE IF NOT EXISTS patient_metric_tracking (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_uuid TEXT NOT NULL, metric_id INT NOT NULL, on_dashboard INTEGER NOT NULL DEFAULT 0, started_tracking DATETIME DEFAULT CURRENT_TIMESTAMP, stopped_tracking DATETIME, reason TEXT, FOREIGN KEY(patient_uuid) REFERENCES patient(patient_uuid), FOREIGN KEY(metric_id) REFERENCES metric(id));"
+      "query": "CREATE TABLE IF NOT EXISTS patient_metric_tracking (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_uuid TEXT NOT NULL, metric_id INT NOT NULL, on_dashboard INTEGER NOT NULL DEFAULT 0, source TEXT, source_detail TEXT, started_tracking DATETIME DEFAULT CURRENT_TIMESTAMP, stopped_tracking DATETIME, reason TEXT, FOREIGN KEY(patient_uuid) REFERENCES patient(patient_uuid), FOREIGN KEY(metric_id) REFERENCES metric(id));"
     },
     {
       "table": "patient_metric",
@@ -135,6 +135,10 @@
     {
       "table": "medication_reminder_preference",
       "query": "CREATE TABLE IF NOT EXISTS medication_reminder_preference (medication_id TEXT PRIMARY KEY, patient_uuid TEXT NOT NULL, enabled INTEGER NOT NULL DEFAULT 0, chime_enabled INTEGER NOT NULL DEFAULT 0, text_enabled INTEGER NOT NULL DEFAULT 0, email_enabled INTEGER NOT NULL DEFAULT 0, wearable_enabled INTEGER NOT NULL DEFAULT 0, wearable_mode TEXT, lead_minutes INTEGER NOT NULL DEFAULT 0, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (medication_id) REFERENCES medication(id) ON DELETE CASCADE, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
+    },
+    {
+      "table": "metric_reminder_preference",
+      "query": "CREATE TABLE IF NOT EXISTS metric_reminder_preference (metric_id INTEGER NOT NULL, patient_uuid TEXT NOT NULL, enabled INTEGER NOT NULL DEFAULT 0, chime_enabled INTEGER NOT NULL DEFAULT 0, text_enabled INTEGER NOT NULL DEFAULT 0, email_enabled INTEGER NOT NULL DEFAULT 0, wearable_enabled INTEGER NOT NULL DEFAULT 0, wearable_mode TEXT, cadence TEXT NOT NULL DEFAULT 'daily', reminder_time TEXT, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (metric_id, patient_uuid), FOREIGN KEY (metric_id) REFERENCES metric(id) ON DELETE CASCADE, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
     },
     {
       "table": "patient_metric_threshold",
@@ -287,6 +291,14 @@
     {
       "table": "interaction_acknowledgment",
       "query": "CREATE INDEX idx_interaction_ack_patient ON interaction_acknowledgment(patient_uuid);"
+    },
+    {
+      "table": "achievement",
+      "query": "CREATE TABLE IF NOT EXISTS achievement (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_uuid TEXT NOT NULL, name TEXT NOT NULL, reason TEXT, icon TEXT, earned_at DATETIME DEFAULT CURRENT_TIMESTAMP, acknowledged_at DATETIME, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
+    },
+    {
+      "table": "achievement",
+      "query": "CREATE INDEX idx_achievement_patient ON achievement(patient_uuid);"
     }
   ]
  }
