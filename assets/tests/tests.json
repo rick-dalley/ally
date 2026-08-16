@@ -1,0 +1,172 @@
+[
+  {
+    "name": "Complete Blood Count (CBC)",
+    "description": "Blood draw measuring red cells, white cells, and platelets.",
+    "category": "General Bloodwork"
+  },
+  {
+    "name": "Basic Metabolic Panel (BMP)",
+    "description": "Blood draw checking glucose, electrolytes, and kidney function.",
+    "category": "General Bloodwork"
+  },
+  {
+    "name": "Comprehensive Metabolic Panel (CMP)",
+    "description": "Blood draw covering the BMP plus liver function markers.",
+    "category": "General Bloodwork"
+  },
+  {
+    "name": "Lipid Panel",
+    "description": "Blood draw measuring total cholesterol, LDL, HDL, and triglycerides.",
+    "category": "Cardiovascular"
+  },
+  {
+    "name": "Hemoglobin A1C (Lab)",
+    "description": "Lab blood draw for 3-month average blood sugar control.",
+    "category": "Metabolic"
+  },
+  {
+    "name": "Thyroid Panel (TSH, T3, T4)",
+    "description": "Blood draw assessing thyroid hormone levels.",
+    "category": "Metabolic"
+  },
+  {
+    "name": "Liver Function Tests",
+    "description": "Blood draw checking liver enzymes and function.",
+    "category": "General Bloodwork"
+  },
+  {
+    "name": "Kidney Function Panel",
+    "description": "Blood and urine tests assessing kidney function.",
+    "category": "General Bloodwork"
+  },
+  {
+    "name": "Urinalysis",
+    "description": "Lab analysis of a urine sample.",
+    "category": "General"
+  },
+  {
+    "name": "Electrocardiogram (EKG/ECG)",
+    "description": "Records the heart's electrical activity.",
+    "category": "Cardiovascular"
+  },
+  {
+    "name": "Echocardiogram",
+    "description": "Ultrasound imaging of the heart's structure and function.",
+    "category": "Cardiovascular"
+  },
+  {
+    "name": "Chest X-Ray",
+    "description": "Imaging of the lungs, heart, and chest wall.",
+    "category": "Imaging"
+  },
+  {
+    "name": "Mammogram",
+    "description": "X-ray imaging of breast tissue, a breast cancer screen.",
+    "category": "Cancer Screening"
+  },
+  {
+    "name": "Pap Smear (Cervical Cytology)",
+    "description": "Sample of cervical cells to screen for abnormal changes.",
+    "category": "Cancer Screening"
+  },
+  {
+    "name": "Colonoscopy",
+    "description": "Camera examination of the colon, a colon cancer screen.",
+    "category": "Cancer Screening"
+  },
+  {
+    "name": "Bone Density Scan (DEXA)",
+    "description": "Low-dose X-ray measuring bone mineral density.",
+    "category": "General"
+  },
+  {
+    "name": "Pulmonary Function Test (Spirometry)",
+    "description": "Breathing test measuring lung capacity and airflow.",
+    "category": "Respiratory"
+  },
+  {
+    "name": "Cardiac Stress Test",
+    "description": "Monitors heart activity during exercise or medication-induced stress.",
+    "category": "Cardiovascular"
+  },
+  {
+    "name": "MRI Scan",
+    "description": "Magnetic imaging of soft tissue, organs, or joints.",
+    "category": "Imaging"
+  },
+  {
+    "name": "CT Scan",
+    "description": "Cross-sectional X-ray imaging of the body.",
+    "category": "Imaging"
+  },
+  {
+    "name": "Abdominal Ultrasound",
+    "description": "Sound-wave imaging of abdominal organs.",
+    "category": "Imaging"
+  },
+  {
+    "name": "Vision Exam",
+    "description": "Eye exam checking visual acuity and eye health.",
+    "category": "General"
+  },
+  {
+    "name": "Hearing Test (Audiometry)",
+    "description": "Assesses hearing sensitivity across frequencies.",
+    "category": "General"
+  },
+  {
+    "name": "Dental Exam and Cleaning",
+    "description": "Routine dental checkup and professional cleaning.",
+    "category": "General"
+  },
+  {
+    "name": "Skin Cancer Screening",
+    "description": "Visual exam of the skin for suspicious moles or lesions.",
+    "category": "Cancer Screening"
+  },
+  {
+    "name": "Prostate-Specific Antigen (PSA) Test",
+    "description": "Blood draw used to screen for prostate conditions.",
+    "category": "Men's Health"
+  },
+  {
+    "name": "STI/STD Panel (Lab)",
+    "description": "Lab panel screening for common sexually transmitted infections.",
+    "category": "Infectious Disease"
+  },
+  {
+    "name": "Hepatitis Panel",
+    "description": "Blood draw screening for hepatitis A, B, and C.",
+    "category": "Infectious Disease"
+  },
+  {
+    "name": "HIV Test (Lab)",
+    "description": "Blood or oral sample screening for HIV.",
+    "category": "Infectious Disease"
+  },
+  {
+    "name": "Vitamin D Level (Lab)",
+    "description": "Blood draw measuring vitamin D levels.",
+    "category": "General Bloodwork"
+  },
+  {
+    "name": "Iron Panel / Ferritin",
+    "description": "Blood draw assessing iron stores, checks for anemia.",
+    "category": "General Bloodwork"
+  },
+  {
+    "name": "C-Reactive Protein (CRP)",
+    "description": "Blood draw measuring general inflammation levels.",
+    "category": "General Bloodwork"
+  },
+  {
+    "name": "Sleep Study (Polysomnography)",
+    "description": "Overnight monitoring to diagnose sleep disorders.",
+    "category": "General"
+  },
+  {
+    "name": "Allergy Skin Test",
+    "description": "Skin-prick testing to identify specific allergens.",
+    "category": "General"
+  }
+]
