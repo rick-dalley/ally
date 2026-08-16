@@ -51,6 +51,13 @@ flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/images/CWICareLogo.png"
+  # Without these, iOS 18+'s Dark/Tinted home-screen icon appearances get
+  # auto-generated from the opaque main icon — an algorithmic desaturation
+  # that reads as muddy. Supplying real transparent-background artwork lets
+  # iOS composite Dark on its own dark backing and derive Tinted properly.
+  image_path_ios_dark_transparent: "assets/images/CWICareLogo_transparent.png"
+  image_path_ios_tinted_grayscale: "assets/images/CWICareLogo_transparent.png"
+  desaturate_tinted_to_grayscale_ios: true
 
 flutter:
   generate: true
