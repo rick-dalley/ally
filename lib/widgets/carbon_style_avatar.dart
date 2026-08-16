@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 import '../classes/archived/carbon_color_constants_old.dart';
@@ -9,9 +11,35 @@ class CarbonAvatar extends StatelessWidget {
 
   const CarbonAvatar({super.key, required this.user});
 
+  Widget _initials() {
+    return Container(
+      color: carbonColorPrimary04,
+      alignment: Alignment.center,
+      child: Text(
+        user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
+        style: CarbonTheme.carbonTextStyle,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final assetPath = "assets/images/faces/users/${user.name}.png";
+    // A real picked photo (AvatarPicker, from UserScreen) always wins over the old
+    // demo asset-path convention — those bundled assets/images/faces/users/ photos
+    // don't even ship anymore (see the asset-cleanup pass), so that path only ever
+    // hits the initials fallback now unless a real avatar has been set.
+    final Uint8List? avatar = user.avatar;
+    final Widget image = avatar != null && avatar.isNotEmpty
+        ? Image.memory(
+            avatar,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => _initials(),
+          )
+        : Image.asset(
+            "assets/images/faces/users/${user.name}.png",
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => _initials(),
+          );
 
     return Container(
       width: CarbonIcons.extraExtraLarge.size.width,
@@ -21,20 +49,7 @@ class CarbonAvatar extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(color: carbonColorBorderSubtle01, width: 1.5),
       ),
-      child: ClipOval(
-        child: Image.asset(
-          assetPath,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            // This only runs if the PNG asset doesn't exist or fails to load
-            return Container(
-              color: carbonColorPrimary04,
-              alignment: Alignment.center,
-              child: Text(user.name.isNotEmpty ? user.name[0].toUpperCase() : '?', style: CarbonTheme.carbonTextStyle),
-            );
-          },
-        ),
-      ),
+      child: ClipOval(child: image),
     );
   }
 }
