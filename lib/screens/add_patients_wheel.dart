@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -112,6 +113,23 @@ class AddPatientsWheel extends StatelessWidget {
   }
 
   Widget _avatarContent(Patient patient) {
+    Widget initials() => Center(
+      child: Text(
+        patient.initials,
+        style: TextStyle(color: AppTheme.onPrimaryColor, fontWeight: FontWeight.bold),
+      ),
+    );
+
+    // A real picked photo (AvatarPicker, from UserScreen) always wins over the old
+    // demo asset-path convention — same precedence as CarbonAvatar's top-corner
+    // avatar, and for the same reason: those bundled assets/images/faces/users/
+    // photos don't ship anymore, so that path only ever hit the initials fallback
+    // once a patient had a real avatar set — this wheel just never checked.
+    final Uint8List? avatar = patient.avatar;
+    if (avatar != null && avatar.isNotEmpty) {
+      return Image.memory(avatar, fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => initials());
+    }
+
     return Image.asset(
       "assets/images/faces/users/${patient.name}.png",
       fit: BoxFit.cover,
@@ -120,12 +138,7 @@ class AddPatientsWheel extends StatelessWidget {
       // true for the seeded demo patients, never true for a freshly-created one. A
       // broken-image exception here would take out the whole wheel, not just one
       // avatar, so this falls back to initials rather than assuming the asset exists.
-      errorBuilder: (context, error, stackTrace) => Center(
-        child: Text(
-          patient.initials,
-          style: TextStyle(color: AppTheme.onPrimaryColor, fontWeight: FontWeight.bold),
-        ),
-      ),
+      errorBuilder: (context, error, stackTrace) => initials(),
     );
   }
 
