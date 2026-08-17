@@ -1,6 +1,9 @@
 import 'dart:math';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../app_theme.dart';
@@ -13,14 +16,24 @@ import '../classes/patient_pain.dart';
 import '../classes/reminder_registry.dart';
 import '../classes/symptom_care_plan.dart';
 import '../classes/symptom_dismissal_reason.dart';
+import '../classes/symptom_report.dart';
 import '../widgets/body_marker_modal.dart';
 import '../widgets/carbon_button_compact.dart';
+import '../widgets/report_preview_screen.dart';
 import '../widgets/seek_care_sheet.dart';
 import '../widgets/symptom_followup_dialog.dart';
 
 enum FlipDirection { none, flipX, flipY, flipXY }
 
-enum AnatomyMapTapped { none, body, rightHand, leftHand, rightFoot, leftFoot, face }
+enum AnatomyMapTapped {
+  none,
+  body,
+  rightHand,
+  leftHand,
+  rightFoot,
+  leftFoot,
+  face,
+}
 
 class BodyOutlineScreen extends StatefulWidget {
   final Patient patient;
@@ -40,6 +53,10 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
   Widget? anatomyImage;
   AnatomyMapTapped anatomyMapTapped = AnatomyMapTapped.body;
   BodyMarkerGroup markerGroup = BodyMarkerGroup.bodyFront;
+  // Wraps the diagram Stack (anatomy image + marker dots) so the send action can
+  // capture exactly what's on screen — same image, same dots, no separate rendering
+  // path to keep in sync with this one.
+  final GlobalKey _diagramKey = GlobalKey();
 
   Offset orientOffset({
     required double height,
@@ -63,7 +80,9 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
     }
 
     // Calculate new coordinates based on flip type
-    double dx = (flip == FlipDirection.flipX || flip == FlipDirection.flipXY) ? width - offset.dx : offset.dx;
+    double dx = (flip == FlipDirection.flipX || flip == FlipDirection.flipXY)
+        ? width - offset.dx
+        : offset.dx;
 
     double dy = (flip == FlipDirection.flipY || flip == FlipDirection.flipXY)
         ? height - offset.dy - ((height - imageHeight) * 0.5)
@@ -94,22 +113,30 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
     //did the user tap on a zone that should bring up a map?
     if (zone.name == "right hand") {
       requested = AnatomyMapTapped.rightHand;
-      tappedMap = selectedMap == AnatomyZoneMaps.bodyFront ? AnatomyZoneMaps.handFront : AnatomyZoneMaps.handBack;
+      tappedMap = selectedMap == AnatomyZoneMaps.bodyFront
+          ? AnatomyZoneMaps.handFront
+          : AnatomyZoneMaps.handBack;
       selectedImageOrientation = FlipDirection.flipX;
       markerGroup = BodyMarkerGroup.rightHandFront;
     } else if (zone.name == "left hand") {
       requested = AnatomyMapTapped.leftHand;
-      tappedMap = selectedMap == AnatomyZoneMaps.bodyFront ? AnatomyZoneMaps.handFront : AnatomyZoneMaps.handBack;
+      tappedMap = selectedMap == AnatomyZoneMaps.bodyFront
+          ? AnatomyZoneMaps.handFront
+          : AnatomyZoneMaps.handBack;
       selectedImageOrientation = FlipDirection.none;
       markerGroup = BodyMarkerGroup.leftHandFront;
     } else if (zone.name == "right foot") {
       requested = AnatomyMapTapped.rightFoot;
-      tappedMap = selectedMap == AnatomyZoneMaps.bodyFront ? AnatomyZoneMaps.footTop : AnatomyZoneMaps.footBottom;
+      tappedMap = selectedMap == AnatomyZoneMaps.bodyFront
+          ? AnatomyZoneMaps.footTop
+          : AnatomyZoneMaps.footBottom;
       selectedImageOrientation = FlipDirection.flipX;
       markerGroup = BodyMarkerGroup.rightFootBottom;
     } else if (zone.name == "left foot") {
       requested = AnatomyMapTapped.rightFoot;
-      tappedMap = selectedMap == AnatomyZoneMaps.bodyFront ? AnatomyZoneMaps.footTop : AnatomyZoneMaps.footBottom;
+      tappedMap = selectedMap == AnatomyZoneMaps.bodyFront
+          ? AnatomyZoneMaps.footTop
+          : AnatomyZoneMaps.footBottom;
       selectedImageOrientation = FlipDirection.none;
       markerGroup = BodyMarkerGroup.leftFootBottom;
     } else if (zone.name == "face") {
@@ -122,7 +149,9 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
       anatomyMapTapped = requested;
       selectedMap = tappedMap;
       imageOrientation = selectedImageOrientation;
-      touchImage = TouchImageFactory.instance.getTouchImage(selection: selectedMap)!;
+      touchImage = TouchImageFactory.instance.getTouchImage(
+        selection: selectedMap,
+      )!;
       anatomyImage = touchImage!.flip(imageOrientation);
       debugPrint("$markerGroup");
     });
@@ -133,7 +162,9 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
     super.initState();
     imageOrientation = FlipDirection.none;
     selectedMap = AnatomyZoneMaps.bodyFront;
-    touchImage = TouchImageFactory.instance.getTouchImage(selection: selectedMap);
+    touchImage = TouchImageFactory.instance.getTouchImage(
+      selection: selectedMap,
+    );
     anatomyImage = touchImage?.flip(imageOrientation);
     _loadMarkers();
   }
@@ -142,11 +173,16 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
   // marker only ever lived in this in-memory list and vanished the moment the screen
   // closed. This is now the single source of truth on open.
   Future<void> _loadMarkers() async {
-    final rows = await DatabaseManager().getMarkersForPatient(widget.patient.patientUuid);
+    final rows = await DatabaseManager().getMarkersForPatient(
+      widget.patient.patientUuid,
+    );
     // Resolved markers (dismissed, or resolved via a follow-up "It's Better") stay in
     // the database as history but shouldn't still look like an active symptom on the
     // map — nothing else in this screen shows a resolved/unresolved distinction visually.
-    final loaded = rows.map((row) => BodyMarker.fromRow(row)).where((marker) => !marker.resolved).toList();
+    final loaded = rows
+        .map((row) => BodyMarker.fromRow(row))
+        .where((marker) => !marker.resolved)
+        .toList();
     if (!mounted) return;
     setState(() {
       _markers
@@ -161,13 +197,18 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
   // a time — each answer updates that marker's resolved/last_checked_at state, so the
   // same one won't come up again on the next pass, and the loop naturally terminates.
   Future<void> _checkFollowUps() async {
-    final due = await DatabaseManager().getMarkersDueForFollowUp(widget.patient.patientUuid);
+    final due = await DatabaseManager().getMarkersDueForFollowUp(
+      widget.patient.patientUuid,
+    );
     if (!mounted || due.isEmpty) return;
 
     final marker = BodyMarker.fromRow(due.first);
     final bool? handled = await showDialog<bool>(
       context: context,
-      builder: (context) => SymptomFollowUpDialog(patientUuid: widget.patient.patientUuid, marker: marker),
+      builder: (context) => SymptomFollowUpDialog(
+        patientUuid: widget.patient.patientUuid,
+        marker: marker,
+      ),
     );
 
     // Dismissed without picking an option (tapped outside/back) — don't immediately
@@ -189,9 +230,15 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
         initialMarker: marker,
         onSave: (updatedMarker) async {
           if (isNew) {
-            await DatabaseManager().insertBodyMarker(widget.patient.patientUuid, updatedMarker.toRow());
+            await DatabaseManager().insertBodyMarker(
+              widget.patient.patientUuid,
+              updatedMarker.toRow(),
+            );
           } else {
-            await DatabaseManager().updateBodyMarker(updatedMarker.id!, updatedMarker.toRow());
+            await DatabaseManager().updateBodyMarker(
+              updatedMarker.id!,
+              updatedMarker.toRow(),
+            );
           }
           await _loadMarkers();
         },
@@ -203,7 +250,10 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
           if (reason == SymptomDismissalReason.createdByMistake) {
             await DatabaseManager().deleteBodyMarker(dismissedMarker.id!);
           } else {
-            await DatabaseManager().resolveBodyMarker(dismissedMarker.id!, reason: reason.name);
+            await DatabaseManager().resolveBodyMarker(
+              dismissedMarker.id!,
+              reason: reason.name,
+            );
           }
           await _loadMarkers();
         },
@@ -220,8 +270,9 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
       SymptomCarePlan.phoneForAdvice => SeekCareSheetMode.advice,
       SymptomCarePlan.seekImmediateHelp => SeekCareSheetMode.urgent,
       SymptomCarePlan.scheduleAppointment => SeekCareSheetMode.schedule,
-      SymptomCarePlan.ignoreForNow || SymptomCarePlan.keepCheckingIn || SymptomCarePlan.call911 =>
-        SeekCareSheetMode.schedule,
+      SymptomCarePlan.ignoreForNow ||
+      SymptomCarePlan.keepCheckingIn ||
+      SymptomCarePlan.call911 => SeekCareSheetMode.schedule,
     };
     showModalBottomSheet(
       context: context,
@@ -253,7 +304,10 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
             children: [
               Text("Call 911?", style: CarbonTheme.carbonHeadingTextStyle),
               const SizedBox(height: 8),
-              Text("This will dial emergency services right now.", style: CarbonTheme.carbonHintTextStyle),
+              Text(
+                "This will dial emergency services right now.",
+                style: CarbonTheme.carbonHintTextStyle,
+              ),
               const SizedBox(height: 24),
               CarbonCompactButton(
                 icon: Symbols.emergency,
@@ -279,6 +333,55 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
     }
   }
 
+  // Captures the diagram exactly as currently rendered (image + marker dots) —
+  // RepaintBoundary.toImage rather than redrawing the map from scratch in the PDF,
+  // so the report always matches what the patient was actually looking at.
+  Future<Uint8List?> _captureDiagram() async {
+    final RenderRepaintBoundary? boundary =
+        _diagramKey.currentContext?.findRenderObject()
+            as RenderRepaintBoundary?;
+    if (boundary == null) return null;
+    final ui.Image image = await boundary.toImage(pixelRatio: 2.0);
+    final ByteData? byteData = await image.toByteData(
+      format: ui.ImageByteFormat.png,
+    );
+    return byteData?.buffer.asUint8List();
+  }
+
+  Future<void> _sendReport() async {
+    if (_markers.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("No symptoms are currently tracked to report."),
+        ),
+      );
+      return;
+    }
+    final Uint8List? diagramImage = await _captureDiagram();
+    if (!mounted) return;
+    final List<BodyMarker> currentGroupMarkers = _markers
+        .where((m) => m.group == markerGroup)
+        .toList();
+    final List<BodyMarker> otherMarkers = _markers
+        .where((m) => m.group != markerGroup)
+        .toList();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ReportPreviewScreen(
+          title: "Symptom Report",
+          buildPdf: () => SymptomReport.build(
+            patient: widget.patient,
+            currentGroup: markerGroup,
+            currentGroupMarkers: currentGroupMarkers,
+            otherMarkers: otherMarkers,
+            diagramImage: diagramImage,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (touchImage == null) {
@@ -296,8 +399,16 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
         appBar: AppBar(
           primary: true,
           title: Text("${widget.patient.firstName} ${widget.patient.lastName}"),
-          leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.of(context).pop()),
-          actions: [IconButton(onPressed: () {}, icon: Icon(Symbols.send, size: 30))],
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          actions: [
+            IconButton(
+              onPressed: _sendReport,
+              icon: Icon(Symbols.send, size: 30),
+            ),
+          ],
         ),
         body: SafeArea(
           child: Container(
@@ -315,96 +426,123 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
                       final double containerWidth = constraints.maxWidth;
                       final double containerHeight = constraints.maxHeight;
                       Size size = touchImage!.getSizeFromContainer();
-                      return Stack(
-                        fit: StackFit.loose,
-                        children: [
-                          GestureDetector(
-                            onTapDown: (TapDownDetails details) {
-                              Offset tapPosition = details.localPosition;
-                              tapPosition = orientOffset(
-                                height: containerHeight,
-                                width: containerWidth,
-                                imageHeight: size.height,
-                                imageWidth: size.width,
-                                offset: tapPosition,
-                                flip: imageOrientation,
-                                zoneMap: selectedMap,
-                              );
-                              final zone = _identifyZone(tapPosition);
+                      return RepaintBoundary(
+                        key: _diagramKey,
+                        child: Stack(
+                          fit: StackFit.loose,
+                          children: [
+                            GestureDetector(
+                              onTapDown: (TapDownDetails details) {
+                                Offset tapPosition = details.localPosition;
+                                tapPosition = orientOffset(
+                                  height: containerHeight,
+                                  width: containerWidth,
+                                  imageHeight: size.height,
+                                  imageWidth: size.width,
+                                  offset: tapPosition,
+                                  flip: imageOrientation,
+                                  zoneMap: selectedMap,
+                                );
+                                final zone = _identifyZone(tapPosition);
 
-                              if (zone.name == "none" || zone.name.isEmpty) {
-                                return;
-                              }
-                              final newMarker = BodyMarker(
-                                offset: details.localPosition,
-                                emoji: PainLevel.distracting,
-                                name: zone.name,
-                                medicalName: zone.latin,
-                                zoneMap: zone.map,
-                                group: markerGroup,
-                              );
-                              _openMarkerModal(marker: newMarker, isNew: true);
-                            },
-                            child: Align(
-                              alignment: Alignment.center,
-                              child: AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 600),
-                                switchInCurve: Curves.easeInOut,
-                                switchOutCurve: Curves.easeInOut,
-                                transitionBuilder: (Widget child, Animation<double> animation) {
-                                  final rotateAnim = Tween(begin: pi / 2, end: 0.0).animate(animation);
-                                  return AnimatedBuilder(
-                                    animation: rotateAnim,
-                                    child: child,
-                                    builder: (context, child) {
-                                      return Transform(
-                                        transform: Matrix4.identity()
-                                          ..setEntry(3, 2, 0.001) // Perspective
-                                          ..rotateY(rotateAnim.value),
-                                        alignment: Alignment.center,
-                                        child: child,
-                                      );
-                                    },
-                                  );
-                                },
-                                // KeyedSubtree forces the animation to re-run whenever 'selectedMap' changes
-                                child: KeyedSubtree(key: ValueKey(selectedMap), child: anatomyImage!),
-                              ),
-                            ),
-                          ),
-
-                          // Positioned.fill(
-                          //   child: CustomPaint(
-                          //     painter: PolygonPainter(
-                          //       touchImage!,
-                          //       imageOrientation,
-                          //       mq.size.width,
-                          //       mq.size.height,
-                          //       size.height,
-                          //     ),
-                          //   ),
-                          // ),
-                          ..._markers
-                              .where((marker) => marker.group == markerGroup)
-                              .map(
-                                (marker) => Positioned(
-                                  // A 44x44 tap target centered on the same point the
-                                  // 24px dot is drawn at — the dot alone is too small
-                                  // to reliably tap to reopen and update a symptom.
-                                  left: marker.offset.dx - 22,
-                                  top: marker.offset.dy - 22,
-                                  width: 44,
-                                  height: 44,
-                                  child: GestureDetector(
-                                    behavior: HitTestBehavior.opaque,
-                                    onTap: () => _openMarkerModal(marker: marker, isNew: false),
-                                    child: const Center(
-                                      child: Icon(Icons.circle, color: Colors.red, size: 24),
-                                    ),
+                                if (zone.name == "none" || zone.name.isEmpty) {
+                                  return;
+                                }
+                                final newMarker = BodyMarker(
+                                  offset: details.localPosition,
+                                  emoji: PainLevel.distracting,
+                                  name: zone.name,
+                                  medicalName: zone.latin,
+                                  zoneMap: zone.map,
+                                  group: markerGroup,
+                                );
+                                _openMarkerModal(
+                                  marker: newMarker,
+                                  isNew: true,
+                                );
+                              },
+                              child: Align(
+                                alignment: Alignment.center,
+                                child: AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 600),
+                                  switchInCurve: Curves.easeInOut,
+                                  switchOutCurve: Curves.easeInOut,
+                                  transitionBuilder:
+                                      (
+                                        Widget child,
+                                        Animation<double> animation,
+                                      ) {
+                                        final rotateAnim = Tween(
+                                          begin: pi / 2,
+                                          end: 0.0,
+                                        ).animate(animation);
+                                        return AnimatedBuilder(
+                                          animation: rotateAnim,
+                                          child: child,
+                                          builder: (context, child) {
+                                            return Transform(
+                                              transform: Matrix4.identity()
+                                                ..setEntry(
+                                                  3,
+                                                  2,
+                                                  0.001,
+                                                ) // Perspective
+                                                ..rotateY(rotateAnim.value),
+                                              alignment: Alignment.center,
+                                              child: child,
+                                            );
+                                          },
+                                        );
+                                      },
+                                  // KeyedSubtree forces the animation to re-run whenever 'selectedMap' changes
+                                  child: KeyedSubtree(
+                                    key: ValueKey(selectedMap),
+                                    child: anatomyImage!,
                                   ),
                                 ),
                               ),
-                        ],
+                            ),
+
+                            // Positioned.fill(
+                            //   child: CustomPaint(
+                            //     painter: PolygonPainter(
+                            //       touchImage!,
+                            //       imageOrientation,
+                            //       mq.size.width,
+                            //       mq.size.height,
+                            //       size.height,
+                            //     ),
+                            //   ),
+                            // ),
+                            ..._markers
+                                .where((marker) => marker.group == markerGroup)
+                                .map(
+                                  (marker) => Positioned(
+                                    // A 44x44 tap target centered on the same point the
+                                    // 24px dot is drawn at — the dot alone is too small
+                                    // to reliably tap to reopen and update a symptom.
+                                    left: marker.offset.dx - 22,
+                                    top: marker.offset.dy - 22,
+                                    width: 44,
+                                    height: 44,
+                                    child: GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: () => _openMarkerModal(
+                                        marker: marker,
+                                        isNew: false,
+                                      ),
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.circle,
+                                          color: Colors.red,
+                                          size: 24,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                          ],
+                        ),
                       );
                     },
                   ),
@@ -422,13 +560,17 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
                 icon: Icon(
                   Symbols.accessibility,
                   size: anatomyMapTapped == AnatomyMapTapped.body ? 36 : 30,
-                  color: anatomyMapTapped == AnatomyMapTapped.body ? AppTheme.primaryColor : Colors.black,
+                  color: anatomyMapTapped == AnatomyMapTapped.body
+                      ? AppTheme.primaryColor
+                      : Colors.black,
                 ),
                 onPressed: () {
                   setState(() {
                     anatomyMapTapped = AnatomyMapTapped.body;
                     selectedMap = AnatomyZoneMaps.bodyFront;
-                    touchImage = TouchImageFactory.instance.getTouchImage(selection: selectedMap)!;
+                    touchImage = TouchImageFactory.instance.getTouchImage(
+                      selection: selectedMap,
+                    )!;
                     anatomyImage = touchImage?.flip(imageOrientation);
                     markerGroup = BodyMarkerGroup.bodyFront;
                   });
@@ -438,15 +580,21 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
               IconButton(
                 icon: Icon(
                   Symbols.front_hand,
-                  size: anatomyMapTapped == AnatomyMapTapped.rightHand ? 36 : 30,
-                  color: anatomyMapTapped == AnatomyMapTapped.rightHand ? AppTheme.primaryColor : Colors.black,
+                  size: anatomyMapTapped == AnatomyMapTapped.rightHand
+                      ? 36
+                      : 30,
+                  color: anatomyMapTapped == AnatomyMapTapped.rightHand
+                      ? AppTheme.primaryColor
+                      : Colors.black,
                 ),
                 onPressed: () {
                   setState(() {
                     anatomyMapTapped = AnatomyMapTapped.rightHand;
                     selectedMap = AnatomyZoneMaps.handFront;
                     imageOrientation = FlipDirection.flipX;
-                    touchImage = TouchImageFactory.instance.getTouchImage(selection: selectedMap)!;
+                    touchImage = TouchImageFactory.instance.getTouchImage(
+                      selection: selectedMap,
+                    )!;
                     anatomyImage = touchImage?.flip(imageOrientation);
                     markerGroup = BodyMarkerGroup.rightHandFront;
                   });
@@ -458,8 +606,12 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
                   flipX: true,
                   child: Icon(
                     Symbols.front_hand,
-                    size: anatomyMapTapped == AnatomyMapTapped.leftHand ? 36 : 30,
-                    color: anatomyMapTapped == AnatomyMapTapped.leftHand ? AppTheme.primaryColor : Colors.black,
+                    size: anatomyMapTapped == AnatomyMapTapped.leftHand
+                        ? 36
+                        : 30,
+                    color: anatomyMapTapped == AnatomyMapTapped.leftHand
+                        ? AppTheme.primaryColor
+                        : Colors.black,
                   ),
                 ),
                 onPressed: () {
@@ -467,7 +619,9 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
                     anatomyMapTapped = AnatomyMapTapped.leftHand;
                     selectedMap = AnatomyZoneMaps.handFront;
                     imageOrientation = FlipDirection.none;
-                    touchImage = TouchImageFactory.instance.getTouchImage(selection: selectedMap)!;
+                    touchImage = TouchImageFactory.instance.getTouchImage(
+                      selection: selectedMap,
+                    )!;
                     anatomyImage = touchImage?.flip(imageOrientation);
                     markerGroup = BodyMarkerGroup.leftHandFront;
                   });
@@ -478,8 +632,12 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
                   flipY: true,
                   child: Icon(
                     Symbols.barefoot,
-                    size: anatomyMapTapped == AnatomyMapTapped.rightFoot ? 36 : 30,
-                    color: anatomyMapTapped == AnatomyMapTapped.rightFoot ? AppTheme.primaryColor : Colors.black,
+                    size: anatomyMapTapped == AnatomyMapTapped.rightFoot
+                        ? 36
+                        : 30,
+                    color: anatomyMapTapped == AnatomyMapTapped.rightFoot
+                        ? AppTheme.primaryColor
+                        : Colors.black,
                   ),
                 ),
                 onPressed: () {
@@ -487,7 +645,9 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
                     anatomyMapTapped = AnatomyMapTapped.rightFoot;
                     selectedMap = AnatomyZoneMaps.footBottom;
                     imageOrientation = FlipDirection.flipX;
-                    touchImage = TouchImageFactory.instance.getTouchImage(selection: selectedMap)!;
+                    touchImage = TouchImageFactory.instance.getTouchImage(
+                      selection: selectedMap,
+                    )!;
                     anatomyImage = touchImage?.flip(imageOrientation);
                     markerGroup = BodyMarkerGroup.rightFootBottom;
                   });
@@ -499,8 +659,12 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
                   flipY: true,
                   child: Icon(
                     Symbols.barefoot,
-                    size: anatomyMapTapped == AnatomyMapTapped.leftFoot ? 36 : 30,
-                    color: anatomyMapTapped == AnatomyMapTapped.leftFoot ? AppTheme.primaryColor : Colors.black,
+                    size: anatomyMapTapped == AnatomyMapTapped.leftFoot
+                        ? 36
+                        : 30,
+                    color: anatomyMapTapped == AnatomyMapTapped.leftFoot
+                        ? AppTheme.primaryColor
+                        : Colors.black,
                   ),
                 ),
                 onPressed: () {
@@ -508,7 +672,9 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
                     anatomyMapTapped = AnatomyMapTapped.leftFoot;
                     selectedMap = AnatomyZoneMaps.footBottom;
                     imageOrientation = FlipDirection.none;
-                    touchImage = TouchImageFactory.instance.getTouchImage(selection: selectedMap)!;
+                    touchImage = TouchImageFactory.instance.getTouchImage(
+                      selection: selectedMap,
+                    )!;
                     anatomyImage = touchImage?.flip(imageOrientation);
                     markerGroup = BodyMarkerGroup.leftFootBottom;
                   });
@@ -518,13 +684,17 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
                 icon: Icon(
                   Symbols.face,
                   size: anatomyMapTapped == AnatomyMapTapped.face ? 36 : 30,
-                  color: anatomyMapTapped == AnatomyMapTapped.face ? AppTheme.primaryColor : Colors.black,
+                  color: anatomyMapTapped == AnatomyMapTapped.face
+                      ? AppTheme.primaryColor
+                      : Colors.black,
                 ),
                 onPressed: () {
                   setState(() {
                     anatomyMapTapped = AnatomyMapTapped.face;
                     selectedMap = AnatomyZoneMaps.face;
-                    touchImage = TouchImageFactory.instance.getTouchImage(selection: selectedMap)!;
+                    touchImage = TouchImageFactory.instance.getTouchImage(
+                      selection: selectedMap,
+                    )!;
                     anatomyImage = touchImage?.flip(imageOrientation);
                     markerGroup = BodyMarkerGroup.face;
                   });
@@ -545,7 +715,8 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
                         tappedMap = selectedMap == AnatomyZoneMaps.bodyBack
                             ? AnatomyZoneMaps.bodyFront
                             : AnatomyZoneMaps.bodyBack;
-                        tappedMarkerGroup = markerGroup == BodyMarkerGroup.bodyBack
+                        tappedMarkerGroup =
+                            markerGroup == BodyMarkerGroup.bodyBack
                             ? BodyMarkerGroup.bodyFront
                             : BodyMarkerGroup.bodyBack;
                       }
@@ -561,7 +732,8 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
                         tappedMap = selectedMap == AnatomyZoneMaps.handBack
                             ? AnatomyZoneMaps.handFront
                             : AnatomyZoneMaps.handBack;
-                        tappedMarkerGroup = markerGroup == BodyMarkerGroup.rightHandFront
+                        tappedMarkerGroup =
+                            markerGroup == BodyMarkerGroup.rightHandFront
                             ? BodyMarkerGroup.rightHandBack
                             : BodyMarkerGroup.rightHandFront;
                       }
@@ -571,11 +743,13 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
                         tappedMap = selectedMap == AnatomyZoneMaps.handFront
                             ? AnatomyZoneMaps.handBack
                             : AnatomyZoneMaps.handFront;
-                        tappedMarkerGroup = markerGroup == BodyMarkerGroup.leftHandFront
+                        tappedMarkerGroup =
+                            markerGroup == BodyMarkerGroup.leftHandFront
                             ? BodyMarkerGroup.leftHandBack
                             : BodyMarkerGroup.leftHandFront;
                       }
-                      tappedMarkerGroup = markerGroup == BodyMarkerGroup.bodyBack
+                      tappedMarkerGroup =
+                          markerGroup == BodyMarkerGroup.bodyBack
                           ? BodyMarkerGroup.bodyFront
                           : BodyMarkerGroup.bodyBack;
                     case AnatomyMapTapped.rightFoot:
@@ -584,7 +758,8 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
                         tappedMap = selectedMap == AnatomyZoneMaps.footBottom
                             ? AnatomyZoneMaps.footTop
                             : AnatomyZoneMaps.footBottom;
-                        tappedMarkerGroup = markerGroup == BodyMarkerGroup.rightFootBottom
+                        tappedMarkerGroup =
+                            markerGroup == BodyMarkerGroup.rightFootBottom
                             ? BodyMarkerGroup.rightFootTop
                             : BodyMarkerGroup.rightFootBottom;
                       }
@@ -594,7 +769,8 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
                         tappedMap = selectedMap == AnatomyZoneMaps.footBottom
                             ? AnatomyZoneMaps.footTop
                             : AnatomyZoneMaps.footBottom;
-                        tappedMarkerGroup = markerGroup == BodyMarkerGroup.leftFootBottom
+                        tappedMarkerGroup =
+                            markerGroup == BodyMarkerGroup.leftFootBottom
                             ? BodyMarkerGroup.leftFootTop
                             : BodyMarkerGroup.leftFootBottom;
                       }
@@ -606,7 +782,9 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
                   }
                   setState(() {
                     selectedMap = tappedMap;
-                    touchImage = TouchImageFactory.instance.getTouchImage(selection: selectedMap)!;
+                    touchImage = TouchImageFactory.instance.getTouchImage(
+                      selection: selectedMap,
+                    )!;
                     anatomyImage = touchImage?.flip(imageOrientation);
                     markerGroup = tappedMarkerGroup;
                   });
