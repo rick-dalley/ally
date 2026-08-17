@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../app_theme.dart';
-import '../classes/carbon_color_constants.dart';
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/patient.dart';
-import '../widgets/carbon_style_action_tile.dart';
+import 'package:carbon_ui/widgets/carbon_style_action_tile.dart';
 import 'letter_of_introduction_screen.dart';
 import 'release_of_information_screen.dart';
 import 'therapy_period_report_screen.dart';

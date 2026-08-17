@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
 
 import '../app_theme.dart';
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 
 // Shared by all three report types — printing's PdfPreview widget already gives the
 // patient everything they need to review before it goes anywhere: on-device preview,

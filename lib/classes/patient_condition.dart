@@ -1,4 +1,4 @@
-import '../classes/listable.dart';
+import 'package:carbon_ui/interfaces/listable.dart';
 
 class ConditionReference {
   final int id;

@@ -1,4 +1,4 @@
-import 'listable.dart';
+import 'package:carbon_ui/interfaces/listable.dart';
 
 // What happens if the patient cancels (or fails to give the required notice for) an
 // appointment — kept intentionally minimal: just enough to warn before a cancellation,

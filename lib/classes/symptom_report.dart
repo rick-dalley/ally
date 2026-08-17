@@ -105,25 +105,25 @@ class SymptomReport {
   static String _groupLabel(BodyMarkerGroup group) {
     switch (group) {
       case BodyMarkerGroup.bodyFront:
-        return 'Body — Front';
+        return 'Body - Front';
       case BodyMarkerGroup.bodyBack:
-        return 'Body — Back';
+        return 'Body - Back';
       case BodyMarkerGroup.leftHandFront:
-        return 'Left Hand — Front';
+        return 'Left Hand - Front';
       case BodyMarkerGroup.leftHandBack:
-        return 'Left Hand — Back';
+        return 'Left Hand - Back';
       case BodyMarkerGroup.rightHandFront:
-        return 'Right Hand — Front';
+        return 'Right Hand - Front';
       case BodyMarkerGroup.rightHandBack:
-        return 'Right Hand — Back';
+        return 'Right Hand - Back';
       case BodyMarkerGroup.leftFootTop:
-        return 'Left Foot — Top';
+        return 'Left Foot - Top';
       case BodyMarkerGroup.leftFootBottom:
-        return 'Left Foot — Bottom';
+        return 'Left Foot - Bottom';
       case BodyMarkerGroup.rightFootTop:
-        return 'Right Foot — Top';
+        return 'Right Foot - Top';
       case BodyMarkerGroup.rightFootBottom:
-        return 'Right Foot — Bottom';
+        return 'Right Foot - Bottom';
       case BodyMarkerGroup.face:
         return 'Face';
       case BodyMarkerGroup.none:

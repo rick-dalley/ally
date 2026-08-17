@@ -1,18 +1,18 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/classes/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
 import 'package:triage/classes/phone.dart';
 import 'package:triage/widgets/avatar_picker.dart';
-import 'package:triage/widgets/carbon_style_autocomplete.dart';
-import 'package:triage/widgets/carbon_style_textbox.dart';
+import 'package:carbon_ui/widgets/carbon_style_autocomplete.dart';
+import 'package:carbon_ui/widgets/carbon_style_textbox.dart';
 import '../classes/cancellation_policy.dart';
-import '../classes/listable.dart';
+import 'package:carbon_ui/interfaces/listable.dart';
 import '../classes/provider.dart';
 import '../classes/specialities.dart';
 import '../classes/uuid.dart';
-import 'carbon_style_button.dart';
-import 'carbon_style_dropdown.dart';
+import 'package:carbon_ui/widgets/carbon_style_button.dart';
+import 'package:carbon_ui/widgets/carbon_style_dropdown.dart';
 
 class AddCareProviderScreen extends StatefulWidget {
   final String patientUuid;

@@ -1,8 +1,8 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/classes/carbon_color_constants.dart';
-import 'package:triage/classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import 'package:triage/screens/add_patients_wheel.dart';
 import 'package:triage/screens/first_patient_wizard.dart';
 import 'package:triage/screens/metric_dashboard_screen.dart';
@@ -13,7 +13,7 @@ import '../classes/achievement_badge.dart';
 import '../classes/database_manager.dart';
 import '../classes/patient.dart';
 import '../classes/reminder_registry.dart';
-import '../widgets/carbon_style_avatar.dart';
+import 'package:carbon_ui/widgets/carbon_style_avatar.dart';
 import '../widgets/emergency_qr.dart';
 import '../widgets/avatar_ripple_effect.dart';
 import '../widgets/reminder_sheet.dart';
@@ -314,7 +314,7 @@ class HomeScreenState extends State<HomeScreen> {
                                     ),
                                   ),
                                 ),
-                              CarbonAvatar(user: patient),
+                              CarbonAvatar(name: patient.name, avatarBytes: patient.avatar),
                             ],
                           ),
                         ),

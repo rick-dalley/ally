@@ -3,10 +3,10 @@ import 'package:material_symbols_icons/symbols.dart';
 
 import '../classes/achievement.dart';
 import '../classes/achievement_badge.dart';
-import '../classes/carbon_color_constants.dart';
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
-import 'carbon_button_compact.dart';
+import 'package:carbon_ui/widgets/carbon_button_compact.dart';
 
 // A horizontal strip of what's been earned so far — hidden entirely until the patient
 // has at least one, same "don't clutter the screen with an empty state" rule the

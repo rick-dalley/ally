@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/classes/carbon_color_constants.dart';
-import 'package:triage/classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import 'package:triage/classes/database_manager.dart';
 import 'package:triage/classes/provider.dart';
 import 'package:triage/widgets/provider_card_widget.dart';
 import '../classes/patient.dart';
 import '../widgets/add_care_provider.dart';
-import '../widgets/carbon_style_button.dart';
+import 'package:carbon_ui/widgets/carbon_style_button.dart';
 
 class ProviderRosterScreen extends StatefulWidget {
   final Patient user;

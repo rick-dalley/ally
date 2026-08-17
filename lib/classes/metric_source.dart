@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
-import 'listable.dart';
+import 'package:carbon_ui/interfaces/listable.dart';
 
 // Replaces the old "Link Journey Support" dropdown (JourneySupports enum) — that
 // concept had no real meaning here and its onChanged callback was a no-op, never

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../classes/acuity.dart';
-import '../classes/carbon_color_constants.dart';
-import 'carbon_checkbox.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
+import 'package:carbon_ui/widgets/carbon_checkbox.dart';
 
 // 1. Extracted TextField to prevent global dialog rebuilds
 class RationaleInputField extends StatelessWidget {

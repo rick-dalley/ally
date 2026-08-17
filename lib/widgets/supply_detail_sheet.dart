@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
-import '../classes/listable.dart';
+import 'package:carbon_ui/interfaces/listable.dart';
 import '../classes/patient_supply.dart';
 import '../classes/reminder_registry.dart';
-import 'carbon_button_compact.dart';
-import 'carbon_style_dropdown.dart';
-import 'carbon_style_number_edit.dart';
+import 'package:carbon_ui/widgets/carbon_button_compact.dart';
+import 'package:carbon_ui/widgets/carbon_style_dropdown.dart';
+import 'package:carbon_ui/widgets/carbon_style_number_edit.dart';
 
 // Step two of adding a tracked supply (after SupplyCatalogPickerSheet), and also the
 // editor for an already-tracked one — same dual purpose as ConfigureConditionDialog:

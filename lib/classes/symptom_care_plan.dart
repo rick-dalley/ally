@@ -1,4 +1,4 @@
-import 'listable.dart';
+import 'package:carbon_ui/interfaces/listable.dart';
 
 // What the patient decided to do about a logged symptom — captured at the moment
 // they report it (or update it later) so the record reflects their own stated intent,

@@ -16,8 +16,7 @@ class ReportPdfBuilder {
   static const PdfColor textPrimary = PdfColor.fromInt(0xFF161616);
   static const PdfColor textHelper = PdfColor.fromInt(0xFF6F6F6F);
   static const PdfColor borderSubtle = PdfColor.fromInt(0xFFE0E0E0);
-  // Same semantics as the in-app scatter chart's dashed reference lines (and
-  // carbon_color_constants.dart's carbonColorSupportError/Warning/Success) — red for
+  // Same semantics as the in-app scatter chart'package:carbon_ui/colors/carbon_color_constants.dart's carbonColorSupportError/Warning/Success) — red for
   // Safe, amber for Healthy, green for Target — so a doctor flipping between the app
   // and the printed report sees the same color mean the same thing.
   static const PdfColor safeLineColor = PdfColor.fromInt(0xFFda1e28);

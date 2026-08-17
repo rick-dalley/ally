@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
-import 'listable.dart';
+import 'package:carbon_ui/interfaces/listable.dart';
 import 'patient_sentiment.dart';
 
 abstract interface class Actionable implements Listable {

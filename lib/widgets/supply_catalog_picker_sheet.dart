@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../classes/carbon_color_constants.dart';
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
 import '../classes/patient_supply.dart';
-import 'carbon_quick_entry_field.dart';
-import 'carbon_style_action_tile.dart';
+import 'package:carbon_ui/widgets/carbon_quick_entry_field.dart';
+import 'package:carbon_ui/widgets/carbon_style_action_tile.dart';
 
 // Step one of tracking a supply: pick from what's suggested by the patient's own
 // conditions (condition_supply), browse the full catalog, or type one that's in

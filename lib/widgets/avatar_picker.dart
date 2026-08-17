@@ -4,10 +4,10 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
-import '../classes/carbon_color_constants.dart';
-import '../classes/carbon_theme_constants.dart';
-import 'carbon_style_button.dart';
-import 'carbon_style_textbox.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
+import 'package:carbon_ui/widgets/carbon_style_button.dart';
+import 'package:carbon_ui/widgets/carbon_style_textbox.dart';
 
 class AvatarPicker extends StatefulWidget {
   /// Passes back the raw Uint8List bytes so you can save them as a BLOB in SQLite.

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../classes/allergen.dart';
-import '../classes/carbon_color_constants.dart';
-import '../classes/carbon_theme_constants.dart';
-import 'carbon_button_compact.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
+import 'package:carbon_ui/widgets/carbon_button_compact.dart';
 
 // A new, Carbon-native chip — deliberately not styled to match InteractionsChip, which
 // is raw Material (ActionChip/Badge/StadiumBorder) and separately flagged as technical

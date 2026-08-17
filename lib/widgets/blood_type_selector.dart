@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/widgets/carbon_style_button.dart';
-import 'package:triage/widgets/carbon_style_dropdown.dart';
+import 'package:carbon_ui/widgets/carbon_style_button.dart';
+import 'package:carbon_ui/widgets/carbon_style_dropdown.dart';
 import '../classes/blood_type.dart';
-import '../classes/carbon_theme_constants.dart';
-import '../classes/listable.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
+import 'package:carbon_ui/interfaces/listable.dart';
 
 class BloodTypeSelector extends StatelessWidget {
   final AboType selectedAbo;

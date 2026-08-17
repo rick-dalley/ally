@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../app_theme.dart';
-import '../classes/carbon_color_constants.dart';
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/medication_services.dart';
 
 class GetMedicationReminders extends StatefulWidget {

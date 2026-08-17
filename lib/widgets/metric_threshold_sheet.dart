@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
-import '../classes/carbon_color_constants.dart';
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
 import '../classes/metric_value.dart';
-import 'carbon_button_compact.dart';
+import 'package:carbon_ui/widgets/carbon_button_compact.dart';
 
 // Records what a doctor actually told the patient — this app is patient-facing, not
 // something a doctor logs into directly, so there's no "doctor authenticates and sets

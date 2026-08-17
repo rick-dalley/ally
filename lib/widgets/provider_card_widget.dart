@@ -1,20 +1,20 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/classes/carbon_color_constants.dart';
-import 'package:triage/classes/carbon_theme_constants.dart';
-import 'package:triage/classes/medical_category_colors.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/medical_category_colors.dart';
 import 'package:triage/classes/phone.dart';
 import 'package:triage/classes/provider.dart';
 import 'package:triage/widgets/avatar_picker.dart';
-import 'package:triage/widgets/carbon_style_button.dart';
+import 'package:carbon_ui/widgets/carbon_style_button.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../classes/database_manager.dart';
 import '../classes/patient.dart';
 import '../classes/uuid.dart';
 import 'appointment_chip.dart';
 import 'book_appointment_sheet.dart';
-import 'carbon_button_compact.dart';
+import 'package:carbon_ui/widgets/carbon_button_compact.dart';
 
 class ProviderCard extends StatefulWidget {
   final Patient user;

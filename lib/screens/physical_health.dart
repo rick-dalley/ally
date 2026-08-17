@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import '../app_theme.dart';
-import '../classes/carbon_color_constants.dart';
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
-import '../classes/medical_category_colors.dart';
+import 'package:carbon_ui/colors/medical_category_colors.dart';
 import '../classes/patient_condition.dart';
 import '../widgets/condition_chip.dart';
-import '../widgets/carbon_quick_entry_field.dart';
+import 'package:carbon_ui/widgets/carbon_quick_entry_field.dart';
 import '../widgets/halo_ripple_chip.dart';
 
 // categoryIcons now lives in medical_category_colors.dart as medicalCategoryColors —

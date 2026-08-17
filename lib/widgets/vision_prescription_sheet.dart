@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
-import '../classes/carbon_color_constants.dart';
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
-import '../classes/listable.dart';
+import 'package:carbon_ui/interfaces/listable.dart';
 import '../classes/provider.dart';
 import '../classes/reminder_registry.dart';
 import '../classes/vision_prescription.dart';
-import 'carbon_button_compact.dart';
-import 'carbon_segmented_control.dart';
-import 'carbon_style_dropdown.dart';
-import 'carbon_style_textbox.dart';
+import 'package:carbon_ui/widgets/carbon_button_compact.dart';
+import 'package:carbon_ui/widgets/carbon_segmented_control.dart';
+import 'package:carbon_ui/widgets/carbon_style_dropdown.dart';
+import 'package:carbon_ui/widgets/carbon_style_textbox.dart';
 
 // Add/edit in one — widget.existing == null means "not saved yet", matching
 // ConfigureConditionDialog/SupplyDetailSheet's dual-purpose shape. A patient fills

@@ -4,16 +4,16 @@ import 'package:geolocator/geolocator.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../classes/carbon_color_constants.dart';
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
-import '../classes/listable.dart';
+import 'package:carbon_ui/interfaces/listable.dart';
 import '../classes/patient_pain.dart';
 import '../classes/phone.dart';
 import '../classes/provider.dart';
 import '../classes/reminder_registry.dart';
-import 'carbon_button_compact.dart';
-import 'carbon_style_dropdown.dart';
+import 'package:carbon_ui/widgets/carbon_button_compact.dart';
+import 'package:carbon_ui/widgets/carbon_style_dropdown.dart';
 
 // Which SymptomCarePlan chose to open this sheet — changes emphasis and ordering,
 // not just copy: "phone for advice" wants a tap-to-call front and center, "schedule

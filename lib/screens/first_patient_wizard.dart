@@ -4,16 +4,16 @@ import 'package:material_symbols_icons/symbols.dart';
 
 import '../app_theme.dart';
 import '../classes/blood_type.dart';
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
 import '../classes/family_relation.dart';
-import '../classes/listable.dart';
+import 'package:carbon_ui/interfaces/listable.dart';
 import '../widgets/blood_type_selector.dart';
 import '../widgets/body_metrics_entry_widget.dart';
-import '../widgets/carbon_button_compact.dart';
-import '../widgets/carbon_style_autocomplete.dart';
-import '../widgets/carbon_style_button.dart';
-import '../widgets/carbon_style_textbox.dart';
+import 'package:carbon_ui/widgets/carbon_button_compact.dart';
+import 'package:carbon_ui/widgets/carbon_style_autocomplete.dart';
+import 'package:carbon_ui/widgets/carbon_style_button.dart';
+import 'package:carbon_ui/widgets/carbon_style_textbox.dart';
 
 // Two entry points share this one wizard. (1) The very first thing a real (non-demo)
 // install shows — with zero patients in the roster every other screen has nothing to

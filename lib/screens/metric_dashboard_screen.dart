@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/classes/carbon_theme_constants.dart';
-import 'package:triage/widgets/carbon_style_search_field.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
+import 'package:carbon_ui/widgets/carbon_style_search_field.dart';
 import '../app_theme.dart';
-import '../classes/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
 import '../classes/metric_source.dart';
 import '../classes/metric_value.dart';
 import '../classes/patient.dart';

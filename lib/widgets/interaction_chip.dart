@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 
-import '../classes/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
 import '../classes/medication_services.dart';
-import 'carbon_button_compact.dart';
+import 'package:carbon_ui/widgets/carbon_button_compact.dart';
 
 // Carbon-native, replacing the old raw-Material version (ActionChip/Badge/AlertDialog) —
 // this is the widget the acknowledge/dismiss ask directly touches, so this is the natural

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
 import '../classes/medical_test.dart';
 import '../classes/reminder_registry.dart';
-import 'carbon_button_compact.dart';
-import 'carbon_style_textbox.dart';
+import 'package:carbon_ui/widgets/carbon_button_compact.dart';
+import 'package:carbon_ui/widgets/carbon_style_textbox.dart';
 
 // Step two of adding a tracked test, after picking one from TestCatalogPickerSheet —
 // when to be reminded, and any special instructions the lab gave (e.g. "no calcium

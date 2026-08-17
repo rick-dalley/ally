@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../app_theme.dart';
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
 import '../classes/patient.dart';
 import '../classes/patient_diary.dart';
-import '../widgets/carbon_button_compact.dart';
-import '../widgets/carbon_style_textbox.dart';
+import 'package:carbon_ui/widgets/carbon_button_compact.dart';
+import 'package:carbon_ui/widgets/carbon_style_textbox.dart';
 import '../widgets/diary_month_calendar.dart';
 
 // Opens on today. Prev/next arrows flip a day at a time; a calendar toggle switches to

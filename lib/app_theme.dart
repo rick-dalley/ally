@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:triage/classes/archived/carbon_color_constants_old.dart';
 
-import 'classes/app_colors.dart';
+import 'package:carbon_ui/colors/app_colors.dart';
 
 class AppTheme {
   // Hospital Monitor Vitals Palette

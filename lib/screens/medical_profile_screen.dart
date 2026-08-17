@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/classes/carbon_color_constants.dart';
-import 'package:triage/classes/domain_colors.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/domain_colors.dart';
 import 'package:triage/screens/allergies_screen.dart';
 import 'package:triage/screens/body_screen.dart';
 import 'package:triage/screens/eye_care_screen.dart';
@@ -10,17 +10,17 @@ import 'package:triage/screens/physical_health.dart';
 import 'package:triage/screens/questionnaires_screen.dart';
 import 'package:triage/screens/supplies_screen.dart';
 import 'package:triage/screens/tests_screen.dart';
-import 'package:triage/widgets/carbon_style_action_tile.dart';
+import 'package:carbon_ui/widgets/carbon_style_action_tile.dart';
 
 import '../app_theme.dart';
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
-import '../classes/flyable.dart';
+import 'package:carbon_ui/interfaces/flyable.dart';
 import '../classes/patient.dart';
 import '../classes/patient_sentiment.dart';
-import '../widgets/carbon_button_compact.dart';
-import '../widgets/carbon_flyout_widget.dart';
-import '../widgets/carbon_style_textbox.dart';
+import 'package:carbon_ui/widgets/carbon_button_compact.dart';
+import 'package:carbon_ui/widgets/carbon_flyout_widget.dart';
+import 'package:carbon_ui/widgets/carbon_style_textbox.dart';
 import 'immunization_screen.dart';
 import 'patient_diary_screen.dart';
 

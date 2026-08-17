@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../app_theme.dart';
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/patient.dart';
 import '../classes/therapy_period_report.dart';
-import '../widgets/carbon_button_compact.dart';
+import 'package:carbon_ui/widgets/carbon_button_compact.dart';
 import '../widgets/report_preview_screen.dart';
 
 // How far back to go is the patient's call, not the app's — see the design discussion

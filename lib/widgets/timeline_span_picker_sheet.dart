@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/timeline_span.dart';
-import 'carbon_button_compact.dart';
-import 'carbon_checkbox.dart';
+import 'package:carbon_ui/widgets/carbon_button_compact.dart';
+import 'package:carbon_ui/widgets/carbon_checkbox.dart';
 
 // Manual mix-and-match, capped at three — the point of this screen is letting the
 // patient notice their own juxtapositions ("wait, my mood dipped right when I paused

@@ -3,7 +3,7 @@ import 'package:material_symbols_icons/symbols.dart';
 
 import 'database_manager.dart';
 import 'medical_test.dart';
-import 'domain_colors.dart';
+import 'package:carbon_ui/colors/domain_colors.dart';
 import 'medication_services.dart';
 import 'schedulable.dart';
 import 'vision_prescription.dart';

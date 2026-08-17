@@ -5,7 +5,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import '../app_theme.dart';
-import '../classes/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
 import '../classes/patient.dart';
 
 // Long-press on the top-corner avatar opens this: every current family member arranged

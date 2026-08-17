@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
 import '../classes/medication_services.dart';
-import 'carbon_button_compact.dart';
-import 'carbon_style_textbox.dart';
+import 'package:carbon_ui/widgets/carbon_button_compact.dart';
+import 'package:carbon_ui/widgets/carbon_style_textbox.dart';
 
 // Records a dosage/frequency change as history (medication_change_log) rather than
 // silently overwriting the old value — the reason a titration happened is exactly what

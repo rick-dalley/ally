@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/widgets/carbon_style_search_field.dart';
+import 'package:carbon_ui/widgets/carbon_style_search_field.dart';
 
 import '../app_theme.dart';
-import '../classes/carbon_color_constants.dart';
-import '../classes/carbon_theme_constants.dart';
-import '../widgets/carbon_style_full_button.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
+import 'package:carbon_ui/widgets/carbon_style_full_button.dart';
 import '../widgets/text_scanner.dart';
 
 class GetMedicationName extends StatefulWidget {

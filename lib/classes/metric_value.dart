@@ -4,7 +4,7 @@ import 'package:triage/classes/database_manager.dart';
 import 'package:triage/classes/date_time_utilities.dart';
 import 'package:triage/classes/uuid.dart';
 
-import 'listable.dart';
+import 'package:carbon_ui/interfaces/listable.dart';
 import 'medication_services.dart';
 import 'metric_source.dart';
 

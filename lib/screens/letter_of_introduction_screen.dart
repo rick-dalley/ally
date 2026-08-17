@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../app_theme.dart';
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/letter_of_introduction_report.dart';
 import '../classes/patient.dart';
-import '../widgets/carbon_button_compact.dart';
-import '../widgets/carbon_style_textbox.dart';
+import 'package:carbon_ui/widgets/carbon_button_compact.dart';
+import 'package:carbon_ui/widgets/carbon_style_textbox.dart';
 import '../widgets/report_preview_screen.dart';
 
 class LetterOfIntroductionScreen extends StatefulWidget {

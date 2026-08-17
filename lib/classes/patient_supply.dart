@@ -1,7 +1,7 @@
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:flutter/widgets.dart' show IconData;
 
-import 'listable.dart';
+import 'package:carbon_ui/interfaces/listable.dart';
 
 // Deliberately consumables only — needles, swabs, test strips, catheters — not durable
 // equipment (wheelchairs, canes, glasses, BP monitors). A patient buys and keeps

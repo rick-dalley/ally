@@ -4,15 +4,15 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../classes/appointment_reason.dart';
 import '../classes/body_markers.dart';
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
 import '../classes/phone.dart';
 import '../classes/provider.dart';
 import '../classes/reminder_registry.dart';
 import 'appointment_chip.dart';
-import 'carbon_button_compact.dart';
-import 'carbon_checkbox.dart';
-import 'carbon_style_textbox.dart';
+import 'package:carbon_ui/widgets/carbon_button_compact.dart';
+import 'package:carbon_ui/widgets/carbon_checkbox.dart';
+import 'package:carbon_ui/widgets/carbon_style_textbox.dart';
 
 enum _BookingChannel { none, phone, email, text }
 

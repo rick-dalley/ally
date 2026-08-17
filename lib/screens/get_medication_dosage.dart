@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import '../app_theme.dart';
-import '../classes/carbon_color_constants.dart';
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/medication_services.dart';
-import '../widgets/carbon_style_number_edit.dart';
+import 'package:carbon_ui/widgets/carbon_style_number_edit.dart';
 
 class GetMedicationDosage extends StatefulWidget {
   final TextEditingController controller;

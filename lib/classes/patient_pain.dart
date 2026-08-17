@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../app_theme.dart';
-import 'flyable.dart';
-import 'listable.dart';
+import 'package:carbon_ui/interfaces/flyable.dart';
+import 'package:carbon_ui/interfaces/listable.dart';
 
 enum Frequency implements Flyable {
   cyclical,

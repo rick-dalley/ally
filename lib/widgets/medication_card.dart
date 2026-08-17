@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/classes/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
 import 'package:triage/classes/database_manager.dart';
 
 import '../classes/allergen.dart';
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/medication_services.dart';
 import '../classes/tablet.dart';
 import 'allergy_conflict_chip.dart';

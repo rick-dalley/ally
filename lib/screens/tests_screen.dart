@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../app_theme.dart';
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
 import '../classes/medical_test.dart';
 import '../classes/patient.dart';
 import '../classes/reminder_registry.dart';
 import '../widgets/book_test_sheet.dart';
-import '../widgets/carbon_button_compact.dart';
+import 'package:carbon_ui/widgets/carbon_button_compact.dart';
 import '../widgets/test_catalog_picker_sheet.dart';
 
 class TestsScreen extends StatefulWidget {

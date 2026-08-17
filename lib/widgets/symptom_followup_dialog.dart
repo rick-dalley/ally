@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../classes/body_markers.dart';
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
-import 'carbon_button_compact.dart';
+import 'package:carbon_ui/widgets/carbon_button_compact.dart';
 import 'seek_care_sheet.dart';
 
 // Surfaced when the Symptoms screen opens and finds a marker that's old enough to

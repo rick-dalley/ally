@@ -4,11 +4,11 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../classes/body_markers.dart';
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
 import '../classes/reminder_registry.dart';
 import 'appointment_chip.dart';
-import 'carbon_button_compact.dart';
+import 'package:carbon_ui/widgets/carbon_button_compact.dart';
 
 // What "when and where" plus "room to explain the concerns being brought forward"
 // actually means once an appointment is real: the booked reason/notes, and an option

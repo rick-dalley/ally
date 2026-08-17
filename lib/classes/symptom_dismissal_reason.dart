@@ -1,4 +1,4 @@
-import 'listable.dart';
+import 'package:carbon_ui/interfaces/listable.dart';
 
 // Why a logged symptom is being removed via the marker modal's X button. Kept
 // separate from resolving-via-follow-up ("It's Better" in SymptomFollowUpDialog),

@@ -4,7 +4,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../app_theme.dart';
 import '../classes/immunization.dart';
-import 'carbon_checkbox.dart';
+import 'package:carbon_ui/widgets/carbon_checkbox.dart';
 
 // 1. Add this extension to your file to handle Sentence Case easily
 extension StringExtension on String {

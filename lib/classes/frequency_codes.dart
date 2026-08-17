@@ -1,4 +1,4 @@
-import 'listable.dart';
+import 'package:carbon_ui/interfaces/listable.dart';
 
 enum FrequencyCodes implements Listable {
   quaqueDie,

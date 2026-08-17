@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:triage/widgets/carbon_style_button.dart';
+import 'package:carbon_ui/widgets/carbon_style_button.dart';
 import '../app_theme.dart';
 import '../classes/assessment_logic.dart';
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
 import '../generated/l10n.dart';
 import '../widgets/likert_question.dart';

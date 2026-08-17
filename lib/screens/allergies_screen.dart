@@ -3,11 +3,11 @@ import 'package:material_symbols_icons/symbols.dart';
 
 import '../app_theme.dart';
 import '../classes/allergen.dart';
-import '../classes/carbon_color_constants.dart';
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
 import '../widgets/allergy_chip.dart';
-import '../widgets/carbon_quick_entry_field.dart';
+import 'package:carbon_ui/widgets/carbon_quick_entry_field.dart';
 import '../widgets/halo_ripple_chip.dart';
 
 class AllergyCategoryStyle {

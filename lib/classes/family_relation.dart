@@ -1,4 +1,4 @@
-import 'listable.dart';
+import 'package:carbon_ui/interfaces/listable.dart';
 
 // Suggestions only, not a closed set — CarbonAutocomplete lets the wizard's relation
 // step accept free text (a foster child, a ward, "my neighbor I look after") just as

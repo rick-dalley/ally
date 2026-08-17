@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../classes/allergen.dart';
-import '../classes/carbon_color_constants.dart';
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
-import 'carbon_button_compact.dart';
-import 'carbon_segmented_control.dart';
-import 'carbon_style_textbox.dart';
+import 'package:carbon_ui/widgets/carbon_button_compact.dart';
+import 'package:carbon_ui/widgets/carbon_segmented_control.dart';
+import 'package:carbon_ui/widgets/carbon_style_textbox.dart';
 
 // "Tap the chip for detail" — same role as ConfigureConditionDialog, but allergies
 // don't have onset/duration/status the way a medical condition does; you either have

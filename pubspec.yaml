@@ -39,6 +39,8 @@ dependencies:
   printing: ^5.14.3
   share_plus: ^12.0.2
   flutter_contacts: ^2.1.0
+  carbon_ui:
+    path: ../carbon_ui
 
 dev_dependencies:
   flutter_test:

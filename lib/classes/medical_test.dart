@@ -1,7 +1,7 @@
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:flutter/widgets.dart' show IconData;
 
-import 'listable.dart';
+import 'package:carbon_ui/interfaces/listable.dart';
 
 // Deliberately clinic/lab tests only — at-home readings (blood pressure, glucose,
 // SpO2, weight, etc.) mostly duplicate what the Metrics screen already tracks with a

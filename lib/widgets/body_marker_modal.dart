@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/classes/carbon_color_constants.dart';
-import 'package:triage/classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import 'package:triage/classes/patient_pain.dart';
-import 'package:triage/widgets/carbon_button_compact.dart';
-import 'package:triage/widgets/carbon_style_button.dart';
-import 'package:triage/widgets/carbon_style_dropdown.dart';
-import 'package:triage/widgets/carbon_style_textbox.dart';
+import 'package:carbon_ui/widgets/carbon_button_compact.dart';
+import 'package:carbon_ui/widgets/carbon_style_button.dart';
+import 'package:carbon_ui/widgets/carbon_style_dropdown.dart';
+import 'package:carbon_ui/widgets/carbon_style_textbox.dart';
 
 import '../classes/body_markers.dart';
-import '../classes/listable.dart';
+import 'package:carbon_ui/interfaces/listable.dart';
 import '../classes/symptom_care_plan.dart';
 import '../classes/symptom_dismissal_reason.dart';
 

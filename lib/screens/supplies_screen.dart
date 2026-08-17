@@ -3,13 +3,13 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../app_theme.dart';
-import '../classes/carbon_color_constants.dart';
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
 import '../classes/patient.dart';
 import '../classes/patient_supply.dart';
 import '../classes/reminder_registry.dart';
-import '../widgets/carbon_button_compact.dart';
+import 'package:carbon_ui/widgets/carbon_button_compact.dart';
 import '../widgets/supply_catalog_picker_sheet.dart';
 import '../widgets/supply_detail_sheet.dart';
 

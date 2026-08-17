@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
-import '../classes/carbon_color_constants.dart';
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
 import '../classes/medication_services.dart';
 import '../classes/metric_value.dart';
-import 'carbon_button_compact.dart';
-import 'carbon_checkbox.dart';
-import 'carbon_segmented_control.dart';
+import 'package:carbon_ui/widgets/carbon_button_compact.dart';
+import 'package:carbon_ui/widgets/carbon_checkbox.dart';
+import 'package:carbon_ui/widgets/carbon_segmented_control.dart';
 
 // Same shape as the medication wizard's Reminders step (channels, wearable submode),
 // swapping "lead time before a dose" for "how often" + "what time" — a metric reading

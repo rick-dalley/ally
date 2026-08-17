@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
 import '../classes/metric_source.dart';
-import 'carbon_quick_entry_field.dart';
-import 'carbon_style_action_tile.dart';
-import 'carbon_style_search_field.dart';
+import 'package:carbon_ui/widgets/carbon_quick_entry_field.dart';
+import 'package:carbon_ui/widgets/carbon_style_action_tile.dart';
+import 'package:carbon_ui/widgets/carbon_style_search_field.dart';
 
 // Picking a device or observation method for a tracked metric — mirrors
 // SupplyCatalogPickerSheet/TestCatalogPickerSheet's shape (quick-entry for something

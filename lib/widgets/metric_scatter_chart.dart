@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../classes/carbon_color_constants.dart';
-import '../classes/carbon_theme_constants.dart';
-import 'carbon_segmented_control.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
+import 'package:carbon_ui/widgets/carbon_segmented_control.dart';
 
 enum ChartRange { day, week, month, year }
 

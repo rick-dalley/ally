@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../app_theme.dart';
-import '../classes/carbon_color_constants.dart';
-import '../classes/carbon_theme_constants.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
 import '../classes/patient.dart';
 import '../classes/patient_condition.dart';
 import '../screens/metric_dashboard_screen.dart';
 import '../screens/prescription_screen.dart';
 import '../screens/tests_screen.dart';
-import 'carbon_button_compact.dart';
-import 'carbon_segmented_control.dart';
-import 'carbon_style_textbox.dart';
+import 'package:carbon_ui/widgets/carbon_button_compact.dart';
+import 'package:carbon_ui/widgets/carbon_segmented_control.dart';
+import 'package:carbon_ui/widgets/carbon_style_textbox.dart';
 
 class ConfigureConditionDialog extends StatefulWidget {
   final PatientCondition patientCondition;
