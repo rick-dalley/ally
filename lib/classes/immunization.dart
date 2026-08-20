@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:ui' as ui;
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:triage/classes/database_manager.dart';
-import 'package:triage/classes/date_time_utilities.dart';
+import 'package:ally/classes/database_manager.dart';
+import 'package:ally/classes/date_time_utilities.dart';
 
 final Map<String, String> codeToName = {'CA': 'Canada', 'MX': 'Mexico', 'US': 'United States of America'};
 

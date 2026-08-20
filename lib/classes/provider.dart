@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:triage/classes/phone.dart';
-import 'package:triage/classes/specialities.dart';
-import 'package:triage/classes/uuid.dart';
+import 'package:ally/classes/phone.dart';
+import 'package:ally/classes/specialities.dart';
+import 'package:ally/classes/uuid.dart';
 
 import 'address.dart';
 import 'cancellation_policy.dart';

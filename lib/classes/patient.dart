@@ -2,9 +2,9 @@ import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
-import 'package:triage/classes/acuity.dart';
-import 'package:triage/classes/blood_type.dart';
-import 'package:triage/classes/patient_pain.dart';
+import 'package:ally/classes/acuity.dart';
+import 'package:ally/classes/blood_type.dart';
+import 'package:ally/classes/patient_pain.dart';
 
 import 'database_manager.dart';
 import 'date_time_utilities.dart';

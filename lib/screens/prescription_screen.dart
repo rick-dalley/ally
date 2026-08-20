@@ -1,7 +1,7 @@
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/classes/archived/carbon_color_constants_old.dart';
+import 'package:ally/classes/archived/carbon_color_constants_old.dart';
 import 'package:carbon_ui/colors/carbon_theme_constants.dart';
-import 'package:triage/screens/add_medication_wizard.dart';
+import 'package:ally/screens/add_medication_wizard.dart';
 import 'package:carbon_ui/widgets/carbon_style_button.dart';
 
 import 'package:flutter/foundation.dart';

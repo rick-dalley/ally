@@ -1,5 +1,5 @@
-name: triage
-description: "Triage App for Psychiatric Units"
+name: ally
+description: "CWICare Ally — on-device patient health tracking and caregiver companion app"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -16,7 +16,6 @@ dependencies:
     sdk: flutter
   intl: any
   material_symbols_icons: ^4.2928.1
-  google_fonts: ^8.0.2
   http: ^1.2.1
   sqflite: ^2.3.3+1
   url_launcher: ^6.3.0
@@ -81,6 +80,27 @@ flutter:
     - assets/questions/
     - assets/sql/
     - assets/tests/
+  fonts:
+    - family: IBM Plex Sans
+      fonts:
+        - asset: assets/fonts/IBMPlexSans[wdth,wght].ttf
+          weight: 400
+        - asset: assets/fonts/IBMPlexSans[wdth,wght].ttf
+          weight: 500
+        - asset: assets/fonts/IBMPlexSans[wdth,wght].ttf
+          weight: 600
+        - asset: assets/fonts/IBMPlexSans[wdth,wght].ttf
+          weight: 700
+    - family: Outfit
+      fonts:
+        - asset: assets/fonts/Outfit[wght].ttf
+          weight: 400
+        - asset: assets/fonts/Outfit[wght].ttf
+          weight: 700
+    - family: Inclusive Sans
+      fonts:
+        - asset: assets/fonts/InclusiveSans-Regular.ttf
+          weight: 400
 
 flutter_intl:
   enabled: true

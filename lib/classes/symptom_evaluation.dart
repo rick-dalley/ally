@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
-import 'package:triage/classes/patient_pain.dart';
+import 'package:ally/classes/patient_pain.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:triage/classes/symptom_flag.dart';
+import 'package:ally/classes/symptom_flag.dart';
 
 enum Hypothesis {
   cholinergic,

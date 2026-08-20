@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:triage/classes/archived/carbon_color_constants_old.dart';
+import 'package:ally/classes/archived/carbon_color_constants_old.dart';
 
 import 'package:carbon_ui/colors/app_colors.dart';
 
@@ -62,10 +61,10 @@ class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
-      fontFamily: GoogleFonts.inclusiveSans().fontFamily,
+      fontFamily: 'Inclusive Sans',
       brightness: Brightness.light,
       scaffoldBackgroundColor: AppColors.grey.all[1],
-      textTheme: GoogleFonts.inclusiveSansTextTheme(),
+      textTheme: Typography.material2021().black.apply(fontFamily: 'Inclusive Sans'),
       colorScheme: ColorScheme.light(
         primary: AppTheme.primaryColor,
         secondary: AppColors.greyDepth,

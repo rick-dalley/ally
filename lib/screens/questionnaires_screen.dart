@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:triage/screens/questionnaire_answering_screen.dart';
+import 'package:ally/screens/questionnaire_answering_screen.dart';
 
 import '../app_theme.dart';
 import '../classes/assessment_logic.dart';

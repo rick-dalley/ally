@@ -1,4 +1,3 @@
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -52,7 +51,7 @@ class VaccineCard extends StatelessWidget {
               children: [
                 Text(
                   vaccine.name.toSentenceCase(),
-                  style: GoogleFonts.ibmPlexSans(
+                  style: TextStyle(fontFamily: 'IBM Plex Sans', 
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF161616), // Carbon text-primary
@@ -61,7 +60,7 @@ class VaccineCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   vaccine.recommendation,
-                  style: GoogleFonts.ibmPlexSans(
+                  style: TextStyle(fontFamily: 'IBM Plex Sans', 
                     fontSize: 14,
                     color: const Color(0xFF525252), // Carbon text-secondary
                   ),
@@ -72,7 +71,7 @@ class VaccineCard extends StatelessWidget {
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      Text("Taken: ${vaccine.formattedVaccineDate}", style: GoogleFonts.ibmPlexSans(fontSize: 12)),
+                      Text("Taken: ${vaccine.formattedVaccineDate}", style: TextStyle(fontFamily: 'IBM Plex Sans', fontSize: 12)),
                       const Spacer(),
                       IconButton(
                         constraints: const BoxConstraints(),
@@ -84,7 +83,7 @@ class VaccineCard extends StatelessWidget {
                   ),
                   Text(
                     vaccine.reminder,
-                    style: GoogleFonts.ibmPlexSans(
+                    style: TextStyle(fontFamily: 'IBM Plex Sans', 
                       fontSize: 12,
                       color: vaccine.overdue ? const Color(0xFFDA1E28) : const Color(0xFF525252),
                     ),
@@ -119,7 +118,7 @@ class CarbonLink extends StatelessWidget {
       onTap: _launch,
       child: Text(
         text,
-        style: GoogleFonts.ibmPlexSans(
+        style: TextStyle(fontFamily: 'IBM Plex Sans', 
           fontSize: 14,
           color: const Color(0xFF0F62FE),
           // IBM Blue (Carbon link-01)

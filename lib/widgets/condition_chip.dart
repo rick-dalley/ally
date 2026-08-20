@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../app_theme.dart';
 import '../classes/patient_condition.dart';
 import 'condition_update.dart';
@@ -45,6 +46,8 @@ class ConditionChipState extends State<ConditionChip> {
       clipBehavior: Clip.none,
       children: [
         RawChip(
+          visualDensity: VisualDensity.compact,
+          labelPadding: const EdgeInsets.symmetric(horizontal: 4),
           avatar: Icon(
             widget.icon, // Pass your Material Symbol or Icon here
             size: 16,
@@ -52,9 +55,14 @@ class ConditionChipState extends State<ConditionChip> {
           ),
           label: Text(
             widget.patientCondition.name,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+            // Carbon's helper-text identity (family/weight), at 11px — smaller than
+            // the old bold 12px, not the same size. CarbonTheme.carbonHelperTextStyle
+            // itself resolves to 16px (it borrows CarbonButtons.small.fontSize, a
+            // button-sizing token, not real Carbon 12px helper/caption sizing), so it
+            // isn't used verbatim here — that would make the overflow worse, not fix it.
+            style: (CarbonTheme.carbonHelperTextStyle ?? const TextStyle())
+                .copyWith(fontSize: 11, color: contentColor),
           ),
-          labelStyle: TextStyle(color: contentColor),
           backgroundColor: isResolved
               ? widget.color.withValues(alpha: 0.4)
               : widget.color,

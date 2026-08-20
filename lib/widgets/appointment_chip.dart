@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/classes/provider.dart';
+import 'package:ally/classes/provider.dart';
 import '../app_theme.dart';
 import '../classes/address.dart';
 import '../classes/cancellation_policy.dart';

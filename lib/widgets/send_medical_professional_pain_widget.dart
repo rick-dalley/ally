@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:triage/classes/provider.dart';
+import 'package:ally/classes/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SendPainDiagram extends StatefulWidget {

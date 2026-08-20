@@ -1,5 +1,5 @@
-import 'package:triage/classes/phone.dart';
-import 'package:triage/classes/social_media.dart';
+import 'package:ally/classes/phone.dart';
+import 'package:ally/classes/social_media.dart';
 
 import 'contactable.dart';
 

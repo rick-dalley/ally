@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/app_theme.dart';
+import 'package:ally/app_theme.dart';
 import 'package:carbon_ui/colors/carbon_theme_constants.dart';
-import 'package:triage/classes/frequency_codes.dart';
-import 'package:triage/classes/medication_services.dart';
+import 'package:ally/classes/frequency_codes.dart';
+import 'package:ally/classes/medication_services.dart';
 import 'package:carbon_ui/widgets/carbon_style_dropdown.dart';
 import 'package:carbon_ui/widgets/carbon_style_full_button.dart';
 import 'package:carbon_ui/interfaces/listable.dart';

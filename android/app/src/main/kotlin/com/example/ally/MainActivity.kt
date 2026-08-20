@@ -1,4 +1,4 @@
-package com.example.triage
+package com.example.ally
 
 import android.os.Build
 import android.view.WindowManager
@@ -7,7 +7,7 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
-    private val lockScreenChannel = "com.example.triage/lock_screen"
+    private val lockScreenChannel = "com.example.ally/lock_screen"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)

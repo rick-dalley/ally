@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:triage/screens/body_screen.dart';
+import 'package:ally/screens/body_screen.dart';
 
 import '../app_theme.dart';
 

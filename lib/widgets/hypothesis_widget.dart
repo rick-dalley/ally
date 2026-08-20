@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:triage/widgets/symptom_input_widget.dart';
+import 'package:ally/widgets/symptom_input_widget.dart';
 import '../classes/symptom_evaluation.dart';
 import '../classes/symptom_flag.dart';
 import '../classes/triage.dart';

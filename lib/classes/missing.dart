@@ -1,4 +1,4 @@
-import 'package:triage/classes/patient.dart';
+import 'package:ally/classes/patient.dart';
 
 import 'date_time_utilities.dart';
 

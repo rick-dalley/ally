@@ -1,4 +1,4 @@
-import 'package:triage/classes/phone.dart';
+import 'package:ally/classes/phone.dart';
 
 abstract interface class Contactable {
   Phone get phone;

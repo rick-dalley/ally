@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/screens/get_medication_color.dart';
-import 'package:triage/screens/get_medication_dosage.dart';
-import 'package:triage/screens/get_medication_frequency.dart';
-import 'package:triage/screens/get_medication_name.dart';
-import 'package:triage/screens/get_medication_reminders.dart';
-import 'package:triage/screens/get_medication_shape.dart';
-import 'package:triage/screens/get_medication_type.dart';
+import 'package:ally/screens/get_medication_color.dart';
+import 'package:ally/screens/get_medication_dosage.dart';
+import 'package:ally/screens/get_medication_frequency.dart';
+import 'package:ally/screens/get_medication_name.dart';
+import 'package:ally/screens/get_medication_reminders.dart';
+import 'package:ally/screens/get_medication_shape.dart';
+import 'package:ally/screens/get_medication_type.dart';
 import 'package:carbon_ui/widgets/carbon_button_compact.dart';
 
 import '../app_theme.dart';

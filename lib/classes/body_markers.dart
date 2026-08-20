@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:ui';
 
-import 'package:triage/classes/database_manager.dart';
-import 'package:triage/classes/date_time_utilities.dart';
-import 'package:triage/classes/patient_pain.dart';
+import 'package:ally/classes/database_manager.dart';
+import 'package:ally/classes/date_time_utilities.dart';
+import 'package:ally/classes/patient_pain.dart';
 
 import 'body_zone.dart';
 import 'symptom_care_plan.dart';

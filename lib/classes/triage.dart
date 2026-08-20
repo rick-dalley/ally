@@ -1,4 +1,4 @@
-import 'package:triage/classes/patient_pain.dart';
+import 'package:ally/classes/patient_pain.dart';
 
 import 'acuity.dart';
 

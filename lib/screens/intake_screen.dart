@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:carbon_ui/colors/carbon_theme_constants.dart';
-import 'package:triage/classes/scanned_data.dart';
+import 'package:ally/classes/scanned_data.dart';
 import 'package:carbon_ui/widgets/carbon_style_textbox.dart';
-import 'package:triage/widgets/scanner_widget.dart';
+import 'package:ally/widgets/scanner_widget.dart';
 import 'package:carbon_ui/widgets/carbon_style_button.dart';
 
 class IntakeScreen extends StatefulWidget {

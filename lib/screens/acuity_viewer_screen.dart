@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:triage/classes/patient.dart';
-import 'package:triage/widgets/acuity_widget.dart';
+import 'package:ally/classes/patient.dart';
+import 'package:ally/widgets/acuity_widget.dart';
 import '../app_theme.dart';
 import '../classes/acuity.dart';
 import '../widgets/acuity_change.dart';

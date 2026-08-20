@@ -1,4 +1,4 @@
-import 'package:triage/classes/country_codes.dart';
+import 'package:ally/classes/country_codes.dart';
 
 import '../classes/locatable.dart';
 

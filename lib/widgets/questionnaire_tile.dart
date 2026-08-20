@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/classes/date_time_utilities.dart';
+import 'package:ally/classes/date_time_utilities.dart';
 import '../app_theme.dart';
 
 class QuestionnaireTile extends StatelessWidget {

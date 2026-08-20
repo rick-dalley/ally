@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/classes/acuity.dart';
+import 'package:ally/classes/acuity.dart';
 
 import '../app_theme.dart';
 
@@ -109,7 +108,7 @@ class AcuityIndicator extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Text(
               status.label.toUpperCase(),
-              style: GoogleFonts.outfit(
+              style: TextStyle(fontFamily: 'Outfit', 
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.5, // Added letter spacing for readability

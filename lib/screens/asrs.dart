@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:triage/classes/assessment_logic.dart';
+import 'package:ally/classes/assessment_logic.dart';
 import '../generated/l10n.dart';
 import '../widgets/likert_question.dart';
 

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:carbon_ui/colors/carbon_color_constants.dart';
 import 'package:carbon_ui/colors/carbon_theme_constants.dart';
-import 'package:triage/classes/patient_pain.dart';
+import 'package:ally/classes/patient_pain.dart';
 import 'package:carbon_ui/widgets/carbon_button_compact.dart';
 import 'package:carbon_ui/widgets/carbon_style_button.dart';
 import 'package:carbon_ui/widgets/carbon_style_dropdown.dart';

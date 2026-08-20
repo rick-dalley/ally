@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:triage/classes/acuity.dart';
-import 'package:triage/classes/body_zone.dart';
-import 'package:triage/classes/database_manager.dart';
-import 'package:triage/screens/home_screen.dart';
-import 'package:triage/screens/start_up.dart';
+import 'package:ally/classes/acuity.dart';
+import 'package:ally/classes/body_zone.dart';
+import 'package:ally/classes/database_manager.dart';
+import 'package:ally/screens/home_screen.dart';
+import 'package:ally/screens/start_up.dart';
 import 'classes/drugs.dart';
 import 'classes/symptom_evaluation.dart';
 import 'generated/l10n.dart';

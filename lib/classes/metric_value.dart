@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/classes/database_manager.dart';
-import 'package:triage/classes/date_time_utilities.dart';
-import 'package:triage/classes/uuid.dart';
+import 'package:ally/classes/database_manager.dart';
+import 'package:ally/classes/date_time_utilities.dart';
+import 'package:ally/classes/uuid.dart';
 
 import 'package:carbon_ui/interfaces/listable.dart';
 import 'medication_services.dart';

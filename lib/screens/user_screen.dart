@@ -3,10 +3,10 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/classes/blood_type.dart';
-import 'package:triage/classes/metric_value.dart';
-import 'package:triage/widgets/avatar_picker.dart';
-import 'package:triage/widgets/blood_type_selector.dart';
+import 'package:ally/classes/blood_type.dart';
+import 'package:ally/classes/metric_value.dart';
+import 'package:ally/widgets/avatar_picker.dart';
+import 'package:ally/widgets/blood_type_selector.dart';
 import 'package:carbon_ui/widgets/carbon_button_compact.dart';
 import 'package:carbon_ui/widgets/carbon_style_button.dart';
 import 'package:carbon_ui/widgets/carbon_style_two_xl_button.dart';

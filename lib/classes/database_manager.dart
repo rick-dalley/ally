@@ -5,13 +5,13 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
-import 'package:triage/classes/allergen.dart';
-import 'package:triage/classes/blood_type.dart';
-import 'package:triage/classes/patient_condition.dart';
-import 'package:triage/classes/patient_supply.dart';
-import 'package:triage/classes/provider.dart';
-import 'package:triage/classes/questionnaire.dart';
-import 'package:triage/classes/vision_prescription.dart';
+import 'package:ally/classes/allergen.dart';
+import 'package:ally/classes/blood_type.dart';
+import 'package:ally/classes/patient_condition.dart';
+import 'package:ally/classes/patient_supply.dart';
+import 'package:ally/classes/provider.dart';
+import 'package:ally/classes/questionnaire.dart';
+import 'package:ally/classes/vision_prescription.dart';
 import 'package:uuid/uuid.dart';
 import 'acuity.dart';
 import 'data_seeder.dart';
@@ -68,7 +68,7 @@ class DatabaseManager {
     sqlConfig = json.decode(response);
 
     final dbPath = await getDatabasesPath();
-    final path = join(dbPath, 'triage_data.db');
+    final path = join(dbPath, 'ally.db');
 
     if (overwrite) {
       await deleteDatabase(path);
@@ -77,28 +77,49 @@ class DatabaseManager {
     // CRITICAL: You must await this call.
     final db = await openDatabase(
       path,
-      version: 1,
+      version: schemaVersion,
       onCreate: (db, version) async {
         // 4. Ensure Foreign Keys are enabled for the session
         await db.execute('PRAGMA foreign_keys = ON;');
         await createSqlObjects(db);
         await DataSeeder.seed(db);
       },
+      // Existing installs never re-run onCreate, so any table/index added to
+      // sql.json after a device's db file was first created would otherwise
+      // never exist on that device. Re-running createSqlObjects here (it
+      // skips objects that already exist) backfills whatever's missing
+      // without touching existing data. Bump schemaVersion whenever sql.json
+      // gains new CREATE entries.
+      onUpgrade: (db, oldVersion, newVersion) async {
+        await db.execute('PRAGMA foreign_keys = ON;');
+        await createSqlObjects(db);
+      },
     );
     return db;
   }
+
+  // Bump this whenever assets/sql/sql.json gains new tables/indexes, so
+  // existing installs pick them up via onUpgrade instead of silently
+  // missing them (see onUpgrade above).
+  static const int schemaVersion = 2;
 
   Future<void> createSqlObjects(Database db) async {
     if (sqlConfig == null) return;
     // 2. Extract the CREATE array
     final List<dynamic> createScripts = sqlConfig?['CREATE'];
 
-    // 3. Execute each query in the order provided in the JSON
+    // 3. Execute each query in the order provided in the JSON. Tolerate
+    // "already exists" so this can safely re-run against a db that already
+    // has some (but not all) of these objects — see onUpgrade above.
     for (var entry in createScripts) {
       final String query = entry['query'];
       debugPrint(entry['table']);
       if (query.isNotEmpty) {
-        await db.execute(query);
+        try {
+          await db.execute(query);
+        } on DatabaseException catch (e) {
+          if (!e.toString().toLowerCase().contains('already exists')) rethrow;
+        }
       }
     }
   }

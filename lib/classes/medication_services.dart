@@ -4,9 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart' show IconData;
 import 'package:http/http.dart' as http;
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:triage/classes/contactable.dart';
-import 'package:triage/classes/phone.dart';
-import 'package:triage/classes/uuid.dart';
+import 'package:ally/classes/contactable.dart';
+import 'package:ally/classes/phone.dart';
+import 'package:ally/classes/uuid.dart';
 
 import 'address.dart';
 import 'database_manager.dart';
