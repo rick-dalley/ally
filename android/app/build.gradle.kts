@@ -43,6 +43,12 @@ android {
     }
 }
 
+dependencies {
+    // The Data Layer API (MessageClient/NodeClient) MainActivity.kt's Wear OS bridge
+    // uses to talk to a paired wear_os watch app.
+    implementation("com.google.android.gms:play-services-wearable:19.0.0")
+}
+
 flutter {
     source = "../.."
 }

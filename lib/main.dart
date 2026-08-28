@@ -14,6 +14,7 @@ import 'package:ally/screens/panic_alert_screen.dart';
 import 'package:ally/screens/start_up.dart';
 import 'classes/drugs.dart';
 import 'classes/symptom_evaluation.dart';
+import 'classes/wearable_data_layer_bridge.dart';
 import 'classes/wearable_sync_server.dart';
 import 'generated/l10n.dart';
 import 'app_theme.dart';
@@ -99,6 +100,7 @@ class LuminescaHomeState extends State<LuminescaHome> {
   // We make the initialization a Future that we can listen to
   late Future<void> _initFuture;
   late final WearableSyncServer _wearableSyncServer = WearableSyncServer(onPanic: _handlePanic);
+  late final WearableDataLayerBridge _wearableDataLayerBridge = WearableDataLayerBridge(onPanic: _handlePanic);
 
   @override
   void initState() {
@@ -119,6 +121,7 @@ class LuminescaHomeState extends State<LuminescaHome> {
   @override
   void dispose() {
     _wearableSyncServer.stop();
+    _wearableDataLayerBridge.stop();
     super.dispose();
   }
 
@@ -134,6 +137,10 @@ class LuminescaHomeState extends State<LuminescaHome> {
     // with no auth, so the only real gate is "does anything know the IP to reach it,"
     // which is exactly what pairing communicates out of band (see WearableSyncServer).
     await _wearableSyncServer.start();
+    // No-op on platforms without the native Data Layer bridge (iOS) — it just never
+    // receives anything there, same as the HTTP server being reachable but pointless
+    // if nothing's listening on the other end.
+    _wearableDataLayerBridge.start();
   }
 
   @override
