@@ -1704,6 +1704,61 @@ class DatabaseManager {
     );
   }
 
+  Future<void> setCareOrderWearableSync({required String orderId, required bool enabled}) async {
+    final db = await database;
+    await db.update('care_order', {'wearable_sync': enabled ? 1 : 0}, where: 'id = ?', whereArgs: [orderId]);
+  }
+
+  // One row per patient (not per-trigger) — see alertable.dart's WearableAlertConfig
+  // for why the three trigger flags live as fixed columns rather than a rows table.
+  // insert-or-ignore then update covers both "never configured" and "already exists"
+  // in one call, so callers don't need a separate exists-check before writing.
+  Future<Map<String, dynamic>> getOrCreateWearableSettings(String patientUuid) async {
+    final db = await database;
+    await db.insert('wearable_settings', {
+      'patient_uuid': patientUuid,
+    }, conflictAlgorithm: ConflictAlgorithm.ignore);
+    final List<Map<String, dynamic>> rows = await db.query('wearable_settings', where: 'patient_uuid = ?', whereArgs: [patientUuid]);
+    return rows.first;
+  }
+
+  Future<void> setWearablePairing({required String patientUuid, required bool paired, String? deviceName}) async {
+    final db = await database;
+    await getOrCreateWearableSettings(patientUuid);
+    await db.update(
+      'wearable_settings',
+      {'paired': paired ? 1 : 0, 'device_name': deviceName, 'updated_at': DateTime.now().toIso8601String()},
+      where: 'patient_uuid = ?',
+      whereArgs: [patientUuid],
+    );
+  }
+
+  Future<void> setAlertTriggerEnabled({required String patientUuid, required String column, required bool enabled}) async {
+    final db = await database;
+    await getOrCreateWearableSettings(patientUuid);
+    await db.update(
+      'wearable_settings',
+      {column: enabled ? 1 : 0, 'updated_at': DateTime.now().toIso8601String()},
+      where: 'patient_uuid = ?',
+      whereArgs: [patientUuid],
+    );
+  }
+
+  Future<void> insertEmergencyTarget({required String id, required String patientUuid, required String name, required String phone, String? relation}) async {
+    final db = await database;
+    await db.insert('emergency_target', {'id': id, 'patient_uuid': patientUuid, 'name': name, 'phone': phone, 'relation': relation});
+  }
+
+  Future<List<Map<String, dynamic>>> getEmergencyTargetsForPatient(String patientUuid) async {
+    final db = await database;
+    return await db.query('emergency_target', where: 'patient_uuid = ?', whereArgs: [patientUuid], orderBy: 'created_at ASC');
+  }
+
+  Future<void> deleteEmergencyTarget(String id) async {
+    final db = await database;
+    await db.delete('emergency_target', where: 'id = ?', whereArgs: [id]);
+  }
+
   Future<String?> getSetIdByName(String medName) async {
     final db = await database;
 

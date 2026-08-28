@@ -23,6 +23,7 @@ import '../classes/patient_pain.dart';
 import '../classes/patient_sentiment.dart';
 import '../widgets/body_metrics_entry_widget.dart';
 import 'body_screen.dart';
+import 'wearable_settings_screen.dart';
 import 'package:carbon_ui/widgets/carbon_style_textbox.dart';
 import '../widgets/trophy_case.dart';
 
@@ -517,6 +518,26 @@ class UserScreenState extends State<UserScreen> {
                             style: CarbonButtonStyle.danger,
                             onPressed: () =>
                                 EmergencyLockScreen.present(context, patient),
+                          ),
+                          const SizedBox(height: 32),
+                          const Divider(),
+                          const SizedBox(height: 16),
+                          Text("Wearable", style: CarbonTheme.carbonLabelTextStyle),
+                          const SizedBox(height: 8),
+                          Text(
+                            "Pair a wearable, choose which orders buzz it, and set who "
+                            "gets notified if the panic button is pressed.",
+                            style: CarbonTheme.carbonHelperTextStyle,
+                          ),
+                          const SizedBox(height: 12),
+                          CarbonButton(
+                            label: "Wearable Settings",
+                            icon: Symbols.watch,
+                            style: CarbonButtonStyle.secondary,
+                            onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => WearableSettingsScreen(patient: patient)),
+                            ),
                           ),
                         ],
                       ),
