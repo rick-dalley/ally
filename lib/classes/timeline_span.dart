@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:carbon_ui/carbon_ui.dart';
 
 import 'patient_action.dart';
 
@@ -59,7 +60,7 @@ abstract class TimelineSpan {
 // stay visually distinct regardless of which categories the patient actually picks, so
 // color is assigned positionally by whatever's rendering the selected set, not baked
 // into the span itself (baking it in risks two same-category picks looking identical).
-class PeriodSpan implements TimelineSpan {
+class PeriodSpan implements TimelineSpan, CarbonTimelineSpan {
   // Stable identity for the picker's selection matching — a real row id/uuid when this
   // came from the database, or a fixed literal for example data. Deliberately not
   // relying on label+date matching each other, which would misfire for two real
@@ -118,6 +119,11 @@ class PeriodSpan implements TimelineSpan {
   DateTime get endDate => endDateRaw ?? DateTime.now();
   @override
   bool get isOngoing => endDateRaw == null;
+
+  @override
+  String get categoryLabel => category.label;
+  @override
+  IconData? get icon => category.icon;
 }
 
 // Fixed, computed once — never regenerated per frame or per scroll, unlike the widget's

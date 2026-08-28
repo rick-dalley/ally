@@ -6,7 +6,7 @@ import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import 'package:ally/screens/add_patients_wheel.dart';
 import 'package:ally/screens/first_patient_wizard.dart';
 import 'package:ally/screens/metric_dashboard_screen.dart';
-import 'package:ally/screens/time_scroller.dart';
+import 'package:ally/screens/timeline_scroller_page.dart';
 import 'package:ally/screens/user_screen.dart';
 import '../app_theme.dart';
 import '../classes/achievement_badge.dart';
@@ -139,7 +139,7 @@ class HomeScreenState extends State<HomeScreen> {
       ),
       ProviderRosterScreen(user: patient),
       EmergencyQRCodeView(householdMember: patient),
-      TimelineScrollerWidget(patientUuid: patient.patientUuid),
+      TimelineScrollerPage(patientUuid: patient.patientUuid),
     ];
   }
 

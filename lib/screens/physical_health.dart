@@ -105,7 +105,7 @@ class ExistingMedicalConditionsScreenState
                 children: const [
                   Text(
                     "KNOWN MEDICAL CONDITIONS",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -134,6 +134,7 @@ class ExistingMedicalConditionsScreenState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Icon(
                               Icons.assignment_late_outlined,
@@ -141,9 +142,12 @@ class ExistingMedicalConditionsScreenState
                               color: AppTheme.onPrimaryColor,
                             ),
                             SizedBox(width: 6),
-                            Text(
-                              "Conditions that are currently diagnosed",
-                              style: CarbonTheme.carbonTextStyle,
+                            Expanded(
+                              child: Text(
+                                "Conditions that are currently diagnosed",
+                                style: CarbonTheme.carbonTextStyle,
+                                softWrap: true,
+                              ),
                             ),
                           ],
                         ),

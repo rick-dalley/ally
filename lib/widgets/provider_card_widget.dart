@@ -242,24 +242,26 @@ class ProviderCardState extends State<ProviderCard> {
                         // Placeholder for Barcode/QR
                         Row(
                           children: [
-                            InkWell(
-                              onTap: () {
-                                if (provider.address != null) {
-                                  String? fullAddress = provider.address!.full;
-                                  openMap(fullAddress);
-                                }
-                              },
-                              child: Container(
-                                padding: EdgeInsets.all(8.0),
-                                alignment: Alignment.centerLeft,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text("Address", style: const TextStyle(color: Colors.grey)),
-                                    Text("${provider.address?.street}"),
-                                    Text("${provider.address?.city}"),
-                                    Text("${provider.address?.provOrState}"),
-                                  ],
+                            Expanded(
+                              child: InkWell(
+                                onTap: () {
+                                  if (provider.address != null) {
+                                    String? fullAddress = provider.address!.full;
+                                    openMap(fullAddress);
+                                  }
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.all(8.0),
+                                  alignment: Alignment.centerLeft,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text("Address", style: const TextStyle(color: Colors.grey)),
+                                      Text("${provider.address?.street}"),
+                                      Text("${provider.address?.city}"),
+                                      Text("${provider.address?.provOrState}"),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),

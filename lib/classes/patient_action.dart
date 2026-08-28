@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
-import 'package:carbon_ui/interfaces/listable.dart';
+import 'package:carbon_ui/carbon_ui.dart';
 import 'patient_sentiment.dart';
 
 abstract interface class Actionable implements Listable {
@@ -88,8 +88,9 @@ enum PatientActionTypes implements Listable {
 // on every rebuild, which is exactly the "changes every time you look at the screen"
 // problem flagged directly. Making `occurred` a required, real timestamp makes that bug
 // impossible to reintroduce rather than just fixing today's call sites.
-class PatientAction implements Actionable {
+class PatientAction implements Actionable, CarbonTimelinePointEvent {
   final PatientActionTypes actionType;
+  @override
   final DateTime occurred;
   @override
   DateTime? ended;
@@ -153,4 +154,10 @@ class PatientAction implements Actionable {
 
   @override
   String get label => actionType.label;
+
+  @override
+  String get typeKey => actionType.name;
+
+  @override
+  Color? get color => null; // widget's default; keeps Ally's existing all-one-color look
 }
