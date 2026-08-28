@@ -39,6 +39,13 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Acuitage and Progressor crashed on launch with MainActivity stripped by
+            // R8 (they had no proguardFiles at all, so no keep rules applied). This
+            // app only survived by luck — the default optimize file above happens to
+            // keep Activity subclasses. Disabling minification outright removes that
+            // fragility for all three apps rather than relying on it implicitly.
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }
