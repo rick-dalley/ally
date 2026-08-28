@@ -93,6 +93,10 @@
       "query": "CREATE INDEX idx_medication_patient_started ON medication(patient_uuid, started_taking);"
     },
     {
+      "table": "care_order",
+      "query": "CREATE TABLE IF NOT EXISTS care_order (id TEXT PRIMARY KEY, patient_uuid TEXT NOT NULL, label TEXT NOT NULL, directions TEXT, frequency TEXT, source TEXT, imported_at DATETIME DEFAULT CURRENT_TIMESTAMP, discontinued_at DATETIME, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
+    },
+    {
       "table": "medication_dose_log",
       "query": "CREATE TABLE IF NOT EXISTS medication_dose_log (id TEXT PRIMARY KEY, medication_id TEXT NOT NULL, patient_uuid TEXT NOT NULL, scheduled_for DATETIME NOT NULL, status TEXT NOT NULL, responded_at DATETIME, notes TEXT, FOREIGN KEY (medication_id) REFERENCES medication(id) ON DELETE CASCADE, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
     },

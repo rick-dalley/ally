@@ -49,6 +49,17 @@
     <array>
       <string>mailto</string>
     </array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.cwicare.ally.import</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>ally</string>
+			</array>
+		</dict>
+	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Used to find the nearest walk-in clinic or emergency department when you need one.</string>
 </dict>

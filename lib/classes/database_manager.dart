@@ -1672,6 +1672,38 @@ class DatabaseManager {
     );
   }
 
+  // Non-medication physician orders (therapy, observation, diet, restraints/devices)
+  // handed off from a hospital-side app like Progressor — Ally has no UI to author
+  // these itself yet, only to receive and display them (see ImportCarePlanScreen).
+  Future<void> insertCareOrder({
+    required String id,
+    required String patientUuid,
+    required String label,
+    String? directions,
+    String? frequency,
+    String? source,
+  }) async {
+    final db = await database;
+    await db.insert('care_order', {
+      'id': id,
+      'patient_uuid': patientUuid,
+      'label': label,
+      'directions': directions,
+      'frequency': frequency,
+      'source': source,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<List<Map<String, dynamic>>> getCareOrdersForPatient(String patientUuid) async {
+    final db = await database;
+    return await db.query(
+      'care_order',
+      where: 'patient_uuid = ? AND discontinued_at IS NULL',
+      whereArgs: [patientUuid],
+      orderBy: 'imported_at DESC',
+    );
+  }
+
   Future<String?> getSetIdByName(String medName) async {
     final db = await database;
 
@@ -2562,6 +2594,16 @@ class DatabaseManager {
       'provider',
       columns: ['provider_uuid', 'first_name', 'last_name', 'started_seeing', 'stopped_seeing'],
       where: 'patient_uuid = ? AND started_seeing IS NOT NULL',
+      whereArgs: [patientUuid],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getCareOrderSpanRows(String patientUuid) async {
+    final db = await database;
+    return await db.query(
+      'care_order',
+      columns: ['id', 'label', 'imported_at', 'discontinued_at'],
+      where: 'patient_uuid = ?',
       whereArgs: [patientUuid],
     );
   }

@@ -16,6 +16,7 @@ enum TimelineSpanCategory {
   medication,
   condition,
   provider,
+  careOrder,
   example;
 
   String get label {
@@ -26,6 +27,8 @@ enum TimelineSpanCategory {
         return "Conditions";
       case TimelineSpanCategory.provider:
         return "Care Team";
+      case TimelineSpanCategory.careOrder:
+        return "Care Orders";
       case TimelineSpanCategory.example:
         return "Example";
     }
@@ -40,6 +43,8 @@ enum TimelineSpanCategory {
         return Symbols.diagnosis_sharp;
       case TimelineSpanCategory.provider:
         return Symbols.diversity_4;
+      case TimelineSpanCategory.careOrder:
+        return Symbols.assignment;
       case TimelineSpanCategory.example:
         return Symbols.auto_awesome;
     }
@@ -110,6 +115,16 @@ class PeriodSpan implements TimelineSpan, CarbonTimelineSpan {
       startDate: DateTime.parse(row['started_seeing'] as String),
       endDateRaw: row['stopped_seeing'] != null ? DateTime.parse(row['stopped_seeing'] as String) : null,
       category: TimelineSpanCategory.provider,
+    );
+  }
+
+  factory PeriodSpan.careOrder(Map<String, dynamic> row) {
+    return PeriodSpan(
+      sourceId: row['id'] as String,
+      label: row['label'] as String,
+      startDate: DateTime.parse(row['imported_at'] as String),
+      endDateRaw: row['discontinued_at'] != null ? DateTime.parse(row['discontinued_at'] as String) : null,
+      category: TimelineSpanCategory.careOrder,
     );
   }
 

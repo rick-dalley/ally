@@ -48,11 +48,13 @@ class _TimelineScrollerPageState extends State<TimelineScrollerPage> {
       final medRows = await DatabaseManager().getMedicationSpanRows(widget.patientUuid);
       final conditionRows = await DatabaseManager().getConditionSpanRows(widget.patientUuid);
       final providerRows = await DatabaseManager().getProviderSpanRows(widget.patientUuid);
+      final careOrderRows = await DatabaseManager().getCareOrderSpanRows(widget.patientUuid);
       final List<PeriodSpan> loadedSpans =
           [
             ...medRows.map(PeriodSpan.medication),
             ...conditionRows.map(PeriodSpan.condition),
             ...providerRows.map(PeriodSpan.provider),
+            ...careOrderRows.map(PeriodSpan.careOrder),
           ]..sort((a, b) => b.startDate.compareTo(a.startDate));
 
       final DateTime earliest = [
