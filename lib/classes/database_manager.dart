@@ -1791,6 +1791,11 @@ class DatabaseManager {
     );
   }
 
+  Future<void> insertPanicEvent({required String patientUuid, required String triggerType}) async {
+    final db = await database;
+    await db.insert('panic_event', {'id': uuid.v4(), 'patient_uuid': patientUuid, 'trigger_type': triggerType, 'triggered_at': DateTime.now().toIso8601String()});
+  }
+
   Future<void> insertEmergencyTarget({required String id, required String patientUuid, required String name, required String phone, String? relation}) async {
     final db = await database;
     await db.insert('emergency_target', {'id': id, 'patient_uuid': patientUuid, 'name': name, 'phone': phone, 'relation': relation});

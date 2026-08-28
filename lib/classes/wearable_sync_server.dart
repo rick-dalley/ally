@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import '../widgets/emergency_qr.dart';
+import 'alertable.dart';
 import 'database_manager.dart';
 import 'patient.dart';
 
@@ -16,6 +17,13 @@ import 'patient.dart';
 class WearableSyncServer {
   static const int port = 8787;
   HttpServer? _server;
+
+  // Lets main.dart push a full-screen alert the instant a panic event lands, whether
+  // Ally happens to be sitting on the roster or anywhere else — the server has no UI
+  // of its own, so it hands off rather than trying to navigate anything itself.
+  final void Function(String patientUuid, String triggerType)? onPanic;
+
+  WearableSyncServer({this.onPanic});
 
   Future<void> start() async {
     if (_server != null) return;
@@ -37,6 +45,8 @@ class WearableSyncServer {
         await _handleAck(request);
       } else if (request.method == 'POST' && request.uri.path == '/wearable/ack_all') {
         await _handleAckAll(request);
+      } else if (request.method == 'POST' && request.uri.path == '/wearable/panic') {
+        await _handlePanic(request);
       } else {
         request.response.statusCode = HttpStatus.notFound;
       }
@@ -92,12 +102,33 @@ class WearableSyncServer {
     request.response.write(jsonEncode(await _buildSyncPayload(patientUuid)));
   }
 
+  // Only records the event and hands off to onPanic — sending anything to the
+  // emergency targets is deliberately not automatic. iOS/Android don't let a
+  // third-party app place calls or send texts without the person confirming, so the
+  // real "dispatch" is Ally surfacing one-tap call/text buttons for a human to press,
+  // not a silent background send (see PanicAlertScreen).
+  Future<void> _handlePanic(HttpRequest request) async {
+    final Map<String, dynamic> body = jsonDecode(await utf8.decoder.bind(request).join()) as Map<String, dynamic>;
+    final String patientUuid = body['patientUuid'] as String;
+    final String triggerType = body['trigger'] as String;
+    await DatabaseManager().insertPanicEvent(patientUuid: patientUuid, triggerType: triggerType);
+    onPanic?.call(patientUuid, triggerType);
+    final List<Map<String, dynamic>> targetRows = await DatabaseManager().getEmergencyTargetsForPatient(patientUuid);
+    request.response.write(jsonEncode({'notified': targetRows.length}));
+  }
+
   Future<Map<String, dynamic>> _buildSyncPayload(String patientUuid) async {
     final List<Map<String, dynamic>> rows = await DatabaseManager().getPatientWithVitals(patientUuid: patientUuid);
     if (rows.isEmpty) return {'error': 'patient not found'};
     final Patient patient = Patient.fromJson(rows.first);
     final Map<String, dynamic> emergencyPayload = await EmergencyQRCodeView.buildEmergencyPayload(patient);
     final Map<String, dynamic> due = await DatabaseManager().getWearableDueItems(patientUuid);
-    return {'emergencyQr': emergencyPayload, ...due};
+    final Map<String, dynamic> settingsRow = await DatabaseManager().getOrCreateWearableSettings(patientUuid);
+    final List<WearableAlertConfig> alerts = alertConfigsFromRow(settingsRow);
+    return {
+      'emergencyQr': emergencyPayload,
+      ...due,
+      'alerts': {for (final a in alerts) a.trigger.name: a.enabled},
+    };
   }
 }

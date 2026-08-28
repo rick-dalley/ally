@@ -10,6 +10,7 @@ import 'package:ally/classes/care_plan_import.dart';
 import 'package:ally/classes/database_manager.dart';
 import 'package:ally/screens/home_screen.dart';
 import 'package:ally/screens/import_care_plan_screen.dart';
+import 'package:ally/screens/panic_alert_screen.dart';
 import 'package:ally/screens/start_up.dart';
 import 'classes/drugs.dart';
 import 'classes/symptom_evaluation.dart';
@@ -97,12 +98,22 @@ class LuminescaHome extends StatefulWidget {
 class LuminescaHomeState extends State<LuminescaHome> {
   // We make the initialization a Future that we can listen to
   late Future<void> _initFuture;
-  final WearableSyncServer _wearableSyncServer = WearableSyncServer();
+  late final WearableSyncServer _wearableSyncServer = WearableSyncServer(onPanic: _handlePanic);
 
   @override
   void initState() {
     super.initState();
     _initFuture = _initializeApp();
+  }
+
+  // Fires from inside the HTTP server's request handler, not from a widget event —
+  // context may already be stale by the time this runs, so mounted is checked same as
+  // any other post-async setState/navigation guard.
+  void _handlePanic(String patientUuid, String triggerType) {
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => PanicAlertScreen(patientUuid: patientUuid, triggerType: triggerType)),
+    );
   }
 
   @override
