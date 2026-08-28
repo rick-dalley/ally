@@ -31,9 +31,14 @@ class EmergencyQRCodeView extends StatelessWidget {
 
     return {
       "name": "${patient.firstName} ${patient.lastName}",
+      "phn": patient.phn,
       "bloodType": patient.bloodType.label,
       "allergies": allergies,
       "conditions": conditions,
+      "familyDoctor": {
+        "name": patient.familyDoctorName,
+        "phone": patient.familyDoctorPhone,
+      },
       "emergencyContact": {
         "name": patient.contactName,
         "phone": patient.contactPhone,
