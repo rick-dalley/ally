@@ -1704,6 +1704,53 @@ class DatabaseManager {
     );
   }
 
+  // The care_order equivalent of logMedicationDose — a therapy has no scheduled dose
+  // times to log against, so this is simply "acknowledged now," one row per tap.
+  Future<void> acknowledgeCareOrder({required String careOrderId, required String patientUuid}) async {
+    final db = await database;
+    await db.insert('care_order_acknowledgment', {
+      'id': uuid.v4(),
+      'care_order_id': careOrderId,
+      'patient_uuid': patientUuid,
+      'acknowledged_at': DateTime.now().toIso8601String(),
+    });
+  }
+
+  Future<List<String>> getTodaysCareOrderAcknowledgments(String patientUuid) async {
+    final db = await database;
+    final DateTime now = DateTime.now();
+    final String todayStart = DateTime(now.year, now.month, now.day).toIso8601String();
+    final List<Map<String, dynamic>> rows = await db.query(
+      'care_order_acknowledgment',
+      columns: ['care_order_id'],
+      where: 'patient_uuid = ? AND acknowledged_at >= ?',
+      whereArgs: [patientUuid, todayStart],
+    );
+    return rows.map((r) => r['care_order_id'] as String).toList();
+  }
+
+  // Everything the wearable shows on its due-items screen: active medications and
+  // wearable-sync-enabled care orders, each flagged with whether they're already
+  // confirmed today so the watch can grey them out instead of re-asking. This is the
+  // single call the wearable's sync endpoint wraps — see the wearable_sync_server.
+  Future<Map<String, dynamic>> getWearableDueItems(String patientUuid) async {
+    final List<Map<String, dynamic>> medRows = await getMedicationsForPatient(patientUuid);
+    final List<Map<String, dynamic>> orderRows = await getCareOrdersForPatient(patientUuid);
+    final List<Map<String, dynamic>> syncedOrders = orderRows.where((o) => (o['wearable_sync'] as int? ?? 0) == 1).toList();
+    final List<String> doneMedIds = (await getTodaysMedicationDoseLog(patientUuid))
+        .where((r) => r['status'] == 'taken')
+        .map((r) => r['medication_id'] as String)
+        .toList();
+    final List<String> doneOrderIds = await getTodaysCareOrderAcknowledgments(patientUuid);
+
+    return {
+      'medications': medRows.map((m) => {'id': m['id'], 'name': m['name'], 'dose': m['dose'], 'freq': m['freq']}).toList(),
+      'careOrders': syncedOrders.map((o) => {'id': o['id'], 'label': o['label'], 'directions': o['directions']}).toList(),
+      'doneMedicationIds': doneMedIds,
+      'doneCareOrderIds': doneOrderIds,
+    };
+  }
+
   Future<void> setCareOrderWearableSync({required String orderId, required bool enabled}) async {
     final db = await database;
     await db.update('care_order', {'wearable_sync': enabled ? 1 : 0}, where: 'id = ?', whereArgs: [orderId]);

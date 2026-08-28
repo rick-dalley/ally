@@ -13,6 +13,7 @@ import 'package:ally/screens/import_care_plan_screen.dart';
 import 'package:ally/screens/start_up.dart';
 import 'classes/drugs.dart';
 import 'classes/symptom_evaluation.dart';
+import 'classes/wearable_sync_server.dart';
 import 'generated/l10n.dart';
 import 'app_theme.dart';
 
@@ -96,11 +97,18 @@ class LuminescaHome extends StatefulWidget {
 class LuminescaHomeState extends State<LuminescaHome> {
   // We make the initialization a Future that we can listen to
   late Future<void> _initFuture;
+  final WearableSyncServer _wearableSyncServer = WearableSyncServer();
 
   @override
   void initState() {
     super.initState();
     _initFuture = _initializeApp();
+  }
+
+  @override
+  void dispose() {
+    _wearableSyncServer.stop();
+    super.dispose();
   }
 
   Future<void> _initializeApp() async {
@@ -111,6 +119,10 @@ class LuminescaHomeState extends State<LuminescaHome> {
       DrugFactory.instance.initialize(),
       SymptomFactory.instance.initialize('assets/assessment/symptoms.json'),
     ]);
+    // Always on, not gated behind pairing — this is a same-network prototype server
+    // with no auth, so the only real gate is "does anything know the IP to reach it,"
+    // which is exactly what pairing communicates out of band (see WearableSyncServer).
+    await _wearableSyncServer.start();
   }
 
   @override

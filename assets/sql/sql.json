@@ -97,6 +97,10 @@
       "query": "CREATE TABLE IF NOT EXISTS care_order (id TEXT PRIMARY KEY, patient_uuid TEXT NOT NULL, label TEXT NOT NULL, directions TEXT, frequency TEXT, source TEXT, imported_at DATETIME DEFAULT CURRENT_TIMESTAMP, discontinued_at DATETIME, wearable_sync INTEGER NOT NULL DEFAULT 0, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
     },
     {
+      "table": "care_order_acknowledgment",
+      "query": "CREATE TABLE IF NOT EXISTS care_order_acknowledgment (id TEXT PRIMARY KEY, care_order_id TEXT NOT NULL, patient_uuid TEXT NOT NULL, acknowledged_at DATETIME NOT NULL, FOREIGN KEY (care_order_id) REFERENCES care_order(id) ON DELETE CASCADE, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
+    },
+    {
       "table": "wearable_settings",
       "query": "CREATE TABLE IF NOT EXISTS wearable_settings (patient_uuid TEXT PRIMARY KEY, paired INTEGER NOT NULL DEFAULT 0, device_name TEXT, alert_manual_enabled INTEGER NOT NULL DEFAULT 1, alert_fall_enabled INTEGER NOT NULL DEFAULT 0, alert_slap_enabled INTEGER NOT NULL DEFAULT 0, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
     },
