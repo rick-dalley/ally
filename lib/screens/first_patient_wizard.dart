@@ -43,7 +43,7 @@ class FirstPatientWizard extends StatefulWidget {
 }
 
 class _FirstPatientWizardState extends State<FirstPatientWizard> {
-  static const int _stepCount = 6;
+  static const int _stepCount = 7;
   final PageController _pageController = PageController();
   int _step = 0;
 
@@ -62,6 +62,8 @@ class _FirstPatientWizardState extends State<FirstPatientWizard> {
   bool _bloodTypeChosen = false;
   double? _weight;
   double? _height;
+  bool _wantsWearable = false;
+  final TextEditingController _wearableDeviceController = TextEditingController();
 
   bool _saving = false;
   String? _error;
@@ -76,6 +78,7 @@ class _FirstPatientWizardState extends State<FirstPatientWizard> {
     _cityController.dispose();
     _provinceController.dispose();
     _postalCodeController.dispose();
+    _wearableDeviceController.dispose();
     super.dispose();
   }
 
@@ -194,6 +197,13 @@ class _FirstPatientWizardState extends State<FirstPatientWizard> {
           'height',
         );
       }
+      if (_wantsWearable) {
+        await DatabaseManager().setWearablePairing(
+          patientUuid: patientUuid,
+          paired: true,
+          deviceName: _wearableDeviceController.text.trim().isEmpty ? null : _wearableDeviceController.text.trim(),
+        );
+      }
       if (widget.addingFamilyMember) {
         if (mounted) Navigator.of(context).pop(patientUuid);
       } else {
@@ -233,6 +243,7 @@ class _FirstPatientWizardState extends State<FirstPatientWizard> {
                         _phnStep(),
                         _bloodTypeStep(),
                         _metricsStep(),
+                        _wearableStep(),
                         _addressStep(),
                       ]
                     : [
@@ -241,6 +252,7 @@ class _FirstPatientWizardState extends State<FirstPatientWizard> {
                         _phnStep(),
                         _bloodTypeStep(),
                         _metricsStep(),
+                        _wearableStep(),
                         _addressStep(),
                       ],
               ),
@@ -457,6 +469,33 @@ class _FirstPatientWizardState extends State<FirstPatientWizard> {
             _height = height;
           });
         },
+      ),
+      onNext: () => _goTo(_step + 1),
+    );
+  }
+
+  // Lightweight and skippable on purpose — most people won't have the wearable
+  // prototype yet. This just records intent; real pairing/sync happens later, and the
+  // full control panel (order sync, panic-button triggers, emergency contacts) always
+  // stays reachable afterward from UserScreen's Wearable section.
+  Widget _wearableStep() {
+    return _page(
+      title: "Wearable",
+      subtitle: "Do you have a CWICare wearable? You can always set this up later from your profile.",
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            value: _wantsWearable,
+            onChanged: (v) => setState(() => _wantsWearable = v),
+            title: const Text("I have a wearable"),
+          ),
+          if (_wantsWearable) ...[
+            const SizedBox(height: 8),
+            CarbonTextInput(label: "Device Name (optional)", controller: _wearableDeviceController, onChanged: (_) {}),
+          ],
+        ],
       ),
       onNext: () => _goTo(_step + 1),
     );

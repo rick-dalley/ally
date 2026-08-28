@@ -62,5 +62,7 @@
 	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Used to find the nearest walk-in clinic or emergency department when you need one.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Used to pull an address from one of your contacts so you don't have to type it in by hand.</string>
 </dict>
 </plist>
