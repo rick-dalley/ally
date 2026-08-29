@@ -16,6 +16,7 @@ import 'classes/drugs.dart';
 import 'classes/symptom_evaluation.dart';
 import 'classes/wearable_data_layer_bridge.dart';
 import 'classes/wearable_sync_server.dart';
+import 'classes/watch_connectivity_bridge.dart';
 import 'generated/l10n.dart';
 import 'app_theme.dart';
 
@@ -101,6 +102,7 @@ class LuminescaHomeState extends State<LuminescaHome> {
   late Future<void> _initFuture;
   late final WearableSyncServer _wearableSyncServer = WearableSyncServer(onPanic: _handlePanic);
   late final WearableDataLayerBridge _wearableDataLayerBridge = WearableDataLayerBridge(onPanic: _handlePanic);
+  late final WatchConnectivityBridge _watchConnectivityBridge = WatchConnectivityBridge(onPanic: _handlePanic);
 
   @override
   void initState() {
@@ -141,6 +143,8 @@ class LuminescaHomeState extends State<LuminescaHome> {
     // receives anything there, same as the HTTP server being reachable but pointless
     // if nothing's listening on the other end.
     _wearableDataLayerBridge.start();
+    // Likewise a no-op on Android — WatchConnectivityBridge.swift only exists on iOS.
+    _watchConnectivityBridge.start();
   }
 
   @override
