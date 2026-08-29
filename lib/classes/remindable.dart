@@ -244,6 +244,77 @@ class MedicationReminder implements Remindable {
   }
 }
 
+// A therapy (physical therapy, a device like a cane/walker, bed rest — anything
+// non-medication) — doctor-ordered via Progressor's discharge handoff or
+// self-directed, entered right in Ally (see AddTherapyScreen). Deliberately no
+// "skipped" action: care_order_acknowledgment only ever records "did it," with no
+// status column the way medication_dose_log has — nothing honest to log for "chose
+// not to" the way a dose has.
+class TherapyReminder implements Remindable {
+  final String careOrderId;
+  final String patientUuid;
+  final String label;
+  final String? directions;
+  final DateTime dueAt;
+  final Duration leadTime;
+  final Set<ReminderChannel> reminderChannels;
+  final WearableAlertMode? reminderWearableMode;
+
+  const TherapyReminder({
+    required this.careOrderId,
+    required this.patientUuid,
+    required this.label,
+    this.directions,
+    required this.dueAt,
+    required this.leadTime,
+    required this.reminderChannels,
+    this.reminderWearableMode,
+  });
+
+  @override
+  String get remindableId => 'therapy:$careOrderId:${dueAt.toIso8601String()}';
+  @override
+  String get title => label;
+  @override
+  String get subtitle => directions != null && directions!.isNotEmpty ? directions! : "It's time for your therapy";
+  // Same icon/color as the Therapies action tile (medical_profile_screen.dart).
+  @override
+  IconData get icon => AppDomain.therapies.icon;
+  @override
+  Color get color => AppDomain.therapies.color;
+  @override
+  DateTime get nextReminder => dueAt;
+  @override
+  Duration get advanceNotice => leadTime;
+  // Approximate — same caveat as MedicationReminder: re-derived from freq_code on
+  // every refresh rather than truly recurring state.
+  @override
+  Duration? get cadence => const Duration(days: 1);
+  @override
+  Set<ReminderChannel> get channels => reminderChannels;
+  @override
+  WearableAlertMode? get wearableMode => reminderWearableMode;
+  @override
+  bool get isDue => isRemindableDue(this);
+
+  @override
+  List<ReminderAction> get availableActions => const [ReminderAction.done, ReminderAction.muted, ReminderAction.bumped];
+
+  @override
+  Future<void> handleAction(ReminderAction action, {DateTime? bumpTo}) async {
+    switch (action) {
+      case ReminderAction.done:
+        await DatabaseManager().acknowledgeCareOrder(careOrderId: careOrderId, patientUuid: patientUuid);
+      case ReminderAction.muted:
+        await DatabaseManager().muteCareOrderReminder(careOrderId);
+      case ReminderAction.bumped:
+        break; // ReminderRegistry tracks the snooze in memory, same as MedicationReminder.
+      case ReminderAction.skipped:
+        break; // not offered — see availableActions
+    }
+  }
+}
+
 // A metric reading has no honest one-tap "done" the way a dose or an appointment does —
 // "done" would need a real value, which isn't something a swipe or a generic action-sheet
 // tap can supply. Same reasoning as SupplyReminder: only muted/bumped are offered, and

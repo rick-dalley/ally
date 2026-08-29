@@ -102,7 +102,7 @@ class DatabaseManager {
   // Bump this whenever assets/sql/sql.json gains new tables/indexes, so
   // existing installs pick them up via onUpgrade instead of silently
   // missing them (see onUpgrade above).
-  static const int schemaVersion = 3;
+  static const int schemaVersion = 4;
 
   Future<void> createSqlObjects(Database db) async {
     if (sqlConfig == null) return;
@@ -120,6 +120,22 @@ class DatabaseManager {
           await db.execute(query);
         } on DatabaseException catch (e) {
           if (!e.toString().toLowerCase().contains('already exists')) rethrow;
+        }
+      }
+    }
+
+    // ALTER statements — CREATE TABLE is a no-op on a table that already exists, so
+    // adding a column to an EXISTING table needs its own array, tolerating "duplicate
+    // column" the same way CREATE tolerates "already exists" (so re-running this on
+    // an install that already has the column is safe).
+    final List<dynamic> alterScripts = sqlConfig?['ALTER'] ?? [];
+    for (var entry in alterScripts) {
+      final String query = entry['query'];
+      if (query.isNotEmpty) {
+        try {
+          await db.execute(query);
+        } on DatabaseException catch (e) {
+          if (!e.toString().toLowerCase().contains('duplicate column')) rethrow;
         }
       }
     }
@@ -610,9 +626,10 @@ class DatabaseManager {
   }
 
   // Everything that happened on one specific day, across every event source the diary
-  // pulls from — medication doses, appointments, symptoms, mood, and test completions.
-  // Returned as raw rows per category (not a unified model) so DiaryDayEvent's factory
-  // constructors stay the single place that knows how to render each shape.
+  // pulls from — medication doses, appointments, symptoms, mood, care order
+  // acknowledgments, and test completions. Returned as raw rows per category (not a
+  // unified model) so DiaryDayEvent's factory constructors stay the single place that
+  // knows how to render each shape.
   Future<Map<String, List<Map<String, dynamic>>>> getDayEvents(String patientUuid, DateTime date) async {
     final db = await database;
     final DateTime start = DateTime(date.year, date.month, date.day);
@@ -644,6 +661,17 @@ class DatabaseManager {
       [patientUuid, startIso, endIso],
     );
 
+    final careOrders = await db.rawQuery(
+      '''
+      SELECT k.*, c.label AS care_order_label, c.source AS care_order_source
+      FROM care_order_acknowledgment k
+      JOIN care_order c ON c.id = k.care_order_id
+      WHERE k.patient_uuid = ? AND k.acknowledged_at >= ? AND k.acknowledged_at < ?
+      ORDER BY k.acknowledged_at
+      ''',
+      [patientUuid, startIso, endIso],
+    );
+
     final symptoms = await db.query(
       'markers',
       where: 'patient_uuid = ? AND recorded >= ? AND recorded < ?',
@@ -667,10 +695,17 @@ class DatabaseManager {
       orderBy: 'completed_on',
     );
 
-    return {'doses': doses, 'appointments': appointments, 'symptoms': symptoms, 'moods': moods, 'tests': tests};
+    return {
+      'doses': doses,
+      'appointments': appointments,
+      'careOrders': careOrders,
+      'symptoms': symptoms,
+      'moods': moods,
+      'tests': tests,
+    };
   }
 
-  // Which dates in a month have at least one event, across all five sources — for the
+  // Which dates in a month have at least one event, across all six sources — for the
   // month view's "something happened" marker, shown independent of whether a diary
   // entry was ever written for that day.
   Future<Set<String>> getEventDatesForMonth(String patientUuid, int year, int month) async {
@@ -711,6 +746,13 @@ class DatabaseManager {
         [patientUuid, startIso, endIso],
       ),
       'completed_on',
+    );
+    addDatesFromIso(
+      await db.rawQuery(
+        'SELECT acknowledged_at FROM care_order_acknowledgment WHERE patient_uuid = ? AND acknowledged_at >= ? AND acknowledged_at < ?',
+        [patientUuid, startIso, endIso],
+      ),
+      'acknowledged_at',
     );
 
     final symptomRows = await db.rawQuery(
@@ -1751,8 +1793,11 @@ class DatabaseManager {
   }
 
   // Non-medication physician orders (therapy, observation, diet, restraints/devices)
-  // handed off from a hospital-side app like Progressor — Ally has no UI to author
-  // these itself yet, only to receive and display them (see ImportCarePlanScreen).
+  // — arrives two ways: handed off from a hospital-side app like Progressor
+  // (source: 'Imported care plan', see ImportCarePlanScreen), or self-directed,
+  // entered right in Ally (source: 'Self-directed', see AddTherapyScreen).
+  // freqCode/reminderTime are only ever set by the latter — an imported order's
+  // `frequency` stays free text with no structured schedule, same as it always has.
   Future<void> insertCareOrder({
     required String id,
     required String patientUuid,
@@ -1760,6 +1805,9 @@ class DatabaseManager {
     String? directions,
     String? frequency,
     String? source,
+    String? freqCode,
+    String? reminderTime,
+    String? therapyCategory,
   }) async {
     final db = await database;
     await db.insert('care_order', {
@@ -1769,6 +1817,9 @@ class DatabaseManager {
       'directions': directions,
       'frequency': frequency,
       'source': source,
+      'freq_code': freqCode,
+      'reminder_time': reminderTime,
+      'therapy_category': therapyCategory,
     }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
@@ -1780,6 +1831,132 @@ class DatabaseManager {
       whereArgs: [patientUuid],
       orderBy: 'imported_at DESC',
     );
+  }
+
+  // "Chips" for the add-therapy screen — the built-in common set is supplied by the
+  // caller; this adds whatever labels this patient has actually used before (however
+  // they arrived — imported or self-directed), so a repeated therapy becomes a
+  // one-tap pick next time instead of retyping it.
+  Future<List<String>> getDistinctCareOrderLabels(String patientUuid) async {
+    final db = await database;
+    final rows = await db.query(
+      'care_order',
+      columns: ['label'],
+      distinct: true,
+      where: 'patient_uuid = ?',
+      whereArgs: [patientUuid],
+      orderBy: 'label',
+    );
+    return rows.map((r) => r['label'] as String).toList();
+  }
+
+  Future<void> discontinueCareOrder(String careOrderId) async {
+    final db = await database;
+    await db.update(
+      'care_order',
+      {'discontinued_at': DateTime.now().toIso8601String()},
+      where: 'id = ?',
+      whereArgs: [careOrderId],
+    );
+  }
+
+  // A preference, not a clinical event — one current row per care order, same
+  // upsert-only shape as saveMedicationReminderPreference.
+  Future<void> saveCareOrderReminderPreference({
+    required String careOrderId,
+    required String patientUuid,
+    required bool enabled,
+    required Set<ReminderChannel> channels,
+    WearableAlertMode? wearableMode,
+    required int leadMinutes,
+  }) async {
+    final db = await database;
+    await db.insert('care_order_reminder_preference', {
+      'care_order_id': careOrderId,
+      'patient_uuid': patientUuid,
+      'enabled': enabled ? 1 : 0,
+      'chime_enabled': channels.contains(ReminderChannel.chime) ? 1 : 0,
+      'text_enabled': channels.contains(ReminderChannel.text) ? 1 : 0,
+      'email_enabled': channels.contains(ReminderChannel.email) ? 1 : 0,
+      'wearable_enabled': channels.contains(ReminderChannel.wearable) ? 1 : 0,
+      'wearable_mode': wearableMode?.name,
+      'lead_minutes': leadMinutes,
+      'updated_at': DateTime.now().toIso8601String(),
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<Map<String, dynamic>?> getCareOrderReminderPreference(String careOrderId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> results = await db.query(
+      'care_order_reminder_preference',
+      where: 'care_order_id = ?',
+      whereArgs: [careOrderId],
+      limit: 1,
+    );
+    return results.isEmpty ? null : results.first;
+  }
+
+  // Active care orders that have reminders turned on, joined with their preference
+  // row — the Remindable feed's source for therapy reminders, same shape as
+  // getMedicationsWithReminders.
+  Future<List<Map<String, dynamic>>> getCareOrdersWithReminders(String patientUuid) async {
+    final db = await database;
+    return await db.rawQuery(
+      '''
+    SELECT c.*, r.chime_enabled, r.text_enabled, r.email_enabled, r.wearable_enabled, r.wearable_mode, r.lead_minutes
+    FROM care_order c
+    JOIN care_order_reminder_preference r ON r.care_order_id = c.id
+    WHERE c.patient_uuid = ? AND c.discontinued_at IS NULL AND r.enabled = 1
+  ''',
+      [patientUuid],
+    );
+  }
+
+  // "Don't remind me again" — same reasoning as muteMedicationReminder: turns the
+  // reminder off without discontinuing the therapy itself.
+  Future<void> muteCareOrderReminder(String careOrderId) async {
+    final db = await database;
+    await db.update(
+      'care_order_reminder_preference',
+      {'enabled': 0},
+      where: 'care_order_id = ?',
+      whereArgs: [careOrderId],
+    );
+  }
+
+  // Powers the Therapies tile's notification dot — "has anything landed (imported or
+  // self-added) since the patient last actually opened the Therapies screen."
+  Future<DateTime?> getLastViewedTherapies(String patientUuid) async {
+    final db = await database;
+    final rows = await db.query(
+      'therapy_view_state',
+      where: 'patient_uuid = ?',
+      whereArgs: [patientUuid],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return DateTime.tryParse(rows.first['last_viewed_at'] as String);
+  }
+
+  Future<void> markTherapiesViewed(String patientUuid) async {
+    final db = await database;
+    await db.insert('therapy_view_state', {
+      'patient_uuid': patientUuid,
+      'last_viewed_at': DateTime.now().toIso8601String(),
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<bool> hasUnseenTherapies(String patientUuid) async {
+    final DateTime? lastViewed = await getLastViewedTherapies(patientUuid);
+    final db = await database;
+    final rows = await db.query(
+      'care_order',
+      columns: ['id'],
+      where: lastViewed != null ? 'patient_uuid = ? AND imported_at > ?' : 'patient_uuid = ?',
+      whereArgs: lastViewed != null ? [patientUuid, lastViewed.toIso8601String()] : [patientUuid],
+      limit: 1,
+    );
+    return rows.isNotEmpty;
   }
 
   // The care_order equivalent of logMedicationDose — a therapy has no scheduled dose

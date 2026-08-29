@@ -23,6 +23,7 @@ import 'package:carbon_ui/widgets/carbon_flyout_widget.dart';
 import 'immunization_screen.dart';
 import 'mood_check_in_screen.dart';
 import 'patient_diary_screen.dart';
+import 'therapies_screen.dart';
 
 class MedicalProfileScreen extends StatefulWidget {
   final Patient user;
@@ -37,11 +38,29 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
   // Starts calm rather than a guess like "happy" — corrected to whatever the patient
   // actually last picked as soon as _loadCurrentMood resolves, below.
   Flyable sentiment = Sentiment.calm;
+  bool _hasUnseenTherapies = false;
 
   @override
   void initState() {
     super.initState();
     _loadCurrentMood();
+    _checkUnseenTherapies();
+  }
+
+  Future<void> _checkUnseenTherapies() async {
+    final bool unseen = await DatabaseManager().hasUnseenTherapies(widget.user.patientUuid);
+    if (!mounted) return;
+    setState(() => _hasUnseenTherapies = unseen);
+  }
+
+  // Re-checked whenever the Therapies screen is popped back to — opening it marks
+  // everything viewed, so the dot needs to actually disappear on return, not just on
+  // the next full screen load.
+  Future<void> _openTherapies() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => TherapiesScreen(patient: widget.user)),
+    );
+    await _checkUnseenTherapies();
   }
 
   Future<void> _loadCurrentMood() async {
@@ -220,6 +239,32 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                       context,
                       widget.user.patientUuid,
                     ),
+                  ),
+                  Stack(
+                    children: [
+                      CarbonActionTile(
+                        title: "Therapies",
+                        subtitle: "Doctor-ordered and self-directed",
+                        icon: Symbols.physical_therapy,
+                        iconSize: Size(32.0, 32.0),
+                        outlineIcon: Symbols.physical_therapy,
+                        iconColor: AppDomain.therapies.color,
+                        onTap: _openTherapies,
+                      ),
+                      // A new therapy landed since this was last opened — same
+                      // "something needs a look" signal a notification dot gives
+                      // anywhere else, cleared the moment the list is actually seen.
+                      if (_hasUnseenTherapies)
+                        Positioned(
+                          top: 12,
+                          right: 24,
+                          child: Container(
+                            width: 10,
+                            height: 10,
+                            decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                          ),
+                        ),
+                    ],
                   ),
                   CarbonActionTile(
                     title: "Medical Diary",

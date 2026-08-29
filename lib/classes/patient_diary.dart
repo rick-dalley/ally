@@ -77,6 +77,16 @@ class DiaryDayEvent {
     );
   }
 
+  factory DiaryDayEvent.careOrder(Map<String, dynamic> row) {
+    final String? source = row['care_order_source'] as String?;
+    return DiaryDayEvent(
+      icon: Symbols.assignment_turned_in,
+      title: (row['care_order_label'] as String?) ?? 'Therapy',
+      subtitle: (source != null && source.isNotEmpty) ? source : 'Completed',
+      time: DateTime.parse(row['acknowledged_at'] as String),
+    );
+  }
+
   factory DiaryDayEvent.test(Map<String, dynamic> row) {
     return DiaryDayEvent(
       icon: Symbols.lab_panel,

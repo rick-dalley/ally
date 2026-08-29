@@ -323,6 +323,28 @@
     {
       "table": "patient_mood_intro_shown",
       "query": "CREATE TABLE IF NOT EXISTS patient_mood_intro_shown (patient_uuid TEXT PRIMARY KEY, shown_at DATETIME NOT NULL, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
+    },
+    {
+      "table": "care_order_reminder_preference",
+      "query": "CREATE TABLE IF NOT EXISTS care_order_reminder_preference (care_order_id TEXT PRIMARY KEY, patient_uuid TEXT NOT NULL, enabled INTEGER NOT NULL DEFAULT 0, chime_enabled INTEGER NOT NULL DEFAULT 0, text_enabled INTEGER NOT NULL DEFAULT 0, email_enabled INTEGER NOT NULL DEFAULT 0, wearable_enabled INTEGER NOT NULL DEFAULT 0, wearable_mode TEXT, lead_minutes INTEGER NOT NULL DEFAULT 0, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (care_order_id) REFERENCES care_order(id) ON DELETE CASCADE, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
+    },
+    {
+      "table": "therapy_view_state",
+      "query": "CREATE TABLE IF NOT EXISTS therapy_view_state (patient_uuid TEXT PRIMARY KEY, last_viewed_at DATETIME NOT NULL, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
+    }
+  ],
+  "ALTER": [
+    {
+      "table": "care_order",
+      "query": "ALTER TABLE care_order ADD COLUMN freq_code TEXT;"
+    },
+    {
+      "table": "care_order",
+      "query": "ALTER TABLE care_order ADD COLUMN reminder_time TEXT;"
+    },
+    {
+      "table": "care_order",
+      "query": "ALTER TABLE care_order ADD COLUMN therapy_category TEXT;"
     }
   ]
  }

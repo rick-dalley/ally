@@ -39,6 +39,9 @@ class ReminderRegistry extends ChangeNotifier {
   // Same idea again for a bumped metric reading reminder. Keyed by metric id.
   final Map<int, DateTime> _metricSnoozes = {};
 
+  // Same idea again for a bumped therapy reminder. Keyed by care_order id.
+  final Map<String, DateTime> _therapySnoozes = {};
+
   String? _patientUuid;
   List<Remindable> _reminders = [];
   Timer? _pollTimer;
@@ -71,6 +74,7 @@ class ReminderRegistry extends ChangeNotifier {
     collected.addAll(await _loadSupplyReminders(patientUuid));
     collected.addAll(await _loadEyeCareReminders(patientUuid));
     collected.addAll(await _loadMetricReminders(patientUuid));
+    collected.addAll(await _loadTherapyReminders(patientUuid));
     collected.sort((a, b) => a.nextReminder.compareTo(b.nextReminder));
 
     _reminders = collected;
@@ -106,6 +110,11 @@ class ReminderRegistry extends ChangeNotifier {
         action == ReminderAction.bumped &&
         bumpTo != null) {
       _metricSnoozes[reminder.metricId] = bumpTo;
+    }
+    if (reminder is TherapyReminder &&
+        action == ReminderAction.bumped &&
+        bumpTo != null) {
+      _therapySnoozes[reminder.careOrderId] = bumpTo;
     }
     await refresh();
   }
@@ -244,6 +253,77 @@ class ReminderRegistry extends ChangeNotifier {
           medicationName: row['name'] as String,
           dose: row['dose'] as String?,
           doseTime: next,
+          leadTime: Duration(minutes: (row['lead_minutes'] as int?) ?? 0),
+          reminderChannels: channels,
+          reminderWearableMode: wearableMode,
+        ),
+      );
+    }
+    return reminders;
+  }
+
+  // Same shape as _loadMedicationReminders, with one simplification: care_order_
+  // acknowledgment has no per-slot "scheduled_for" the way medication_dose_log does
+  // (it's just "acknowledged now"), so any acknowledgment today suppresses the whole
+  // day's reminder rather than just one slot — the same all-or-nothing semantics the
+  // Due tab's checklist already has for care orders.
+  Future<List<TherapyReminder>> _loadTherapyReminders(String patientUuid) async {
+    final rows = await DatabaseManager().getCareOrdersWithReminders(patientUuid);
+    if (rows.isEmpty) return const [];
+
+    final Set<String> handledToday = (await DatabaseManager().getTodaysCareOrderAcknowledgments(patientUuid)).toSet();
+
+    final DateTime now = DateTime.now();
+    final List<TherapyReminder> reminders = [];
+
+    for (final row in rows) {
+      final String careOrderId = row['id'] as String;
+      if (handledToday.contains(careOrderId)) continue;
+
+      DateTime? next;
+      final DateTime? snoozeUntil = _therapySnoozes[careOrderId];
+      if (snoozeUntil != null) {
+        if (now.isBefore(snoozeUntil.add(const Duration(minutes: 1)))) {
+          next = snoozeUntil;
+        } else {
+          _therapySnoozes.remove(careOrderId);
+        }
+      }
+
+      if (next == null) {
+        final String? explicitTime = row['reminder_time'] as String?;
+        final List<String> times = (explicitTime != null && explicitTime.isNotEmpty)
+            ? [explicitTime]
+            : FrequencySchedule.dailyTimesFor(row['freq_code'] as String?);
+        next = _nextOccurrence(times, medicationId: careOrderId);
+      }
+      if (next == null) continue; // e.g. PRN-style/no recognized schedule
+
+      final Set<ReminderChannel> channels = {
+        if ((row['chime_enabled'] as int? ?? 0) == 1) ReminderChannel.chime,
+        if ((row['text_enabled'] as int? ?? 0) == 1) ReminderChannel.text,
+        if ((row['email_enabled'] as int? ?? 0) == 1) ReminderChannel.email,
+        if ((row['wearable_enabled'] as int? ?? 0) == 1) ReminderChannel.wearable,
+      };
+
+      WearableAlertMode? wearableMode;
+      final String? rawMode = row['wearable_mode'] as String?;
+      if (rawMode != null) {
+        for (final mode in WearableAlertMode.values) {
+          if (mode.name == rawMode) {
+            wearableMode = mode;
+            break;
+          }
+        }
+      }
+
+      reminders.add(
+        TherapyReminder(
+          careOrderId: careOrderId,
+          patientUuid: patientUuid,
+          label: row['label'] as String,
+          directions: row['directions'] as String?,
+          dueAt: next,
           leadTime: Duration(minutes: (row['lead_minutes'] as int?) ?? 0),
           reminderChannels: channels,
           reminderWearableMode: wearableMode,

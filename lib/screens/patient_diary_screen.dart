@@ -61,6 +61,7 @@ class _PatientDiaryScreenState extends State<PatientDiaryScreen> {
     final List<DiaryDayEvent> events = [
       ...eventRows['doses']!.map(DiaryDayEvent.medicationDose),
       ...eventRows['appointments']!.map(DiaryDayEvent.appointment),
+      ...eventRows['careOrders']!.map(DiaryDayEvent.careOrder),
       ...eventRows['symptoms']!.map(DiaryDayEvent.symptom),
       ...eventRows['moods']!.map(DiaryDayEvent.mood),
       ...eventRows['tests']!.map(DiaryDayEvent.test),
