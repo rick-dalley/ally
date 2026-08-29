@@ -1,13 +1,31 @@
+import 'package:flutter/material.dart';
+
 import '../widgets/emergency_qr.dart';
 import 'alertable.dart';
 import 'database_manager.dart';
 import 'patient.dart';
+import 'patient_sentiment.dart';
 
 // Transport-agnostic business logic behind every wearable interaction — shared by
 // WearableSyncServer (HTTP, the Linux prototype) and WearableDataLayerBridge (Google's
 // Wearable Data Layer API, for Wear OS). Both transports carry the exact same JSON
 // shapes; only how the bytes get from one device to the other differs.
 class WearableSyncLogic {
+  // "#RRGGBB" rather than an ARGB int — a plain hex string parses trivially on both
+  // watch platforms (UIColor/Color init from hex) without either needing to agree on
+  // Flutter's own bit layout.
+  static String _hex(Color color) {
+    String channel(double v) => (v * 255).round().clamp(0, 255).toRadixString(16).padLeft(2, '0');
+    return '#${channel(color.r)}${channel(color.g)}${channel(color.b)}';
+  }
+
+  // Every Sentiment a watch can offer in its own mood picker — label + color only
+  // (not the icon; Material Symbols codepoints don't mean anything to SF Symbols or
+  // Android's icon set, so each watch app picks its own icon per label instead of
+  // trying to transmit one).
+  static List<Map<String, dynamic>> get moodOptions =>
+      Sentiment.values.map((s) => {'index': s.index, 'label': s.label, 'color': _hex(s.color)}).toList();
+
   static Future<Map<String, dynamic>> buildSyncPayload(String patientUuid) async {
     final List<Map<String, dynamic>> rows = await DatabaseManager().getPatientWithVitals(patientUuid: patientUuid);
     if (rows.isEmpty) return {'error': 'patient not found'};
@@ -16,11 +34,20 @@ class WearableSyncLogic {
     final Map<String, dynamic> due = await DatabaseManager().getWearableDueItems(patientUuid);
     final Map<String, dynamic> settingsRow = await DatabaseManager().getOrCreateWearableSettings(patientUuid);
     final List<WearableAlertConfig> alerts = alertConfigsFromRow(settingsRow);
+    final Map<String, dynamic>? currentMoodRow = await DatabaseManager().getCurrentMood(patientUuid);
+    final Sentiment currentMood = currentMoodRow != null ? Sentiment.values[currentMoodRow['mood'] as int] : Sentiment.calm;
     return {
       'emergencyQr': emergencyPayload,
       ...due,
       'alerts': {for (final a in alerts) a.trigger.name: a.enabled},
+      'currentMood': {'index': currentMood.index, 'label': currentMood.label, 'color': _hex(currentMood.color)},
+      'moodOptions': moodOptions,
     };
+  }
+
+  static Future<Map<String, dynamic>> handleSetMood({required String patientUuid, required int moodIndex}) async {
+    await DatabaseManager().trackMoodChange(patientUuid, moodIndex);
+    return buildSyncPayload(patientUuid);
   }
 
   static Future<Map<String, dynamic>> handleAck({required String patientUuid, required String type, required String id}) async {

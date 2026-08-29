@@ -139,7 +139,7 @@ class HomeScreenState extends State<HomeScreen> {
       ),
       ProviderRosterScreen(user: patient),
       EmergencyQRCodeView(householdMember: patient),
-      TimelineScrollerPage(patientUuid: patient.patientUuid),
+      TimelineScrollerPage(patientUuid: patient.patientUuid, admitted: patient.admitted),
     ];
   }
 

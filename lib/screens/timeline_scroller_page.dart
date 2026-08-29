@@ -3,6 +3,7 @@ import 'package:carbon_ui/carbon_ui.dart';
 
 import '../classes/database_manager.dart';
 import '../classes/patient_action.dart';
+import '../classes/patient_mood_entry.dart';
 import '../classes/timeline_span.dart';
 
 // Loads the patient's own timeline data and renders it via the shared
@@ -10,8 +11,11 @@ import '../classes/timeline_span.dart';
 // the widget itself is a dumb renderer living in carbon_ui.
 class TimelineScrollerPage extends StatefulWidget {
   final String patientUuid;
+  // "5 days from the start of app usage" — see medical_profile_screen.dart's
+  // matching threshold on the mood-tracking intro dialog.
+  final DateTime admitted;
 
-  const TimelineScrollerPage({super.key, required this.patientUuid});
+  const TimelineScrollerPage({super.key, required this.patientUuid, required this.admitted});
 
   @override
   State<TimelineScrollerPage> createState() => _TimelineScrollerPageState();
@@ -49,13 +53,25 @@ class _TimelineScrollerPageState extends State<TimelineScrollerPage> {
       final conditionRows = await DatabaseManager().getConditionSpanRows(widget.patientUuid);
       final providerRows = await DatabaseManager().getProviderSpanRows(widget.patientUuid);
       final careOrderRows = await DatabaseManager().getCareOrderSpanRows(widget.patientUuid);
-      final List<PeriodSpan> loadedSpans =
+      final List<CarbonTimelineSpan> loadedSpans =
           [
             ...medRows.map(PeriodSpan.medication),
             ...conditionRows.map(PeriodSpan.condition),
             ...providerRows.map(PeriodSpan.provider),
             ...careOrderRows.map(PeriodSpan.careOrder),
           ]..sort((a, b) => b.startDate.compareTo(a.startDate));
+
+      // "Mood" only shows up as something to pick once moodTrendEligibilityThreshold
+      // has actually passed — before that it's simply not in the list at all, same as
+      // the mood widget's own intro-dialog promise. Inserted first so it's both the
+      // top group in the picker and one of the initial auto-selected lanes (the
+      // scroller pre-selects availableSpans.take(3)).
+      if (DateTime.now().difference(widget.admitted) > moodTrendEligibilityThreshold) {
+        final moodRows = await DatabaseManager().getMoodHistory(widget.patientUuid);
+        if (moodRows.isNotEmpty) {
+          loadedSpans.insert(0, MoodTrendSpan(moodRows.map(PatientMoodEntry.fromRow).toList()));
+        }
+      }
 
       final DateTime earliest = [
         loadedActions.first.occurred,

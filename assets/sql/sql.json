@@ -319,6 +319,10 @@
     {
       "table": "achievement",
       "query": "CREATE INDEX idx_achievement_patient ON achievement(patient_uuid);"
+    },
+    {
+      "table": "patient_mood_intro_shown",
+      "query": "CREATE TABLE IF NOT EXISTS patient_mood_intro_shown (patient_uuid TEXT PRIMARY KEY, shown_at DATETIME NOT NULL, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
     }
   ]
  }

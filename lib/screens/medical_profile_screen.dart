@@ -20,8 +20,8 @@ import '../classes/patient.dart';
 import '../classes/patient_sentiment.dart';
 import 'package:carbon_ui/widgets/carbon_button_compact.dart';
 import 'package:carbon_ui/widgets/carbon_flyout_widget.dart';
-import 'package:carbon_ui/widgets/carbon_style_textbox.dart';
 import 'immunization_screen.dart';
+import 'mood_check_in_screen.dart';
 import 'patient_diary_screen.dart';
 
 class MedicalProfileScreen extends StatefulWidget {
@@ -45,23 +45,50 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
   }
 
   Future<void> _loadCurrentMood() async {
+    // Backdated to the patient's admission date, not "now" — day one of app usage
+    // reads as calm even if this screen isn't opened until days later. No-ops if
+    // this patient already has any mood history at all.
+    await DatabaseManager().seedInitialMoodIfNeeded(widget.user.patientUuid, Sentiment.calm.index, widget.user.admitted);
     final row = await DatabaseManager().getCurrentMood(widget.user.patientUuid);
-    if (row != null) {
-      if (!mounted) return;
-      setState(() => sentiment = Sentiment.values[row['mood'] as int]);
-      return;
-    }
-    // First time this patient has ever opened this screen — seed a real starting
-    // row at calm rather than just holding an unsaved default in memory.
-    await DatabaseManager().trackMoodChange(
-      widget.user.patientUuid,
-      Sentiment.calm.index,
+    if (row == null || !mounted) return;
+    setState(() => sentiment = Sentiment.values[row['mood'] as int]);
+  }
+
+  void _recordMood(Sentiment newSentiment) {
+    setState(() {
+      sentiment = newSentiment;
+      DatabaseManager().trackMoodChange(widget.user.patientUuid, newSentiment.index);
+    });
+  }
+
+  // skipPrompt: false is the automatic path (tapping a needsCheckIn mood) — starts
+  // with "do you want to write about this?" skipPrompt: true is long-press/double-tap
+  // on any mood, where the gesture itself already signals wanting to write.
+  void _openMoodCheckIn(Sentiment mood, {required bool skipPrompt}) {
+    Navigator.of(context, rootNavigator: true).push(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) =>
+            MoodCheckInScreen(mood: mood, patientUuid: widget.user.patientUuid, skipPrompt: skipPrompt),
+      ),
     );
   }
 
-  Future<void> _askMoodReason() async {
-    final controller = TextEditingController();
-    final String? reason = await showDialog<String>(
+  // Shown exactly once, the very first time this patient interacts with the mood
+  // widget at all (any of tap/long-press/double-tap) — awaited before anything else
+  // opens, so it never stacks under a check-in screen.
+  Future<void> _maybeShowMoodIntro() async {
+    final bool seen = await DatabaseManager().hasSeenMoodIntro(widget.user.patientUuid);
+    if (seen) return;
+    await DatabaseManager().markMoodIntroSeen(widget.user.patientUuid);
+    if (!mounted) return;
+    await _showMoodTrackingInfo(includeGestureHint: false);
+  }
+
+  // The info icon always shows this (with the gesture hint prepended); the one-time
+  // intro shows it without, since a first-time patient hasn't touched anything yet.
+  Future<void> _showMoodTrackingInfo({required bool includeGestureHint}) async {
+    await showDialog<void>(
       context: context,
       builder: (context) => Dialog(
         shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
@@ -71,34 +98,27 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Text("Tracking your mood", style: CarbonTheme.carbonHeadingTextStyle),
+              const SizedBox(height: 12),
+              if (includeGestureHint) ...[
+                Text(
+                  "You can explain how you feel about any mood by double-tapping or "
+                  "long-pressing its icon.",
+                  style: CarbonTheme.carbonTextStyle,
+                ),
+                const SizedBox(height: 12),
+              ],
               Text(
-                "Why do you feel ${sentiment.label.toLowerCase()}?",
-                style: CarbonTheme.carbonHeadingTextStyle,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                "Totally optional — only saved if you write something.",
-                style: CarbonTheme.carbonHintTextStyle,
-              ),
-              const SizedBox(height: 16),
-              CarbonTextInput(
-                label: "Reason (optional)",
-                controller: controller,
-                maxLines: 3,
-                onChanged: (_) {},
+                "It can be helpful for your care providers to understand changes in how "
+                "you're feeling. You can track it as often as you like — and once you've "
+                "tracked it for more than 5 days, we can show you the trend.",
+                style: CarbonTheme.carbonTextStyle,
               ),
               const SizedBox(height: 16),
               CarbonCompactButton(
                 icon: Symbols.check,
-                label: "Save",
+                label: "Got it",
                 style: CarbonButtonStyle.primary,
-                onTap: () => Navigator.pop(context, controller.text),
-              ),
-              const SizedBox(height: 8),
-              CarbonCompactButton(
-                icon: Symbols.close,
-                label: "Cancel",
-                style: CarbonButtonStyle.ghost,
                 onTap: () => Navigator.pop(context),
               ),
             ],
@@ -106,12 +126,6 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
         ),
       ),
     );
-    if (reason != null && reason.trim().isNotEmpty) {
-      await DatabaseManager().setMoodReason(
-        widget.user.patientUuid,
-        reason.trim(),
-      );
-    }
   }
 
   @override
@@ -157,6 +171,11 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                               "My mood today is ${sentiment.label}",
                               style: CarbonTheme.carbonTertiaryButtonTextStyle,
                             ),
+                            IconButton(
+                              icon: const Icon(Symbols.info, size: 20),
+                              tooltip: "About tracking your mood",
+                              onPressed: () => _showMoodTrackingInfo(includeGestureHint: true),
+                            ),
                           ],
                         ),
                         Positioned(
@@ -164,18 +183,27 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                           child: CarbonFlyOutWidget(
                             children: Sentiment.values,
                             style: CarbonButtonStyle.tertiary,
-                            onSelected: (Flyable item) {
-                              setState(() {
-                                Sentiment newSentiment = item as Sentiment;
-                                sentiment = newSentiment;
-                                DatabaseManager().trackMoodChange(
-                                  widget.user.patientUuid,
-                                  sentiment.index,
-                                );
-                              });
+                            onSelected: (Flyable item) async {
+                              final Sentiment newSentiment = item as Sentiment;
+                              _recordMood(newSentiment);
+                              await _maybeShowMoodIntro();
+                              if (newSentiment.needsCheckIn) {
+                                _openMoodCheckIn(newSentiment, skipPrompt: false);
+                              }
                             },
                             selectedItem: sentiment.index,
-                            onLongPress: _askMoodReason,
+                            onItemLongPress: (Flyable item) async {
+                              final Sentiment newSentiment = item as Sentiment;
+                              _recordMood(newSentiment);
+                              await _maybeShowMoodIntro();
+                              _openMoodCheckIn(newSentiment, skipPrompt: true);
+                            },
+                            onItemDoubleTap: (Flyable item) async {
+                              final Sentiment newSentiment = item as Sentiment;
+                              _recordMood(newSentiment);
+                              await _maybeShowMoodIntro();
+                              _openMoodCheckIn(newSentiment, skipPrompt: true);
+                            },
                           ),
                         ),
                       ],

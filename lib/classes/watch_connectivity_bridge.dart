@@ -38,6 +38,10 @@ class WatchConnectivityBridge {
         final Map<String, dynamic> body = jsonDecode(call.arguments as String) as Map<String, dynamic>;
         final int notified = await WearableSyncLogic.handlePanic(patientUuid: body['patientUuid'] as String, triggerType: body['trigger'] as String, onPanic: onPanic);
         return jsonEncode({'notified': notified});
+      case 'setMood':
+        final Map<String, dynamic> body = jsonDecode(call.arguments as String) as Map<String, dynamic>;
+        final result = await WearableSyncLogic.handleSetMood(patientUuid: body['patientUuid'] as String, moodIndex: body['moodIndex'] as int);
+        return jsonEncode(result);
       default:
         throw MissingPluginException('Unknown watch connectivity method: ${call.method}');
     }

@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-// Same three-tab shape as the Linux and Wear OS wearable shells (due items / panic /
+// Same tab shape as the Linux and Wear OS wearable shells (mood / due items / panic /
 // emergency QR) — see WearableShell in either of those apps for the reasoning.
 struct ContentView: View {
     @State private var paired = WearableClient.isPaired()
@@ -16,6 +16,8 @@ struct ContentView: View {
         if paired {
             NavigationStack {
                 TabView {
+                    MoodView()
+                        .tabItem { Label("Mood", systemImage: "face.smiling") }
                     DueItemsView()
                         .tabItem { Label("Due", systemImage: "checklist") }
                     PanicView()

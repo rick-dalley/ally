@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../app_theme.dart';
-import 'package:carbon_ui/colors/app_colors.dart';
+import 'package:carbon_ui/colors/carbon_color_sentiment_constants.dart';
 import 'package:carbon_ui/interfaces/flyable.dart';
 
 enum Sentiment implements Flyable {
@@ -18,9 +18,26 @@ enum Sentiment implements Flyable {
   worried,
   sick;
 
+  // Positive/Neutral/Negative rubric — see carbon_color_sentiment_constants.dart for
+  // why this is its own palette rather than reusing Carbon's support colors.
   @override
   Color get color {
-    return AppColors.greyDepth;
+    switch (this) {
+      case Sentiment.happy:
+      case Sentiment.content:
+      case Sentiment.excited:
+        return carbonColorSentimentPositive;
+      case Sentiment.calm:
+      case Sentiment.neutral:
+        return carbonColorSentimentNeutral;
+      case Sentiment.angry:
+      case Sentiment.frustrated:
+      case Sentiment.sad:
+      case Sentiment.stressed:
+      case Sentiment.worried:
+      case Sentiment.sick:
+        return carbonColorSentimentNegative;
+    }
   }
 
   @override
@@ -83,6 +100,11 @@ enum Sentiment implements Flyable {
         return "Sick";
     }
   }
+
+  // The three moods the mood widget treats as worth pausing on — offers a private
+  // place to write down why, before moving on. Deliberately narrow (not e.g. worried
+  // or frustrated) per product direction, not a general "negative mood" rule.
+  bool get needsCheckIn => this == Sentiment.sad || this == Sentiment.angry || this == Sentiment.stressed;
 
   @override
   String get description {

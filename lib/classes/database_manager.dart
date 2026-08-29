@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
+import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'dart:convert';
@@ -101,7 +102,7 @@ class DatabaseManager {
   // Bump this whenever assets/sql/sql.json gains new tables/indexes, so
   // existing installs pick them up via onUpgrade instead of silently
   // missing them (see onUpgrade above).
-  static const int schemaVersion = 2;
+  static const int schemaVersion = 3;
 
   Future<void> createSqlObjects(Database db) async {
     if (sqlConfig == null) return;
@@ -227,6 +228,50 @@ class DatabaseManager {
     return rows.isNotEmpty ? rows.first : null;
   }
 
+  // Calm is the neutral default for any day nothing was actively logged, from day
+  // one of app usage — not from whenever this happens to first run. Backdated to
+  // when the patient was admitted so a patient admitted days ago who only opens the
+  // mood widget today still shows calm coverage back to their real day one. Since
+  // trackMoodChange leaves a mood period open until superseded, this one seed row is
+  // all that's needed — it already reads as "calm" for every day up to whenever the
+  // patient actually taps something else, with no daily re-insertion required.
+  // No-op if this patient already has any mood history at all.
+  Future<void> seedInitialMoodIfNeeded(String patientUuid, int calmMoodIndex, DateTime admittedDate) async {
+    final existing = await getFirstMoodDate(patientUuid);
+    if (existing != null) return;
+    final db = await database;
+    await db.insert('patient_mood', {
+      'patient_uuid': patientUuid,
+      'mood': calmMoodIndex,
+      'start_date': admittedDate.toUtc().toIso8601String(),
+      'end_date': null,
+    });
+  }
+
+  // The date of this patient's very first-ever logged mood — null means they've never
+  // tapped the mood widget at all. Used to gate the mood trend display on "tracked
+  // for more than 5 days," which is about how long ago tracking started, not how many
+  // mood changes have happened since.
+  Future<DateTime?> getFirstMoodDate(String patientUuid) async {
+    final db = await database;
+    final rows = await db.query(
+      'patient_mood',
+      where: 'patient_uuid = ?',
+      whereArgs: [patientUuid],
+      orderBy: 'start_date ASC',
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return DateTime.tryParse(rows.first['start_date'] as String);
+  }
+
+  // Full mood history, oldest first — the shape CarbonTimelineScroller's trend lane
+  // wants (PatientMoodEntry.fromRow already implements Plottable).
+  Future<List<Map<String, dynamic>>> getMoodHistory(String patientUuid) async {
+    final db = await database;
+    return db.query('patient_mood', where: 'patient_uuid = ?', whereArgs: [patientUuid], orderBy: 'start_date ASC');
+  }
+
   // Attaches a reason to whichever mood period is currently open — not necessarily
   // tied to the moment the mood last changed, since a long-press to explain "why" can
   // happen any time during that period.
@@ -235,6 +280,28 @@ class DatabaseManager {
     if (current == null) return;
     final db = await database;
     await db.update('patient_mood', {'reason': reason}, where: 'id = ?', whereArgs: [current['id']]);
+  }
+
+  // Whether this patient has ever tapped a sentiment in the mood widget before —
+  // used to show the one-time "tracking your mood helps care providers" explainer
+  // exactly once, the very first time, rather than every time they open the screen.
+  Future<bool> hasSeenMoodIntro(String patientUuid) async {
+    final db = await database;
+    final rows = await db.query(
+      'patient_mood_intro_shown',
+      where: 'patient_uuid = ?',
+      whereArgs: [patientUuid],
+    );
+    return rows.isNotEmpty;
+  }
+
+  Future<void> markMoodIntroSeen(String patientUuid) async {
+    final db = await database;
+    await db.insert(
+      'patient_mood_intro_shown',
+      {'patient_uuid': patientUuid, 'shown_at': DateTime.now().toUtc().toIso8601String()},
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
   }
 
   Future<List<Map<String, dynamic>>> getPatientVaccinations(String patientUuid) async {
@@ -506,6 +573,17 @@ class DatabaseManager {
         'updated_at': now,
       });
     }
+  }
+
+  // Time-stamps and appends rather than overwriting — used for the mood check-in
+  // flow, which shouldn't be able to silently wipe out whatever the patient already
+  // wrote in the diary earlier that same day via saveDiaryEntry's plain upsert.
+  Future<void> appendDiaryEntry(String patientUuid, DateTime date, String addition) async {
+    final existing = await getDiaryEntry(patientUuid, date);
+    final String existingContent = existing != null ? (existing['content'] as String? ?? '') : '';
+    final String stamped = '${DateFormat('h:mm a').format(DateTime.now())} — $addition';
+    final String combined = existingContent.isEmpty ? stamped : '$existingContent\n\n$stamped';
+    await saveDiaryEntry(patientUuid, date, combined);
   }
 
   // Clearing an entry back to empty removes the row outright rather than leaving a

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../app_theme.dart';
 import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
 import '../classes/patient.dart';
 import '../classes/patient_diary.dart';
+import '../classes/provider.dart';
 import 'package:carbon_ui/widgets/carbon_button_compact.dart';
 import 'package:carbon_ui/widgets/carbon_style_textbox.dart';
 import '../widgets/diary_month_calendar.dart';
@@ -100,6 +102,59 @@ class _PatientDiaryScreenState extends State<PatientDiaryScreen> {
     setState(() => _showingCalendar = !_showingCalendar);
   }
 
+  // Emails whatever's currently in the box for this day — not necessarily saved yet,
+  // same as tapping Save Entry would capture. Only providers with an email on file
+  // are offered, since there's nowhere to send it otherwise.
+  Future<void> _emailToProvider() async {
+    final String text = _textController.text.trim();
+    if (text.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Nothing written today yet.")));
+      return;
+    }
+    final rows = await DatabaseManager().getProviders(widget.user.patientUuid);
+    final providers = rows.map(Provider.fromJson).where((p) => (p.email ?? '').isNotEmpty).toList();
+    if (!mounted) return;
+    if (providers.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("No care provider has an email on file yet.")));
+      return;
+    }
+    final Provider? chosen = await showModalBottomSheet<Provider>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text("Email today's diary entry to", style: CarbonTheme.carbonLabelTextStyle),
+            ),
+            ...providers.map(
+              (p) => ListTile(
+                title: Text('${p.firstName ?? ''} ${p.lastName ?? ''}'.trim()),
+                subtitle: Text(p.email!),
+                onTap: () => Navigator.of(sheetContext).pop(p),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (chosen == null || !mounted) return;
+    final Uri emailUri = Uri(
+      scheme: 'mailto',
+      path: chosen.email,
+      queryParameters: {'subject': 'Diary entry — ${_formatHeaderDate(_currentDate)}', 'body': text},
+    );
+    if (await canLaunchUrl(emailUri)) {
+      await launchUrl(emailUri);
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Couldn't open an email app.")));
+    }
+  }
+
   String _formatHeaderDate(DateTime date) {
     const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     const months = [
@@ -120,6 +175,12 @@ class _PatientDiaryScreenState extends State<PatientDiaryScreen> {
           title: Text("Patient Diary", style: CarbonTheme.carbonLabelTextStyle),
           backgroundColor: AppTheme.lightTheme.canvasColor,
           actions: [
+            if (!_showingCalendar)
+              IconButton(
+                icon: const Icon(Symbols.forward_to_inbox),
+                tooltip: "Email to a care provider",
+                onPressed: _emailToProvider,
+              ),
             IconButton(
               icon: Icon(_showingCalendar ? Symbols.calendar_view_day : Symbols.calendar_month),
               tooltip: _showingCalendar ? "Day view" : "Calendar view",
