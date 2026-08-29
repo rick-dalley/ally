@@ -12,6 +12,9 @@ struct PanicView: View {
     @State private var loading = true
     @State private var sending = false
     @State private var confirmation: String?
+    // See the matching guard in DueItemsView — watchOS's TabView keeps re-running
+    // every tab's .task, even off-screen ones, without this.
+    @State private var hasStarted = false
 
     private var isDemo: Bool { demoData != nil }
 
@@ -25,6 +28,8 @@ struct PanicView: View {
         }
         .navigationTitle("Panic")
         .task {
+            guard !hasStarted else { return }
+            hasStarted = true
             if isDemo {
                 alerts = demoData ?? [:]
                 loading = false

@@ -11,6 +11,10 @@ struct DueItemsView: View {
     @State private var loading = true
     @State private var errorMessage: String?
     @State private var busy = false
+    // watchOS's TabView builds every tab's body up front and keeps re-invoking
+    // .task on tabs that aren't even visible, which without this guard restarts
+    // the fetch (and re-flashes the spinner) roughly once a second.
+    @State private var hasStarted = false
 
     private var isDemo: Bool { demoData != nil }
 
@@ -29,6 +33,8 @@ struct DueItemsView: View {
         }
         .navigationTitle("Due")
         .task {
+            guard !hasStarted else { return }
+            hasStarted = true
             if isDemo {
                 data = demoData
                 loading = false

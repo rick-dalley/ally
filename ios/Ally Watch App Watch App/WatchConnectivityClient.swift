@@ -33,6 +33,15 @@ class WatchConnectivityClient: NSObject, WCSessionDelegate {
         guard WCSession.isSupported() else {
             throw WatchConnectivityError.notSupported
         }
+        // Session activation is async, and the very first call here (e.g. the
+        // app's initial due-items fetch) can land in the brief window before
+        // WCSession finishes activating and reports reachable — give it a moment
+        // to settle rather than failing on what's usually just a startup race.
+        var waited = 0
+        while !WCSession.default.isReachable && waited < 20 {
+            try await Task.sleep(nanoseconds: 100_000_000)
+            waited += 1
+        }
         guard WCSession.default.isReachable else {
             throw WatchConnectivityError.notReachable
         }
