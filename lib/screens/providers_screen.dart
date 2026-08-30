@@ -5,6 +5,7 @@ import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import 'package:ally/classes/database_manager.dart';
 import 'package:ally/classes/provider.dart';
 import 'package:ally/widgets/provider_card_widget.dart';
+import '../app_theme.dart';
 import '../classes/patient.dart';
 import '../widgets/add_care_provider.dart';
 import 'package:carbon_ui/widgets/carbon_style_button.dart';
@@ -28,14 +29,15 @@ class ProviderRosterScreenState extends State<ProviderRosterScreen> {
 
   Future<void> loadProviders() async {
     dynamic rawProviders = await DatabaseManager().getProviders(widget.user.patientUuid);
+    final Map<String, Provider> loaded = {};
     if (rawProviders != null) {
       for (dynamic rp in rawProviders) {
         Provider provider = Provider.fromJson(rp);
-        if (providers != null) {
-          providers?[provider.id] = provider;
-        }
+        loaded[provider.id] = provider;
       }
     }
+    if (!mounted) return;
+    setState(() => providers = loaded);
   }
 
   void handleCardUpdated(Provider provider) {
@@ -60,7 +62,12 @@ class ProviderRosterScreenState extends State<ProviderRosterScreen> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
 
-      backgroundColor: Colors.transparent,
+      // Was Colors.transparent, which worked fine back when this screen only ever
+      // appeared nested inside HomeScreen's own colored Scaffold as a bottom tab —
+      // now that it's a standalone pushed route (see home_screen.dart's
+      // _openProviders) there's nothing behind it, so transparent just showed as a
+      // black screen.
+      backgroundColor: AppTheme.lightTheme.canvasColor,
       body: providers!.isEmpty
           ? Center(child: Text("No care providers found.", style: CarbonTheme.carbonLabelTextStyle))
           : ListView.builder(
