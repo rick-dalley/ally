@@ -3422,4 +3422,38 @@ class DatabaseManager {
 
     await db.insert('provider', providerMap, conflictAlgorithm: ConflictAlgorithm.replace);
   }
+
+  // Tables to keep once a real license lands — empty by design, same as Progressor's/
+  // Acuitage's copy of this method: no professional or user profile survives the wipe.
+  // Ally's demo content is the seeded hero patient plus whatever family/other profiles
+  // ride along in the same `patient` table (see DataSeeder's heroPatientUuid) — the
+  // patient adds their own doctors and family members fresh afterward through the same
+  // add-patient/add-provider flows already in the app. Kept as a named allowlist rather
+  // than deleted outright so a future real exception has an obvious place to go.
+  static const Set<String> _preserveOnLicenseWipe = {};
+
+  // Called once a license grant lands from the Go server — mirrors Progressor's/
+  // Acuitage's DatabaseManager.wipeDemoDataForLicensedInstall exactly: the free trial
+  // never lets someone enter their own data, so there's nothing of real value to lose,
+  // and this clears every seeded table so a licensed install starts clean. Not a
+  // delete-and-recreate of the db file, since onCreate calls DataSeeder.seed and would
+  // just reseed the same demo content. Foreign keys are toggled off around the wipe
+  // rather than deleting in dependency order, since sqflite/SQLite won't let the pragma
+  // change take effect mid-transaction anyway.
+  Future<void> wipeDemoDataForLicensedInstall() async {
+    final db = await database;
+    final List<dynamic> createScripts = sqlConfig?['CREATE'] ?? [];
+    final List<String> tables = [
+      for (final entry in createScripts)
+        if (entry['table'] is String) entry['table'] as String,
+    ];
+    await db.execute('PRAGMA foreign_keys = OFF;');
+    await db.transaction((txn) async {
+      for (final table in tables) {
+        if (_preserveOnLicenseWipe.contains(table)) continue;
+        await txn.delete(table);
+      }
+    });
+    await db.execute('PRAGMA foreign_keys = ON;');
+  }
 }
