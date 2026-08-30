@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
-// A small solid dot with a soft, breathing ring around it — used where a plain static
-// dot (see the red "unseen" dots elsewhere on the profile screen) isn't loud enough on
-// its own, e.g. a doctor's order landing rather than something the patient noted
-// themselves.
+// A small glyph with a soft, breathing ring around it — used where a plain static dot
+// (see the red "unseen" dots elsewhere on the profile screen) isn't loud enough on its
+// own, e.g. a doctor's order landing rather than something the patient noted
+// themselves. Defaults to Symbols.bigtop_updates — the standard "something new
+// arrived" glyph — rather than a plain circle, so the badge itself already reads as a
+// notification rather than needing a separate dot drawn on top of it.
 class PulsingHaloDot extends StatefulWidget {
   final Color color;
-  final double dotSize;
+  final double size;
+  final IconData icon;
 
-  const PulsingHaloDot({super.key, required this.color, this.dotSize = 10});
+  const PulsingHaloDot({super.key, required this.color, this.size = 18, this.icon = Symbols.bigtop_updates});
 
   @override
   State<PulsingHaloDot> createState() => _PulsingHaloDotState();
@@ -28,7 +32,7 @@ class _PulsingHaloDotState extends State<PulsingHaloDot> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
-    final double haloMax = widget.dotSize * 2.6;
+    final double haloMax = widget.size * 2.2;
     return SizedBox(
       width: haloMax,
       height: haloMax,
@@ -40,18 +44,14 @@ class _PulsingHaloDotState extends State<PulsingHaloDot> with SingleTickerProvid
             alignment: Alignment.center,
             children: [
               Container(
-                width: widget.dotSize + (haloMax - widget.dotSize) * t,
-                height: widget.dotSize + (haloMax - widget.dotSize) * t,
+                width: widget.size + (haloMax - widget.size) * t,
+                height: widget.size + (haloMax - widget.size) * t,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: widget.color.withValues(alpha: (1 - t) * 0.45),
                 ),
               ),
-              Container(
-                width: widget.dotSize,
-                height: widget.dotSize,
-                decoration: BoxDecoration(shape: BoxShape.circle, color: widget.color),
-              ),
+              Icon(widget.icon, size: widget.size, color: widget.color),
             ],
           );
         },

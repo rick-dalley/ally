@@ -94,15 +94,38 @@ class DatabaseManager {
       onUpgrade: (db, oldVersion, newVersion) async {
         await db.execute('PRAGMA foreign_keys = ON;');
         await createSqlObjects(db);
+        if (oldVersion < 8) await _normalizeCareOrderTimestamps(db);
       },
     );
     return db;
   }
 
+  // One-time data fixup for installs created before insertCareOrder started writing
+  // imported_at explicitly (see that method's doc comment) — any row still in
+  // SQLite's own CURRENT_TIMESTAMP shape ("2026-08-30 04:27:50", UTC, space-
+  // separated) gets converted to this app's usual local-time ISO8601 shape, so the
+  // "unseen therapy" comparison against last_viewed_at stops silently misfiring for
+  // data written before the fix.
+  Future<void> _normalizeCareOrderTimestamps(Database db) async {
+    final rows = await db.query('care_order', columns: ['id', 'imported_at']);
+    for (final row in rows) {
+      final String? raw = row['imported_at'] as String?;
+      if (raw == null || raw.contains('T')) continue;
+      final DateTime? asUtc = DateTime.tryParse('${raw.replaceFirst(' ', 'T')}Z');
+      if (asUtc == null) continue;
+      await db.update(
+        'care_order',
+        {'imported_at': asUtc.toLocal().toIso8601String()},
+        where: 'id = ?',
+        whereArgs: [row['id']],
+      );
+    }
+  }
+
   // Bump this whenever assets/sql/sql.json gains new tables/indexes, so
   // existing installs pick them up via onUpgrade instead of silently
   // missing them (see onUpgrade above).
-  static const int schemaVersion = 7;
+  static const int schemaVersion = 8;
 
   Future<void> createSqlObjects(Database db) async {
     if (sqlConfig == null) return;
@@ -1886,6 +1909,17 @@ class DatabaseManager {
       'directions': directions,
       'frequency': frequency,
       'source': source,
+      // Explicit, not the column's DEFAULT CURRENT_TIMESTAMP — that default is UTC
+      // and space-separated ("2026-08-30 04:27:50"), while last_viewed_at and every
+      // other timestamp this app writes is Dart's local-time ISO8601 ("2026-08-29T21:
+      // 48:23..."). String-comparing "imported_at > last_viewed_at" between those two
+      // formats is unreliable — a 'T' sorts after a space at the same position
+      // regardless of the actual time, and UTC can already be on the next calendar
+      // day while local time isn't yet, which silently broke the "unseen" dot/halo
+      // (hasUnseenTherapies / hasUnseenDoctorTherapy) never clearing once local time
+      // was late enough in the evening. Writing the same format everywhere fixes the
+      // comparison outright.
+      'imported_at': DateTime.now().toIso8601String(),
       'freq_code': freqCode,
       'reminder_time': reminderTime,
       'therapy_category': therapyCategory,
