@@ -137,10 +137,30 @@ class HomeScreenState extends State<HomeScreen> {
         onMemberUpdate: (p) =>
             updatePatient(patientIndex: _currentPageIndex, patient: p),
       ),
-      ProviderRosterScreen(user: patient),
       EmergencyQRCodeView(householdMember: patient),
       TimelineScrollerPage(patientUuid: patient.patientUuid, admitted: patient.admitted),
     ];
+  }
+
+  // Reminders and Providers moved off the bottom tab bar and up into the top bar
+  // (see _buildTopBar) — Reminders because it needs to be reachable from every
+  // screen, not just whichever tab happens to be showing; Providers because, unlike
+  // the bottom tabs, it's not something looked at daily or something that reports on
+  // how the patient is doing right now.
+  void _openReminders() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const ReminderSheet(),
+    );
+  }
+
+  void _openProviders(Patient patient) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => ProviderRosterScreen(user: patient)),
+    );
   }
 
   void _showMemberJumpList(BuildContext context) {
@@ -230,15 +250,14 @@ class HomeScreenState extends State<HomeScreen> {
       patient = patients[_currentPageIndex];
     }
 
-    // Define clear, action-oriented titles corresponding to your 6 bottom nav tabs (_currentIndex)
-    // Profile tab is named for whoever's on screen — with the whole family on one
-    // device (see FirstPatientWizard's "add a family member" flow), a bare "Medical
-    // Profile" heading gives no cue you're looking at the wrong person's data.
+    // Define clear, action-oriented titles corresponding to the bottom nav tabs
+    // (_currentIndex). Profile deliberately doesn't repeat the patient's name — with
+    // the whole family on one device (see FirstPatientWizard's "add a family member"
+    // flow), that's already the avatar's job, right next to this title.
     final List<String> pageActionTitles = [
-      "${patient.firstName}'s Medical Profile",
+      "Profile",
       'Manage Prescriptions',
       'Review Metrics',
-      'My Health Care Team',
       'Emergency QR',
       'Activity Timeline',
     ];
@@ -259,13 +278,63 @@ class HomeScreenState extends State<HomeScreen> {
                   vertical: 8.0,
                 ),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Action / Purpose Title
-                    Text(
-                      currentActionTitle,
-                      style: CarbonTheme.carbonExpressiveTextStyle,
+                    // Action / Purpose Title — flexible now that the top bar also
+                    // carries the Reminders/Providers icons and the avatar, all of
+                    // fixed width; without this, a long title (e.g. "<Name>'s
+                    // Medical Profile") pushed those fixed-width trailing elements
+                    // straight off the edge of the screen.
+                    Expanded(
+                      child: Text(
+                        currentActionTitle,
+                        style: CarbonTheme.carbonExpressiveTextStyle,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
+
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                    // Reminders — reachable from every tab, not just whichever
+                    // screen happens to be showing, since something can come due
+                    // no matter what the patient is looking at. The auto-popup
+                    // (_maybeShowReminders) still fires the moment something's
+                    // newly due; this is the same sheet, opened on demand.
+                    AnimatedBuilder(
+                      animation: ReminderRegistry.instance,
+                      builder: (context, _) {
+                        final bool hasDue = ReminderRegistry.instance.due.isNotEmpty;
+                        return Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Symbols.reminder),
+                              tooltip: "Reminders",
+                              onPressed: _openReminders,
+                            ),
+                            if (hasDue)
+                              Positioned(
+                                top: 8,
+                                right: 8,
+                                child: Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                                ),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
+                    // Providers — not a daily-use screen and not something that
+                    // reports on how the patient is doing right now, unlike the
+                    // remaining bottom tabs, so it moved up here instead.
+                    IconButton(
+                      icon: const Icon(Symbols.diversity_4),
+                      tooltip: "My Health Care Team",
+                      onPressed: () => _openProviders(patient!),
+                    ),
+                    const SizedBox(width: 4),
 
                     // Patient Avatar (Tap for profile, Long press for roster jump) —
                     // a halo ripples out from the avatar's own edge while there's an
@@ -319,6 +388,8 @@ class HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                       ),
+                    ),
+                      ],
                     ),
                   ],
                 ),
@@ -391,16 +462,11 @@ class HomeScreenState extends State<HomeScreen> {
                       ),
                       _navButton(
                         index: 3,
-                        icon: Symbols.diversity_4,
-                        label: "Providers",
-                      ),
-                      _navButton(
-                        index: 4,
                         icon: Symbols.qr_code_2,
                         label: "Emergency",
                       ),
                       _navButton(
-                        index: 5,
+                        index: 4,
                         icon: Symbols.view_object_track,
                         label: "Timeline",
                       ),
