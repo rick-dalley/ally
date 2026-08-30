@@ -125,7 +125,7 @@ class DatabaseManager {
   // Bump this whenever assets/sql/sql.json gains new tables/indexes, so
   // existing installs pick them up via onUpgrade instead of silently
   // missing them (see onUpgrade above).
-  static const int schemaVersion = 8;
+  static const int schemaVersion = 9;
 
   Future<void> createSqlObjects(Database db) async {
     if (sqlConfig == null) return;
@@ -2519,6 +2519,70 @@ class DatabaseManager {
     // Reconstruct the Map<String, String> (question_id -> answer)
     return {for (var row in questionMaps) row['question_id'] as String: row['answer'] as String};
   }
+
+  // A clinician-assigned mental-wellness questionnaire — deliberately separate from
+  // completed_assessment (which just records raw answers). This is what gates the
+  // Questionnaires tile's visibility at all: unlike PHQ-9/GAD-7/etc. being freely
+  // self-administered with an automatic interpretation shown to the patient (a real
+  // false-positive/liability risk for something like PTSD or ADHD screening without a
+  // clinician in the loop), a questionnaire only ever appears here because a provider
+  // explicitly sent it — see AssignQuestionnaireScreen — and it's withdrawn (this row's
+  // completed_at gets set) the moment it's answered, never re-offered on its own.
+  Future<void> insertAssignedQuestionnaire({
+    required String id,
+    required String patientUuid,
+    required String templateId,
+    required String providerName,
+    required String providerEmail,
+  }) async {
+    final db = await database;
+    await db.insert('assigned_questionnaire', {
+      'id': id,
+      'patient_uuid': patientUuid,
+      'template_id': templateId,
+      'provider_name': providerName,
+      'provider_email': providerEmail,
+      'assigned_at': DateTime.now().toIso8601String(),
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> getActiveAssignedQuestionnaires(String patientUuid) async {
+    final db = await database;
+    return await db.query(
+      'assigned_questionnaire',
+      where: 'patient_uuid = ? AND completed_at IS NULL',
+      whereArgs: [patientUuid],
+      orderBy: 'assigned_at ASC',
+    );
+  }
+
+  Future<Map<String, dynamic>?> getAssignedQuestionnaire(String id) async {
+    final db = await database;
+    final rows = await db.query('assigned_questionnaire', where: 'id = ?', whereArgs: [id], limit: 1);
+    return rows.isEmpty ? null : rows.first;
+  }
+
+  Future<void> markQuestionnaireCompleted(String id) async {
+    final db = await database;
+    await db.update(
+      'assigned_questionnaire',
+      {'completed_at': DateTime.now().toIso8601String()},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  // Completed, withdrawn assignments — the only trace a patient ever sees again (a
+  // Diary entry + this Timeline dot), never the questionnaire itself or its score.
+  Future<List<Map<String, dynamic>>> getCompletedAssignedQuestionnaires(String patientUuid) async {
+    final db = await database;
+    return await db.query(
+      'assigned_questionnaire',
+      where: 'patient_uuid = ? AND completed_at IS NOT NULL',
+      whereArgs: [patientUuid],
+      orderBy: 'completed_at ASC',
+    );
+  }
   //
   // Future<(bool, String)> checkInteractions(String primarySetId, String otherSetId) async {
   //   final db = await database;
@@ -3212,7 +3276,15 @@ class DatabaseManager {
     final symptoms = await db.query('markers', where: 'patient_uuid = ?', whereArgs: [patientUuid]);
     final moods = await db.query('patient_mood', where: 'patient_uuid = ?', whereArgs: [patientUuid]);
     final tests = await db.query('test_completion_log', where: 'patient_uuid = ?', whereArgs: [patientUuid]);
-    return {'doses': doses, 'appointments': appointments, 'symptoms': symptoms, 'moods': moods, 'tests': tests};
+    final questionnaires = await getCompletedAssignedQuestionnaires(patientUuid);
+    return {
+      'doses': doses,
+      'appointments': appointments,
+      'symptoms': symptoms,
+      'moods': moods,
+      'tests': tests,
+      'questionnaires': questionnaires,
+    };
   }
 
   Future<List<Map<String, dynamic>>> getMedicationSpanRows(String patientUuid) async {

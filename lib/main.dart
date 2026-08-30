@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ally/classes/acuity.dart';
+import 'package:ally/classes/assigned_questionnaire_import.dart';
 import 'package:ally/classes/body_zone.dart';
 import 'package:ally/classes/care_plan_import.dart';
 import 'package:ally/classes/database_manager.dart';
+import 'package:ally/screens/assign_questionnaire_screen.dart';
 import 'package:ally/screens/home_screen.dart';
 import 'package:ally/screens/import_care_plan_screen.dart';
 import 'package:ally/screens/panic_alert_screen.dart';
@@ -45,9 +47,11 @@ class _LuminescaAppState extends State<LuminescaApp> {
     _listenForCarePlanLinks();
   }
 
-  // ally://import?data=... — a discharge care plan handed off from a sibling app
-  // (Progressor today) with no shared backend. Covers both a cold start (the app
-  // wasn't running yet when the link was tapped) and a warm one.
+  // ally://import?data=... (a discharge care plan) and
+  // ally://assignQuestionnaire?data=... (a clinician-requested mental-wellness
+  // questionnaire) — both handed off from a sibling app (Progressor today) with no
+  // shared backend. Covers both a cold start (the app wasn't running yet when the
+  // link was tapped) and a warm one.
   Future<void> _listenForCarePlanLinks() async {
     final Uri? initial = await _appLinks.getInitialLink();
     if (initial != null) _handleLink(initial);
@@ -55,12 +59,20 @@ class _LuminescaAppState extends State<LuminescaApp> {
   }
 
   void _handleLink(Uri uri) {
-    if (uri.scheme != 'ally' || uri.host != 'import') return;
-    final CarePlanImportPayload? payload = CarePlanImportPayload.tryParse(uri);
-    if (payload == null) return;
-    _navigatorKey.currentState?.push(
-      MaterialPageRoute(builder: (context) => ImportCarePlanScreen(payload: payload)),
-    );
+    if (uri.scheme != 'ally') return;
+    if (uri.host == 'import') {
+      final CarePlanImportPayload? payload = CarePlanImportPayload.tryParse(uri);
+      if (payload == null) return;
+      _navigatorKey.currentState?.push(
+        MaterialPageRoute(builder: (context) => ImportCarePlanScreen(payload: payload)),
+      );
+    } else if (uri.host == 'assignQuestionnaire') {
+      final AssignedQuestionnairePayload? payload = AssignedQuestionnairePayload.tryParse(uri);
+      if (payload == null) return;
+      _navigatorKey.currentState?.push(
+        MaterialPageRoute(builder: (context) => AssignQuestionnaireScreen(payload: payload)),
+      );
+    }
   }
 
   @override

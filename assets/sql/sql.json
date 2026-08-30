@@ -343,6 +343,10 @@
     {
       "table": "marker_severity_reading",
       "query": "CREATE TABLE IF NOT EXISTS marker_severity_reading (id INTEGER PRIMARY KEY AUTOINCREMENT, marker_id INTEGER NOT NULL, severity INTEGER NOT NULL, recorded_at DATETIME NOT NULL, FOREIGN KEY (marker_id) REFERENCES markers(id) ON DELETE CASCADE);"
+    },
+    {
+      "table": "assigned_questionnaire",
+      "query": "CREATE TABLE IF NOT EXISTS assigned_questionnaire (id TEXT PRIMARY KEY, patient_uuid TEXT NOT NULL, template_id TEXT NOT NULL, provider_name TEXT NOT NULL, provider_email TEXT NOT NULL, assigned_at DATETIME NOT NULL, completed_at DATETIME, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
     }
   ],
   "ALTER": [

@@ -2,11 +2,15 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import 'package:material_symbols_icons/symbols.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:carbon_ui/widgets/carbon_style_button.dart';
 import '../app_theme.dart';
 import '../classes/assessment_logic.dart';
 import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
+import '../classes/questionnaire_result_export.dart';
 import '../generated/l10n.dart';
 import '../widgets/likert_question.dart';
 
@@ -18,6 +22,15 @@ class QuestionnaireAnsweringScreen extends StatefulWidget {
   final Map<String, dynamic> template;
   final AssessmentLogic? logic;
   final ScrollController? scrollController;
+  // Present only when this screen was opened for a clinician-assigned questionnaire
+  // (see QuestionnairesScreen/AssignQuestionnaireScreen) — drives the completion
+  // handoff back to that provider and withdraws the assignment. Every real call site
+  // today is assigned; these stay nullable rather than required so a stray future
+  // call site fails soft (no handoff, no withdrawal) instead of crashing.
+  final String? assignedQuestionnaireId;
+  final String? providerName;
+  final String? providerEmail;
+  final String? patientName;
 
   const QuestionnaireAnsweringScreen({
     super.key,
@@ -28,6 +41,10 @@ class QuestionnaireAnsweringScreen extends StatefulWidget {
     this.scoreGuidePath,
     this.logic,
     this.scrollController, // CHANGE 2: Add it to the constructor
+    this.assignedQuestionnaireId,
+    this.providerName,
+    this.providerEmail,
+    this.patientName,
   });
 
   @override
@@ -42,6 +59,8 @@ class QuestionnaireAnsweringScreenState extends State<QuestionnaireAnsweringScre
   bool _showValidationErrors = false;
   bool _isLoading = true;
   List<dynamic>? _scoreGuide;
+  bool _submitted = false;
+  bool _submitting = false;
 
   Future<void> _loadAnswers() async {
     final Map<String, String>? rawResults = await DatabaseManager().getLatestAssessmentResults(
@@ -103,6 +122,10 @@ class QuestionnaireAnsweringScreenState extends State<QuestionnaireAnsweringScre
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
+    if (_submitted) {
+      return Scaffold(body: SafeArea(child: _buildCompletion()));
+    }
+
     return Scaffold(
       bottomNavigationBar: SafeArea(
         child: Padding(
@@ -111,6 +134,39 @@ class QuestionnaireAnsweringScreenState extends State<QuestionnaireAnsweringScre
         ),
       ),
       body: SafeArea(child: Column(children: [_buildHeader(instructionText), _buildQuestions(questions)])),
+    );
+  }
+
+  // The only thing a patient ever sees after finishing an assigned questionnaire —
+  // no score, no interpretation, just confirmation it reached their provider. See
+  // _submitAssessment's doc comment for why scoring/interpretation is withheld
+  // entirely rather than shown even briefly.
+  Widget _buildCompletion() {
+    final String who = widget.providerName ?? 'your care team';
+    final String when = DateFormat('MMMM d, y \'at\' h:mm a').format(DateTime.now());
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Symbols.check_circle, size: 56, color: Colors.green),
+            const SizedBox(height: 16),
+            Text(
+              "Completed and returned to $who",
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 4),
+            Text(when, style: const TextStyle(fontSize: 13, color: Colors.grey)),
+            const SizedBox(height: 24),
+            CarbonButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              label: "Done",
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -163,7 +219,7 @@ class QuestionnaireAnsweringScreenState extends State<QuestionnaireAnsweringScre
             _submitAssessment();
           }
         },
-        label: "Save",
+        label: _submitting ? "Sending..." : "Save",
       );
     }
   }
@@ -322,6 +378,8 @@ class QuestionnaireAnsweringScreenState extends State<QuestionnaireAnsweringScre
   }
 
   Future<void> _submitAssessment() async {
+    if (_submitting) return;
+    setState(() => _submitting = true);
     // Convert our internal int answers to the String format required by the DB
     final Map<String, String> stringAnswers = answers.map((key, value) => MapEntry(key, value.asString()));
 
@@ -334,53 +392,72 @@ class QuestionnaireAnsweringScreenState extends State<QuestionnaireAnsweringScre
         isComplete: true,
       );
 
-      if (mounted) {
-        // 2. Visual feedback for the user
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Assessment saved successfully")));
+      // 2. If this was a clinician-requested questionnaire, hand the results back to
+      // them and withdraw the assignment — the patient never sees the score computed
+      // here, only that it was sent (see _buildCompletion). A future call site that
+      // isn't gated by an assignment just falls through to the plain snackbar below.
+      final String? assignmentId = widget.assignedQuestionnaireId;
+      if (assignmentId != null && widget.providerEmail != null) {
+        final Map<String, String>? interpretation = getInterpretation();
+        final String deepLink = QuestionnaireResultPayload.buildDeepLink(
+          patientName: widget.patientName ?? 'Your patient',
+          templateId: widget.assessmentId,
+          score: totalScore,
+          summary: interpretation?['summary'] ?? 'Total score: $totalScore',
+          action: interpretation?['action'],
+        );
+        final String body =
+            '${widget.assessmentId} completed by ${widget.patientName ?? 'your patient'}.\n\n'
+            'Score: $totalScore\n'
+            '${interpretation?['summary'] ?? ''}\n'
+            '${(interpretation?['action']?.isNotEmpty ?? false) ? 'Recommended action: ${interpretation!['action']}\n' : ''}'
+            '\nHave the Progressor app? Tap this link to attach these results to their chart:\n$deepLink';
+        final Uri mailUri = Uri(
+          scheme: 'mailto',
+          path: widget.providerEmail,
+          queryParameters: {'subject': '${widget.assessmentId} Results', 'body': body},
+        );
+        if (await canLaunchUrl(mailUri)) await launchUrl(mailUri);
 
-        // 3. Return 'true' so the calling screen knows to refresh the icons/maps
+        await DatabaseManager().markQuestionnaireCompleted(assignmentId);
+        await DatabaseManager().appendDiaryEntry(
+          widget.patientUuid,
+          DateTime.now(),
+          'Completed the ${widget.assessmentId} questionnaire — sent to ${widget.providerName ?? 'your care team'}.',
+        );
+
+        if (mounted) setState(() => _submitted = true);
+        return;
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Assessment saved successfully")));
         Navigator.of(context).pop(true);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error saving assessment: $e")));
       }
+    } finally {
+      if (mounted) setState(() => _submitting = false);
     }
   }
 
+  // Deliberately no score or interpretation shown here — not even once the form is
+  // complete. Showing a patient an automated "your PHQ-9 suggests moderate
+  // depression" with no clinician in the loop is exactly the false-positive/
+  // self-diagnosis risk this whole assigned-questionnaire model exists to avoid (see
+  // medical_profile_screen.dart's _checkActiveQuestionnaire doc comment). The real
+  // score/interpretation still gets computed — see _submitAssessment — it's just
+  // never rendered to the person answering.
   Widget _buildScoreFooter() {
-    final questions = widget.template['questions_score'] as List;
-
-    final bool isFormComplete = widget.logic!.isComplete(answers, questions);
-
-    // Only get interpretation if the form is actually complete
-    final interpretation = isFormComplete ? getInterpretation() : null;
-
     return Container(
       padding: const EdgeInsets.all(20),
       color: Colors.blueGrey.shade50,
-      child: Column(
-        children: [
-          // Display interpretation ONLY when everything is filled
-          if (interpretation != null) ...[
-            Text(
-              interpretation['summary']!,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              textAlign: TextAlign.center,
-            ),
-            if (interpretation['action'] != null && interpretation['action']!.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(
-                "Recommended Action: ${interpretation['action']}",
-                style: const TextStyle(fontStyle: FontStyle.italic),
-                textAlign: TextAlign.center,
-              ),
-            ],
-            const SizedBox(height: 16),
-          ],
-
-          Text("Current Score: $totalScore", style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
-        ],
+      child: const Text(
+        "Your answers go straight to your care team — you won't see a score here.",
+        style: TextStyle(fontStyle: FontStyle.italic),
+        textAlign: TextAlign.center,
       ),
     );
   }

@@ -2,13 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:ally/screens/questionnaire_answering_screen.dart';
 
 import '../app_theme.dart';
-import '../classes/assessment_logic.dart';
 import '../classes/database_manager.dart';
 import '../classes/patient.dart';
-import '../classes/questionnaire.dart';
+import '../classes/questionnaire_catalog.dart';
 import '../classes/templates.dart';
 import '../widgets/questionnaire_tile.dart';
 
+// Only ever shows a questionnaire a provider actually assigned (see
+// AssignQuestionnaireScreen) — there is no catalog to browse here anymore. Each tile
+// disappears the moment it's answered (medical_profile_screen.dart hides this whole
+// screen's entry point once nothing is left active), so in practice this list is
+// almost always either empty (never reached — the tile isn't shown) or has exactly
+// one or two entries.
 class QuestionnairesScreen extends StatefulWidget {
   final Patient patient;
 
@@ -18,23 +23,21 @@ class QuestionnairesScreen extends StatefulWidget {
 }
 
 class QuestionnairesScreenState extends State<QuestionnairesScreen> {
-  late Future<Map<String, CompletedQuestionnaire>> completedQuestionnaires;
-  late Map<String, CompletedQuestionnaire> completed;
+  late Future<List<Map<String, dynamic>>> activeAssignments;
+
   @override
   void initState() {
     super.initState();
-    // Initialize the future once
-    completedQuestionnaires = DatabaseManager().getCompletedAssessments(widget.patient.patientUuid);
+    activeAssignments = DatabaseManager().getActiveAssignedQuestionnaires(widget.patient.patientUuid);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.canvasColor,
-
       body: SafeArea(
-        child: FutureBuilder<Map<String, CompletedQuestionnaire>>(
-          future: completedQuestionnaires,
+        child: FutureBuilder<List<Map<String, dynamic>>>(
+          future: activeAssignments,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
@@ -43,91 +46,53 @@ class QuestionnairesScreenState extends State<QuestionnairesScreen> {
               return Center(child: Text("Error: ${snapshot.error}"));
             }
 
-            completed = snapshot.data ?? {};
-            return Column(children: [..._buildQuestionnaireTiles(completed)]);
+            final assignments = snapshot.data ?? [];
+            if (assignments.isEmpty) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Text("Nothing requested right now."),
+                ),
+              );
+            }
+            return Column(children: _buildQuestionnaireTiles(assignments));
           },
         ),
       ),
     );
   }
 
-  List<Widget> _buildQuestionnaireTiles(Map<String, CompletedQuestionnaire> completed) {
-    final List<Map<String, dynamic>> configs = [
-      {
-        "name": "PHQ-9",
-        "subTitle": "Patient Health Questionnaire 9",
-        "explanation":
-            "The PHQ-9 (Patient Health Questionnaire-9) is a standardized, 9-item self-report tool used by clinicians to screen for, diagnose, and monitor the severity of depression. It evaluates symptoms over the past two weeks, such as depressed mood, sleep disturbances, and fatigue",
-        "template": "phq-9.json",
-        "logic": PHQ9Logic(),
-        "guide": 'assets/questions/phq9_score_guide.json',
-      },
-      {
-        "name": "GAD-7",
-        "subTitle": "General Anxiety Disorder-7",
-        "explanation":
-            "The GAD-7 is a 7-item clinical questionnaire used to screen for Generalized Anxiety Disorder and assess its severity. By rating symptoms over the past two weeks, individuals receive a score from 0 to 21. You can complete an interactive version on the MDCalc website.",
-        "template": "gad-7.json",
-        "logic": GAD7Logic(),
-        "guide": 'assets/questions/gad7_score_guide.json',
-      },
-      {
-        "name": "C-SSRS",
-        "subTitle": "Columbia-Suicide Severity Rating Scale",
-        "explanation":
-            "The Columbia-Suicide Severity Rating Scale (C-SSRS) is a widely used, evidence-based questionnaire designed to screen for suicide risk. It assesses the full spectrum of suicidal ideation (thoughts of suicide) and behavior (preparatory acts, aborted attempts, or actual attempts) to help clinicians determine the appropriate level of care",
-        "template": "c-ssrs.json",
-        "logic": CSSRSLogic(),
-        "guide": null,
-      },
-      {
-        "name": "DAST-10",
-        "subTitle": "Drug Abuse Screening Test 10",
-        "explanation":
-            "The DAST-10 provides a brief, simple, practical, but valid method for identifying individuals who are abusing psychoactive drugs. It also yields a quantitative index score of the degree of problems related to drug use and misuse. The DAST-10 obtains no information on the various types of drugs used, or on the frequency or duration of the drug use. It includes a question regarding multiple drug use, and some of the types of problems caused by drug use/abuse are surveyed. This includes marital-family relationships, legal, medical symptoms and physical health conditions. An examination of the individual item responses indicates the specific life problem areas.",
-        "template": "dast-10.json",
-        "logic": DAST10Logic(),
-        "guide": 'assets/questions/dast10_score_guide.json',
-      },
-      {
-        "name": "ASRS-V1.1",
-        "subTitle": "Adult ADHD Self-Report Scale (ASRS) version 1.1",
-        "explanation":
-            "The Adult ADHD Self-Report Scale (ASRS) version 1.1 is a diagnostic tool designed for the assessment of Attention-Deficit/Hyperactivity Disorder (ADHD) in adults; developed in collaboration between the World Health Organization (WHO) and researchers at Harvard Medical School.",
-        "template": "asrs.json",
-        "logic": ASRS11Logic(),
-        "guide": 'assets/questions/asrs_score_guide.json',
-      },
-      {
-        "name": "PCL-5",
-        "subTitle": "PTSD Checklist 5",
-        "explanation":
-            "The PCL-5 (Posttraumatic Stress Disorder Checklist for DSM-5) is a widely used, 20-item self-report questionnaire designed to screen for PTSD and measure symptom severity over the past month. It asks you to rate how much you've been bothered by specific problems stemming from a specific stressful event",
-        "template": "pcl-5.json",
-        "logic": PCL5Logic(),
-        "guide": 'assets/questions/pcl5_score_guide.json',
-      },
-    ];
+  List<Widget> _buildQuestionnaireTiles(List<Map<String, dynamic>> assignments) {
+    return assignments
+        .map((assignment) {
+          final String templateId = assignment['template_id'] as String;
+          final QuestionnaireCatalogEntry? entry = questionnaireCatalogEntry(templateId);
+          if (entry == null) return null;
+          final String assignmentId = assignment['id'] as String;
+          final String providerName = assignment['provider_name'] as String;
+          final String providerEmail = assignment['provider_email'] as String;
 
-    return configs
-        .map(
-          (cfg) => QuestionnaireTile(
-            assessmentName: cfg["name"],
+          return QuestionnaireTile(
+            assessmentName: entry.name,
             patientId: widget.patient.patientUuid,
-            dateTaken: completed[cfg["name"]]?.when,
-            description: cfg["explanation"],
-            subtitle: cfg["subTitle"], // Add specific subtitles per config if needed
-            template: cfg["template"],
-            scoreGuidePath: cfg["guide"],
-            isCompleted: completed[cfg["name"]]?.completed ?? false,
+            dateTaken: null,
+            description: entry.explanation,
+            subtitle: entry.subTitle,
+            template: entry.template,
+            scoreGuidePath: entry.guide,
+            isCompleted: false,
             builder: (id, data, ctrl) => QuestionnaireAnsweringScreen(
               assessmentId: data["assessmentId"],
               patientUuid: data["patientUuid"],
               scoreGuidePath: data["scoreGuidePath"],
               template: data["template"],
               isReadOnly: data['isReadOnly'],
-              logic: cfg["logic"],
+              logic: entry.logic,
               scrollController: ctrl,
+              assignedQuestionnaireId: assignmentId,
+              providerName: providerName,
+              providerEmail: providerEmail,
+              patientName: '${widget.patient.firstName} ${widget.patient.lastName}',
             ),
             onLaunch: (ctx, name, pid, temp, guide, readOnly, builder) {
               launchQuestionnaire(
@@ -137,11 +102,15 @@ class QuestionnairesScreenState extends State<QuestionnairesScreen> {
                 templateName: temp,
                 scoreGuidePath: guide,
                 isReadOnly: readOnly,
+                assignmentId: assignmentId,
+                providerName: providerName,
+                providerEmail: providerEmail,
                 screenBuilder: builder,
               );
             },
-          ),
-        )
+          );
+        })
+        .whereType<Widget>()
         .toList();
   }
 
@@ -152,6 +121,9 @@ class QuestionnairesScreenState extends State<QuestionnairesScreen> {
     required String templateName,
     required String? scoreGuidePath,
     required bool isReadOnly,
+    required String assignmentId,
+    required String providerName,
+    required String providerEmail,
     required Widget Function(String assessmentId, Map<String, dynamic> template, ScrollController controller)
     screenBuilder,
   }) async {
@@ -166,9 +138,12 @@ class QuestionnairesScreenState extends State<QuestionnairesScreen> {
       'isReadOnly': isReadOnly,
       'scoreGuidePath': scoreGuidePath,
       'template': template,
+      'assignmentId': assignmentId,
+      'providerName': providerName,
+      'providerEmail': providerEmail,
     };
 
-    final dynamic result = await showModalBottomSheet(
+    await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -214,17 +189,12 @@ class QuestionnairesScreenState extends State<QuestionnairesScreen> {
       ),
     );
 
-    //RE-ASSIGN the Future to force the FutureBuilder to rebuild
-    final newFuture = DatabaseManager().getCompletedAssessments(widget.patient.patientUuid);
-
-    //  Await the data
-    final updatedCompleted = await newFuture;
-
-    // Update BOTH the Future and the local Map
+    // Refresh — the assignment this tile came from may have just been completed and
+    // withdrawn (see QuestionnaireAnsweringScreen._submitAssessment), so re-query
+    // rather than trusting the list this screen was built with.
     if (mounted) {
       setState(() {
-        completedQuestionnaires = newFuture; // Poke the FutureBuilder
-        completed = updatedCompleted; // Poke the List UI
+        activeAssignments = DatabaseManager().getActiveAssignedQuestionnaires(widget.patient.patientUuid);
       });
     }
   }

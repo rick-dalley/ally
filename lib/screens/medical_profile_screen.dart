@@ -45,6 +45,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
   bool _hasUnseenDoctorTherapy = false;
   bool _hasUnresolvedSymptomFlags = false;
   DetailedPainLevel? _activeSeverity;
+  bool _hasActiveQuestionnaire = false;
 
   @override
   void initState() {
@@ -53,6 +54,18 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
     _checkUnseenTherapies();
     _checkUnresolvedSymptomFlags();
     _checkActiveSeverity();
+    _checkActiveQuestionnaire();
+  }
+
+  // The Questionnaires tile's only visibility gate — it doesn't exist at all until a
+  // provider has actually requested one (see AssignQuestionnaireScreen), and
+  // disappears again the moment it's answered. There's no free-standing catalog to
+  // browse: a validated instrument like PHQ-9 or PCL-5 scored and interpreted for an
+  // unsupervised patient risks false self-diagnosis with no clinician in the loop.
+  Future<void> _checkActiveQuestionnaire() async {
+    final rows = await DatabaseManager().getActiveAssignedQuestionnaires(widget.user.patientUuid);
+    if (!mounted) return;
+    setState(() => _hasActiveQuestionnaire = rows.isNotEmpty);
   }
 
   // The Symptoms tile's badge icon — only meaningful while there's an active marker
@@ -281,6 +294,28 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                       ),
                     ),
                   ),
+                  // A provider's request is the most urgent thing on this screen when
+                  // it exists at all — top of the list, with the same green halo the
+                  // Therapies tile uses for a doctor's order landing. Only exists at
+                  // all while a provider has actually requested one (see
+                  // _checkActiveQuestionnaire's doc comment); not shown otherwise, not
+                  // even as a disabled/empty state — there's nothing to browse.
+                  if (_hasActiveQuestionnaire)
+                    Stack(
+                      children: [
+                        CarbonActionTile(
+                          title: "Mental Wellness Questionnaire",
+                          subtitle: "Requested by your care team",
+                          icon: Symbols.ballot_sharp,
+                          iconSize: Size(32.0, 32.0),
+                          outlineIcon: Symbols.ballot_sharp,
+                          iconColor: AppDomain.questionnaires.color,
+                          onTap: () =>
+                              launchQuestionnairesScreen(patient: widget.user),
+                        ),
+                        const Positioned(top: 16, right: 16, child: PulsingHaloDot(color: Colors.green)),
+                      ],
+                    ),
                   CarbonActionTile(
                     title: "Existing Medical Conditions",
                     subtitle: "Review & Update",
@@ -416,17 +451,6 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     outlineIcon: Symbols.inventory_2,
                     iconColor: AppDomain.supplies.color,
                     onTap: () => launchSuppliesScreen(patient: widget.user),
-                  ),
-                  CarbonActionTile(
-                    title: "Mental Wellness Questionnaires",
-                    subtitle:
-                        "Questionnaires to help your care giver assess your current mental health",
-                    icon: Symbols.ballot_sharp,
-                    iconSize: Size(32.0, 32.0),
-                    outlineIcon: Symbols.ballot_sharp,
-                    iconColor: AppDomain.questionnaires.color,
-                    onTap: () =>
-                        launchQuestionnairesScreen(patient: widget.user),
                   ),
                   // Deliberately last, not up near the top with the rest of the
                   // clinical tiles — vaccines are a subject some people have strong
@@ -718,8 +742,8 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
     );
   }
 
-  void launchQuestionnairesScreen({required Patient patient}) {
-    showModalBottomSheet(
+  Future<void> launchQuestionnairesScreen({required Patient patient}) async {
+    await showModalBottomSheet(
       context: context,
       isScrollControlled: true, // Allows the sheet to take full height
       useSafeArea: true, // Respects the device notch and safe areas
@@ -756,6 +780,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
         );
       },
     );
+    await _checkActiveQuestionnaire();
   }
 
   Future<void> _launchAllergiesChecklist(

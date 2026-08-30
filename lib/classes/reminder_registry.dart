@@ -76,6 +76,7 @@ class ReminderRegistry extends ChangeNotifier {
     collected.addAll(await _loadMedicationReminders(patientUuid));
     collected.addAll(await _loadSymptomRecheckReminders(patientUuid));
     collected.addAll(await _loadSicknessRecheckReminders(patientUuid));
+    collected.addAll(await _loadQuestionnaireReminders(patientUuid));
     collected.addAll(await _loadImmunizationReminders(patientUuid));
     collected.addAll(await _loadTestReminders(patientUuid));
     collected.addAll(await _loadSupplyReminders(patientUuid));
@@ -376,6 +377,29 @@ class ReminderRegistry extends ChangeNotifier {
           symptoms: episode.symptoms,
           startedAt: episode.startedAt,
           dueAt: baseline.add(const Duration(days: 1)),
+        ),
+      );
+    }
+    return reminders;
+  }
+
+  // "if they don't fill it out the same day" — due starting the day after it
+  // arrived, then daily until it's answered (see QuestionnaireReminder's doc comment
+  // for why there's no way to dismiss this except by actually answering it).
+  Future<List<QuestionnaireReminder>> _loadQuestionnaireReminders(
+    String patientUuid,
+  ) async {
+    final rows = await DatabaseManager().getActiveAssignedQuestionnaires(patientUuid);
+    final List<QuestionnaireReminder> reminders = [];
+    for (final row in rows) {
+      final DateTime assignedAt = DateTime.parse(row['assigned_at'] as String);
+      reminders.add(
+        QuestionnaireReminder(
+          assignmentId: row['id'] as String,
+          templateId: row['template_id'] as String,
+          providerName: row['provider_name'] as String,
+          assignedAt: assignedAt,
+          dueAt: assignedAt.add(const Duration(days: 1)),
         ),
       );
     }

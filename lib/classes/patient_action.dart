@@ -17,7 +17,8 @@ enum PatientActionTypes implements Listable {
   changedMood,
   symptomLogged,
   appointmentAttended,
-  testCompleted;
+  testCompleted,
+  questionnaireCompleted;
 
   @override
   String get description {
@@ -36,6 +37,8 @@ enum PatientActionTypes implements Listable {
         return "Had an appointment";
       case PatientActionTypes.testCompleted:
         return "Completed a test";
+      case PatientActionTypes.questionnaireCompleted:
+        return "Completed a questionnaire";
     }
   }
 
@@ -56,6 +59,8 @@ enum PatientActionTypes implements Listable {
         return "Appointment";
       case PatientActionTypes.testCompleted:
         return "Test";
+      case PatientActionTypes.questionnaireCompleted:
+        return "Questionnaire";
     }
   }
 
@@ -79,6 +84,8 @@ enum PatientActionTypes implements Listable {
         return Symbols.diversity_4;
       case PatientActionTypes.testCompleted:
         return Symbols.lab_panel;
+      case PatientActionTypes.questionnaireCompleted:
+        return Symbols.ballot_sharp;
     }
   }
 }
@@ -138,6 +145,18 @@ class PatientAction implements Actionable, CarbonTimelinePointEvent {
       actionType: PatientActionTypes.testCompleted,
       occurred: DateTime.parse(row['completed_on'] as String),
       detail: '${row['name']} completed',
+    );
+  }
+
+  // Only ever built from a completed (withdrawn) assigned_questionnaire row — see
+  // DatabaseManager.getCompletedAssignedQuestionnaires. Names the instrument, not a
+  // score — this dot exists to show "something happened here," same as every other
+  // documentation-only event on this timeline.
+  factory PatientAction.questionnaire(Map<String, dynamic> row) {
+    return PatientAction(
+      actionType: PatientActionTypes.questionnaireCompleted,
+      occurred: DateTime.parse(row['completed_at'] as String),
+      detail: '${row['template_id']} sent to ${row['provider_name']}',
     );
   }
 

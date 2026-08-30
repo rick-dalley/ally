@@ -5,9 +5,11 @@ import '../app_theme.dart';
 import 'package:carbon_ui/colors/carbon_color_constants.dart';
 import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
+import '../classes/patient.dart';
 import '../classes/remindable.dart';
 import '../classes/reminder_registry.dart';
 import '../classes/sickness_episode.dart';
+import '../screens/questionnaires_screen.dart';
 import '../screens/sickness_recheck_screen.dart';
 
 // A vertically-scrolling list of what's currently due, shown as a modal sheet
@@ -154,6 +156,8 @@ class ReminderTile extends StatelessWidget {
           final Remindable current = reminder;
           if (current is SicknessRecheckReminder) {
             _openSicknessRecheck(context, current);
+          } else if (current is QuestionnaireReminder) {
+            _openQuestionnaires(context);
           } else {
             _openActionSheet(context);
           }
@@ -192,6 +196,22 @@ class ReminderTile extends StatelessWidget {
         fullscreenDialog: true,
         builder: (_) => SicknessRecheckScreen(patientUuid: patientUuid, episode: SicknessEpisode.fromRow(row)),
       ),
+    );
+    await ReminderRegistry.instance.refresh();
+  }
+
+  // The tile itself (top of the Profile screen, with its own green halo) is the real
+  // call to action — this just gets the patient there directly instead of showing a
+  // generic action sheet with nothing to act on (see QuestionnaireReminder's empty
+  // availableActions).
+  Future<void> _openQuestionnaires(BuildContext context) async {
+    final String? patientUuid = ReminderRegistry.instance.patientUuid;
+    if (patientUuid == null) return;
+    final rows = await DatabaseManager().getPatientWithVitals(patientUuid: patientUuid);
+    if (rows.isEmpty || !context.mounted) return;
+    final Patient patient = Patient.fromJson(rows.first);
+    await Navigator.of(context, rootNavigator: true).push(
+      MaterialPageRoute(builder: (_) => QuestionnairesScreen(patient: patient)),
     );
     await ReminderRegistry.instance.refresh();
   }

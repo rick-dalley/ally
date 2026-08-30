@@ -514,6 +514,59 @@ class SicknessRecheckReminder implements Remindable {
   }
 }
 
+// A clinician-requested questionnaire that's gone unanswered past the day it arrived.
+// Unlike every other Remindable here, there's no "done"/"skipped" that actually means
+// anything — the only real way to resolve this is to go answer it (see
+// ReminderTile's special-case tap handling), never through a swipe or the generic
+// action sheet, since falsely marking a clinical request "done" without real answers
+// would be worse than not reminding at all.
+class QuestionnaireReminder implements Remindable {
+  final String assignmentId;
+  final String templateId;
+  final String providerName;
+  final DateTime assignedAt;
+  final DateTime dueAt;
+
+  const QuestionnaireReminder({
+    required this.assignmentId,
+    required this.templateId,
+    required this.providerName,
+    required this.assignedAt,
+    required this.dueAt,
+  });
+
+  @override
+  String get remindableId => 'questionnaire:$assignmentId';
+  @override
+  String get title => 'Complete your $templateId questionnaire';
+  @override
+  String get subtitle => 'Requested by $providerName';
+  @override
+  IconData get icon => Symbols.ballot_sharp;
+  @override
+  Color get color => AppDomain.questionnaires.color;
+  @override
+  DateTime get nextReminder => dueAt;
+  @override
+  Duration get advanceNotice => Duration.zero;
+  @override
+  Duration? get cadence => const Duration(days: 1);
+  @override
+  Set<ReminderChannel> get channels => const {ReminderChannel.chime};
+  @override
+  WearableAlertMode? get wearableMode => null;
+  @override
+  bool get isDue => isRemindableDue(this);
+
+  @override
+  List<ReminderAction> get availableActions => const [];
+
+  @override
+  Future<void> handleAction(ReminderAction action, {DateTime? bumpTo}) async {
+    // No-op by design — see class doc comment.
+  }
+}
+
 class ImmunizationReminder implements Remindable {
   final int vaccinationId;
   final String vaccineName;
