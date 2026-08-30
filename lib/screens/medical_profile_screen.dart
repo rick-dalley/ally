@@ -23,6 +23,7 @@ import 'package:carbon_ui/widgets/carbon_flyout_widget.dart';
 import 'immunization_screen.dart';
 import 'mood_check_in_screen.dart';
 import 'patient_diary_screen.dart';
+import 'sickness_check_in_screen.dart';
 import 'therapies_screen.dart';
 
 class MedicalProfileScreen extends StatefulWidget {
@@ -97,6 +98,18 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
         fullscreenDialog: true,
         builder: (_) =>
             MoodCheckInScreen(mood: mood, patientUuid: widget.user.patientUuid, skipPrompt: skipPrompt),
+      ),
+    );
+  }
+
+  // "Sick" gets its own richer flow (symptom chips + severity, and a daily recheck
+  // afterward) instead of the generic write-a-note check-in every other flagged mood
+  // gets — see SicknessCheckInScreen's doc comment.
+  void _openSicknessCheckIn() {
+    Navigator.of(context, rootNavigator: true).push(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => SicknessCheckInScreen(patientUuid: widget.user.patientUuid),
       ),
     );
   }
@@ -214,7 +227,9 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                               final Sentiment newSentiment = item as Sentiment;
                               _recordMood(newSentiment);
                               await _maybeShowMoodIntro();
-                              if (newSentiment.needsCheckIn) {
+                              if (newSentiment == Sentiment.sick) {
+                                _openSicknessCheckIn();
+                              } else if (newSentiment.needsCheckIn) {
                                 _openMoodCheckIn(newSentiment, skipPrompt: false);
                               }
                             },
@@ -223,13 +238,21 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                               final Sentiment newSentiment = item as Sentiment;
                               _recordMood(newSentiment);
                               await _maybeShowMoodIntro();
-                              _openMoodCheckIn(newSentiment, skipPrompt: true);
+                              if (newSentiment == Sentiment.sick) {
+                                _openSicknessCheckIn();
+                              } else {
+                                _openMoodCheckIn(newSentiment, skipPrompt: true);
+                              }
                             },
                             onItemDoubleTap: (Flyable item) async {
                               final Sentiment newSentiment = item as Sentiment;
                               _recordMood(newSentiment);
                               await _maybeShowMoodIntro();
-                              _openMoodCheckIn(newSentiment, skipPrompt: true);
+                              if (newSentiment == Sentiment.sick) {
+                                _openSicknessCheckIn();
+                              } else {
+                                _openMoodCheckIn(newSentiment, skipPrompt: true);
+                              }
                             },
                           ),
                         ),

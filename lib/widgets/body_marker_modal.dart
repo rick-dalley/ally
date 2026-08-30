@@ -184,7 +184,8 @@ class _BodyMarkerModalState extends State<BodyMarkerModal> {
         ),
         const SizedBox(height: 16),
         CarbonTextInput(
-          label: "What have you tried? (optional)",
+          label: "Treatment (optional)",
+          helperText: "What are you doing to treat this?",
           controller: _interventionsController,
           maxLines: 2,
           onChanged: (_) {},

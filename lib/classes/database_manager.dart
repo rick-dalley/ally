@@ -102,7 +102,7 @@ class DatabaseManager {
   // Bump this whenever assets/sql/sql.json gains new tables/indexes, so
   // existing installs pick them up via onUpgrade instead of silently
   // missing them (see onUpgrade above).
-  static const int schemaVersion = 5;
+  static const int schemaVersion = 6;
 
   Future<void> createSqlObjects(Database db) async {
     if (sqlConfig == null) return;
@@ -1996,6 +1996,131 @@ class DatabaseManager {
     await db.update(
       'quick_symptom_flag',
       {'resolved_at': DateTime.now().toIso8601String()},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  // The one currently-open sickness episode, if any — tapping "Sick" again while one
+  // is still active should add to it rather than start a second, competing daily
+  // recheck cycle.
+  Future<Map<String, dynamic>?> getActiveSicknessEpisode(String patientUuid) async {
+    final db = await database;
+    final rows = await db.query(
+      'sickness_episode',
+      where: 'patient_uuid = ? AND resolved_at IS NULL',
+      whereArgs: [patientUuid],
+      orderBy: 'started_at DESC',
+      limit: 1,
+    );
+    return rows.isEmpty ? null : rows.first;
+  }
+
+  Future<Map<String, dynamic>?> getSicknessEpisodeById(String id) async {
+    final db = await database;
+    final rows = await db.query('sickness_episode', where: 'id = ?', whereArgs: [id], limit: 1);
+    return rows.isEmpty ? null : rows.first;
+  }
+
+  Future<String> insertSicknessEpisode({
+    required String patientUuid,
+    required List<String> symptoms,
+    int? severity,
+  }) async {
+    final db = await database;
+    final String id = uuid.v4();
+    final String now = DateTime.now().toIso8601String();
+    await db.insert('sickness_episode', {
+      'id': id,
+      'patient_uuid': patientUuid,
+      'symptoms': symptoms.isEmpty ? null : symptoms.join(','),
+      'severity': severity,
+      'started_at': now,
+      'last_checked_at': now,
+    });
+    return id;
+  }
+
+  // Tapping "Sick" while an episode is already open folds the new chips in (union,
+  // not replace — a second tap naming "Fever" shouldn't erase "Nauseous" from the
+  // first) and only overwrites severity if this tap actually supplied one.
+  Future<void> updateSicknessEpisodeIntake({
+    required String id,
+    required List<String> existingSymptoms,
+    required List<String> newSymptoms,
+    int? severity,
+  }) async {
+    final db = await database;
+    final Set<String> merged = {...existingSymptoms, ...newSymptoms};
+    final Map<String, dynamic> updates = {
+      'symptoms': merged.isEmpty ? null : merged.join(','),
+      'last_checked_at': DateTime.now().toIso8601String(),
+    };
+    if (severity != null) updates['severity'] = severity;
+    await db.update('sickness_episode', updates, where: 'id = ?', whereArgs: [id]);
+  }
+
+  // Mirrors getMarkersDueForFollowUp's shape, but daily rather than every 3 days —
+  // see SicknessRecheckReminder for why this needs to be much more frequent than the
+  // real Symptoms feature's recheck.
+  Future<List<Map<String, dynamic>>> getSicknessEpisodesDueForRecheck(
+    String patientUuid, {
+    Duration minAge = const Duration(days: 1),
+  }) async {
+    final db = await database;
+    final String cutoff = DateTime.now().subtract(minAge).toIso8601String();
+    return await db.query(
+      'sickness_episode',
+      where:
+          'patient_uuid = ? AND resolved_at IS NULL AND started_at <= ? '
+          'AND (last_checked_at IS NULL OR last_checked_at <= ?)',
+      whereArgs: [patientUuid, cutoff, cutoff],
+      orderBy: 'started_at ASC',
+    );
+  }
+
+  Future<void> resolveSicknessEpisode(String id) async {
+    final db = await database;
+    await db.update(
+      'sickness_episode',
+      {'resolved_at': DateTime.now().toIso8601String()},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  // "Still sick" swipe/answer with a fresh severity reading — the caller (screen or
+  // reminder) is responsible for deciding beforehand whether this reading should also
+  // trigger the seek-care escalation ask (see SicknessEpisode.escalates), since that
+  // needs the *previous* severity, which this update would otherwise overwrite first.
+  Future<void> updateSicknessEpisodeCheck({required String id, required int severity}) async {
+    final db = await database;
+    await db.update(
+      'sickness_episode',
+      {'severity': severity, 'last_checked_at': DateTime.now().toIso8601String()},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  // A swipe-skip on the reminder tile — defers to tomorrow without collecting a new
+  // severity reading (so it can't itself trigger the "got worse" escalation; the
+  // 3-day duration check still applies independently).
+  Future<void> deferSicknessEpisodeCheck(String id) async {
+    final db = await database;
+    await db.update(
+      'sickness_episode',
+      {'last_checked_at': DateTime.now().toIso8601String()},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<void> dismissSicknessSeekCareReminder(String id) async {
+    final db = await database;
+    await db.update(
+      'sickness_episode',
+      {'seek_care_dismissed': 1},
       where: 'id = ?',
       whereArgs: [id],
     );

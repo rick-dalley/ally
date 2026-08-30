@@ -4,8 +4,11 @@ import 'package:material_symbols_icons/symbols.dart';
 import '../app_theme.dart';
 import 'package:carbon_ui/colors/carbon_color_constants.dart';
 import 'package:carbon_ui/colors/carbon_theme_constants.dart';
+import '../classes/database_manager.dart';
 import '../classes/remindable.dart';
 import '../classes/reminder_registry.dart';
+import '../classes/sickness_episode.dart';
+import '../screens/sickness_recheck_screen.dart';
 
 // A vertically-scrolling list of what's currently due, shown as a modal sheet
 // (floating over the screen, not occupying layout space) rather than an inline strip.
@@ -131,7 +134,14 @@ class ReminderTile extends StatelessWidget {
       background: _swipeBackground(Alignment.centerLeft, isDone: true),
       secondaryBackground: _swipeBackground(Alignment.centerRight, isDone: false),
       child: ListTile(
-        onTap: () => _openActionSheet(context),
+        onTap: () {
+          final Remindable current = reminder;
+          if (current is SicknessRecheckReminder) {
+            _openSicknessRecheck(context, current);
+          } else {
+            _openActionSheet(context);
+          }
+        },
         leading: Icon(reminder.icon, color: reminder.color),
         title: Text(reminder.title, style: CarbonTheme.carbonLabelTextStyle),
         subtitle: Text(reminder.subtitle, style: CarbonTheme.carbonHelperTextStyle),
@@ -151,6 +161,23 @@ class ReminderTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Icon(isDone ? Symbols.check : Symbols.cancel, color: accent),
     );
+  }
+
+  // A multi-step conversation (still sick? -> how bad? -> maybe seek care), not a
+  // one-tap action — bypasses the generic action sheet entirely. The swipe gestures
+  // above still use the generic done/skipped path (see SicknessRecheckReminder's own
+  // doc comment for why that's an acceptable fallback for a quick swipe).
+  Future<void> _openSicknessRecheck(BuildContext context, SicknessRecheckReminder sicknessReminder) async {
+    final String? patientUuid = ReminderRegistry.instance.patientUuid;
+    final row = await DatabaseManager().getSicknessEpisodeById(sicknessReminder.episodeId);
+    if (row == null || patientUuid == null || !context.mounted) return;
+    await Navigator.of(context, rootNavigator: true).push(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => SicknessRecheckScreen(patientUuid: patientUuid, episode: SicknessEpisode.fromRow(row)),
+      ),
+    );
+    await ReminderRegistry.instance.refresh();
   }
 
   Future<void> _openActionSheet(BuildContext context) async {

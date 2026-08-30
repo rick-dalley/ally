@@ -451,6 +451,69 @@ class SymptomRecheckReminder implements Remindable {
   }
 }
 
+// The "sick" mood's own daily check-in — separate from SymptomRecheckReminder (which
+// is every 3 days and belongs to a body-diagram marker with a location). A tap always
+// opens the dedicated SicknessRecheckScreen (see ReminderTile's special-case), which
+// walks Yes/No → severity → possible seek-care escalation; the done/skipped actions
+// here only exist to give a sensible outcome to the generic swipe gesture.
+class SicknessRecheckReminder implements Remindable {
+  final String episodeId;
+  final List<String> symptoms;
+  final DateTime startedAt;
+  final DateTime dueAt;
+
+  const SicknessRecheckReminder({
+    required this.episodeId,
+    required this.symptoms,
+    required this.startedAt,
+    required this.dueAt,
+  });
+
+  @override
+  String get remindableId => 'sickness:$episodeId';
+  @override
+  String get title => 'Are you still feeling sick?';
+  @override
+  String get subtitle => symptoms.isEmpty ? "Check in on how you're feeling" : "Still dealing with ${symptoms.join(', ')}?";
+  // Same domain/icon as the real Symptoms feature — this is still "symptoms," just a
+  // lighter-weight source of them.
+  @override
+  IconData get icon => Symbols.sick_sharp;
+  @override
+  Color get color => AppDomain.symptoms.color;
+  @override
+  DateTime get nextReminder => dueAt;
+  @override
+  Duration get advanceNotice => Duration.zero;
+  @override
+  Duration? get cadence => const Duration(days: 1);
+  @override
+  Set<ReminderChannel> get channels => const {ReminderChannel.chime};
+  @override
+  WearableAlertMode? get wearableMode => null;
+  @override
+  bool get isDue => isRemindableDue(this);
+
+  @override
+  List<ReminderAction> get availableActions => const [
+    ReminderAction.done,
+    ReminderAction.skipped,
+  ];
+
+  @override
+  Future<void> handleAction(ReminderAction action, {DateTime? bumpTo}) async {
+    switch (action) {
+      case ReminderAction.done:
+        await DatabaseManager().resolveSicknessEpisode(episodeId);
+      case ReminderAction.skipped:
+        await DatabaseManager().deferSicknessEpisodeCheck(episodeId);
+      case ReminderAction.muted:
+      case ReminderAction.bumped:
+        break; // not offered — see availableActions
+    }
+  }
+}
+
 class ImmunizationReminder implements Remindable {
   final int vaccinationId;
   final String vaccineName;

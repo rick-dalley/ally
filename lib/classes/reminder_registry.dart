@@ -8,6 +8,7 @@ import 'frequency_codes.dart';
 import 'medication_services.dart';
 import 'metric_value.dart';
 import 'remindable.dart';
+import 'sickness_episode.dart';
 import 'vision_prescription.dart';
 
 // Loads every Remindable for the currently-viewed patient and keeps them refreshed
@@ -46,6 +47,11 @@ class ReminderRegistry extends ChangeNotifier {
   List<Remindable> _reminders = [];
   Timer? _pollTimer;
 
+  // Exposed so a special-cased reminder tile (see ReminderTile's SicknessRecheckReminder
+  // handling) can open a screen that needs the patient context this registry already
+  // tracks, without every caller having to thread it through separately.
+  String? get patientUuid => _patientUuid;
+
   List<Remindable> get all => List.unmodifiable(_reminders);
 
   List<Remindable> get due {
@@ -69,6 +75,7 @@ class ReminderRegistry extends ChangeNotifier {
     collected.addAll(await _loadAppointmentReminders(patientUuid));
     collected.addAll(await _loadMedicationReminders(patientUuid));
     collected.addAll(await _loadSymptomRecheckReminders(patientUuid));
+    collected.addAll(await _loadSicknessRecheckReminders(patientUuid));
     collected.addAll(await _loadImmunizationReminders(patientUuid));
     collected.addAll(await _loadTestReminders(patientUuid));
     collected.addAll(await _loadSupplyReminders(patientUuid));
@@ -349,6 +356,26 @@ class ReminderRegistry extends ChangeNotifier {
           markerId: marker.id!,
           bodyPart: marker.name,
           dueAt: baseline.add(const Duration(days: 3)),
+        ),
+      );
+    }
+    return reminders;
+  }
+
+  Future<List<SicknessRecheckReminder>> _loadSicknessRecheckReminders(
+    String patientUuid,
+  ) async {
+    final rows = await DatabaseManager().getSicknessEpisodesDueForRecheck(patientUuid);
+    final List<SicknessRecheckReminder> reminders = [];
+    for (final row in rows) {
+      final SicknessEpisode episode = SicknessEpisode.fromRow(row);
+      final DateTime baseline = episode.lastCheckedAt ?? episode.startedAt;
+      reminders.add(
+        SicknessRecheckReminder(
+          episodeId: episode.id,
+          symptoms: episode.symptoms,
+          startedAt: episode.startedAt,
+          dueAt: baseline.add(const Duration(days: 1)),
         ),
       );
     }
