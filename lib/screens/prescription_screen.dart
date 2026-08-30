@@ -368,8 +368,9 @@ class InteractionsWidgetState extends State<InteractionsWidget> {
       final String nameA = medicationA.name;
       medicationA.hasInteractions = false;
 
-      if (nameA.isEmpty)
+      if (nameA.isEmpty) {
         continue; // 2. Skip audit logic if it has no FDA set_id synced yet
+      }
 
       for (var medicationB in medications.values) {
         final String nameB = medicationB.name;

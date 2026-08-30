@@ -256,16 +256,21 @@ class _ScatterPainter extends CustomPainter {
     // single line. Colors match the semantics already established for DualBoundCapsule
     // — red for Safe, amber for Healthy — so the same color always means the same
     // thing across the dashboard panel and this chart.
-    if (safeMin != null)
+    if (safeMin != null) {
       drawDashedHLine(yFor(safeMin!), carbonColorSupportError);
-    if (safeMax != null)
+    }
+    if (safeMax != null) {
       drawDashedHLine(yFor(safeMax!), carbonColorSupportError);
-    if (healthyMin != null)
+    }
+    if (healthyMin != null) {
       drawDashedHLine(yFor(healthyMin!), carbonColorSupportWarning);
-    if (healthyMax != null)
+    }
+    if (healthyMax != null) {
       drawDashedHLine(yFor(healthyMax!), carbonColorSupportWarning);
-    if (targetValue != null)
+    }
+    if (targetValue != null) {
       drawDashedHLine(yFor(targetValue!), carbonColorSupportSuccess);
+    }
 
     void drawLabel(
       String text,

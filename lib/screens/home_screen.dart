@@ -138,7 +138,10 @@ class HomeScreenState extends State<HomeScreen> {
             updatePatient(patientIndex: _currentPageIndex, patient: p),
       ),
       EmergencyQRCodeView(householdMember: patient),
-      TimelineScrollerPage(patientUuid: patient.patientUuid, admitted: patient.admitted),
+      TimelineScrollerPage(
+        patientUuid: patient.patientUuid,
+        admitted: patient.admitted,
+      ),
     ];
   }
 
@@ -271,129 +274,138 @@ class HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             // Top Context Bar: Page Action Title (Left) & Active Patient Avatar (Right)
-            if (patient != null)
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                  vertical: 8.0,
-                ),
-                child: Row(
-                  children: [
-                    // Action / Purpose Title — flexible now that the top bar also
-                    // carries the Reminders/Providers icons and the avatar, all of
-                    // fixed width; without this, a long title (e.g. "<Name>'s
-                    // Medical Profile") pushed those fixed-width trailing elements
-                    // straight off the edge of the screen.
-                    Expanded(
-                      child: Text(
-                        currentActionTitle,
-                        style: CarbonTheme.carbonExpressiveTextStyle,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              child: Row(
+                children: [
+                  // Action / Purpose Title — flexible now that the top bar also
+                  // carries the Reminders/Providers icons and the avatar, all of
+                  // fixed width; without this, a long title (e.g. "<Name>'s
+                  // Medical Profile") pushed those fixed-width trailing elements
+                  // straight off the edge of the screen.
+                  Expanded(
+                    child: Text(
+                      currentActionTitle,
+                      style: CarbonTheme.carbonExpressiveTextStyle,
+                      overflow: TextOverflow.ellipsis,
                     ),
+                  ),
 
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                    // Reminders — reachable from every tab, not just whichever
-                    // screen happens to be showing, since something can come due
-                    // no matter what the patient is looking at. The auto-popup
-                    // (_maybeShowReminders) still fires the moment something's
-                    // newly due; this is the same sheet, opened on demand.
-                    AnimatedBuilder(
-                      animation: ReminderRegistry.instance,
-                      builder: (context, _) {
-                        final bool hasDue = ReminderRegistry.instance.due.isNotEmpty;
-                        return Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Symbols.reminder),
-                              tooltip: "Reminders",
-                              onPressed: _openReminders,
-                            ),
-                            if (hasDue)
-                              Positioned(
-                                top: 8,
-                                right: 8,
-                                child: Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-                                ),
-                              ),
-                          ],
-                        );
-                      },
-                    ),
-                    // Providers — not a daily-use screen and not something that
-                    // reports on how the patient is doing right now, unlike the
-                    // remaining bottom tabs, so it moved up here instead.
-                    IconButton(
-                      icon: const Icon(Symbols.diversity_4),
-                      tooltip: "My Health Care Team",
-                      onPressed: () => _openProviders(patient!),
-                    ),
-                    const SizedBox(width: 4),
-
-                    // Patient Avatar (Tap for profile, Long press for roster jump) —
-                    // a halo ripples out from the avatar's own edge while there's an
-                    // unacknowledged trophy (see AchievementBadge), nudging them to go
-                    // look at the new Trophy Case on the personal-details screen; it
-                    // stops the moment they open it.
-                    //
-                    // The outer SizedBox pins this slot's layout footprint to the
-                    // avatar's own fixed size, permanently — the ripple animates well
-                    // past that size every frame, and without this the Stack would
-                    // keep resizing to fit its largest current frame, visibly shoving
-                    // the title text next to it back and forth. OverflowBox then lets
-                    // the ripple actually paint beyond that fixed box: it reports its
-                    // own size as whatever OverflowBox is told to be (the avatar size,
-                    // from the SizedBox), while sizing and centering its child freely
-                    // up to maxWidth/maxHeight — the standard way to let something
-                    // visually overflow without it ever affecting a parent's layout,
-                    // and it needs no manual x/y offset math the way Positioned would.
-                    GestureDetector(
-                      onLongPress: () => _showMemberJumpList(context),
-                      onTap: () => showUserScreen(user: patient),
-                      child: KeyedSubtree(
-                        key: ValueKey(patient.name),
-                        child: SizedBox(
-                          width: CarbonIcons.extraExtraLarge.size.width,
-                          height: CarbonIcons.extraExtraLarge.size.height,
-                          child: Stack(
-                            alignment: Alignment.center,
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Reminders — reachable from every tab, not just whichever
+                      // screen happens to be showing, since something can come due
+                      // no matter what the patient is looking at. The auto-popup
+                      // (_maybeShowReminders) still fires the moment something's
+                      // newly due; this is the same sheet, opened on demand.
+                      AnimatedBuilder(
+                        animation: ReminderRegistry.instance,
+                        builder: (context, _) {
+                          final bool hasDue =
+                              ReminderRegistry.instance.due.isNotEmpty;
+                          return Stack(
                             clipBehavior: Clip.none,
                             children: [
-                              if (AchievementBadge.instance.hasUnacknowledged)
-                                OverflowBox(
-                                  maxWidth:
-                                      CarbonIcons.extraExtraLarge.size.width *
-                                      1.45,
-                                  maxHeight:
-                                      CarbonIcons.extraExtraLarge.size.height *
-                                      1.45,
-                                  child: IgnorePointer(
-                                    child: AvatarRippleEffect(
-                                      size: CarbonIcons
-                                          .extraExtraLarge
-                                          .size
-                                          .width,
-                                      color: const Color(0xFFFFA000),
+                              IconButton(
+                                icon: const Icon(Symbols.reminder),
+                                tooltip: "Reminders",
+                                onPressed: _openReminders,
+                              ),
+                              if (hasDue)
+                                Positioned(
+                                  top: 8,
+                                  right: 8,
+                                  child: Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
                                     ),
                                   ),
                                 ),
-                              CarbonAvatar(name: patient.name, avatarBytes: patient.avatar),
                             ],
+                          );
+                        },
+                      ),
+                      // Providers — not a daily-use screen and not something that
+                      // reports on how the patient is doing right now, unlike the
+                      // remaining bottom tabs, so it moved up here instead.
+                      IconButton(
+                        icon: const Icon(Symbols.diversity_4),
+                        tooltip: "My Health Care Team",
+                        onPressed: () => _openProviders(patient!),
+                      ),
+                      const SizedBox(width: 4),
+
+                      // Patient Avatar (Tap for profile, Long press for roster jump) —
+                      // a halo ripples out from the avatar's own edge while there's an
+                      // unacknowledged trophy (see AchievementBadge), nudging them to go
+                      // look at the new Trophy Case on the personal-details screen; it
+                      // stops the moment they open it.
+                      //
+                      // The outer SizedBox pins this slot's layout footprint to the
+                      // avatar's own fixed size, permanently — the ripple animates well
+                      // past that size every frame, and without this the Stack would
+                      // keep resizing to fit its largest current frame, visibly shoving
+                      // the title text next to it back and forth. OverflowBox then lets
+                      // the ripple actually paint beyond that fixed box: it reports its
+                      // own size as whatever OverflowBox is told to be (the avatar size,
+                      // from the SizedBox), while sizing and centering its child freely
+                      // up to maxWidth/maxHeight — the standard way to let something
+                      // visually overflow without it ever affecting a parent's layout,
+                      // and it needs no manual x/y offset math the way Positioned would.
+                      GestureDetector(
+                        onLongPress: () => _showMemberJumpList(context),
+                        onTap: () => showUserScreen(user: patient),
+                        child: KeyedSubtree(
+                          key: ValueKey(patient.name),
+                          child: SizedBox(
+                            width: CarbonIcons.extraExtraLarge.size.width,
+                            height: CarbonIcons.extraExtraLarge.size.height,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              clipBehavior: Clip.none,
+                              children: [
+                                if (AchievementBadge.instance.hasUnacknowledged)
+                                  OverflowBox(
+                                    maxWidth:
+                                        CarbonIcons.extraExtraLarge.size.width *
+                                        1.45,
+                                    maxHeight:
+                                        CarbonIcons
+                                            .extraExtraLarge
+                                            .size
+                                            .height *
+                                        1.45,
+                                    child: IgnorePointer(
+                                      child: AvatarRippleEffect(
+                                        size: CarbonIcons
+                                            .extraExtraLarge
+                                            .size
+                                            .width,
+                                        color: const Color(0xFFFFA000),
+                                      ),
+                                    ),
+                                  ),
+                                CarbonAvatar(
+                                  name: patient.name,
+                                  avatarBytes: patient.avatar,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                      ],
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+                ],
               ),
+            ),
 
             // Main PageView containing the tabs
             Expanded(

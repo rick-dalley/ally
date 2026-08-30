@@ -272,8 +272,9 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
     if (await DatabaseManager().hasAchievement(
       patientUuid: widget.patientUuid,
       name: name,
-    ))
+    )) {
       return;
+    }
 
     await DatabaseManager().insertAchievement(
       patientUuid: widget.patientUuid,

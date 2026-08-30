@@ -203,8 +203,9 @@ class _ConfigureConditionDialogState extends State<ConfigureConditionDialog> {
                         // Only Active implies "no status date" outright — In Remission
                         // and Recovered both leave whatever status date was already set
                         // (including none) alone, since it's optional either way.
-                        if (newStatus == ConditionStatus.active)
+                        if (newStatus == ConditionStatus.active) {
                           _statusDate = null;
+                        }
                       }),
                       fontSize: 12,
                     ),
@@ -283,8 +284,9 @@ class _ConfigureConditionDialogState extends State<ConfigureConditionDialog> {
                                   ),
                               ],
                               onChanged: (newUnit) {
-                                if (newUnit != null)
+                                if (newUnit != null) {
                                   setState(() => _durationUnit = newUnit);
+                                }
                               },
                               icon: const Icon(
                                 Symbols.expand_more,

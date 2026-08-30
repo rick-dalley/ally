@@ -171,8 +171,9 @@ class ReportPdfBuilder {
     double? healthyMax,
     double? targetValue,
   }) {
-    if (points.isEmpty)
+    if (points.isEmpty) {
       return pw.Text('No readings in this period.', style: helperStyle);
+    }
 
     final List<MapEntry<DateTime, double>> sorted = List.of(points)
       ..sort((a, b) => a.key.compareTo(b.key));
@@ -268,16 +269,21 @@ class ReportPdfBuilder {
                         ..setLineDashPattern([]);
                     }
 
-                    if (safeMin != null)
+                    if (safeMin != null) {
                       drawDashed(yFor(safeMin), safeLineColor);
-                    if (safeMax != null)
+                    }
+                    if (safeMax != null) {
                       drawDashed(yFor(safeMax), safeLineColor);
-                    if (healthyMin != null)
+                    }
+                    if (healthyMin != null) {
                       drawDashed(yFor(healthyMin), healthyLineColor);
-                    if (healthyMax != null)
+                    }
+                    if (healthyMax != null) {
                       drawDashed(yFor(healthyMax), healthyLineColor);
-                    if (targetValue != null)
+                    }
+                    if (targetValue != null) {
                       drawDashed(yFor(targetValue), targetLineColor);
+                    }
 
                     canvas.setColor(accent);
                     for (final point in sorted) {

@@ -11,7 +11,6 @@ import '../classes/assessment_logic.dart';
 import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
 import '../classes/questionnaire_result_export.dart';
-import '../generated/l10n.dart';
 import '../widgets/likert_question.dart';
 
 class QuestionnaireAnsweringScreen extends StatefulWidget {
@@ -113,7 +112,6 @@ class QuestionnaireAnsweringScreenState extends State<QuestionnaireAnsweringScre
 
   @override
   Widget build(BuildContext context) {
-    final l10n = S.of(context);
     final String instructionText = widget.template['column_headers'][0];
     final List questions = widget.template['questions_score'];
     final bool isFormComplete = widget.logic!.isComplete(answers, questions);
@@ -304,8 +302,6 @@ class QuestionnaireAnsweringScreenState extends State<QuestionnaireAnsweringScre
   }
 
   Widget _buildImpactSelector(List<dynamic> options) {
-    final l10n = S.of(context);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

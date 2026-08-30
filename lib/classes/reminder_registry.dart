@@ -154,14 +154,16 @@ class ReminderRegistry extends ChangeNotifier {
     final List<AppointmentReminder> reminders = [];
     for (final row in appointmentRows) {
       final String status = (row['status'] as String?) ?? 'scheduled';
-      if (status != 'scheduled')
+      if (status != 'scheduled') {
         continue; // already handled (attended/missed) — not a reminder anymore
+      }
 
       final DateTime? scheduledFor = DateTime.tryParse(
         row['scheduled_for'] as String? ?? '',
       );
-      if (scheduledFor == null || scheduledFor.isBefore(now))
+      if (scheduledFor == null || scheduledFor.isBefore(now)) {
         continue; // past and never actioned — not surfaced here
+      }
       reminders.add(
         AppointmentReminder(
           appointmentId: row['id'] as String,
@@ -232,8 +234,9 @@ class ReminderRegistry extends ChangeNotifier {
           medicationId: medicationId,
         );
       }
-      if (next == null)
+      if (next == null) {
         continue; // e.g. PRN, unrecognized freq, or today's only slot already handled
+      }
 
       final Set<ReminderChannel> channels = {
         if ((row['chime_enabled'] as int? ?? 0) == 1) ReminderChannel.chime,
@@ -457,8 +460,9 @@ class ReminderRegistry extends ChangeNotifier {
       final int id = row['id'] as int;
       final DateTime? snoozeUntil = _supplySnoozes[id];
       if (snoozeUntil != null) {
-        if (now.isBefore(snoozeUntil))
+        if (now.isBefore(snoozeUntil)) {
           continue; // still snoozed — skip this refresh
+        }
         _supplySnoozes.remove(id); // snooze has passed
       }
       reminders.add(
@@ -488,8 +492,9 @@ class ReminderRegistry extends ChangeNotifier {
 
     for (final row in rows) {
       final int typeIndex = row['type'] as int? ?? 0;
-      if (!seenTypes.add(typeIndex))
+      if (!seenTypes.add(typeIndex)) {
         continue; // already have the latest of this type
+      }
 
       final DateTime? expiryDate = row['expiry_date'] != null
           ? DateTime.tryParse(row['expiry_date'] as String)
@@ -639,11 +644,13 @@ class ReminderRegistry extends ChangeNotifier {
           minute,
         );
         if (candidate.isAfter(now)) {
-          if (soonestFuture == null || candidate.isBefore(soonestFuture))
+          if (soonestFuture == null || candidate.isBefore(soonestFuture)) {
             soonestFuture = candidate;
+          }
         } else {
-          if (mostRecentPast == null || candidate.isAfter(mostRecentPast))
+          if (mostRecentPast == null || candidate.isAfter(mostRecentPast)) {
             mostRecentPast = candidate;
+          }
         }
       }
     }

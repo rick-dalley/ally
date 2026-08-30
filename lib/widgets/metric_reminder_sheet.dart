@@ -31,7 +31,7 @@ class MetricReminderSheet extends StatefulWidget {
 
 class _MetricReminderSheetState extends State<MetricReminderSheet> {
   late bool _enabled = widget.existing.enabled;
-  late Set<ReminderChannel> _channels = {...widget.existing.channels};
+  late final Set<ReminderChannel> _channels = {...widget.existing.channels};
   late WearableAlertMode? _wearableMode = widget.existing.wearableMode;
   late MetricReminderCadence _cadence = widget.existing.cadence;
   TimeOfDay? _time;
@@ -45,8 +45,9 @@ class _MetricReminderSheetState extends State<MetricReminderSheet> {
       final parts = raw.split(':');
       final int? hour = int.tryParse(parts[0]);
       final int? minute = parts.length > 1 ? int.tryParse(parts[1]) : null;
-      if (hour != null && minute != null)
+      if (hour != null && minute != null) {
         _time = TimeOfDay(hour: hour, minute: minute);
+      }
     }
     _time ??= const TimeOfDay(hour: 9, minute: 0);
   }
@@ -58,8 +59,9 @@ class _MetricReminderSheetState extends State<MetricReminderSheet> {
         if (channel == ReminderChannel.wearable) _wearableMode = null;
       } else {
         _channels.add(channel);
-        if (channel == ReminderChannel.wearable)
+        if (channel == ReminderChannel.wearable) {
           _wearableMode = WearableAlertMode.both;
+        }
       }
     });
   }
