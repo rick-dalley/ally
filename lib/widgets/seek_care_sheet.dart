@@ -338,7 +338,7 @@ class _SeekCareSheetState extends State<SeekCareSheet> {
           icon: Symbols.location_on,
           label: _isLocating ? "Finding nearby care..." : "Find a Walk-in Clinic or ER Near Me",
           style: widget.mode == SeekCareSheetMode.urgent ? CarbonButtonStyle.primary : CarbonButtonStyle.secondary,
-          onTap: _isLocating ? () {} : _findNearbyCare,
+          onTap: _isLocating ? null : _findNearbyCare,
         ),
         if (_locationError != null) ...[
           const SizedBox(height: 8),

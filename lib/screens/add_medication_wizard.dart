@@ -207,7 +207,7 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
                 icon: isLastStep ? Symbols.trophy : Symbols.navigate_next,
                 style: CarbonButtonStyle.primary,
                 label: isLastStep ? (_isSaving ? "Saving..." : "Save") : steps[safeCurrentStep + 1].label,
-                onTap: _isSaving ? () {} : _goNext,
+                onTap: _isSaving ? null : _goNext,
               ),
             ),
           ],

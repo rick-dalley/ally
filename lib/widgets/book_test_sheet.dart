@@ -134,7 +134,7 @@ class _BookTestSheetState extends State<BookTestSheet> {
               icon: Symbols.check,
               label: "Save",
               style: CarbonButtonStyle.primary,
-              onTap: _saving ? () {} : _save,
+              onTap: _saving ? null : _save,
             ),
             const SizedBox(height: 16),
           ],

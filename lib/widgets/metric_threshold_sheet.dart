@@ -140,7 +140,7 @@ class _MetricThresholdSheetState extends State<MetricThresholdSheet> {
                 icon: Symbols.check,
                 label: "Save",
                 style: CarbonButtonStyle.primary,
-                onTap: _saving ? () {} : _save,
+                onTap: _saving ? null : _save,
               ),
             ],
           ),

@@ -125,7 +125,7 @@ class _ReleaseOfInformationScreenState extends State<ReleaseOfInformationScreen>
                 icon: Symbols.description,
                 label: "Generate Request",
                 style: CarbonButtonStyle.primary,
-                onTap: _selectedProvider == null ? () {} : _generate,
+                onTap: _selectedProvider == null ? null : _generate,
               ),
             ],
           ),

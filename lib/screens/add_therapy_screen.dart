@@ -195,7 +195,7 @@ class _AddTherapyScreenState extends State<AddTherapyScreen> {
               icon: Symbols.check,
               label: _saving ? "Saving..." : "Save",
               style: CarbonButtonStyle.primary,
-              onTap: _saving ? () {} : _save,
+              onTap: _saving ? null : _save,
             ),
           ],
         ),

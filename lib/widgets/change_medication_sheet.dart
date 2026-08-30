@@ -103,7 +103,7 @@ class _ChangeMedicationSheetState extends State<ChangeMedicationSheet> {
               icon: Symbols.check,
               label: _isSaving ? "Saving..." : "Save Change",
               style: CarbonButtonStyle.primary,
-              onTap: _isSaving ? () {} : _save,
+              onTap: _isSaving ? null : _save,
             ),
             const SizedBox(height: 20),
           ],

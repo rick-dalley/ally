@@ -150,7 +150,7 @@ class _SupplyDetailSheetState extends State<SupplyDetailSheet> {
               icon: Symbols.check,
               label: "Save",
               style: CarbonButtonStyle.primary,
-              onTap: _saving ? () {} : _save,
+              onTap: _saving ? null : _save,
             ),
             if (!isNew) ...[
               const SizedBox(height: 8),
