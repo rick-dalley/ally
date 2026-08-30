@@ -63,7 +63,9 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
   // browse: a validated instrument like PHQ-9 or PCL-5 scored and interpreted for an
   // unsupervised patient risks false self-diagnosis with no clinician in the loop.
   Future<void> _checkActiveQuestionnaire() async {
-    final rows = await DatabaseManager().getActiveAssignedQuestionnaires(widget.user.patientUuid);
+    final rows = await DatabaseManager().getActiveAssignedQuestionnaires(
+      widget.user.patientUuid,
+    );
     if (!mounted) return;
     setState(() => _hasActiveQuestionnaire = rows.isNotEmpty);
   }
@@ -71,14 +73,24 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
   // The Symptoms tile's badge icon — only meaningful while there's an active marker
   // with a severity assigned; null just means the tile shows no badge at all.
   Future<void> _checkActiveSeverity() async {
-    final int? severityIndex = await DatabaseManager().getLatestActiveSeverity(widget.user.patientUuid);
+    final int? severityIndex = await DatabaseManager().getLatestActiveSeverity(
+      widget.user.patientUuid,
+    );
     if (!mounted) return;
-    setState(() => _activeSeverity = severityIndex != null ? DetailedPainLevel.values[severityIndex] : null);
+    setState(
+      () => _activeSeverity = severityIndex != null
+          ? DetailedPainLevel.values[severityIndex]
+          : null,
+    );
   }
 
   Future<void> _checkUnseenTherapies() async {
-    final bool unseen = await DatabaseManager().hasUnseenTherapies(widget.user.patientUuid);
-    final bool unseenDoctor = await DatabaseManager().hasUnseenDoctorTherapy(widget.user.patientUuid);
+    final bool unseen = await DatabaseManager().hasUnseenTherapies(
+      widget.user.patientUuid,
+    );
+    final bool unseenDoctor = await DatabaseManager().hasUnseenDoctorTherapy(
+      widget.user.patientUuid,
+    );
     if (!mounted) return;
     setState(() {
       _hasUnseenTherapies = unseen;
@@ -87,7 +99,9 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
   }
 
   Future<void> _checkUnresolvedSymptomFlags() async {
-    final rows = await DatabaseManager().getUnresolvedQuickSymptomFlags(widget.user.patientUuid);
+    final rows = await DatabaseManager().getUnresolvedQuickSymptomFlags(
+      widget.user.patientUuid,
+    );
     if (!mounted) return;
     setState(() => _hasUnresolvedSymptomFlags = rows.isNotEmpty);
   }
@@ -106,7 +120,11 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
     // Backdated to the patient's admission date, not "now" — day one of app usage
     // reads as calm even if this screen isn't opened until days later. No-ops if
     // this patient already has any mood history at all.
-    await DatabaseManager().seedInitialMoodIfNeeded(widget.user.patientUuid, Sentiment.calm.index, widget.user.admitted);
+    await DatabaseManager().seedInitialMoodIfNeeded(
+      widget.user.patientUuid,
+      Sentiment.calm.index,
+      widget.user.admitted,
+    );
     final row = await DatabaseManager().getCurrentMood(widget.user.patientUuid);
     if (row == null || !mounted) return;
     setState(() => sentiment = Sentiment.values[row['mood'] as int]);
@@ -115,7 +133,10 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
   void _recordMood(Sentiment newSentiment) {
     setState(() {
       sentiment = newSentiment;
-      DatabaseManager().trackMoodChange(widget.user.patientUuid, newSentiment.index);
+      DatabaseManager().trackMoodChange(
+        widget.user.patientUuid,
+        newSentiment.index,
+      );
     });
   }
 
@@ -126,8 +147,11 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
     Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute(
         fullscreenDialog: true,
-        builder: (_) =>
-            MoodCheckInScreen(mood: mood, patientUuid: widget.user.patientUuid, skipPrompt: skipPrompt),
+        builder: (_) => MoodCheckInScreen(
+          mood: mood,
+          patientUuid: widget.user.patientUuid,
+          skipPrompt: skipPrompt,
+        ),
       ),
     );
   }
@@ -139,7 +163,8 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
     Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute(
         fullscreenDialog: true,
-        builder: (_) => SicknessCheckInScreen(patientUuid: widget.user.patientUuid),
+        builder: (_) =>
+            SicknessCheckInScreen(patientUuid: widget.user.patientUuid),
       ),
     );
   }
@@ -148,7 +173,9 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
   // widget at all (any of tap/long-press/double-tap) — awaited before anything else
   // opens, so it never stacks under a check-in screen.
   Future<void> _maybeShowMoodIntro() async {
-    final bool seen = await DatabaseManager().hasSeenMoodIntro(widget.user.patientUuid);
+    final bool seen = await DatabaseManager().hasSeenMoodIntro(
+      widget.user.patientUuid,
+    );
     if (seen) return;
     await DatabaseManager().markMoodIntroSeen(widget.user.patientUuid);
     if (!mounted) return;
@@ -168,7 +195,10 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Tracking your mood", style: CarbonTheme.carbonHeadingTextStyle),
+              Text(
+                "Tracking your mood",
+                style: CarbonTheme.carbonHeadingTextStyle,
+              ),
               const SizedBox(height: 12),
               if (includeGestureHint) ...[
                 Text(
@@ -229,68 +259,97 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     // (there was nothing matching it on the right).
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Container(
+                      // CarbonActionTile wraps its box in a Card, and Card has a
+                      // default margin of EdgeInsets.all(4) that's easy to miss (no
+                      // CardTheme override exists in AppTheme, so it's Flutter's plain
+                      // default) — without matching it here, this Container's edges
+                      // sit 4px further out than every tile below it despite the
+                      // identical-looking 16px outer Padding above.
+                      margin: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
                         color: AppTheme.onPrimaryColor,
                         borderRadius: BorderRadius.zero,
                       ),
-                      child: Stack(
-                        clipBehavior: Clip
-                            .none, // Allows the widget to draw outside its bounds
-                        alignment: Alignment.centerRight,
-                        children: [
-                          Row(children: [SizedBox(height: 64)]),
-                          Row(
-                            children: [
-                              Text(
-                                "I'm feeling ${sentiment.label}",
-                                style: CarbonTheme.carbonTertiaryButtonTextStyle,
+                      // Matches CarbonActionTile's own ListTile.contentPadding
+                      // (horizontal: 16) — without this the text/icon/flyout sat flush
+                      // against the card's own inner edges, one level deeper than the
+                      // outer 16px inset that lines this card up with the tiles below it.
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Stack(
+                          clipBehavior: Clip
+                              .none, // Allows the widget to draw outside its bounds
+                          alignment: Alignment.centerRight,
+                          children: [
+                            Row(children: [SizedBox(height: 64)]),
+                            Row(
+                              children: [
+                                Text(
+                                  "I'm feeling ${sentiment.label}",
+                                  style:
+                                      CarbonTheme.carbonTertiaryButtonTextStyle,
+                                ),
+                                IconButton(
+                                  icon: const Icon(Symbols.info, size: 20),
+                                  tooltip: "About tracking your mood",
+                                  onPressed: () => _showMoodTrackingInfo(
+                                    includeGestureHint: true,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Positioned(
+                              right: 0,
+                              child: CarbonFlyOutWidget(
+                                children: Sentiment.values,
+                                style: CarbonButtonStyle.tertiary,
+                                onSelected: (Flyable item) async {
+                                  final Sentiment newSentiment =
+                                      item as Sentiment;
+                                  _recordMood(newSentiment);
+                                  await _maybeShowMoodIntro();
+                                  if (newSentiment == Sentiment.sick) {
+                                    _openSicknessCheckIn();
+                                  } else if (newSentiment.needsCheckIn) {
+                                    _openMoodCheckIn(
+                                      newSentiment,
+                                      skipPrompt: false,
+                                    );
+                                  }
+                                },
+                                selectedItem: sentiment.index,
+                                onItemLongPress: (Flyable item) async {
+                                  final Sentiment newSentiment =
+                                      item as Sentiment;
+                                  _recordMood(newSentiment);
+                                  await _maybeShowMoodIntro();
+                                  if (newSentiment == Sentiment.sick) {
+                                    _openSicknessCheckIn();
+                                  } else {
+                                    _openMoodCheckIn(
+                                      newSentiment,
+                                      skipPrompt: true,
+                                    );
+                                  }
+                                },
+                                onItemDoubleTap: (Flyable item) async {
+                                  final Sentiment newSentiment =
+                                      item as Sentiment;
+                                  _recordMood(newSentiment);
+                                  await _maybeShowMoodIntro();
+                                  if (newSentiment == Sentiment.sick) {
+                                    _openSicknessCheckIn();
+                                  } else {
+                                    _openMoodCheckIn(
+                                      newSentiment,
+                                      skipPrompt: true,
+                                    );
+                                  }
+                                },
                               ),
-                              IconButton(
-                                icon: const Icon(Symbols.info, size: 20),
-                                tooltip: "About tracking your mood",
-                                onPressed: () => _showMoodTrackingInfo(includeGestureHint: true),
-                              ),
-                            ],
-                          ),
-                          Positioned(
-                            right: 0,
-                            child: CarbonFlyOutWidget(
-                            children: Sentiment.values,
-                            style: CarbonButtonStyle.tertiary,
-                            onSelected: (Flyable item) async {
-                              final Sentiment newSentiment = item as Sentiment;
-                              _recordMood(newSentiment);
-                              await _maybeShowMoodIntro();
-                              if (newSentiment == Sentiment.sick) {
-                                _openSicknessCheckIn();
-                              } else if (newSentiment.needsCheckIn) {
-                                _openMoodCheckIn(newSentiment, skipPrompt: false);
-                              }
-                            },
-                            selectedItem: sentiment.index,
-                            onItemLongPress: (Flyable item) async {
-                              final Sentiment newSentiment = item as Sentiment;
-                              _recordMood(newSentiment);
-                              await _maybeShowMoodIntro();
-                              if (newSentiment == Sentiment.sick) {
-                                _openSicknessCheckIn();
-                              } else {
-                                _openMoodCheckIn(newSentiment, skipPrompt: true);
-                              }
-                            },
-                            onItemDoubleTap: (Flyable item) async {
-                              final Sentiment newSentiment = item as Sentiment;
-                              _recordMood(newSentiment);
-                              await _maybeShowMoodIntro();
-                              if (newSentiment == Sentiment.sick) {
-                                _openSicknessCheckIn();
-                              } else {
-                                _openMoodCheckIn(newSentiment, skipPrompt: true);
-                              }
-                            },
-                          ),
+                            ),
+                          ],
                         ),
-                        ],
                       ),
                     ),
                   ),
@@ -313,7 +372,11 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                           onTap: () =>
                               launchQuestionnairesScreen(patient: widget.user),
                         ),
-                        const Positioned(top: 16, right: 16, child: PulsingHaloDot(color: Colors.green)),
+                        const Positioned(
+                          top: 16,
+                          right: 16,
+                          child: PulsingHaloDot(color: Colors.green),
+                        ),
                       ],
                     ),
                   CarbonActionTile(
@@ -345,7 +408,11 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                       // the plain red dot every other "something needs a look" signal
                       // uses. Either way it clears the moment Therapies is opened.
                       if (_hasUnseenDoctorTherapy)
-                        const Positioned(top: 16, right: 16, child: PulsingHaloDot(color: Colors.green))
+                        const Positioned(
+                          top: 16,
+                          right: 16,
+                          child: PulsingHaloDot(color: Colors.green),
+                        )
                       else if (_hasUnseenTherapies)
                         Positioned(
                           top: 12,
@@ -353,7 +420,10 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                           child: Container(
                             width: 10,
                             height: 10,
-                            decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
                           ),
                         ),
                     ],
@@ -388,7 +458,10 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                           child: Container(
                             width: 10,
                             height: 10,
-                            decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
                           ),
                         ),
                       // A glance at what's currently going on, not just "something's
@@ -399,7 +472,11 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                         Positioned(
                           top: 16,
                           left: 16,
-                          child: Icon(_activeSeverity!.icon, size: 30, color: _activeSeverity!.color),
+                          child: Icon(
+                            _activeSeverity!.icon,
+                            size: 30,
+                            color: _activeSeverity!.color,
+                          ),
                         ),
                     ],
                   ),
@@ -479,7 +556,9 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
   }
 
   Future<void> launchSymptoms({required Patient patient}) async {
-    final flags = await DatabaseManager().getUnresolvedQuickSymptomFlags(patient.patientUuid);
+    final flags = await DatabaseManager().getUnresolvedQuickSymptomFlags(
+      patient.patientUuid,
+    );
     if (!mounted) return;
     if (flags.isNotEmpty) {
       await _showQuickSymptomFlags(flags);
@@ -521,11 +600,15 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                         icon: const Icon(Symbols.check),
                         tooltip: "I've dealt with this",
                         onPressed: () async {
-                          await DatabaseManager().resolveQuickSymptomFlag(flag['id'] as String);
+                          await DatabaseManager().resolveQuickSymptomFlag(
+                            flag['id'] as String,
+                          );
                           flags.remove(flag);
                           setDialogState(() {});
                           if (mounted) await _checkUnresolvedSymptomFlags();
-                          if (flags.isEmpty && dialogContext.mounted) Navigator.of(dialogContext).pop();
+                          if (flags.isEmpty && dialogContext.mounted) {
+                            Navigator.of(dialogContext).pop();
+                          }
                         },
                       ),
                     ),
@@ -533,7 +616,10 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
               ),
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text("Continue to Symptoms")),
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text("Continue to Symptoms"),
+              ),
             ],
           );
         },
