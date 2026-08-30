@@ -18,6 +18,8 @@ struct ContentView: View {
                 TabView {
                     MoodView()
                         .tabItem { Label("Mood", systemImage: "face.smiling") }
+                    SymptomView()
+                        .tabItem { Label("Symptoms", systemImage: "bandage") }
                     DueItemsView()
                         .tabItem { Label("Due", systemImage: "checklist") }
                     PanicView()

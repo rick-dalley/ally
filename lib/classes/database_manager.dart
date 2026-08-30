@@ -102,7 +102,7 @@ class DatabaseManager {
   // Bump this whenever assets/sql/sql.json gains new tables/indexes, so
   // existing installs pick them up via onUpgrade instead of silently
   // missing them (see onUpgrade above).
-  static const int schemaVersion = 4;
+  static const int schemaVersion = 5;
 
   Future<void> createSqlObjects(Database db) async {
     if (sqlConfig == null) return;
@@ -1957,6 +1957,48 @@ class DatabaseManager {
       limit: 1,
     );
     return rows.isNotEmpty;
+  }
+
+  // A quick "note this so I don't forget it" from the wearable — deliberately not a
+  // real `markers` row: a marker needs a precise tap location on the body-outline
+  // diagram (dx/dy/zone_map), which a watch has no way to supply. This just captures
+  // enough to remind the patient to go do the full entry properly, later, on the
+  // phone (see BodyOutlineScreen). Unrelated to the toxidrome-assessment SymptomFlag
+  // enum in symptom_flag.dart despite the similar name.
+  Future<void> insertQuickSymptomFlag({required String patientUuid, required String label, String? note}) async {
+    final db = await database;
+    await db.insert('quick_symptom_flag', {
+      'id': uuid.v4(),
+      'patient_uuid': patientUuid,
+      'label': label,
+      'note': note,
+      'flagged_at': DateTime.now().toIso8601String(),
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> getUnresolvedQuickSymptomFlags(String patientUuid) async {
+    final db = await database;
+    return await db.query(
+      'quick_symptom_flag',
+      where: 'patient_uuid = ? AND resolved_at IS NULL',
+      whereArgs: [patientUuid],
+      orderBy: 'flagged_at DESC',
+    );
+  }
+
+  // "I've dealt with this" — the patient dismisses it themselves once they've either
+  // done the full body-outline entry or decided it doesn't need one. There's no
+  // reliable way to auto-detect "a marker was created because of this specific flag"
+  // (a marker has no back-reference to whatever prompted it), so this stays a plain
+  // manual dismiss rather than a fragile auto-link.
+  Future<void> resolveQuickSymptomFlag(String id) async {
+    final db = await database;
+    await db.update(
+      'quick_symptom_flag',
+      {'resolved_at': DateTime.now().toIso8601String()},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   // The care_order equivalent of logMedicationDose — a therapy has no scheduled dose

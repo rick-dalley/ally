@@ -60,4 +60,11 @@ enum WearableClient {
         let json = try await WatchConnectivityClient.shared.send(method: "setMood", arguments: String(data: body, encoding: .utf8))
         return try decode(json)
     }
+
+    static func flagSymptom(label: String) async throws -> [String: Any] {
+        guard let patientUuid = getPatientUuid() else { throw WatchConnectivityError.remote("Not paired yet") }
+        let body = try JSONSerialization.data(withJSONObject: ["patientUuid": patientUuid, "label": label])
+        let json = try await WatchConnectivityClient.shared.send(method: "flagSymptom", arguments: String(data: body, encoding: .utf8))
+        return try decode(json)
+    }
 }

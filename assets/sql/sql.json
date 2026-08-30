@@ -331,6 +331,10 @@
     {
       "table": "therapy_view_state",
       "query": "CREATE TABLE IF NOT EXISTS therapy_view_state (patient_uuid TEXT PRIMARY KEY, last_viewed_at DATETIME NOT NULL, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
+    },
+    {
+      "table": "quick_symptom_flag",
+      "query": "CREATE TABLE IF NOT EXISTS quick_symptom_flag (id TEXT PRIMARY KEY, patient_uuid TEXT NOT NULL, label TEXT NOT NULL, note TEXT, flagged_at DATETIME NOT NULL, resolved_at DATETIME, FOREIGN KEY (patient_uuid) REFERENCES patient(patient_uuid) ON DELETE CASCADE);"
     }
   ],
   "ALTER": [

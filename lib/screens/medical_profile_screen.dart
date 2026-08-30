@@ -39,18 +39,26 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
   // actually last picked as soon as _loadCurrentMood resolves, below.
   Flyable sentiment = Sentiment.calm;
   bool _hasUnseenTherapies = false;
+  bool _hasUnresolvedSymptomFlags = false;
 
   @override
   void initState() {
     super.initState();
     _loadCurrentMood();
     _checkUnseenTherapies();
+    _checkUnresolvedSymptomFlags();
   }
 
   Future<void> _checkUnseenTherapies() async {
     final bool unseen = await DatabaseManager().hasUnseenTherapies(widget.user.patientUuid);
     if (!mounted) return;
     setState(() => _hasUnseenTherapies = unseen);
+  }
+
+  Future<void> _checkUnresolvedSymptomFlags() async {
+    final rows = await DatabaseManager().getUnresolvedQuickSymptomFlags(widget.user.patientUuid);
+    if (!mounted) return;
+    setState(() => _hasUnresolvedSymptomFlags = rows.isNotEmpty);
   }
 
   // Re-checked whenever the Therapies screen is popped back to — opening it marks
@@ -275,13 +283,31 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     iconColor: AppDomain.diary.color,
                     onTap: () => launchPatientDiaryScreen(patient: widget.user),
                   ),
-                  CarbonActionTile(
-                    title: "Symptoms",
-                    subtitle: "Things I'm feeling",
-                    icon: Symbols.symptoms,
-                    iconSize: Size(32, 32),
-                    iconColor: AppDomain.symptoms.color,
-                    onTap: () => launchSymptoms(patient: widget.user),
+                  Stack(
+                    children: [
+                      CarbonActionTile(
+                        title: "Symptoms",
+                        subtitle: "Things I'm feeling",
+                        icon: Symbols.symptoms,
+                        iconSize: Size(32, 32),
+                        iconColor: AppDomain.symptoms.color,
+                        onTap: () => launchSymptoms(patient: widget.user),
+                      ),
+                      // A quick-pick flag came in from a watch since it was last
+                      // acknowledged — same notification-dot language as Therapies,
+                      // cleared only when the patient dismisses it themselves (see
+                      // resolveQuickSymptomFlag's doc comment for why that's manual).
+                      if (_hasUnresolvedSymptomFlags)
+                        Positioned(
+                          top: 12,
+                          right: 24,
+                          child: Container(
+                            width: 10,
+                            height: 10,
+                            decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                          ),
+                        ),
+                    ],
                   ),
                   CarbonActionTile(
                     title: "Tests",
@@ -369,8 +395,14 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
     );
   }
 
-  void launchSymptoms({required Patient patient}) {
-    showModalBottomSheet(
+  Future<void> launchSymptoms({required Patient patient}) async {
+    final flags = await DatabaseManager().getUnresolvedQuickSymptomFlags(patient.patientUuid);
+    if (!mounted) return;
+    if (flags.isNotEmpty) {
+      await _showQuickSymptomFlags(flags);
+      if (!mounted) return;
+    }
+    await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -379,6 +411,49 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
       builder: (context) {
         return BodyOutlineScreen(patient: patient);
       },
+    );
+  }
+
+  // Shows whatever was quick-flagged from a watch before the full entry screen opens,
+  // so the patient sees why the Symptoms tile had a dot on it. Dismissing one here is
+  // a separate action from actually logging it below — there's no reliable link
+  // between a flag and whatever marker the patient goes on to place.
+  Future<void> _showQuickSymptomFlags(List<Map<String, dynamic>> flags) async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) {
+          return AlertDialog(
+            title: const Text("Flagged from your watch"),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  for (final flag in flags)
+                    ListTile(
+                      title: Text(flag['label'] as String),
+                      trailing: IconButton(
+                        icon: const Icon(Symbols.check),
+                        tooltip: "I've dealt with this",
+                        onPressed: () async {
+                          await DatabaseManager().resolveQuickSymptomFlag(flag['id'] as String);
+                          flags.remove(flag);
+                          setDialogState(() {});
+                          if (mounted) await _checkUnresolvedSymptomFlags();
+                          if (flags.isEmpty && dialogContext.mounted) Navigator.of(dialogContext).pop();
+                        },
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text("Continue to Symptoms")),
+            ],
+          );
+        },
+      ),
     );
   }
 

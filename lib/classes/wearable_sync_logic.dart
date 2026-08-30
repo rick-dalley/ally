@@ -26,6 +26,20 @@ class WearableSyncLogic {
   static List<Map<String, dynamic>> get moodOptions =>
       Sentiment.values.map((s) => {'index': s.index, 'label': s.label, 'color': _hex(s.color)}).toList();
 
+  // Common symptoms a watch can quick-flag — a short, deliberately generic list (not
+  // sourced from any existing enum). The real Symptoms feature captures precise
+  // location/severity on the phone via a body-diagram tap (see BodyOutlineScreen);
+  // a watch has no way to supply that, so this just flags "something's wrong,
+  // remind me to log it properly later" for one of these.
+  static const List<String> symptomOptions = [
+    'Headache',
+    'Muscle Spasm',
+    'Dizziness',
+    'Nausea',
+    'Shortness of Breath',
+    'Joint Pain',
+  ];
+
   static Future<Map<String, dynamic>> buildSyncPayload(String patientUuid) async {
     final List<Map<String, dynamic>> rows = await DatabaseManager().getPatientWithVitals(patientUuid: patientUuid);
     if (rows.isEmpty) return {'error': 'patient not found'};
@@ -42,11 +56,17 @@ class WearableSyncLogic {
       'alerts': {for (final a in alerts) a.trigger.name: a.enabled},
       'currentMood': {'index': currentMood.index, 'label': currentMood.label, 'color': _hex(currentMood.color)},
       'moodOptions': moodOptions,
+      'symptomOptions': symptomOptions,
     };
   }
 
   static Future<Map<String, dynamic>> handleSetMood({required String patientUuid, required int moodIndex}) async {
     await DatabaseManager().trackMoodChange(patientUuid, moodIndex);
+    return buildSyncPayload(patientUuid);
+  }
+
+  static Future<Map<String, dynamic>> handleFlagSymptom({required String patientUuid, required String label}) async {
+    await DatabaseManager().insertQuickSymptomFlag(patientUuid: patientUuid, label: label);
     return buildSyncPayload(patientUuid);
   }
 

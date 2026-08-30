@@ -59,6 +59,11 @@ class WearableDataLayerBridge {
         final result = await WearableSyncLogic.handleSetMood(patientUuid: body['patientUuid'] as String, moodIndex: body['moodIndex'] as int);
         await _reply('/wearable/sync/response', result);
         break;
+      case '/wearable/flag_symptom':
+        final Map<String, dynamic> body = jsonDecode(payload) as Map<String, dynamic>;
+        final result = await WearableSyncLogic.handleFlagSymptom(patientUuid: body['patientUuid'] as String, label: body['label'] as String);
+        await _reply('/wearable/sync/response', result);
+        break;
     }
   }
 
