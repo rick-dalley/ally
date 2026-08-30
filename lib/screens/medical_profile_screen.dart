@@ -208,36 +208,40 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.only(top: 16, bottom: 24),
                 children: [
-                  Container(
-                    // color: AppTheme.surfaceColor,
-                    decoration: BoxDecoration(
-                      color: AppTheme.onPrimaryColor,
-                      borderRadius: BorderRadius.zero,
-                    ),
-                    // padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
-                    child: Stack(
-                      clipBehavior: Clip
-                          .none, // Allows the widget to draw outside its bounds
-                      alignment: Alignment.centerRight,
-                      children: [
-                        Row(children: [SizedBox(height: 64)]),
-                        Row(
-                          children: [
-                            const SizedBox(width: 16),
-                            Text(
-                              "My mood today is ${sentiment.label}",
-                              style: CarbonTheme.carbonTertiaryButtonTextStyle,
-                            ),
-                            IconButton(
-                              icon: const Icon(Symbols.info, size: 20),
-                              tooltip: "About tracking your mood",
-                              onPressed: () => _showMoodTrackingInfo(includeGestureHint: true),
-                            ),
-                          ],
-                        ),
-                        Positioned(
-                          right: 0,
-                          child: CarbonFlyOutWidget(
+                  Padding(
+                    // Matches CarbonActionTile's own horizontal inset (see the tiles
+                    // below) — this card used to sit flush against both screen edges
+                    // while every tile under it was inset by 16px, an inconsistency
+                    // the manual SizedBox(width: 16) before the text only half-fixed
+                    // (there was nothing matching it on the right).
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: AppTheme.onPrimaryColor,
+                        borderRadius: BorderRadius.zero,
+                      ),
+                      child: Stack(
+                        clipBehavior: Clip
+                            .none, // Allows the widget to draw outside its bounds
+                        alignment: Alignment.centerRight,
+                        children: [
+                          Row(children: [SizedBox(height: 64)]),
+                          Row(
+                            children: [
+                              Text(
+                                "I'm feeling ${sentiment.label}",
+                                style: CarbonTheme.carbonTertiaryButtonTextStyle,
+                              ),
+                              IconButton(
+                                icon: const Icon(Symbols.info, size: 20),
+                                tooltip: "About tracking your mood",
+                                onPressed: () => _showMoodTrackingInfo(includeGestureHint: true),
+                              ),
+                            ],
+                          ),
+                          Positioned(
+                            right: 0,
+                            child: CarbonFlyOutWidget(
                             children: Sentiment.values,
                             style: CarbonButtonStyle.tertiary,
                             onSelected: (Flyable item) async {
@@ -273,7 +277,8 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                             },
                           ),
                         ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                   CarbonActionTile(
