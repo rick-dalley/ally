@@ -48,16 +48,10 @@ class _ReminderSheetState extends State<ReminderSheet> {
         final List<Remindable> due = ReminderRegistry.instance.due
             .where((r) => !_locallyDismissed.contains(r.remindableId))
             .toList();
-
-        if (due.isEmpty) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (Navigator.canPop(context)) Navigator.pop(context);
-          });
-          return const SizedBox.shrink();
-        }
+        final bool isEmpty = due.isEmpty;
 
         return DraggableScrollableSheet(
-          initialChildSize: 0.45,
+          initialChildSize: isEmpty ? 0.3 : 0.45,
           minChildSize: 0.25,
           maxChildSize: 0.9,
           expand: false,
@@ -89,14 +83,36 @@ class _ReminderSheetState extends State<ReminderSheet> {
                     ),
                   ),
                   Expanded(
-                    child: ListView.separated(
-                      controller: scrollController,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      itemCount: due.length,
-                      separatorBuilder: (_, _) => const Divider(height: 1),
-                      itemBuilder: (context, index) =>
-                          ReminderTile(reminder: due[index], onDismiss: _handleDismiss),
-                    ),
+                    // Opening this on demand (the top bar's Reminders icon) with
+                    // nothing due used to just flash the sheet open and immediately
+                    // pop it again — that made the button look broken rather than
+                    // "you're caught up." Showing an explicit all-clear state instead
+                    // (and no longer auto-popping when the last reminder gets handled
+                    // while this is open) fixes both.
+                    child: isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Symbols.task_alt, size: 48, color: carbonColorSupportSuccess),
+                                const SizedBox(height: 12),
+                                Text("All clear", style: CarbonTheme.carbonHeadingTextStyle),
+                                const SizedBox(height: 4),
+                                Text(
+                                  "Nothing needs your attention right now.",
+                                  style: CarbonTheme.carbonHintTextStyle,
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.separated(
+                            controller: scrollController,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            itemCount: due.length,
+                            separatorBuilder: (_, _) => const Divider(height: 1),
+                            itemBuilder: (context, index) =>
+                                ReminderTile(reminder: due[index], onDismiss: _handleDismiss),
+                          ),
                   ),
                 ],
               ),
