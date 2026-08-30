@@ -17,6 +17,7 @@ import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
 import 'package:carbon_ui/interfaces/flyable.dart';
 import '../classes/patient.dart';
+import '../classes/patient_pain.dart';
 import '../classes/patient_sentiment.dart';
 import 'package:carbon_ui/widgets/carbon_button_compact.dart';
 import 'package:carbon_ui/widgets/carbon_flyout_widget.dart';
@@ -25,6 +26,7 @@ import 'mood_check_in_screen.dart';
 import 'patient_diary_screen.dart';
 import 'sickness_check_in_screen.dart';
 import 'therapies_screen.dart';
+import '../widgets/pulsing_halo_dot.dart';
 
 class MedicalProfileScreen extends StatefulWidget {
   final Patient user;
@@ -40,7 +42,9 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
   // actually last picked as soon as _loadCurrentMood resolves, below.
   Flyable sentiment = Sentiment.calm;
   bool _hasUnseenTherapies = false;
+  bool _hasUnseenDoctorTherapy = false;
   bool _hasUnresolvedSymptomFlags = false;
+  DetailedPainLevel? _activeSeverity;
 
   @override
   void initState() {
@@ -48,12 +52,25 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
     _loadCurrentMood();
     _checkUnseenTherapies();
     _checkUnresolvedSymptomFlags();
+    _checkActiveSeverity();
+  }
+
+  // The Symptoms tile's badge icon — only meaningful while there's an active marker
+  // with a severity assigned; null just means the tile shows no badge at all.
+  Future<void> _checkActiveSeverity() async {
+    final int? severityIndex = await DatabaseManager().getLatestActiveSeverity(widget.user.patientUuid);
+    if (!mounted) return;
+    setState(() => _activeSeverity = severityIndex != null ? DetailedPainLevel.values[severityIndex] : null);
   }
 
   Future<void> _checkUnseenTherapies() async {
     final bool unseen = await DatabaseManager().hasUnseenTherapies(widget.user.patientUuid);
+    final bool unseenDoctor = await DatabaseManager().hasUnseenDoctorTherapy(widget.user.patientUuid);
     if (!mounted) return;
-    setState(() => _hasUnseenTherapies = unseen);
+    setState(() {
+      _hasUnseenTherapies = unseen;
+      _hasUnseenDoctorTherapy = unseenDoctor;
+    });
   }
 
   Future<void> _checkUnresolvedSymptomFlags() async {
@@ -282,10 +299,14 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                         iconColor: AppDomain.therapies.color,
                         onTap: _openTherapies,
                       ),
-                      // A new therapy landed since this was last opened — same
-                      // "something needs a look" signal a notification dot gives
-                      // anywhere else, cleared the moment the list is actually seen.
-                      if (_hasUnseenTherapies)
+                      // A doctor's order landing gets the louder green halo — it's
+                      // something that arrived from someone else, not a note the
+                      // patient made themselves. A self-directed addition still gets
+                      // the plain red dot every other "something needs a look" signal
+                      // uses. Either way it clears the moment Therapies is opened.
+                      if (_hasUnseenDoctorTherapy)
+                        const Positioned(top: 16, right: 16, child: PulsingHaloDot(color: Colors.green))
+                      else if (_hasUnseenTherapies)
                         Positioned(
                           top: 12,
                           right: 24,
@@ -329,6 +350,16 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                             height: 10,
                             decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
                           ),
+                        ),
+                      // A glance at what's currently going on, not just "something's
+                      // unread" — the icon/color of whatever active marker most
+                      // recently had a severity assigned (see DetailedPainLevel's
+                      // white->yellow->orange->red gradient).
+                      if (_activeSeverity != null)
+                        Positioned(
+                          top: 16,
+                          left: 16,
+                          child: Icon(_activeSeverity!.icon, size: 30, color: _activeSeverity!.color),
                         ),
                     ],
                   ),
@@ -435,6 +466,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
         return BodyOutlineScreen(patient: patient);
       },
     );
+    await _checkActiveSeverity();
   }
 
   // Shows whatever was quick-flagged from a watch before the full entry screen opens,

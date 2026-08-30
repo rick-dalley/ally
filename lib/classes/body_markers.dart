@@ -1,9 +1,13 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:flutter/widgets.dart' show IconData;
 import 'package:ally/classes/database_manager.dart';
 import 'package:ally/classes/date_time_utilities.dart';
 import 'package:ally/classes/patient_pain.dart';
+import 'package:carbon_ui/interfaces/carbon_timeline_types.dart';
+import 'package:carbon_ui/interfaces/plottable.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import 'body_zone.dart';
 import 'symptom_care_plan.dart';
@@ -140,4 +144,79 @@ class BodyMarker {
   Future<int> save({required String patientUuid}) {
     return DatabaseManager().insertBodyMarker(patientUuid, toRow());
   }
+}
+
+// "Symptoms that persist over 3 days" eligibility threshold — see
+// getMarkersEligibleForTrend's matching default and timeline_scroller_page.dart,
+// which uses this same constant so the two can't drift apart.
+const Duration symptomTrendEligibilityThreshold = Duration(days: 3);
+
+// One severity reading in a marker's history — recorded whenever the severity
+// actually changes (see DatabaseManager.updateBodyMarker), not on every edit. No icon
+// or text: the trend lane for a symptom is meant to read purely by color (see
+// DetailedPainLevel's white->yellow->orange->red gradient), unlike the mood trend
+// lane's per-reading glyphs.
+class MarkerSeverityReading implements Plottable {
+  final DetailedPainLevel severity;
+  final DateTime recordedAt;
+
+  const MarkerSeverityReading({required this.severity, required this.recordedAt});
+
+  @override
+  DateTime get date => recordedAt;
+
+  @override
+  Color get color => severity.color;
+
+  @override
+  IconData? get icon => null;
+
+  @override
+  String? get text => null;
+
+  factory MarkerSeverityReading.fromRow(Map<String, dynamic> row) {
+    return MarkerSeverityReading(
+      severity: DetailedPainLevel.values[row['severity'] as int],
+      recordedAt: DateTime.parse(row['recorded_at'] as String),
+    );
+  }
+}
+
+// Wraps one marker's severity history as a pickable timeline lane, the same way
+// MoodTrendSpan wraps a patient's mood history — competes for one of the "up to 3"
+// slots and paints as the multi-segment trend bar. Only offered once the marker is
+// older than symptomTrendEligibilityThreshold and has at least one severity reading
+// (see timeline_scroller_page.dart); a marker created before this feature existed, or
+// one whose severity has never been set, simply has nothing to plot.
+class SymptomTrendSpan implements CarbonTimelineTrend {
+  final BodyMarker marker;
+  final List<MarkerSeverityReading> _readings; // sorted ascending by date
+
+  const SymptomTrendSpan(this.marker, this._readings);
+
+  @override
+  String get sourceId => 'symptom-trend-${marker.id}';
+
+  // Names the symptom, not a generic "Symptom" label — this is what shows in the
+  // picker sheet AND the sticky bubble on the lane itself.
+  @override
+  String get label => marker.name;
+
+  @override
+  String get categoryLabel => 'Symptoms';
+
+  @override
+  IconData? get icon => Symbols.symptoms;
+
+  @override
+  DateTime get startDate => _readings.first.date;
+
+  @override
+  DateTime get endDate => marker.resolved ? (marker.resolvedAt ?? DateTime.now()) : DateTime.now();
+
+  @override
+  bool get isOngoing => !marker.resolved;
+
+  @override
+  List<Plottable> get readings => _readings;
 }

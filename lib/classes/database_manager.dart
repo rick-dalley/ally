@@ -102,7 +102,7 @@ class DatabaseManager {
   // Bump this whenever assets/sql/sql.json gains new tables/indexes, so
   // existing installs pick them up via onUpgrade instead of silently
   // missing them (see onUpgrade above).
-  static const int schemaVersion = 6;
+  static const int schemaVersion = 7;
 
   Future<void> createSqlObjects(Database db) async {
     if (sqlConfig == null) return;
@@ -824,15 +824,66 @@ class DatabaseManager {
     final db = await database;
     Map<String, dynamic> row = Map<String, dynamic>.from(marker);
     row['patient_uuid'] = patientUuid;
-    return await db.insert('markers', row);
+    final int id = await db.insert('markers', row);
+    final int? severity = row['severity'] as int?;
+    if (severity != null) await _recordSeverityReading(markerId: id, severity: severity);
+    return id;
   }
 
   // Edits an existing marker (tapped from the body map to update a symptom already
   // logged) rather than inserting a duplicate row — id must come from a previously
-  // loaded BodyMarker, not a freshly-created one.
+  // loaded BodyMarker, not a freshly-created one. Only logs a new severity reading
+  // when the severity actually changed from what was there before — every Save press
+  // carries the current severity forward whether or not the patient touched it, and a
+  // reading is meant to mark "the pain changed," not "the form was saved."
   Future<void> updateBodyMarker(int id, Map<String, dynamic> marker) async {
     final db = await database;
+    final int? newSeverity = marker['severity'] as int?;
+    if (newSeverity != null) {
+      final existing = await db.query('markers', columns: ['severity'], where: 'id = ?', whereArgs: [id], limit: 1);
+      final int? previousSeverity = existing.isNotEmpty ? existing.first['severity'] as int? : null;
+      if (previousSeverity != newSeverity) {
+        await _recordSeverityReading(markerId: id, severity: newSeverity);
+      }
+    }
     await db.update('markers', marker, where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> _recordSeverityReading({required int markerId, required int severity}) async {
+    final db = await database;
+    await db.insert('marker_severity_reading', {
+      'marker_id': markerId,
+      'severity': severity,
+      'recorded_at': DateTime.now().toIso8601String(),
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> getSeverityReadingsForMarker(int markerId) async {
+    final db = await database;
+    return await db.query(
+      'marker_severity_reading',
+      where: 'marker_id = ?',
+      whereArgs: [markerId],
+      orderBy: 'recorded_at ASC',
+    );
+  }
+
+  // Markers old enough to plot as their own timeline trend lane — unresolved and
+  // first recorded more than [minAge] ago. Whether one actually shows up as pickable
+  // also depends on having at least one severity reading (see timeline_scroller_page.dart);
+  // a marker created before this feature existed carries no history yet.
+  Future<List<Map<String, dynamic>>> getMarkersEligibleForTrend(
+    String patientUuid, {
+    Duration minAge = const Duration(days: 3),
+  }) async {
+    final db = await database;
+    final int cutoff = DateTime.now().subtract(minAge).millisecondsSinceEpoch ~/ 1000;
+    return await db.query(
+      'markers',
+      where: 'patient_uuid = ? AND resolved = 0 AND recorded <= ?',
+      whereArgs: [patientUuid, cutoff],
+      orderBy: 'recorded ASC',
+    );
   }
 
   Future<void> insertMarkersBatch(String tableName, List<Map<String, dynamic>> rows) async {
@@ -849,6 +900,24 @@ class DatabaseManager {
 
     // Fetch all markers for the patient, sorted by most recent first
     return await db.query('markers', where: 'patient_uuid = ?', whereArgs: [patientUuid], orderBy: 'recorded DESC');
+  }
+
+  // The severity to show as the Symptoms tile's badge icon — whichever active marker
+  // most recently had a severity assigned, not necessarily the most recently created
+  // one (a marker's severity can be edited well after it was first placed).
+  Future<int?> getLatestActiveSeverity(String patientUuid) async {
+    final db = await database;
+    final rows = await db.query(
+      'markers',
+      columns: ['severity'],
+      // > 0 excludes DetailedPainLevel.none — its color is near-white and would be
+      // invisible on the tile, and "undergoing pain" doesn't cover "no pain" anyway.
+      where: 'patient_uuid = ? AND resolved = 0 AND severity IS NOT NULL AND severity > 0',
+      whereArgs: [patientUuid],
+      orderBy: 'recorded DESC',
+      limit: 1,
+    );
+    return rows.isEmpty ? null : rows.first['severity'] as int?;
   }
 
   // Markers due for an "is this still bothering you?" check-in: not yet resolved,
@@ -1953,6 +2022,24 @@ class DatabaseManager {
       'care_order',
       columns: ['id'],
       where: lastViewed != null ? 'patient_uuid = ? AND imported_at > ?' : 'patient_uuid = ?',
+      whereArgs: lastViewed != null ? [patientUuid, lastViewed.toIso8601String()] : [patientUuid],
+      limit: 1,
+    );
+    return rows.isNotEmpty;
+  }
+
+  // A doctor's order landing is more noteworthy than a self-directed entry the
+  // patient just added themselves — the profile tile uses this to decide between the
+  // plain red dot and the green "something arrived" halo (see medical_profile_screen.dart).
+  Future<bool> hasUnseenDoctorTherapy(String patientUuid) async {
+    final DateTime? lastViewed = await getLastViewedTherapies(patientUuid);
+    final db = await database;
+    final rows = await db.query(
+      'care_order',
+      columns: ['id'],
+      where: lastViewed != null
+          ? "patient_uuid = ? AND source = 'Imported care plan' AND imported_at > ?"
+          : "patient_uuid = ? AND source = 'Imported care plan'",
       whereArgs: lastViewed != null ? [patientUuid, lastViewed.toIso8601String()] : [patientUuid],
       limit: 1,
     );

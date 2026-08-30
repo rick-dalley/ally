@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import 'package:carbon_ui/colors/carbon_theme_constants.dart';
-import 'package:carbon_ui/interfaces/listable.dart';
 import 'package:carbon_ui/widgets/carbon_button_compact.dart';
-import 'package:carbon_ui/widgets/carbon_style_dropdown.dart';
+import 'package:carbon_ui/widgets/carbon_severity_scale.dart';
 import '../classes/database_manager.dart';
 import '../classes/patient_pain.dart';
 import '../classes/sickness_episode.dart';
@@ -143,13 +142,10 @@ class _SicknessRecheckScreenState extends State<SicknessRecheckScreen> {
         children: [
           Text("How bad is it?", style: CarbonTheme.carbonHeadingTextStyle),
           const SizedBox(height: 20),
-          CarbonButton2LineDropDown<DetailedPainLevel>(
-            label: "Severity",
-            placeholder: "Select the severity",
-            helperText: "Choose the level that best matches how you feel today",
-            onChanged: (Listable val) => setState(() => _severity = val as DetailedPainLevel),
+          CarbonSeverityScale<DetailedPainLevel>(
             value: _severity,
             items: DetailedPainLevel.values,
+            onChanged: (val) => setState(() => _severity = val),
           ),
           const SizedBox(height: 28),
           CarbonCompactButton(

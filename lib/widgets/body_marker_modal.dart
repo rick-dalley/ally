@@ -4,6 +4,7 @@ import 'package:carbon_ui/colors/carbon_color_constants.dart';
 import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import 'package:ally/classes/patient_pain.dart';
 import 'package:carbon_ui/widgets/carbon_button_compact.dart';
+import 'package:carbon_ui/widgets/carbon_severity_scale.dart';
 import 'package:carbon_ui/widgets/carbon_style_button.dart';
 import 'package:carbon_ui/widgets/carbon_style_dropdown.dart';
 import 'package:carbon_ui/widgets/carbon_style_textbox.dart';
@@ -119,19 +120,11 @@ class _BodyMarkerModalState extends State<BodyMarkerModal> {
         ),
         const SizedBox(height: 16),
 
-        CarbonButton2LineDropDown<DetailedPainLevel>(
+        CarbonSeverityScale<DetailedPainLevel>(
           label: "Pain Level",
-          placeholder: "Select the Pain Level",
-          helperText: "Choose the level of pain that you are feeling",
-          onChanged: (Listable val) {
-            setState(
-              () => _currentMarker = _updateMarker(
-                severity: val as DetailedPainLevel,
-              ),
-            );
-          },
           value: _currentMarker.severity ?? DetailedPainLevel.none,
           items: DetailedPainLevel.values,
+          onChanged: (val) => setState(() => _currentMarker = _updateMarker(severity: val)),
         ),
         const SizedBox(height: 16),
         CarbonDropdown<Frequency>(

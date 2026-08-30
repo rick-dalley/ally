@@ -244,28 +244,27 @@ enum DetailedPainLevel implements Flyable {
   unbearable,
   debilitating;
 
+  // A smooth white -> yellow -> orange -> red gradient across all 11 levels, rather
+  // than borrowing PainLevel's five discrete colors — this is meant to read
+  // graphically as one continuous intensity scale (severity picker rows, the
+  // Symptoms tile's severity icon, a symptom's timeline trend lane), where a
+  // color-only glance should place a level's severity relative to its neighbors.
+  static const List<Color> _gradient = [
+    Color(0xFFFFFFFF), // none
+    Color(0xFFFFFDE7), // mild
+    Color(0xFFFFF9C4), // minor
+    Color(0xFFFFF176), // distracting
+    Color(0xFFFFEB3B), // moderate
+    Color(0xFFFFC107), // moderatelyStrong
+    Color(0xFFFF9800), // difficult
+    Color(0xFFFB8C00), // strong
+    Color(0xFFF4511E), // interfering
+    Color(0xFFE53935), // unbearable
+    Color(0xFFB71C1C), // debilitating
+  ];
+
   @override
-  // TODO: implement color
-  Color get color {
-    switch (this) {
-      case DetailedPainLevel.none:
-      case DetailedPainLevel.mild:
-        return PainLevel.none.color;
-      case DetailedPainLevel.minor:
-      case DetailedPainLevel.distracting:
-        return PainLevel.mild.color;
-      case DetailedPainLevel.moderate:
-      case DetailedPainLevel.moderatelyStrong:
-      case DetailedPainLevel.difficult:
-        return PainLevel.distracting.color;
-      case DetailedPainLevel.strong:
-      case DetailedPainLevel.interfering:
-        return PainLevel.limiting.color;
-      case DetailedPainLevel.unbearable:
-      case DetailedPainLevel.debilitating:
-        return PainLevel.severe.color;
-    }
-  }
+  Color get color => _gradient[index];
 
   @override
   // TODO: implement description

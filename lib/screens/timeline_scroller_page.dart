@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:carbon_ui/carbon_ui.dart';
 
+import '../classes/body_markers.dart';
 import '../classes/database_manager.dart';
 import '../classes/patient_action.dart';
 import '../classes/patient_mood_entry.dart';
@@ -71,6 +72,22 @@ class _TimelineScrollerPageState extends State<TimelineScrollerPage> {
         if (moodRows.isNotEmpty) {
           loadedSpans.insert(0, MoodTrendSpan(moodRows.map(PatientMoodEntry.fromRow).toList()));
         }
+      }
+
+      // Same "not in the list until it's actually eligible" shape as Mood — a symptom
+      // only becomes its own pickable trend lane once it's persisted past
+      // symptomTrendEligibilityThreshold, and only if it actually has a severity
+      // history to plot (a marker whose severity was never set has nothing to show).
+      final eligibleMarkerRows = await DatabaseManager().getMarkersEligibleForTrend(
+        widget.patientUuid,
+        minAge: symptomTrendEligibilityThreshold,
+      );
+      for (final row in eligibleMarkerRows) {
+        final BodyMarker marker = BodyMarker.fromRow(row);
+        if (marker.id == null) continue;
+        final readingRows = await DatabaseManager().getSeverityReadingsForMarker(marker.id!);
+        if (readingRows.isEmpty) continue;
+        loadedSpans.add(SymptomTrendSpan(marker, readingRows.map(MarkerSeverityReading.fromRow).toList()));
       }
 
       final DateTime earliest = [
