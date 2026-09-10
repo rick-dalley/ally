@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../app_theme.dart';
+import '../classes/database_manager.dart';
 
 class StartupScreen extends StatefulWidget {
   const StartupScreen({super.key});
@@ -31,7 +32,11 @@ class _StartupScreenState extends State<StartupScreen> with SingleTickerProvider
     _controller.forward(); // Start the "Triage" slide animation
 
     await Future.wait([
-      // Load ML Engine here if needed
+      // Opens (and, on a fresh install, seeds) the database, then immediately clears
+      // that seeded demo content right back out — Ally has no purchase/verification
+      // event of its own to hang this on, so "the very first launch" is the event.
+      // Only ever happens once; see DatabaseManager.clearDemoDataOnFirstLaunch.
+      DatabaseManager().database.then((_) => DatabaseManager().clearDemoDataOnFirstLaunch()),
       Future.delayed(const Duration(seconds: 2)), // Minimum time to show your branding
     ]);
 

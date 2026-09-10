@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'dart:convert';
@@ -3458,6 +3459,19 @@ class DatabaseManager {
   // just reseed the same demo content. Foreign keys are toggled off around the wipe
   // rather than deleting in dependency order, since sqflite/SQLite won't let the pragma
   // change take effect mid-transaction anyway.
+  // Ally has no verification/purchase event to hang this off of the way
+  // Progressor/Acuitage's professional gate does — someone who has Ally at all
+  // already paid (or got a free family link) before ever opening it, so the app
+  // itself just needs to clear the demo content once, the very first time it's
+  // ever opened, before the person sees the seeded "hero patient" and mistakes it
+  // for their own. See start_up.dart, the only caller.
+  Future<void> clearDemoDataOnFirstLaunch() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool('demo_data_cleared') ?? false) return;
+    await wipeDemoDataForLicensedInstall();
+    await prefs.setBool('demo_data_cleared', true);
+  }
+
   Future<void> wipeDemoDataForLicensedInstall() async {
     final db = await database;
     // Queried from SQLite's own catalog, not sql.json's CREATE list — some entries
