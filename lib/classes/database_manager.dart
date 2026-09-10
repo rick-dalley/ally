@@ -3423,14 +3423,32 @@ class DatabaseManager {
     await db.insert('provider', providerMap, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  // Tables to keep once a real license lands — empty by design, same as Progressor's/
-  // Acuitage's copy of this method: no professional or user profile survives the wipe.
-  // Ally's demo content is the seeded hero patient plus whatever family/other profiles
-  // ride along in the same `patient` table (see DataSeeder's heroPatientUuid) — the
-  // patient adds their own doctors and family members fresh afterward through the same
-  // add-patient/add-provider flows already in the app. Kept as a named allowlist rather
-  // than deleted outright so a future real exception has an obvious place to go.
-  static const Set<String> _preserveOnLicenseWipe = {};
+  // Tables to keep once a real license lands — genuine reference/catalog data with no
+  // link (direct or via foreign key) to any patient, derived from the actual schema in
+  // assets/sql/sql.json rather than guessed. `patient_event`/`patient_activity` don't
+  // appear here despite having no such link: they're dead schema, never referenced
+  // anywhere in this codebase — wiping them by default is the safe direction either
+  // way. No professional or user profile survives the wipe. Ally's demo content is the
+  // seeded hero patient plus whatever family/other profiles ride along in the same
+  // `patient` table (see DataSeeder's heroPatientUuid) — the patient adds their own
+  // doctors and family members fresh afterward through the same add-patient/add-
+  // provider flows already in the app.
+  static const Set<String> _preserveOnLicenseWipe = {
+    'activity',
+    'allergen',
+    'assessment',
+    'condition',
+    'condition_supply',
+    'datasheet',
+    'drug_name',
+    'interaction',
+    'metric',
+    'metric_combination',
+    'question',
+    'supply',
+    'test_catalog',
+    'unit_of_measure',
+  };
 
   // Called once a license grant lands from the Go server — mirrors Progressor's/
   // Acuitage's DatabaseManager.wipeDemoDataForLicensedInstall exactly: the free trial
@@ -3442,11 +3460,15 @@ class DatabaseManager {
   // change take effect mid-transaction anyway.
   Future<void> wipeDemoDataForLicensedInstall() async {
     final db = await database;
-    final List<dynamic> createScripts = sqlConfig?['CREATE'] ?? [];
-    final List<String> tables = [
-      for (final entry in createScripts)
-        if (entry['table'] is String) entry['table'] as String,
-    ];
+    // Queried from SQLite's own catalog, not sql.json's CREATE list — some entries
+    // there are triggers tagged with a `table` field that doesn't name a real table,
+    // and DELETE FROM a nonexistent table throws inside the transaction below,
+    // silently rolling back the entire wipe with no visible sign anything went wrong
+    // (found live in Progressor's copy of this method; fixed here defensively too).
+    final tableRows = await db.rawQuery(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name != 'android_metadata'",
+    );
+    final tables = tableRows.map((r) => r['name'] as String).toList();
     await db.execute('PRAGMA foreign_keys = OFF;');
     await db.transaction((txn) async {
       for (final table in tables) {
