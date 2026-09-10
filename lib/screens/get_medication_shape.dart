@@ -10,7 +10,12 @@ import '../classes/tablet.dart';
 class GetMedicationShape extends StatefulWidget {
   final Function(TabletShapes) onShapeSelect;
   final TabletShapes? shape;
-  const GetMedicationShape({super.key, required this.onShapeSelect, this.shape});
+  // The color picked one step earlier — every glyph renders in this color now
+  // (not just the selected one), since these are meant to look like the actual
+  // pill the person is holding. Nullable only so the widget can't crash if it's
+  // ever reached before a color exists; the wizard always asks color first.
+  final TabletColors? color;
+  const GetMedicationShape({super.key, required this.onShapeSelect, this.shape, this.color});
 
   @override
   State<StatefulWidget> createState() => GetMedicationShapeState();
@@ -27,8 +32,10 @@ class GetMedicationShapeState extends State<GetMedicationShape> {
 
   @override
   Widget build(BuildContext context) {
-    // Neutral tint for the unselected pill glyphs; the accent color only kicks in once chosen.
-    final Color glyphColor = AppTheme.defaultFontColor;
+    // The pill's own color, picked on the previous step — every glyph renders in
+    // it, selected or not, so they read as "this is your pill" rather than a
+    // generic accent color. Falls back to a neutral if somehow reached with none.
+    final Color glyphColor = widget.color?.color ?? AppTheme.defaultFontColor;
     return Scaffold(
       backgroundColor: AppTheme.onPrimaryColor,
       body: Column(
@@ -83,11 +90,23 @@ class GetMedicationShapeState extends State<GetMedicationShape> {
                             Expanded(
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
-                                child: SvgPicture.asset(
-                                  'assets/images/pills/${shape.svg}',
-                                  width: 40,
-                                  height: 40,
-                                  colorMapper: PillColorMapper(isSelected ? carbonColorInteractive : glyphColor),
+                                child: Container(
+                                  // A neutral backdrop behind the glyph itself, not just
+                                  // the card — without it, a white pill on this screen's
+                                  // white background/card would be invisible. Reads fine
+                                  // under every pill color, not just white.
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF0F0F0),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: AppTheme.cardBorder, width: 1),
+                                  ),
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: SvgPicture.asset(
+                                    'assets/images/pills/${shape.svg}',
+                                    width: 40,
+                                    height: 40,
+                                    colorMapper: PillColorMapper(glyphColor),
+                                  ),
                                 ),
                               ),
                             ),

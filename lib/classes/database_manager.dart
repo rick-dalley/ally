@@ -1657,8 +1657,10 @@ class DatabaseManager {
       'name': medication['name'],
       'dose': medication['dose'],
       'freq': medication['freq'],
-      'set_id': medication['set_id'] ?? '',
-      'has_local_datasheet': medication['has_local_datasheet'] ?? '',
+      // Same fix as insertMedication below: null, not '' — set_id's foreign key to
+      // datasheet(set_id) only exempts an actual NULL from the constraint check.
+      'set_id': medication['set_id'],
+      'has_local_datasheet': medication['has_local_datasheet'] ?? 0,
     }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
@@ -1672,7 +1674,11 @@ class DatabaseManager {
       'name': medication['name'],
       'dose': medication['dose'],
       'freq': medication['freq'],
-      'set_id': medication['set_id'] ?? '',
+      // Null, not '' — set_id has a foreign key to datasheet(set_id), and SQLite
+      // only exempts an actual NULL from that check. An empty string doesn't match
+      // any real datasheet row, so it failed the FK constraint outright the first
+      // time this ran against a medication with no matched datasheet yet.
+      'set_id': medication['set_id'],
       'has_local_datasheet': 0,
     }, conflictAlgorithm: ConflictAlgorithm.replace);
   }

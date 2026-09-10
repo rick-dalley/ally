@@ -61,7 +61,9 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
     WizardSteps.dosage,
     WizardSteps.frequency,
     WizardSteps.reminders,
-    if (_isPillShaped) ...[WizardSteps.shape, WizardSteps.color],
+    // Color first — the shape step then renders its glyphs in that color, so it
+    // needs to already be known by the time that page builds.
+    if (_isPillShaped) ...[WizardSteps.color, WizardSteps.shape],
   ];
 
   List<Widget> get _activePages => [
@@ -81,8 +83,8 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
     ),
     GetMedicationReminders(onReminderPreferenceChanged: (val) => setState(() => _reminderPreference = val)),
     if (_isPillShaped) ...[
-      GetMedicationShape(onShapeSelect: (val) => setState(() => _shape = val)),
       GetMedicationColor(onColorSelect: (val) => setState(() => _color = val)),
+      GetMedicationShape(onShapeSelect: (val) => setState(() => _shape = val), color: _color),
     ],
   ];
 
