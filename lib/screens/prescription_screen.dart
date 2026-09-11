@@ -220,17 +220,18 @@ class PrescriptionScreenState extends State<PrescriptionScreen> {
     );
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      // The Floating Action Button replaces the top form
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 90.0),
-        child: FloatingActionButton(
-          backgroundColor: carbonColorPrimary04,
-          foregroundColor: carbonColorButtonOnPrimary,
-          key: Key("FAB_NewPrescription"),
-          heroTag: "prescription_screen",
-          onPressed: () => showAddMedicationSheet(),
-          child: const Icon(Symbols.add, size: 32),
-        ),
+      // This Scaffold is nested inside HomeScreen's own Scaffold, which owns the
+      // real bottom tab bar — HomeScreen's body area already excludes that bar's
+      // height, so endFloat alone already lands just above it. The extra manual
+      // lift this used to have was pure over-correction, floating the FAB much
+      // higher than a normal FAB sits.
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: carbonColorPrimary04,
+        foregroundColor: carbonColorButtonOnPrimary,
+        key: Key("FAB_NewPrescription"),
+        heroTag: "prescription_screen",
+        onPressed: () => showAddMedicationSheet(),
+        child: const Icon(Symbols.add, size: 32),
       ),
       body: Column(
         children: [
@@ -490,7 +491,16 @@ class InteractionsWidgetState extends State<InteractionsWidget> {
     if (!audited) {
       bannerData = banners[BannerType.unknown]!;
     } else if (hasUnacknowledgedConflicts) {
-      bannerData = banners[BannerType.critical]!;
+      // Advisory (amber), not critical (red) — the seeded interaction data (see
+      // data_seeder.dart's _seedInteractions) has no real severity rating at all,
+      // just a name pair and a text description. Flagging every match as "CRITICAL:
+      // Contraindication Detected" makes the same claim regardless of whether it's
+      // actually dangerous or just worth a mention, which reads as the app second-
+      // guessing a doctor's own prescription — exactly what this app is not meant
+      // to do (see project_documentation_not_advice memory: it documents, it
+      // doesn't score or gate a clinical decision). BannerType.critical stays
+      // defined for if/when real per-interaction severity data exists to justify it.
+      bannerData = banners[BannerType.advisory]!;
     } else if (hasAcceptedIndications) {
       bannerData = banners[BannerType.acknowledged]!;
     } else {
