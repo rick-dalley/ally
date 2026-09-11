@@ -64,5 +64,11 @@
 	<string>Used to find the nearest walk-in clinic or emergency department when you need one.</string>
 	<key>NSContactsUsageDescription</key>
 	<string>Used to pull an address from one of your contacts so you don't have to type it in by hand.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Used to scan the barcode on a prescription label or health card, so a medication or an ID doesn't have to be typed in by hand.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Used to choose a profile picture from your photos.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>
