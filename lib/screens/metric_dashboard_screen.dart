@@ -103,25 +103,37 @@ class MetricsDashboardScreenState extends State<MetricsDashboardScreen> {
 
   void handleTrackingChanged(int metricId, bool isTracked) {
     setState(() {
-      if (isTracked) {
-        final metric = untrackedMetrics.remove(metricId);
-        if (metric != null) {
-          trackedMetrics[metricId] = metric;
-          Metrics.trackMetric(metricId: metricId, patientUuid: userUuid);
-        }
-      } else {
-        final metric = trackedMetrics.remove(metricId);
-        if (metric != null) {
-          untrackedMetrics[metricId] = metric;
-          // Untracking deletes the patient_metric_tracking row outright (see
-          // DatabaseManager.deleteTrackingMetric), which carries on_dashboard with it —
-          // drop it locally too so a re-tracked metric doesn't appear to still be
-          // dashboard-checked from stale in-memory state.
-          onDashboard.remove(metricId);
-          Metrics.stopTrackingMetric(metricId: metricId, patientUuid: userUuid);
-        }
+      _applyTrackingChange(metricId, isTracked);
+      // Paired vitals (systolic/diastolic BP, resting/active HR, ...) only
+      // mean anything read together — toggling one keeps its pair in
+      // lockstep rather than leaving one tracked and the other not.
+      final Metric? metric = trackedMetrics[metricId] ?? untrackedMetrics[metricId];
+      final int? pairId = metric?.pairId;
+      if (metric != null && metric.paired && pairId != null && pairId != 0) {
+        _applyTrackingChange(pairId, isTracked);
       }
     });
+  }
+
+  void _applyTrackingChange(int metricId, bool isTracked) {
+    if (isTracked) {
+      final metric = untrackedMetrics.remove(metricId);
+      if (metric != null) {
+        trackedMetrics[metricId] = metric;
+        Metrics.trackMetric(metricId: metricId, patientUuid: userUuid);
+      }
+    } else {
+      final metric = trackedMetrics.remove(metricId);
+      if (metric != null) {
+        untrackedMetrics[metricId] = metric;
+        // Untracking deletes the patient_metric_tracking row outright (see
+        // DatabaseManager.deleteTrackingMetric), which carries on_dashboard with it —
+        // drop it locally too so a re-tracked metric doesn't appear to still be
+        // dashboard-checked from stale in-memory state.
+        onDashboard.remove(metricId);
+        Metrics.stopTrackingMetric(metricId: metricId, patientUuid: userUuid);
+      }
+    }
   }
 
   void handleDashboardChanged(int metricId, bool isOnDashboard) {

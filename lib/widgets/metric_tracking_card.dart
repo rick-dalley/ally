@@ -106,10 +106,10 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
   late String? selectedSourceDetail = widget.source?.sourceDetail;
   bool expanded = false;
   bool showInfoView = false; // true if opened via '?' button
-  // Only used by tracked cards — the Reading/Schedule sections expand
-  // independently of each other and of the untracked-card `expanded` above.
+  // Only used by tracked cards — transient, closes again once the reading is
+  // saved/canceled (see _buildReadingInputRow). Schedule has no equivalent —
+  // its pencil opens the reminder sheet directly, nothing to expand in-card.
   bool _readingExpanded = false;
-  bool _scheduleExpanded = false;
   // Which tier the header capsule is currently zoomed into — cycles Safe -> Healthy ->
   // Target on tap. Index rather than the enum itself so it survives a tier disappearing
   // (e.g. target removed) without needing to be reset; it just wraps against whatever
@@ -170,6 +170,20 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
     isNewValueEnabled = false;
 
     config = widget.savedConfig ?? {};
+  }
+
+  @override
+  void didUpdateWidget(covariant MetricExpandableCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // `tracked`/`onDashboard` are local mutable copies (the card's own
+    // checkbox/toggle write to them directly) so they don't just re-read
+    // widget.tracked on every build — but that means a change driven from
+    // outside this card (a paired metric like BP systolic/diastolic being
+    // auto-tracked alongside the one the patient actually tapped, see
+    // MetricsDashboardScreenState.handleTrackingChanged) would otherwise
+    // never reach this card's own checkbox/sections at all.
+    if (oldWidget.tracked != widget.tracked) tracked = widget.tracked;
+    if (oldWidget.onDashboard != widget.onDashboard) onDashboard = widget.onDashboard;
   }
 
   @override
@@ -493,14 +507,34 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
                     child: CarbonCheckbox(
                       value: tracked,
                       onChanged: (val) {
+                        final bool nowTracked = val ?? false;
                         setState(() {
-                          tracked = val ?? false;
+                          tracked = nowTracked;
                           if (tracked) {
                             expanded = true;
                             showInfoView = false;
+                            // Newly tracked — open both sections right away
+                            // so the patient can capture the full picture
+                            // (a reading, a schedule) in one motion instead
+                            // of hunting for two more taps. Reading opens
+                            // straight into add mode (no existing reading to
+                            // edit yet); Schedule has no in-card expanded
+                            // state anymore (see _buildScheduleSection), so
+                            // "opened" means launching its sheet directly,
+                            // below, once this frame settles.
+                            _readingExpanded = true;
+                            isNewValueEnabled = true;
+                            newValueController.text = '';
                           }
                           widget.onTrackingChanged(tracked);
                         });
+                        if (nowTracked) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (!mounted) return;
+                            newValueControllerFocusNode.requestFocus();
+                            _editReminder();
+                          });
+                        }
                       },
                     ),
                   ),
@@ -629,6 +663,9 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
 
   // The reading input row — was always visible on a tracked card; now it's
   // the Reading section's expanded content, right above the chart/ranges.
+  // Only ever shown once the Reading section's pencil/+ has already put it in
+  // edit mode (see _buildReadingSection) — no separate "Add"/"Edit" button of
+  // its own anymore, the header icons are that trigger now.
   Widget _buildReadingInputRow() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween, // Replaces Spacer safely
@@ -645,54 +682,32 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
           ),
         ),
         SizedBox(width: 16.0),
-        if (!isNewValueEnabled)
-          Expanded(
-            child: Align(
-              alignment: AlignmentGeometry.centerLeft,
-              child: CarbonButton(
-                label: hasExistingReading ? 'Edit' : 'Add a Reading',
-                onPressed: () {
+        Expanded(
+          child: Align(
+            alignment: AlignmentGeometry.centerLeft,
+            child: CarbonAcceptButton(
+              style: CarbonButtonStyle.primary,
+              onAccepted: (accepted) {
+                Future.microtask(() {
                   setState(() {
-                    isNewValueEnabled = true;
-                    // Add starts blank ("0" shows only as a placeholder,
-                    // not a real value the patient has to backspace first);
-                    // Edit starts from what's already recorded, since the
-                    // whole point of editing is correcting that number.
-                    newValueController.text = hasExistingReading
-                        ? range.latest!.toString()
-                        : '';
+                    isNewValueEnabled = false;
+                    // Closes the whole section back to its one-line summary
+                    // on either confirm or cancel — the expanded state is a
+                    // transient editing mode, not something left open.
+                    _readingExpanded = false;
+                    if (!accepted) {
+                      newValueController.text = hasExistingReading
+                          ? range.latest!.toString()
+                          : '';
+                    }
                   });
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    newValueControllerFocusNode.requestFocus();
-                  });
-                },
-                icon: hasExistingReading ? Symbols.edit : Symbols.add,
-              ),
+                });
+                newValueControllerFocusNode.unfocus();
+                if (accepted) _saveNewReading();
+              },
             ),
           ),
-        if (isNewValueEnabled)
-          Expanded(
-            child: Align(
-              alignment: AlignmentGeometry.centerLeft,
-              child: CarbonAcceptButton(
-                style: CarbonButtonStyle.primary,
-                onAccepted: (accepted) {
-                  Future.microtask(() {
-                    setState(() {
-                      isNewValueEnabled = false;
-                      if (!accepted) {
-                        newValueController.text = hasExistingReading
-                            ? range.latest!.toString()
-                            : '';
-                      }
-                    });
-                  });
-                  newValueControllerFocusNode.unfocus();
-                  if (accepted) _saveNewReading();
-                },
-              ),
-            ),
-          ),
+        ),
       ],
     );
   }
@@ -702,40 +717,23 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
   String _formatReading(double value) =>
       value.toStringAsFixed(widget.metric.isInteger ? 0 : 1);
 
-  // A collapsible section header: label on the left, either the collapsed
-  // one-line summary or nothing (expanded content follows separately) on the
-  // right, chevron on the far right. Shared shape for Reading and Schedule.
-  Widget _buildAccordionHeader({
-    required String label,
-    required String summary,
-    required bool expanded,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(label, style: CarbonTheme.carbonLabelTextStyle),
-                  const SizedBox(height: 2),
-                  Text(summary, style: CarbonTheme.carbonTextStyle),
-                ],
-              ),
-            ),
-            AnimatedRotation(
-              turns: expanded ? 0.5 : 0.0,
-              duration: const Duration(milliseconds: 200),
-              child: const Icon(Symbols.arrow_downward, size: 20),
-            ),
-          ],
-        ),
-      ),
-    );
+  // Puts the reading input row into edit or add mode and reveals it —
+  // shared by both the pencil and + icons in _buildReadingSection, which
+  // differ only in whether they seed the field from the current value.
+  void _openReadingInput({required bool asEdit}) {
+    setState(() {
+      _readingExpanded = true;
+      isNewValueEnabled = true;
+      // Edit starts from what's already recorded (the whole point of editing
+      // is correcting that number); Add starts blank — "0" shows only as a
+      // placeholder, not a real value the patient has to backspace first.
+      newValueController.text = asEdit && hasExistingReading
+          ? range.latest!.toString()
+          : '';
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      newValueControllerFocusNode.requestFocus();
+    });
   }
 
   Widget _buildReadingSection() {
@@ -743,17 +741,33 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
         ? widget.metric.unitsOfMeasure.first.symbol
         : '';
     final String summary = hasExistingReading
-        ? "Latest: ${_formatReading(range.latest!)}${unit.isEmpty ? '' : ' $unit'}"
+        ? "${_formatReading(range.latest!)}${unit.isEmpty ? '' : ' $unit'}"
         : "No readings yet";
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _buildAccordionHeader(
-          label: "Reading",
-          summary: summary,
-          expanded: _readingExpanded,
-          onTap: () => setState(() => _readingExpanded = !_readingExpanded),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 12.0, 8.0, 12.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text("Reading: $summary", style: CarbonTheme.carbonTextStyle),
+              ),
+              // Editing an existing reading only makes sense once one exists.
+              if (hasExistingReading)
+                IconButton(
+                  icon: const Icon(Symbols.edit, size: 18),
+                  tooltip: "Edit latest reading",
+                  onPressed: () => _openReadingInput(asEdit: true),
+                ),
+              IconButton(
+                icon: const Icon(Symbols.add, size: 18),
+                tooltip: "Add a reading",
+                onPressed: () => _openReadingInput(asEdit: false),
+              ),
+            ],
+          ),
         ),
         if (_readingExpanded) ...[
           const Padding(
@@ -785,32 +799,23 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
         ? "${widget.reminderPreference.cadence.description}, ${widget.reminderPreference.reminderTime ?? ''}"
         : "No reminder set";
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _buildAccordionHeader(
-          label: "Schedule",
-          summary: summary,
-          expanded: _scheduleExpanded,
-          onTap: () => setState(() => _scheduleExpanded = !_scheduleExpanded),
-        ),
-        if (_scheduleExpanded)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                onPressed: _editReminder,
-                icon: const Icon(Symbols.edit, size: 16),
-                label: Text(
-                  widget.reminderPreference.enabled
-                      ? "Edit reminder"
-                      : "Remind me to take readings",
-                ),
-              ),
-            ),
+    // No expand state — the pencil opens the existing reminder-editing
+    // sheet directly, same as before, just without the intermediate
+    // "Edit reminder" text button.
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16.0, 12.0, 8.0, 12.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text("Schedule: $summary", style: CarbonTheme.carbonTextStyle),
           ),
-      ],
+          IconButton(
+            icon: const Icon(Symbols.edit, size: 18),
+            tooltip: widget.reminderPreference.enabled ? "Edit reminder" : "Remind me to take readings",
+            onPressed: _editReminder,
+          ),
+        ],
+      ),
     );
   }
 
