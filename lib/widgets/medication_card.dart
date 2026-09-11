@@ -186,9 +186,14 @@ class _MedicationCardState extends State<MedicationCard> {
                     ),
                   ),
                 ),
+                // InteractionsChip/AllergyConflictChip both stretch to fill the width
+                // they're given (the X sits at the trailing edge) — unlike the name/dose
+                // Text above, which just left-aligns and never touches the far side on
+                // its own, these need an explicit right inset too, or the X ends up
+                // flush against the card's own border with nothing to its right at all.
                 if (medicationInteractions.isNotEmpty)
                   Padding(
-                    padding: const EdgeInsets.only(top: 4.0),
+                    padding: const EdgeInsets.only(top: 4.0, left: 16.0, right: 16.0),
                     child: InteractionsChip(
                       medicationName: medicationName,
                       interactions: medicationInteractions,
@@ -200,7 +205,7 @@ class _MedicationCardState extends State<MedicationCard> {
                   ),
                 if (medicationAllergyConflicts.isNotEmpty)
                   Padding(
-                    padding: const EdgeInsets.only(top: 4.0),
+                    padding: const EdgeInsets.only(top: 4.0, left: 16.0, right: 16.0),
                     child: AllergyConflictChip(medicationName: medicationName, conflicts: medicationAllergyConflicts),
                   ),
                 // ExpansionTile
