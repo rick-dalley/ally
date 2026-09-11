@@ -89,11 +89,8 @@ class InteractionsChipState extends State<InteractionsChip> {
     // Not red — same reasoning as the aggregate banner (see PrescriptionScreen's
     // InteractionsWidget): the seeded interaction data has no real severity
     // rating, so a loud red claim for every match reads as the app second-
-    // guessing a doctor's own prescription. Vivid gold-orange on CWICare's own
-    // violet, not a dark orange bordered on white — an orange dark enough to
-    // pass contrast on white can't help but read as brown; flipping to light-
-    // text-on-dark keeps it genuinely orange and ties it to the app's own
-    // palette. See interactionChipForeground/Background's own doc comment.
+    // guessing a doctor's own prescription. See interactionChipForeground's own
+    // doc comment for the color's current (temporary, quiet-on-purpose) state.
     // The X below is a direct, one-tap dismiss — no longer gated behind first
     // acknowledging every item in the detail dialog, which was needless friction
     // for something the patient (and their doctor) already knows about. Tapping
@@ -108,7 +105,7 @@ class InteractionsChipState extends State<InteractionsChip> {
         onTap: () => _showInteractionDetails(context, visible),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: const BoxDecoration(color: interactionChipBackground),
+          decoration: BoxDecoration(color: interactionChipBackground, border: Border.all(color: interactionChipBorder)),
           child: Row(
             children: [
               const Icon(Symbols.join_inner, size: 16, color: fg),

@@ -22,15 +22,17 @@ import 'database_manager.dart';
 // way to brown the way an even-darker value would.
 const Color interactionAdvisoryColor = Color(0xFF8A2E00);
 
-// The per-medication chip (InteractionsChip) uses a different pairing, not just
-// a darker version of the banner's — any orange dark enough to pass contrast on
-// *white* reads as brown no matter what, which is exactly what interactionAdvisoryColor
-// above was called out for. Flipping to light-text-on-dark instead sidesteps that
-// ceiling entirely: this is the actual vivid gold-orange IDEs use for class/type
-// names, kept genuinely vivid, on a fill that's CWICare's own violet rather than a
-// neutral gray — reads as "this app's notice," not a borrowed component. 9.8:1.
-const Color interactionChipForeground = Color(0xFFFFC66D);
-const Color interactionChipBackground = Color(0xFF2D1B4E);
+// TEMPORARY holding state (2026-09-11) — three prior attempts on this chip (dark
+// orange on white, gold on violet, bold orange on black) were all rejected on
+// sight ("horrible", "FUGLY"). Rather than guess a fourth time, this parks it on
+// the same quiet, low-color treatment the one screen the user actually likes
+// (Existing Medical Conditions) uses: carbonColorField background,
+// carbonColorBorderStrong01 border, the app's own default text color. No
+// standalone "warning color" at all until the app-wide Carbon palette pass
+// (in progress) settles what that should actually be.
+const Color interactionChipForeground = Color(0xFF1F2020); // AppTheme.defaultFontColor
+const Color interactionChipBackground = Color(0xFFf4f4f4); // carbonColorField
+const Color interactionChipBorder = Color(0xFF8d8d8d); // carbonColorBorderStrong01
 
 enum TabletShapes {
   almond,
