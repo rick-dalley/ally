@@ -126,7 +126,7 @@ class DatabaseManager {
   // Bump this whenever assets/sql/sql.json gains new tables/indexes, so
   // existing installs pick them up via onUpgrade instead of silently
   // missing them (see onUpgrade above).
-  static const int schemaVersion = 9;
+  static const int schemaVersion = 10;
 
   Future<void> createSqlObjects(Database db) async {
     if (sqlConfig == null) return;
@@ -2541,12 +2541,14 @@ class DatabaseManager {
     required String templateId,
     required String providerName,
     required String providerEmail,
+    bool patientCanTrack = false,
   }) async {
     final db = await database;
     await db.insert('assigned_questionnaire', {
       'id': id,
       'patient_uuid': patientUuid,
       'template_id': templateId,
+      'patient_can_track': patientCanTrack ? 1 : 0,
       'provider_name': providerName,
       'provider_email': providerEmail,
       'assigned_at': DateTime.now().toIso8601String(),
@@ -3030,6 +3032,32 @@ class DatabaseManager {
       'unit_of_measure': unitOfMeasure,
       'is_metric': 1,
     });
+  }
+
+  // Looks a seeded Metric up by its catalog name (e.g. "PHQ-9 Score") — used by the
+  // questionnaire-tracking handoff, which only knows the instrument's name, not its
+  // metrics.json id.
+  Future<int?> getMetricIdByName(String name) async {
+    final db = await database;
+    final rows = await db.query('metric', columns: ['id'], where: 'name = ?', whereArgs: [name], limit: 1);
+    return rows.isEmpty ? null : rows.first['id'] as int;
+  }
+
+  // insertTrackingMetric has no unique constraint backing it — calling it twice for
+  // the same (patient, metric) would insert a second row and double-count every
+  // aggregate query that joins against patient_metric_tracking. A questionnaire result
+  // arriving repeatedly (a patient re-taking PHQ-9 every few weeks) would hit exactly
+  // that, so callers that might already be tracking a metric should check first.
+  Future<bool> isMetricTracked({required int metricId, required String patientUuid}) async {
+    final db = await database;
+    final rows = await db.query(
+      'patient_metric_tracking',
+      columns: ['id'],
+      where: 'metric_id = ? AND patient_uuid = ?',
+      whereArgs: [metricId, patientUuid],
+      limit: 1,
+    );
+    return rows.isNotEmpty;
   }
 
   // Deliberately simple, generic table — name/reason/icon/date/patient, nothing

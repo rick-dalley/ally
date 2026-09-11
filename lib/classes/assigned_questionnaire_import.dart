@@ -10,12 +10,19 @@ class AssignedQuestionnairePayload {
   final String templateId;
   final String providerName;
   final String providerEmail;
+  // Set by Progressor only for the instruments it lets a clinician opt into (see
+  // its SendQuestionnaireScreen / QuestionnaireCatalogEntry.trackable) — Ally
+  // re-validates against its own catalog's trackable flag before honoring this
+  // (see AssignQuestionnaireScreen._assign), so a stale or tampered payload can't
+  // enable tracking for an instrument Ally itself considers unsafe to trend.
+  final bool patientCanTrack;
 
   const AssignedQuestionnairePayload({
     required this.patientName,
     required this.templateId,
     required this.providerName,
     required this.providerEmail,
+    this.patientCanTrack = false,
   });
 
   // Returns null rather than throwing — a malformed or truncated link shouldn't crash
@@ -33,6 +40,7 @@ class AssignedQuestionnairePayload {
         templateId: templateId,
         providerName: json['providerName'] as String? ?? 'your provider',
         providerEmail: providerEmail,
+        patientCanTrack: json['patientCanTrack'] as bool? ?? false,
       );
     } catch (_) {
       return null;

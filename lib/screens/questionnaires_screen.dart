@@ -71,6 +71,10 @@ class QuestionnairesScreenState extends State<QuestionnairesScreen> {
           final String assignmentId = assignment['id'] as String;
           final String providerName = assignment['provider_name'] as String;
           final String providerEmail = assignment['provider_email'] as String;
+          // Re-checked against entry.trackable here too, same reasoning as
+          // AssignQuestionnaireScreen — the stored flag alone isn't trusted for a
+          // safety-restricted instrument.
+          final bool patientCanTrack = ((assignment['patient_can_track'] as int?) ?? 0) == 1 && entry.trackable;
 
           return QuestionnaireTile(
             assessmentName: entry.name,
@@ -93,6 +97,8 @@ class QuestionnairesScreenState extends State<QuestionnairesScreen> {
               providerName: providerName,
               providerEmail: providerEmail,
               patientName: '${widget.patient.firstName} ${widget.patient.lastName}',
+              patientCanTrack: patientCanTrack,
+              trackedMetricName: entry.metricName,
             ),
             onLaunch: (ctx, name, pid, temp, guide, readOnly, builder) {
               launchQuestionnaire(

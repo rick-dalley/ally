@@ -65,6 +65,9 @@ class _AssignQuestionnaireScreenState extends State<AssignQuestionnaireScreen> {
       templateId: widget.payload.templateId,
       providerName: widget.payload.providerName,
       providerEmail: widget.payload.providerEmail,
+      // Re-checked against Ally's own catalog, not just trusted from the payload —
+      // see AssignedQuestionnairePayload.patientCanTrack's doc comment.
+      patientCanTrack: widget.payload.patientCanTrack && (_entry?.trackable ?? false),
     );
 
     if (!mounted) return;
@@ -134,6 +137,14 @@ class _AssignQuestionnaireScreenState extends State<AssignQuestionnaireScreen> {
         if (entry != null) ...[
           const SizedBox(height: 8),
           Text(entry.subTitle, style: const TextStyle(fontSize: 13, color: Colors.grey)),
+          if (widget.payload.patientCanTrack && entry.trackable) ...[
+            const SizedBox(height: 8),
+            const Text(
+              "Your provider has also enabled tracking — once you complete this, your "
+              "score will appear as a trend in Metrics.",
+              style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.grey),
+            ),
+          ],
         ],
         const SizedBox(height: 16),
         const Text("ASSIGN TO", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.grey)),

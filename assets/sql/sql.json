@@ -361,6 +361,10 @@
     {
       "table": "care_order",
       "query": "ALTER TABLE care_order ADD COLUMN therapy_category TEXT;"
+    },
+    {
+      "table": "assigned_questionnaire",
+      "query": "ALTER TABLE assigned_questionnaire ADD COLUMN patient_can_track INTEGER NOT NULL DEFAULT 0;"
     }
   ]
  }

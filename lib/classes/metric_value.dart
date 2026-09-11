@@ -757,181 +757,181 @@ class MetricIcon {
 Map<String, MetricIcon> metricIcons = {
   "Blood Pressure - Systolic": MetricIcon(
     iconData: Symbols.blood_pressure,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Blood Pressure - Diastolic": MetricIcon(
     iconData: Symbols.blood_pressure,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
-  "Heart Rate": MetricIcon(iconData: Symbols.ecg_heart, color: carbonColorSupportError),
+  "Heart Rate": MetricIcon(iconData: Symbols.ecg_heart, color: carbonColorPrimary04),
   "Resting Heart Rate": MetricIcon(
     iconData: Symbols.hr_resting,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Body Temperature": MetricIcon(
     iconData: Symbols.body_system,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
-  "Body Weight": MetricIcon(iconData: Symbols.weight, color: carbonColorSupportError),
+  "Body Weight": MetricIcon(iconData: Symbols.weight, color: carbonColorPrimary04),
   "Body Mass Index (BMI)": MetricIcon(
     iconData: Symbols.body_fat,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Body Fat Percentage": MetricIcon(
     iconData: Symbols.body_fat,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Waist Circumference": MetricIcon(
     iconData: Symbols.measuring_tape,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Blood Oxygen Saturation (SpO2)": MetricIcon(
     iconData: Symbols.oxygen_saturation,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Apnea-Hypopnea Index (AHI)": MetricIcon(
     iconData: Symbols.sleep_score,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Peak Expiratory Flow Rate (PEFR)": MetricIcon(
     iconData: Symbols.air,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Forced Expiratory Volume in 1 Second (FEV1)": MetricIcon(
     iconData: Symbols.pulmonology,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Respiration Rate": MetricIcon(
     iconData: Symbols.respiratory_rate,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "CPAP Usage Duration": MetricIcon(
     iconData: Symbols.air_purifier,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "CPAP Mask Leak Rate": MetricIcon(
     iconData: Symbols.leak_add,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Estimated Average Glucose (eAG)": MetricIcon(
     iconData: Symbols.glucose,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Blood Glucose (Fasting / General)": MetricIcon(
     iconData: Symbols.glucose,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Blood Glucose (Postprandial / Post-Meal)": MetricIcon(
     iconData: Symbols.glucose,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Glycated Hemoglobin (HbA1c)": MetricIcon(
     iconData: Symbols.hematology,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
-  "Blood Ketones": MetricIcon(iconData: Symbols.hematology, color: carbonColorSupportError),
-  "Urine Ketones": MetricIcon(iconData: Symbols.urology, color: carbonColorSupportError),
+  "Blood Ketones": MetricIcon(iconData: Symbols.hematology, color: carbonColorPrimary04),
+  "Urine Ketones": MetricIcon(iconData: Symbols.urology, color: carbonColorPrimary04),
   "Insulin Dose Logged": MetricIcon(
     iconData: Symbols.glucose,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Carbohydrate Intake": MetricIcon(
     iconData: Symbols.cookie,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Total Cholesterol": MetricIcon(
     iconData: Symbols.lab_panel,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Low-Density Lipoprotein (LDL)": MetricIcon(
     iconData: Symbols.body_fat,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "High-Density Lipoprotein (HDL)": MetricIcon(
     iconData: Symbols.body_fat,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
-  "Triglycerides": MetricIcon(iconData: Symbols.body_fat, color: carbonColorSupportError),
+  "Triglycerides": MetricIcon(iconData: Symbols.body_fat, color: carbonColorPrimary04),
   "Prothrombin Time / INR": MetricIcon(
     iconData: Symbols.diagnosis,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Heart Rate Variability (HRV)": MetricIcon(
     iconData: Symbols.cardio_load,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Joint Pain Severity Score": MetricIcon(
     iconData: Symbols.rheumatology,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Morning Joint Stiffness Duration": MetricIcon(
     iconData: Symbols.rheumatology,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "C-Reactive Protein (CRP)": MetricIcon(
     iconData: Symbols.experiment,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Erythrocyte Sedimentation Rate (ESR)": MetricIcon(
     iconData: Symbols.experiment,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
-  "Grip Strength": MetricIcon(iconData: Symbols.pan_tool, color: carbonColorSupportError),
+  "Grip Strength": MetricIcon(iconData: Symbols.pan_tool, color: carbonColorPrimary04),
   "General Pain Level": MetricIcon(
     iconData: Symbols.symptoms,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Serum Creatinine": MetricIcon(
     iconData: Symbols.hematology,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Estimated Glomerular Filtration Rate (eGFR)": MetricIcon(
     iconData: Symbols.experiment,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Blood Urea Nitrogen (BUN)": MetricIcon(
     iconData: Symbols.lab_panel,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Urine Output Volume": MetricIcon(
     iconData: Symbols.water_drop,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Water / Fluid Intake": MetricIcon(
     iconData: Symbols.water_bottle,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Daily Caloric Intake": MetricIcon(
     iconData: Symbols.fastfood,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Abdominal Pain Severity": MetricIcon(
     iconData: Symbols.symptoms,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Stool Consistency (Bristol Scale)": MetricIcon(
     iconData: Symbols.total_dissolved_solids,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
-  "Sleep Duration": MetricIcon(iconData: Symbols.snooze, color: carbonColorSupportError),
+  "Sleep Duration": MetricIcon(iconData: Symbols.snooze, color: carbonColorPrimary04),
   "Sleep Quality Score": MetricIcon(
     iconData: Symbols.sleep_score,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Headache / Migraine Severity": MetricIcon(
     iconData: Symbols.cognition,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Daily Mood Score": MetricIcon(
     iconData: Symbols.add_reaction,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Stress Level": MetricIcon(
     iconData: Symbols.sentiment_stressed,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
   "Cognitive Alertness": MetricIcon(
     iconData: Symbols.cognition_2,
-    color: carbonColorSupportError,
+    color: carbonColorPrimary04,
   ),
 };

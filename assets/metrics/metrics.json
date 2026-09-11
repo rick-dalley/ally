@@ -1582,6 +1582,62 @@
             "awareness",
             "neurological"
           ]
+        },
+        {
+          "id": 51,
+          "name": "PHQ-9 Score",
+          "description": "Total score from the Patient Health Questionnaire-9 depression screening.",
+          "purpose": "Lets you see your own depression-screening trend over time, alongside your care team.",
+          "is_integer": true,
+          "pair_id": 0,
+          "safe_lower": 0,
+          "safe_upper": 27,
+          "healthy_lower": 0,
+          "healthy_upper": 4,
+          "units_of_measure": [
+            {
+              "symbol": "pts",
+              "name": "Points",
+              "converters": {}
+            }
+          ],
+          "search_terms": [
+            "phq-9",
+            "phq9",
+            "depression",
+            "mood",
+            "mental health",
+            "questionnaire",
+            "screening"
+          ]
+        },
+        {
+          "id": 52,
+          "name": "GAD-7 Score",
+          "description": "Total score from the Generalized Anxiety Disorder 7-item scale.",
+          "purpose": "Lets you see your own anxiety-screening trend over time, alongside your care team.",
+          "is_integer": true,
+          "pair_id": 0,
+          "safe_lower": 0,
+          "safe_upper": 21,
+          "healthy_lower": 0,
+          "healthy_upper": 4,
+          "units_of_measure": [
+            {
+              "symbol": "pts",
+              "name": "Points",
+              "converters": {}
+            }
+          ],
+          "search_terms": [
+            "gad-7",
+            "gad7",
+            "anxiety",
+            "mood",
+            "mental health",
+            "questionnaire",
+            "screening"
+          ]
         }
       ]
     }

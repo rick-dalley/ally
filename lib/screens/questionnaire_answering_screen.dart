@@ -10,6 +10,7 @@ import '../app_theme.dart';
 import '../classes/assessment_logic.dart';
 import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
+import '../classes/metric_value.dart';
 import '../classes/questionnaire_result_export.dart';
 import '../widgets/likert_question.dart';
 
@@ -30,6 +31,12 @@ class QuestionnaireAnsweringScreen extends StatefulWidget {
   final String? providerName;
   final String? providerEmail;
   final String? patientName;
+  // Set only when the clinician opted in AND this instrument is on Ally's own
+  // trackable allow-list (see QuestionnaireCatalogEntry.trackable) — when true,
+  // completing this questionnaire also writes totalScore as a reading against the
+  // Metric named by trackedMetricName, same as any manually-entered reading.
+  final bool patientCanTrack;
+  final String? trackedMetricName;
 
   const QuestionnaireAnsweringScreen({
     super.key,
@@ -44,6 +51,8 @@ class QuestionnaireAnsweringScreen extends StatefulWidget {
     this.providerName,
     this.providerEmail,
     this.patientName,
+    this.patientCanTrack = false,
+    this.trackedMetricName,
   });
 
   @override
@@ -421,6 +430,25 @@ class QuestionnaireAnsweringScreenState extends State<QuestionnaireAnsweringScre
           DateTime.now(),
           'Completed the ${widget.assessmentId} questionnaire — sent to ${widget.providerName ?? 'your care team'}.',
         );
+
+        // Only when the clinician opted in AND this instrument is on the trackable
+        // allow-list (both already checked by the time this widget is built — see
+        // QuestionnairesScreen) — everything above still happens exactly as before;
+        // this is a pure addition, not a replacement for the provider handoff.
+        if (widget.patientCanTrack && widget.trackedMetricName != null) {
+          final int? metricId = await DatabaseManager().getMetricIdByName(widget.trackedMetricName!);
+          if (metricId != null) {
+            await DatabaseManager().insertPatientMetricReading(
+              patientUuid: widget.patientUuid,
+              metricId: metricId,
+              value: totalScore.toDouble(),
+              unitOfMeasure: 'pts',
+            );
+            if (!await DatabaseManager().isMetricTracked(metricId: metricId, patientUuid: widget.patientUuid)) {
+              Metrics.trackMetric(metricId: metricId, patientUuid: widget.patientUuid);
+            }
+          }
+        }
 
         if (mounted) setState(() => _submitted = true);
         return;

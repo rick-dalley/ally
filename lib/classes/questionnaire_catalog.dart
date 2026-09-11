@@ -15,6 +15,16 @@ class QuestionnaireCatalogEntry {
   final String template;
   final AssessmentLogic logic;
   final String? guide;
+  // Whether a clinician can let the patient see this instrument's own score as a
+  // trend in Metrics. Deliberately restricted to mood/anxiety trend scales — C-SSRS
+  // (suicide risk), DAST-10, ASRS, and PCL-5 stay false regardless of what a sent
+  // payload claims (see AssignedQuestionnairePayload.patientCanTrack), because an
+  // unsupervised trend of those specific scores is a real safety risk, not just a
+  // UI preference.
+  final bool trackable;
+  // Only meaningful when trackable — the Metric catalog name this instrument's
+  // score gets written against (see questionnaire_answering_screen.dart).
+  final String? metricName;
 
   const QuestionnaireCatalogEntry({
     required this.id,
@@ -24,6 +34,8 @@ class QuestionnaireCatalogEntry {
     required this.template,
     required this.logic,
     this.guide,
+    this.trackable = false,
+    this.metricName,
   });
 }
 
@@ -37,6 +49,8 @@ final List<QuestionnaireCatalogEntry> questionnaireCatalog = [
     template: "phq-9.json",
     logic: PHQ9Logic(),
     guide: 'assets/questions/phq9_score_guide.json',
+    trackable: true,
+    metricName: 'PHQ-9 Score',
   ),
   QuestionnaireCatalogEntry(
     id: "GAD-7",
@@ -47,6 +61,8 @@ final List<QuestionnaireCatalogEntry> questionnaireCatalog = [
     template: "gad-7.json",
     logic: GAD7Logic(),
     guide: 'assets/questions/gad7_score_guide.json',
+    trackable: true,
+    metricName: 'GAD-7 Score',
   ),
   QuestionnaireCatalogEntry(
     id: "C-SSRS",
