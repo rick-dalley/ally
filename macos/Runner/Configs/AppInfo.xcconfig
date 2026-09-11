@@ -8,7 +8,7 @@
 PRODUCT_NAME = ally
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.ally
+PRODUCT_BUNDLE_IDENTIFIER = com.cwicare.ally
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 com.example. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 CWICare. All rights reserved.

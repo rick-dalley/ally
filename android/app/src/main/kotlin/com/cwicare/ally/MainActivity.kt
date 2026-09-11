@@ -1,4 +1,4 @@
-package com.example.ally
+package com.cwicare.ally
 
 import android.os.Build
 import android.view.WindowManager
@@ -11,7 +11,7 @@ import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity(), MessageClient.OnMessageReceivedListener {
-    private val lockScreenChannel = "com.example.ally/lock_screen"
+    private val lockScreenChannel = "com.cwicare.ally/lock_screen"
 
     // Wear OS Data Layer bridge — the phone-side counterpart of wear_os's own
     // MainActivity.kt. See that file's doc comment for why this is hand-written

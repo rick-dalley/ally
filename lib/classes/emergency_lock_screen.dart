@@ -20,7 +20,7 @@ import 'patient.dart';
 // their allergies, conditions, or emergency contact change.
 class EmergencyLockScreen {
   static const MethodChannel _channel = MethodChannel(
-    'com.example.ally/lock_screen',
+    'com.cwicare.ally/lock_screen',
   );
 
   static Future<void> _setShowOverLockScreen(bool enabled) async {
