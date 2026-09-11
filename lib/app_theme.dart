@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ally/classes/archived/carbon_color_constants_old.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
 
 import 'package:carbon_ui/colors/app_colors.dart';
 

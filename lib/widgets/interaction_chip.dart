@@ -89,15 +89,24 @@ class InteractionsChipState extends State<InteractionsChip> {
     // Not red — same reasoning as the aggregate banner (see PrescriptionScreen's
     // InteractionsWidget): the seeded interaction data has no real severity
     // rating, so a loud red claim for every match reads as the app second-
-    // guessing a doctor's own prescription. See interactionChipForeground's own
-    // doc comment for the color's current (temporary, quiet-on-purpose) state.
-    // The X below is a direct, one-tap dismiss — no longer gated behind first
+    // guessing a doctor's own prescription. Built entirely from carbon_ui's own
+    // real, unmodified tokens rather than another one-off hex — carbonColorSupport-
+    // CautionMajor (#ff832b) is Carbon's actual semantic "caution, not error" color
+    // (distinct from carbonColorSupportWarning, the weaker "minor" tier that failed
+    // contrast outright); carbonColorField is the same quiet background the one
+    // screen in this app already considered to look right (Existing Medical
+    // Conditions) uses. The label itself stays in carbonColorTextPrimary for
+    // guaranteed legibility (7.35:1 against the orange, WCAG AAA) — the orange
+    // carries the "pay attention" signal via the icon/border/X, not by trying to
+    // also be the body text color.
+    // The X is a direct, one-tap dismiss — no longer gated behind first
     // acknowledging every item in the detail dialog, which was needless friction
     // for something the patient (and their doctor) already knows about. Tapping
     // the chip body still opens that dialog for the fuller explanation or to
     // acknowledge it for the record; dismissing no longer requires going through
     // it first.
-    const Color fg = interactionChipForeground;
+    const Color accent = carbonColorSupportCautionMajor;
+    const Color text = carbonColorTextPrimary;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -105,21 +114,21 @@ class InteractionsChipState extends State<InteractionsChip> {
         onTap: () => _showInteractionDetails(context, visible),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(color: interactionChipBackground, border: Border.all(color: interactionChipBorder)),
+          decoration: const BoxDecoration(color: carbonColorField, border: Border(left: BorderSide(color: accent, width: 3))),
           child: Row(
             children: [
-              const Icon(Symbols.join_inner, size: 16, color: fg),
+              const Icon(Symbols.join_inner, size: 16, color: accent),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   label,
-                  style: const TextStyle(color: fg, fontSize: 11, fontWeight: FontWeight.bold),
+                  style: const TextStyle(color: text, fontSize: 11, fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(width: 6),
               InkWell(
                 onTap: () => _dismissAll(visible),
-                child: const Icon(Symbols.close, size: 16, color: fg),
+                child: const Icon(Symbols.close, size: 16, color: accent),
               ),
             ],
           ),

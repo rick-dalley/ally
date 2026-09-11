@@ -1,5 +1,5 @@
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:ally/classes/archived/carbon_color_constants_old.dart';
+import 'package:carbon_ui/colors/carbon_color_constants.dart';
 import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import 'package:ally/screens/add_medication_wizard.dart';
 import 'package:carbon_ui/widgets/carbon_style_button.dart';
@@ -446,17 +446,17 @@ class InteractionsWidgetState extends State<InteractionsWidget> {
 
   final Map<BannerType, BannerData> banners = {
     BannerType.critical: const BannerData(
-      color: Color(0xFFD32F2F),
+      color: carbonColorSupportError,
       message: "CRITICAL: Contraindication Detected",
       icon: Symbols.join_inner,
     ),
     BannerType.advisory: const BannerData(
-      color: interactionAdvisoryColor,
+      color: carbonColorSupportCautionMajor,
       message: "ADVISORY: Precautions Required",
       icon: Symbols.warning_amber_rounded,
     ),
     BannerType.acknowledged: const BannerData(
-      color: Color(0xFF673AB7),
+      color: carbonColorSupportSuccess,
       message: "All Risks Acknowledged & Accepted",
       icon: Icons.check_circle_outline,
     ),

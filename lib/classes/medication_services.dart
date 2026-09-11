@@ -11,28 +11,6 @@ import 'package:ally/classes/uuid.dart';
 import 'address.dart';
 import 'database_manager.dart';
 
-// The "toned down, not red" color for an unverified drug interaction, used on
-// the aggregate banner (PrescriptionScreen's InteractionsWidget), which sits
-// directly on the screen's own light background. Carbon's own
-// carbonColorSupportWarning (#f1c21b) and this screen's original advisory
-// orange (#FF8F00) both read as too light to the eye and fail WCAG contrast
-// against white outright (1.68 and 2.29) — nowhere near AA, let alone the 8.2
-// the user asked for. This is a deliberately dark, saturated orange — #8A2E00,
-// ~8.5:1 against white — chosen to still read as "orange," not slide all the
-// way to brown the way an even-darker value would.
-const Color interactionAdvisoryColor = Color(0xFF8A2E00);
-
-// TEMPORARY holding state (2026-09-11) — three prior attempts on this chip (dark
-// orange on white, gold on violet, bold orange on black) were all rejected on
-// sight ("horrible", "FUGLY"). Rather than guess a fourth time, this parks it on
-// the same quiet, low-color treatment the one screen the user actually likes
-// (Existing Medical Conditions) uses: carbonColorField background,
-// carbonColorBorderStrong01 border, the app's own default text color. No
-// standalone "warning color" at all until the app-wide Carbon palette pass
-// (in progress) settles what that should actually be.
-const Color interactionChipForeground = Color(0xFF1F2020); // AppTheme.defaultFontColor
-const Color interactionChipBackground = Color(0xFFf4f4f4); // carbonColorField
-const Color interactionChipBorder = Color(0xFF8d8d8d); // carbonColorBorderStrong01
 
 enum TabletShapes {
   almond,
