@@ -692,31 +692,14 @@ class MedicationService {
     return localData;
   }
 
-  static Future<List<String>> getPotentialMatches(String partialName) async {
-    if (partialName.isEmpty) return [];
-
-    final url = Uri.parse("https://rxnav.nlm.nih.gov/REST/approximateTerm.json?term=$partialName&maxEntries=5");
-
-    try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List? candidates = data['approximateGroup']?['candidate'];
-
-        if (candidates != null) {
-          return candidates
-              .map((c) => c['name']?.toString()) // Use null-safe access
-              .where((name) => name != null && name.isNotEmpty) // Filter out nulls/empties
-              .cast<String>() // Cast to a non-nullable String list
-              .toSet() // Remove duplicates
-              .toList();
-        }
-      }
-    } catch (e) {
-      debugPrint("RxNav Suggestion Error: $e");
-    }
-    return [];
-  }
+  // Deliberately no live drug-name autocomplete. A getPotentialMatches() helper
+  // used to sit here, querying RxNav's approximateTerm endpoint per keystroke; it
+  // had no callers and was removed. Reinstating it would send partially-typed
+  // medication names off the device as the user types, which is a materially
+  // different privacy claim from the one the app makes today (see
+  // https://cwicare.com/privacy-ally.html section 3, and Play's Data safety
+  // form). The lookups that remain fire once per medication, when its datasheet
+  // is missing locally, and are cached afterwards.
 
   static Future<String> fetchClassesFromRxNav(String medicationName) async {
     final url = Uri.parse("https://rxnav.nlm.nih.gov/REST/rxclass/class/byDrugName.json?drugName=$medicationName");

@@ -26,6 +26,7 @@ import 'body_screen.dart';
 import 'wearable_settings_screen.dart';
 import 'package:carbon_ui/widgets/carbon_style_textbox.dart';
 import '../widgets/trophy_case.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class UserScreen extends StatefulWidget {
   // Pass the initial patient snapshot down from the roster list
@@ -537,6 +538,35 @@ class UserScreenState extends State<UserScreen> {
                             onPressed: () => Navigator.push(
                               context,
                               MaterialPageRoute(builder: (_) => WearableSettingsScreen(patient: patient)),
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                          const Divider(),
+                          const SizedBox(height: 16),
+                          Text("Privacy", style: CarbonTheme.carbonLabelTextStyle),
+                          const SizedBox(height: 8),
+                          // Google Play requires an in-app privacy link for apps using
+                          // sensitive permissions, which this one does (camera, photos,
+                          // location, contacts). The full statement lives on the website
+                          // and is linked rather than duplicated here — two copies drift,
+                          // and Play compares them against each other.
+                          Text(
+                            "Everything you enter stays in a database on this phone. "
+                            "There is no account and no copy on our side.\n\n"
+                            "One exception: when Ally meets a medication it has not seen "
+                            "before, it asks two public government drug databases what "
+                            "that medication is, sending only the drug's name and nothing "
+                            "else about you.",
+                            style: CarbonTheme.carbonHelperTextStyle,
+                          ),
+                          const SizedBox(height: 12),
+                          CarbonButton(
+                            label: "Read the Privacy Statement",
+                            icon: Symbols.lock,
+                            style: CarbonButtonStyle.secondary,
+                            onPressed: () => launchUrl(
+                              Uri.parse('https://cwicare.com/privacy-ally.html'),
+                              mode: LaunchMode.externalApplication,
                             ),
                           ),
                         ],
