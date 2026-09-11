@@ -106,6 +106,10 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
   late String? selectedSourceDetail = widget.source?.sourceDetail;
   bool expanded = false;
   bool showInfoView = false; // true if opened via '?' button
+  // Only used by tracked cards — the Reading/Schedule sections expand
+  // independently of each other and of the untracked-card `expanded` above.
+  bool _readingExpanded = false;
+  bool _scheduleExpanded = false;
   // Which tier the header capsule is currently zoomed into — cycles Safe -> Healthy ->
   // Target on tap. Index rather than the enum itself so it survives a tier disappearing
   // (e.g. target removed) without needing to be reset; it just wraps against whatever
@@ -389,16 +393,37 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
                       SizedBox(height: 16.0),
                       Align(
                         alignment: AlignmentGeometry.centerLeft,
-                        child: Text(title, style: CarbonTheme.carbonTextStyle),
+                        child: tracked
+                            // Once tracked, the card is busy enough (reading,
+                            // schedule) that the description just adds clutter —
+                            // it moves behind an (i) next to the title instead of
+                            // disappearing outright, see _showMetricInfo.
+                            ? Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Flexible(
+                                    child: Text(title, style: CarbonTheme.carbonTextStyle),
+                                  ),
+                                  InkWell(
+                                    onTap: _showMetricInfo,
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(6.0),
+                                      child: Icon(Symbols.info, size: 16, color: carbonColorIconSecondary),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Text(title, style: CarbonTheme.carbonTextStyle),
                       ),
                       SizedBox(height: 8.0),
-                      Align(
-                        alignment: AlignmentGeometry.centerLeft,
-                        child: Text(
-                          widget.description,
-                          style: CarbonTheme.carbonLabelTextStyle,
+                      if (!tracked)
+                        Align(
+                          alignment: AlignmentGeometry.centerLeft,
+                          child: Text(
+                            widget.description,
+                            style: CarbonTheme.carbonLabelTextStyle,
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ),
@@ -505,117 +530,55 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
                   ],
                 ),
               ),
-            if (tracked)
+            if (tracked) ...[
+              _buildReadingSection(),
+              _buildScheduleSection(),
+            ],
+            // Untracked cards keep the original single expand arrow + combined
+            // info/tracking-details flow, unchanged — see _buildInfoContent and
+            // _buildTrackingDetailsContent.
+            if (!tracked) ...[
+              // Second Line: Description on left, HLC or '?' bubble on right, and the arrow on the far right
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 16.0,
+                ),
                 child: Row(
-                  mainAxisAlignment:
-                      MainAxisAlignment.spaceBetween, // Replaces Spacer safely
                   children: [
-                    Expanded(
-                      child: CarbonNumberInput(
-                        label: "Latest Reading",
-                        decimals: !widget.metric.isInteger,
-                        controller: newValueController,
-                        focusNode: newValueControllerFocusNode,
-                        hint: "Enter a reading",
-                        enabled: isNewValueEnabled,
-                        value: hasExistingReading ? range.latest : null,
+                    Spacer(),
+                    InkWell(
+                      onTap: () {
+                        setState(() {
+                          expanded = !expanded;
+                          if (!expanded) showInfoView = false;
+                        });
+                      },
+                      child: AnimatedRotation(
+                        turns: expanded ? 0.5 : 0.0,
+                        duration: const Duration(milliseconds: 200),
+                        child: Align(
+                          alignment: AlignmentGeometry.centerRight,
+                          child: const Icon(Symbols.arrow_downward, size: 20),
+                        ),
                       ),
                     ),
-                    SizedBox(width: 16.0),
-                    if (!isNewValueEnabled)
-                      Expanded(
-                        child: Align(
-                          alignment: AlignmentGeometry.centerLeft,
-                          child: CarbonButton(
-                            label: hasExistingReading ? 'Edit' : 'Add a Reading',
-                            onPressed: () {
-                              setState(() {
-                                isNewValueEnabled = true;
-                                // Add starts blank ("0" shows only as a placeholder,
-                                // not a real value the patient has to backspace first);
-                                // Edit starts from what's already recorded, since the
-                                // whole point of editing is correcting that number.
-                                newValueController.text = hasExistingReading
-                                    ? range.latest!.toString()
-                                    : '';
-                              });
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                newValueControllerFocusNode.requestFocus();
-                              });
-                            },
-                            icon: hasExistingReading ? Symbols.edit : Symbols.add,
-                          ),
-                        ),
-                      ),
-                    if (isNewValueEnabled)
-                      Expanded(
-                        child: Align(
-                          alignment: AlignmentGeometry.centerLeft,
-                          child: CarbonAcceptButton(
-                            style: CarbonButtonStyle.primary,
-                            onAccepted: (accepted) {
-                              Future.microtask(() {
-                                setState(() {
-                                  isNewValueEnabled = false;
-                                  if (!accepted) {
-                                    newValueController.text = hasExistingReading
-                                        ? range.latest!.toString()
-                                        : '';
-                                  }
-                                });
-                              });
-                              newValueControllerFocusNode.unfocus();
-                              if (accepted) _saveNewReading();
-                            },
-                          ),
-                        ),
-                      ),
                   ],
                 ),
               ),
-
-            // Second Line: Description on left, HLC or '?' bubble on right, and the arrow on the far right
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 16.0,
-              ),
-              child: Row(
-                children: [
-                  Spacer(),
-                  InkWell(
-                    onTap: () {
-                      setState(() {
-                        expanded = !expanded;
-                        if (!expanded) showInfoView = false;
-                      });
-                    },
-                    child: AnimatedRotation(
-                      turns: expanded ? 0.5 : 0.0,
-                      duration: const Duration(milliseconds: 200),
-                      child: Align(
-                        alignment: AlignmentGeometry.centerRight,
-                        child: const Icon(Symbols.arrow_downward, size: 20),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Expanded Body Section (Appears below the second line when expanded)
-            if (expanded) ...[
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.0),
-                child: Divider(height: 1, thickness: 1),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: showInfoView
-                    ? _buildInfoContent()
-                    : _buildTrackingDetailsContent(),
-              ),
+              // Expanded Body Section (Appears below the second line when expanded)
+              if (expanded) ...[
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                  child: Divider(height: 1, thickness: 1),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: showInfoView
+                      ? _buildInfoContent()
+                      : _buildTrackingDetailsContent(),
+                ),
+              ],
             ],
           ],
         ),
@@ -625,6 +588,230 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
 
   bool activeButCollapsed() {
     return tracked && !expanded;
+  }
+
+  // Replaces the always-visible description once a card is tracked (see the
+  // header's info icon) — same content _buildInfoContent shows, but as a
+  // simple dismissible dialog rather than something living inside the old
+  // combined expand flow, which tracked cards no longer use.
+  Future<void> _showMetricInfo() async {
+    await showDialog<void>(
+      context: context,
+      builder: (context) => Dialog(
+        shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: CarbonTheme.carbonHeadingTextStyle),
+              const SizedBox(height: 12),
+              Text(widget.description, style: CarbonTheme.carbonTextStyle),
+              if (widget.whyItMatters.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Text("Why it matters", style: CarbonTheme.carbonLabelTextStyle),
+                const SizedBox(height: 4),
+                Text(widget.whyItMatters, style: CarbonTheme.carbonTextStyle),
+              ],
+              const SizedBox(height: 20),
+              CarbonButton(
+                icon: Symbols.check,
+                label: "Got it",
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // The reading input row — was always visible on a tracked card; now it's
+  // the Reading section's expanded content, right above the chart/ranges.
+  Widget _buildReadingInputRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween, // Replaces Spacer safely
+      children: [
+        Expanded(
+          child: CarbonNumberInput(
+            label: "Latest Reading",
+            decimals: !widget.metric.isInteger,
+            controller: newValueController,
+            focusNode: newValueControllerFocusNode,
+            hint: "Enter a reading",
+            enabled: isNewValueEnabled,
+            value: hasExistingReading ? range.latest : null,
+          ),
+        ),
+        SizedBox(width: 16.0),
+        if (!isNewValueEnabled)
+          Expanded(
+            child: Align(
+              alignment: AlignmentGeometry.centerLeft,
+              child: CarbonButton(
+                label: hasExistingReading ? 'Edit' : 'Add a Reading',
+                onPressed: () {
+                  setState(() {
+                    isNewValueEnabled = true;
+                    // Add starts blank ("0" shows only as a placeholder,
+                    // not a real value the patient has to backspace first);
+                    // Edit starts from what's already recorded, since the
+                    // whole point of editing is correcting that number.
+                    newValueController.text = hasExistingReading
+                        ? range.latest!.toString()
+                        : '';
+                  });
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    newValueControllerFocusNode.requestFocus();
+                  });
+                },
+                icon: hasExistingReading ? Symbols.edit : Symbols.add,
+              ),
+            ),
+          ),
+        if (isNewValueEnabled)
+          Expanded(
+            child: Align(
+              alignment: AlignmentGeometry.centerLeft,
+              child: CarbonAcceptButton(
+                style: CarbonButtonStyle.primary,
+                onAccepted: (accepted) {
+                  Future.microtask(() {
+                    setState(() {
+                      isNewValueEnabled = false;
+                      if (!accepted) {
+                        newValueController.text = hasExistingReading
+                            ? range.latest!.toString()
+                            : '';
+                      }
+                    });
+                  });
+                  newValueControllerFocusNode.unfocus();
+                  if (accepted) _saveNewReading();
+                },
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  // Formats a reading value the same way the reading input row's decimals
+  // flag implies — whole numbers for integer metrics, one decimal otherwise.
+  String _formatReading(double value) =>
+      value.toStringAsFixed(widget.metric.isInteger ? 0 : 1);
+
+  // A collapsible section header: label on the left, either the collapsed
+  // one-line summary or nothing (expanded content follows separately) on the
+  // right, chevron on the far right. Shared shape for Reading and Schedule.
+  Widget _buildAccordionHeader({
+    required String label,
+    required String summary,
+    required bool expanded,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: CarbonTheme.carbonLabelTextStyle),
+                  const SizedBox(height: 2),
+                  Text(summary, style: CarbonTheme.carbonTextStyle),
+                ],
+              ),
+            ),
+            AnimatedRotation(
+              turns: expanded ? 0.5 : 0.0,
+              duration: const Duration(milliseconds: 200),
+              child: const Icon(Symbols.arrow_downward, size: 20),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReadingSection() {
+    final String unit = widget.metric.unitsOfMeasure.isNotEmpty
+        ? widget.metric.unitsOfMeasure.first.symbol
+        : '';
+    final String summary = hasExistingReading
+        ? "Latest: ${_formatReading(range.latest!)}${unit.isEmpty ? '' : ' $unit'}"
+        : "No readings yet";
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildAccordionHeader(
+          label: "Reading",
+          summary: summary,
+          expanded: _readingExpanded,
+          onTap: () => setState(() => _readingExpanded = !_readingExpanded),
+        ),
+        if (_readingExpanded) ...[
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: Divider(height: 1),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildReadingInputRow(),
+                const SizedBox(height: 16),
+                _buildRangesAndTargetContent(),
+                const SizedBox(height: 8),
+                const Divider(height: 1),
+                const SizedBox(height: 8),
+                _buildCaptureSourceContent(),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildScheduleSection() {
+    final String summary = widget.reminderPreference.enabled
+        ? "${widget.reminderPreference.cadence.description}, ${widget.reminderPreference.reminderTime ?? ''}"
+        : "No reminder set";
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildAccordionHeader(
+          label: "Schedule",
+          summary: summary,
+          expanded: _scheduleExpanded,
+          onTap: () => setState(() => _scheduleExpanded = !_scheduleExpanded),
+        ),
+        if (_scheduleExpanded)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: _editReminder,
+                icon: const Icon(Symbols.edit, size: 16),
+                label: Text(
+                  widget.reminderPreference.enabled
+                      ? "Edit reminder"
+                      : "Remind me to take readings",
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 
   Widget _buildInfoContent() {
@@ -673,6 +860,46 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
   }
 
   Widget _buildTrackingDetailsContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildRangesAndTargetContent(),
+        const SizedBox(height: 8),
+        const Divider(height: 1),
+        const SizedBox(height: 8),
+        Text("REMINDER", style: CarbonTheme.carbonLabelTextStyle),
+        const SizedBox(height: 4),
+        Text(
+          widget.reminderPreference.enabled
+              ? "${widget.reminderPreference.cadence.description}, ${widget.reminderPreference.reminderTime ?? ''}"
+              : "No reminder set",
+          style: CarbonTheme.carbonTextStyle,
+        ),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            onPressed: _editReminder,
+            icon: const Icon(Symbols.edit, size: 16),
+            label: Text(
+              widget.reminderPreference.enabled
+                  ? "Edit reminder"
+                  : "Remind me to take readings",
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Divider(height: 1),
+        const SizedBox(height: 16),
+        _buildCaptureSourceContent(),
+      ],
+    );
+  }
+
+  // Chart + safe/healthy ranges + target — shared by the untracked card's
+  // combined expand flow (_buildTrackingDetailsContent, unchanged) and the
+  // tracked card's Reading section (_buildReadingSection).
+  Widget _buildRangesAndTargetContent() {
     final MetricThreshold? threshold = widget.threshold;
     final MetricTarget? target = widget.target;
     final bool hasCustomSafe =
@@ -807,32 +1034,17 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
             ],
           ),
         ],
-        const SizedBox(height: 8),
-        const Divider(height: 1),
-        const SizedBox(height: 8),
-        Text("REMINDER", style: CarbonTheme.carbonLabelTextStyle),
-        const SizedBox(height: 4),
-        Text(
-          widget.reminderPreference.enabled
-              ? "${widget.reminderPreference.cadence.description}, ${widget.reminderPreference.reminderTime ?? ''}"
-              : "No reminder set",
-          style: CarbonTheme.carbonTextStyle,
-        ),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: TextButton.icon(
-            onPressed: _editReminder,
-            icon: const Icon(Symbols.edit, size: 16),
-            label: Text(
-              widget.reminderPreference.enabled
-                  ? "Edit reminder"
-                  : "Remind me to take readings",
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        const Divider(height: 1),
-        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  // "How are these readings captured?" — shared the same way as
+  // _buildRangesAndTargetContent above.
+  Widget _buildCaptureSourceContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
         Text(
           "How are these readings captured?",
           style: CarbonTheme.carbonLabelTextStyle,
