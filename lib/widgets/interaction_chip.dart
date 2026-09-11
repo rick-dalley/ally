@@ -81,17 +81,21 @@ class InteractionsChipState extends State<InteractionsChip> {
         .toList();
     if (visible.isEmpty) return const SizedBox(height: 32);
 
-    final bool allAcknowledged = visible.every(_isAcknowledged);
     final int count = visible.length;
     final String label = count == 1
         ? "Interacts with: ${visible.first.conflicting}"
         : "Multiple Interactions ($count)";
 
-    // Unacknowledged: the original "primary" warning look (white on red). Once every
-    // interaction on this chip has been acknowledged: red on white with a red frame,
-    // per Richard's spec — still visible, but no longer shouting.
-    final Color fg = allAcknowledged ? carbonColorSupportError : Colors.white;
-    final Color bg = allAcknowledged ? Colors.white : carbonColorSupportError;
+    // Amber, not red — same reasoning as the aggregate banner (see
+    // PrescriptionScreen's InteractionsWidget): the seeded interaction data has no
+    // real severity rating, so a loud red claim for every match reads as the app
+    // second-guessing a doctor's own prescription. The X below is a direct,
+    // one-tap dismiss — no longer gated behind first acknowledging every item in
+    // the detail dialog, which was needless friction for something the patient
+    // (and their doctor) already knows about. Tapping the chip body still opens
+    // that dialog for anyone who wants the fuller explanation or to acknowledge
+    // it for the record; dismissing no longer requires going through it first.
+    const Color fg = carbonColorSupportWarning;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -99,33 +103,22 @@ class InteractionsChipState extends State<InteractionsChip> {
         onTap: () => _showInteractionDetails(context, visible),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            color: bg,
-            border: Border.all(color: carbonColorSupportError),
-          ),
+          decoration: BoxDecoration(color: Colors.white, border: Border.all(color: fg)),
           child: Row(
-            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Symbols.join_inner, size: 16, color: fg),
+              const Icon(Symbols.join_inner, size: 16, color: fg),
               const SizedBox(width: 6),
-              Text(
-                label,
-                style: TextStyle(
-                  color: fg,
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(color: fg, fontSize: 11, fontWeight: FontWeight.bold),
                 ),
               ),
-              // Only offered once every interaction on this chip has actually been
-              // acknowledged — dismissing something the patient was never shown/didn't
-              // accept isn't an option.
-              if (allAcknowledged) ...[
-                const SizedBox(width: 6),
-                InkWell(
-                  onTap: () => _dismissAll(visible),
-                  child: Icon(Symbols.close, size: 14, color: fg),
-                ),
-              ],
+              const SizedBox(width: 6),
+              InkWell(
+                onTap: () => _dismissAll(visible),
+                child: const Icon(Symbols.close, size: 16, color: fg),
+              ),
             ],
           ),
         ),
