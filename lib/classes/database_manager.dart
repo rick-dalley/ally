@@ -3034,6 +3034,37 @@ class DatabaseManager {
     });
   }
 
+  // A patient-defined metric — same table, same shape as every seeded catalog
+  // entry (see metrics.json), just created at runtime instead of from the
+  // asset bundle. `id` is left out so AUTOINCREMENT assigns the next one,
+  // which is always safe here since metrics.json only ever seeds fixed,
+  // pre-known ids up front. Leaving safeLower/safeUpper at 0.0 (the caller's
+  // default when the patient doesn't know their range) matches how every
+  // other "no threshold set" case in this app already falls back — see
+  // metric_tracking_card.dart's usl/lsl getters.
+  Future<int> insertCustomMetric({
+    required String name,
+    required bool isInteger,
+    String symbol = '',
+    double safeLower = 0.0,
+    double safeUpper = 0.0,
+  }) async {
+    final db = await database;
+    return await db.insert('metric', {
+      'name': name,
+      'description': 'Added by you.',
+      'purpose': '',
+      'is_integer': isInteger ? 1 : 0,
+      'symbol': symbol,
+      'category': 'Custom',
+      'safe_upper_limit': safeUpper,
+      'safe_lower_limit': safeLower,
+      'healthy_upper_limit': safeUpper,
+      'healthy_lower_limit': safeLower,
+      'paired': 0,
+    });
+  }
+
   // Looks a seeded Metric up by its catalog name (e.g. "PHQ-9 Score") — used by the
   // questionnaire-tracking handoff, which only knows the instrument's name, not its
   // metrics.json id.

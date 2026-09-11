@@ -7,6 +7,7 @@ import 'package:carbon_ui/colors/carbon_color_constants.dart';
 import '../classes/metric_source.dart';
 import '../classes/metric_value.dart';
 import '../classes/patient.dart';
+import '../widgets/add_custom_metric_sheet.dart';
 import '../widgets/dual_bound_capsule.dart';
 import '../widgets/metric_tracking_card.dart';
 
@@ -99,6 +100,20 @@ class MetricsDashboardScreenState extends State<MetricsDashboardScreen> {
       sources = freshSources;
       reminderPreferences = freshReminderPreferences;
     });
+  }
+
+  // The catalog (allMetrics/trackedMetrics/untrackedMetrics) only changes
+  // here and on first load — everywhere else that reloads after a save
+  // (thresholds, targets, readings) only needs the smaller per-patient data,
+  // see _reloadMetricData — so this is a real, if infrequent, full reload.
+  Future<void> _addCustomMetric() async {
+    final bool? saved = await showDialog<bool>(
+      context: context,
+      builder: (context) => AddCustomMetricSheet(patientUuid: userUuid),
+    );
+    if (saved != true) return;
+    await loadDataOnce();
+    if (mounted) setState(() {});
   }
 
   void handleTrackingChanged(int metricId, bool isTracked) {
@@ -221,6 +236,11 @@ class MetricsDashboardScreenState extends State<MetricsDashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
+      floatingActionButton: FloatingActionButton(
+        onPressed: _addCustomMetric,
+        tooltip: "Track something new",
+        child: const Icon(Symbols.add),
+      ),
       body: FutureBuilder<void>(
         future: initDataFuture,
         builder: (context, snapshot) {
