@@ -179,7 +179,7 @@ class _VisionPrescriptionSheetState extends State<VisionPrescriptionSheet> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             width: double.infinity,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: carbonColorField,
               border: Border(bottom: BorderSide(color: carbonColorBorderInteractive, width: 1)),
             ),
@@ -214,10 +214,10 @@ class _VisionPrescriptionSheetState extends State<VisionPrescriptionSheet> {
               controller: controller,
               keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
               style: CarbonTheme.carbonFieldTextStyle,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 filled: true,
                 fillColor: carbonColorField,
-                contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 border: UnderlineInputBorder(borderSide: BorderSide(color: carbonColorBorderInteractive, width: 1)),
               ),
             ),

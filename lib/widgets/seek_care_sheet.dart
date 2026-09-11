@@ -293,7 +293,7 @@ class _SeekCareSheetState extends State<SeekCareSheet> {
     );
   }
 
-  static const TextStyle _linkStyle = TextStyle(
+  static TextStyle get _linkStyle => TextStyle(
     color: carbonColorBorderInteractive,
     decoration: TextDecoration.underline,
   );

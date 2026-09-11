@@ -81,10 +81,10 @@ class _MetricThresholdSheetState extends State<MetricThresholdSheet> {
               controller: controller,
               keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
               style: CarbonTheme.carbonFieldTextStyle,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 filled: true,
                 fillColor: carbonColorField,
-                contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 border: UnderlineInputBorder(borderSide: BorderSide(color: carbonColorBorderInteractive, width: 1)),
               ),
             ),
@@ -127,11 +127,11 @@ class _MetricThresholdSheetState extends State<MetricThresholdSheet> {
               TextField(
                 controller: _setBy,
                 style: CarbonTheme.carbonFieldTextStyle,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   filled: true,
                   fillColor: carbonColorField,
                   hintText: "e.g. Dr. Alvarez",
-                  contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   border: UnderlineInputBorder(borderSide: BorderSide(color: carbonColorBorderInteractive, width: 1)),
                 ),
               ),

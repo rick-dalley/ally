@@ -352,10 +352,10 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
     // overloaded the icon's color with two jobs (metric identity + tracked
     // state) at once.
     final Border tileBorder = tracked
-        ? const Border(
-            top: BorderSide(color: carbonColorBorderSubtle03, width: 1),
-            right: BorderSide(color: carbonColorBorderSubtle03, width: 1),
-            bottom: BorderSide(color: carbonColorBorderSubtle03, width: 1),
+        ? Border(
+            top: const BorderSide(color: carbonColorBorderSubtle03, width: 1),
+            right: const BorderSide(color: carbonColorBorderSubtle03, width: 1),
+            bottom: const BorderSide(color: carbonColorBorderSubtle03, width: 1),
             left: BorderSide(color: carbonColorPrimary04, width: 3),
           )
         : const Border.fromBorderSide(

@@ -103,7 +103,7 @@ class _ConfigureConditionDialogState extends State<ConfigureConditionDialog> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             width: double.infinity,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: carbonColorField,
               border: Border(
                 bottom: BorderSide(
@@ -252,10 +252,10 @@ class _ConfigureConditionDialogState extends State<ConfigureConditionDialog> {
                               controller: _durationValueController,
                               keyboardType: TextInputType.number,
                               style: CarbonTheme.carbonFieldTextStyle,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 filled: true,
                                 fillColor: carbonColorField,
-                                contentPadding: EdgeInsets.symmetric(
+                                contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 12,
                                   vertical: 10,
                                 ),
@@ -292,10 +292,10 @@ class _ConfigureConditionDialogState extends State<ConfigureConditionDialog> {
                                 Symbols.expand_more,
                                 color: carbonColorIconSecondary,
                               ),
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 filled: true,
                                 fillColor: carbonColorField,
-                                contentPadding: EdgeInsets.symmetric(
+                                contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 12,
                                   vertical: 10,
                                 ),

@@ -19,6 +19,7 @@ import 'classes/symptom_evaluation.dart';
 import 'classes/wearable_data_layer_bridge.dart';
 import 'classes/wearable_sync_server.dart';
 import 'classes/watch_connectivity_bridge.dart';
+import 'package:carbon_ui/colors/carbon_brand.dart';
 import 'generated/l10n.dart';
 import 'app_theme.dart';
 
@@ -26,6 +27,11 @@ Future<void> main() async {
   // Ensure the binding is ready for the splash screen to render
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  // Ally's brand color is the real, unmodified Carbon blue — this matches
+  // CarbonBrand's own default, but is explicit so it's obvious at a glance
+  // rather than relying on "nobody configured it" (see CarbonBrand's doc
+  // comment; Acuitage/Progressor configure their own here too).
+  CarbonBrand.configure(const Color(0xFF0f62fe));
   runApp(const LuminescaApp());
 }
 
