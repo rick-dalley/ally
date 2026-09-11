@@ -451,7 +451,7 @@ class InteractionsWidgetState extends State<InteractionsWidget> {
       icon: Symbols.join_inner,
     ),
     BannerType.advisory: const BannerData(
-      color: Color(0xFFFF8F00),
+      color: interactionAdvisoryColor,
       message: "ADVISORY: Precautions Required",
       icon: Symbols.warning_amber_rounded,
     ),

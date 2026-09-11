@@ -11,6 +11,17 @@ import 'package:ally/classes/uuid.dart';
 import 'address.dart';
 import 'database_manager.dart';
 
+// The "toned down, not red" color for an unverified drug interaction — used by
+// both the aggregate banner (PrescriptionScreen's InteractionsWidget) and the
+// per-medication chip (InteractionsChip). Carbon's own carbonColorSupportWarning
+// (#f1c21b) and this screen's original advisory orange (#FF8F00) both read as too
+// light to the eye and fail WCAG contrast against a white background outright
+// (1.68 and 2.29 respectively) — nowhere near AA, let alone the 8.2 the user
+// asked for. This is a deliberately dark, saturated orange — #8A2E00, ~8.5:1
+// against white — chosen specifically to still read as "orange," not slide all
+// the way to brown the way an even-darker value would.
+const Color interactionAdvisoryColor = Color(0xFF8A2E00);
+
 enum TabletShapes {
   almond,
   arrowHead,

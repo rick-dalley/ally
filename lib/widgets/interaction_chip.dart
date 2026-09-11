@@ -95,7 +95,7 @@ class InteractionsChipState extends State<InteractionsChip> {
     // (and their doctor) already knows about. Tapping the chip body still opens
     // that dialog for anyone who wants the fuller explanation or to acknowledge
     // it for the record; dismissing no longer requires going through it first.
-    const Color fg = carbonColorSupportWarning;
+    const Color fg = interactionAdvisoryColor;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
