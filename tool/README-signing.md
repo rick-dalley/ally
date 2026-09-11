@@ -23,6 +23,17 @@ The practical consequence: **losing the upload key is recoverable** — Play
 support can register a new one — while losing the app signing key would end the
 app, which is exactly why letting Google hold it is the safer arrangement.
 
+## The short way
+
+`./tool/setup-signing.sh` does everything below: creates the keystore if it is
+missing, verifies the password you give it actually opens it, writes
+`key.properties` into both `ally/` and `wear_os/` with the right absolute path,
+and checks git is ignoring both. It never overwrites an existing keystore, and
+asks before replacing a `key.properties`.
+
+The rest of this file is what the script does, for when you would rather do it
+by hand or something goes wrong.
+
 ## Creating the keystore
 
 Run this once, anywhere outside both repos. `~/keys/` is as good a place as any;
