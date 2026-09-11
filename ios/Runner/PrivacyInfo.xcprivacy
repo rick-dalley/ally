@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Ally does not track. There is no account, no advertising identifier, and
+	     no analytics of any kind, so there are no tracking domains either. -->
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+
+	<!-- Everything the user enters stays in a database on the device. The single
+	     exception is the medication reference lookup in
+	     lib/classes/medication_services.dart: when a datasheet is missing
+	     locally, the drug's name is sent to openFDA and RxNav to fetch it, then
+	     cached. No identifier accompanies it, so it is not linked to the user.
+	     This must stay consistent with App Store Connect's App Privacy answers
+	     and with https://cwicare.com/privacy-ally.html section 3. -->
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeHealth</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+	</array>
+
+	<!-- Empty deliberately, not by oversight. Every required-reason API Ally
+	     touches is reached through a dependency that ships its own manifest —
+	     Flutter.framework, shared_preferences_foundation (UserDefaults, 1C8F.1),
+	     path_provider_foundation, sqflite_darwin, and the plugin frameworks in
+	     Runner.app/Frameworks. Runner's own Swift (AppDelegate,
+	     WatchConnectivityBridge) touches neither UserDefaults nor FileManager,
+	     so re-declaring their reasons here would claim access this target does
+	     not make. -->
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array/>
+</dict>
+</plist>

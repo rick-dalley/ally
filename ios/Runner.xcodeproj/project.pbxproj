@@ -17,6 +17,7 @@
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
 		AFC6FE0C3042535D00A8B58B /* Ally Watch App Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = AFC6FDEC3042535C00A8B58B /* Ally Watch App Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		D5D60990CBC9292BE143FCAF /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C72C36C85BD1E0010A421F3D /* PrivacyInfo.xcprivacy */; };
 		FC7640C67F46B498D45CA14C /* WatchConnectivityBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84055D454CBCBD6FF17C3B60 /* WatchConnectivityBridge.swift */; };
 /* End PBXBuildFile section */
 
@@ -99,6 +100,7 @@
 		AFC6FDEC3042535C00A8B58B /* Ally Watch App Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Ally Watch App Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AFC6FDF83042535D00A8B58B /* Ally Watch App Watch AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Ally Watch App Watch AppTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AFC6FE023042535D00A8B58B /* Ally Watch App Watch AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Ally Watch App Watch AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C72C36C85BD1E0010A421F3D /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		D9CFA8708C3F6AFC138EE114 /* Pods_RunnerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RunnerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E64AA0C62E5AE4E270A5AFFC /* Pods-RunnerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release.xcconfig"; sourceTree = "<group>"; };
 		EDF06E7E2F1D3DAEA22AF813 /* Pods-Runner.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"; sourceTree = "<group>"; };
@@ -262,6 +264,7 @@
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				84055D454CBCBD6FF17C3B60 /* WatchConnectivityBridge.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
+				C72C36C85BD1E0010A421F3D /* PrivacyInfo.xcprivacy */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -445,6 +448,7 @@
 				3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */,
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
+				D5D60990CBC9292BE143FCAF /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
