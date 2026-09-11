@@ -5,6 +5,7 @@ import 'package:carbon_ui/colors/carbon_color_constants.dart';
 import 'package:ally/classes/database_manager.dart';
 import 'package:ally/classes/reminder_registry.dart';
 import 'package:carbon_ui/widgets/carbon_checkbox.dart';
+import 'package:carbon_ui/widgets/carbon_toggle.dart';
 import 'package:carbon_ui/widgets/carbon_style_button.dart';
 import 'package:carbon_ui/widgets/carbon_style_number_edit.dart';
 import 'package:carbon_ui/widgets/carbon_style_textbox.dart';
@@ -132,6 +133,10 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
       widget.threshold?.healthyHigh ?? widget.metric.healthyUpperValue;
   List<Map<String, dynamic>> get history => widget.historicalValues ?? [];
   MetricRange get range => widget.range ?? MetricRange(id: widget.metric.id);
+  // MetricRange.latest defaults to 0.0, not null, so it can't tell "never
+  // recorded" from "recorded a 0" — measured (a timestamp) is only ever set
+  // by getRangesFor when a real reading exists, so it's the reliable signal.
+  bool get hasExistingReading => range.measured != null;
 
   // Which tiers the header capsule can zoom into — only ones the patient actually has
   // data for. Safe is always available (it falls back to 0.0/0.0 like the rest of the
@@ -338,13 +343,24 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
           iconData: Symbols.unknown_2,
           color: carbonColorIconPrimary,
         );
-    final Color borderColor = CarbonTheme.getTileBorderColor(
-      CarbonTileStyle.expandable,
-      tracked,
-    );
     final Color tileColor = CarbonTheme.getTileColor(
       CarbonTileStyle.expandable,
     );
+    // Tracked state is signalled by a left accent bar (same language as
+    // InteractionsChip's notice) rather than icon opacity — opacity alone
+    // read as "pale pink" and washed out at a glance while scrolling, and
+    // overloaded the icon's color with two jobs (metric identity + tracked
+    // state) at once.
+    final Border tileBorder = tracked
+        ? const Border(
+            top: BorderSide(color: carbonColorBorderSubtle03, width: 1),
+            right: BorderSide(color: carbonColorBorderSubtle03, width: 1),
+            bottom: BorderSide(color: carbonColorBorderSubtle03, width: 1),
+            left: BorderSide(color: carbonColorPrimary04, width: 3),
+          )
+        : const Border.fromBorderSide(
+            BorderSide(color: carbonColorBorderSubtle03, width: 1),
+          );
 
     return Card(
       color: tileColor,
@@ -352,9 +368,7 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
       margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        decoration: BoxDecoration(
-          border: Border.all(color: borderColor, width: 1),
-        ),
+        decoration: BoxDecoration(border: tileBorder),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -364,13 +378,7 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
               children: [
                 Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Icon(
-                    metricIcon.iconData,
-                    color: tracked
-                        ? metricIcon.color
-                        : metricIcon.color.withValues(alpha: 0.7),
-                    size: 24,
-                  ),
+                  child: Icon(metricIcon.iconData, color: metricIcon.color, size: 24),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -478,20 +486,21 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
             // once a metric is already being tracked at all.
             if (tracked)
               Padding(
-                padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 8.0),
+                padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
                 child: Row(
                   children: [
-                    CarbonCheckbox(
+                    Expanded(
+                      child: Text(
+                        "Show on Dashboard",
+                        style: CarbonTheme.carbonLabelTextStyle,
+                      ),
+                    ),
+                    CarbonToggle(
                       value: onDashboard,
                       onChanged: (val) {
-                        setState(() => onDashboard = val ?? false);
+                        setState(() => onDashboard = val);
                         widget.onDashboardChanged?.call(onDashboard);
                       },
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      "Show on Dashboard",
-                      style: CarbonTheme.carbonLabelTextStyle,
                     ),
                   ],
                 ),
@@ -511,7 +520,7 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
                         focusNode: newValueControllerFocusNode,
                         hint: "Enter a reading",
                         enabled: isNewValueEnabled,
-                        value: isNewValueEnabled ? 0.0 : range.latest ?? '0',
+                        value: hasExistingReading ? range.latest : null,
                       ),
                     ),
                     SizedBox(width: 16.0),
@@ -520,16 +529,23 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
                         child: Align(
                           alignment: AlignmentGeometry.centerLeft,
                           child: CarbonButton(
-                            label: 'Add a Reading',
+                            label: hasExistingReading ? 'Edit' : 'Add a Reading',
                             onPressed: () {
                               setState(() {
                                 isNewValueEnabled = true;
+                                // Add starts blank ("0" shows only as a placeholder,
+                                // not a real value the patient has to backspace first);
+                                // Edit starts from what's already recorded, since the
+                                // whole point of editing is correcting that number.
+                                newValueController.text = hasExistingReading
+                                    ? range.latest!.toString()
+                                    : '';
                               });
                               WidgetsBinding.instance.addPostFrameCallback((_) {
                                 newValueControllerFocusNode.requestFocus();
                               });
                             },
-                            icon: Symbols.add,
+                            icon: hasExistingReading ? Symbols.edit : Symbols.add,
                           ),
                         ),
                       ),
@@ -538,12 +554,16 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
                         child: Align(
                           alignment: AlignmentGeometry.centerLeft,
                           child: CarbonAcceptButton(
-                            label: 'Keep',
                             style: CarbonButtonStyle.primary,
                             onAccepted: (accepted) {
                               Future.microtask(() {
                                 setState(() {
                                   isNewValueEnabled = false;
+                                  if (!accepted) {
+                                    newValueController.text = hasExistingReading
+                                        ? range.latest!.toString()
+                                        : '';
+                                  }
                                 });
                               });
                               newValueControllerFocusNode.unfocus();
