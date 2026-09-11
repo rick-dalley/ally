@@ -336,7 +336,7 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
         metricIcons[widget.metric.name] ??
         MetricIcon(
           iconData: Symbols.unknown_2,
-          color: carbonColorBorderSubtle03,
+          color: carbonColorIconPrimary,
         );
     final Color borderColor = CarbonTheme.getTileBorderColor(
       CarbonTileStyle.expandable,
@@ -368,7 +368,7 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
                     metricIcon.iconData,
                     color: tracked
                         ? metricIcon.color
-                        : metricIcon.color.withValues(alpha: 0.4),
+                        : metricIcon.color.withValues(alpha: 0.7),
                     size: 24,
                   ),
                 ),
