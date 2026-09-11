@@ -86,16 +86,21 @@ class InteractionsChipState extends State<InteractionsChip> {
         ? "Interacts with: ${visible.first.conflicting}"
         : "Multiple Interactions ($count)";
 
-    // Amber, not red — same reasoning as the aggregate banner (see
-    // PrescriptionScreen's InteractionsWidget): the seeded interaction data has no
-    // real severity rating, so a loud red claim for every match reads as the app
-    // second-guessing a doctor's own prescription. The X below is a direct,
-    // one-tap dismiss — no longer gated behind first acknowledging every item in
-    // the detail dialog, which was needless friction for something the patient
-    // (and their doctor) already knows about. Tapping the chip body still opens
-    // that dialog for anyone who wants the fuller explanation or to acknowledge
-    // it for the record; dismissing no longer requires going through it first.
-    const Color fg = interactionAdvisoryColor;
+    // Not red — same reasoning as the aggregate banner (see PrescriptionScreen's
+    // InteractionsWidget): the seeded interaction data has no real severity
+    // rating, so a loud red claim for every match reads as the app second-
+    // guessing a doctor's own prescription. Vivid gold-orange on CWICare's own
+    // violet, not a dark orange bordered on white — an orange dark enough to
+    // pass contrast on white can't help but read as brown; flipping to light-
+    // text-on-dark keeps it genuinely orange and ties it to the app's own
+    // palette. See interactionChipForeground/Background's own doc comment.
+    // The X below is a direct, one-tap dismiss — no longer gated behind first
+    // acknowledging every item in the detail dialog, which was needless friction
+    // for something the patient (and their doctor) already knows about. Tapping
+    // the chip body still opens that dialog for the fuller explanation or to
+    // acknowledge it for the record; dismissing no longer requires going through
+    // it first.
+    const Color fg = interactionChipForeground;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -103,7 +108,7 @@ class InteractionsChipState extends State<InteractionsChip> {
         onTap: () => _showInteractionDetails(context, visible),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(color: Colors.white, border: Border.all(color: fg)),
+          decoration: const BoxDecoration(color: interactionChipBackground),
           child: Row(
             children: [
               const Icon(Symbols.join_inner, size: 16, color: fg),

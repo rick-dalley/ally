@@ -11,16 +11,26 @@ import 'package:ally/classes/uuid.dart';
 import 'address.dart';
 import 'database_manager.dart';
 
-// The "toned down, not red" color for an unverified drug interaction — used by
-// both the aggregate banner (PrescriptionScreen's InteractionsWidget) and the
-// per-medication chip (InteractionsChip). Carbon's own carbonColorSupportWarning
-// (#f1c21b) and this screen's original advisory orange (#FF8F00) both read as too
-// light to the eye and fail WCAG contrast against a white background outright
-// (1.68 and 2.29 respectively) — nowhere near AA, let alone the 8.2 the user
-// asked for. This is a deliberately dark, saturated orange — #8A2E00, ~8.5:1
-// against white — chosen specifically to still read as "orange," not slide all
-// the way to brown the way an even-darker value would.
+// The "toned down, not red" color for an unverified drug interaction, used on
+// the aggregate banner (PrescriptionScreen's InteractionsWidget), which sits
+// directly on the screen's own light background. Carbon's own
+// carbonColorSupportWarning (#f1c21b) and this screen's original advisory
+// orange (#FF8F00) both read as too light to the eye and fail WCAG contrast
+// against white outright (1.68 and 2.29) — nowhere near AA, let alone the 8.2
+// the user asked for. This is a deliberately dark, saturated orange — #8A2E00,
+// ~8.5:1 against white — chosen to still read as "orange," not slide all the
+// way to brown the way an even-darker value would.
 const Color interactionAdvisoryColor = Color(0xFF8A2E00);
+
+// The per-medication chip (InteractionsChip) uses a different pairing, not just
+// a darker version of the banner's — any orange dark enough to pass contrast on
+// *white* reads as brown no matter what, which is exactly what interactionAdvisoryColor
+// above was called out for. Flipping to light-text-on-dark instead sidesteps that
+// ceiling entirely: this is the actual vivid gold-orange IDEs use for class/type
+// names, kept genuinely vivid, on a fill that's CWICare's own violet rather than a
+// neutral gray — reads as "this app's notice," not a borrowed component. 9.8:1.
+const Color interactionChipForeground = Color(0xFFFFC66D);
+const Color interactionChipBackground = Color(0xFF2D1B4E);
 
 enum TabletShapes {
   almond,
