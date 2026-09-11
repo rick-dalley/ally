@@ -53,13 +53,16 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/CWICareLogo.png"
+  # Regenerate these three with `python3 tool/make_app_icon.py` — they are drawn
+  # from the same geometry as carbon_ui's JourneyMark widget, so the icon and the
+  # startup screen can never drift apart.
+  image_path: "assets/icon/ally_icon.png"
   # Without these, iOS 18+'s Dark/Tinted home-screen icon appearances get
   # auto-generated from the opaque main icon — an algorithmic desaturation
   # that reads as muddy. Supplying real transparent-background artwork lets
   # iOS composite Dark on its own dark backing and derive Tinted properly.
-  image_path_ios_dark_transparent: "assets/images/CWICareLogo_transparent.png"
-  image_path_ios_tinted_grayscale: "assets/images/CWICareLogo_transparent.png"
+  image_path_ios_dark_transparent: "assets/icon/ally_icon_transparent.png"
+  image_path_ios_tinted_grayscale: "assets/icon/ally_icon_grayscale.png"
   desaturate_tinted_to_grayscale_ios: true
 
 flutter:

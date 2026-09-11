@@ -43,6 +43,9 @@ migrate_working_dir/
 !macos/Runner/Assets.xcassets/**/*.png
 !web/icons/*.png
 !web/favicon.png
+# The icon *sources* every one of those is generated from, likewise — losing
+# them is how the app icon silently reverted to retired artwork once already.
+!/assets/icon/*.png
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
 # is commented out by default.
