@@ -113,7 +113,7 @@ class GetMedicationShapeState extends State<GetMedicationShape> {
                             Padding(
                               padding: const EdgeInsets.only(bottom: 8.0),
                               child: Text(
-                                shape.name.toUpperCase(),
+                                shape.label.toUpperCase(),
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: isSelected ? carbonColorInteractive : AppTheme.defaultFontColor,

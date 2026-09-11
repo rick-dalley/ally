@@ -28,7 +28,15 @@ enum TabletShapes {
 }
 
 extension TabletShapesNames on TabletShapes {
-  String get name {
+  // Named label, not name, deliberately — every enum already has a built-in .name
+  // (the raw "almond"/"arrowHead" identifier, via Dart's Enum interface). A custom
+  // extension member of the same name silently shadows it for display purposes
+  // while leaving TabletShapes.values.byName() — used to parse a stored medication's
+  // shape back out — still expecting the real raw identifier. That mismatch is
+  // exactly what saved "Almond" but then failed to read it back as anything but
+  // TabletShapes.round (medication_card.dart's null-safe fallback). See
+  // TabletColorsLabel below for the pattern this should have followed from the start.
+  String get label {
     switch (this) {
       case TabletShapes.almond:
         return "Almond";
@@ -481,12 +489,23 @@ class Pharmacy implements Contactable {
 class Dosage {}
 
 // Tolerates null / unrecognized values (e.g. topical medications with no shape,
-// or rows seeded before these columns existed) rather than throwing.
+// or rows seeded before these columns existed) rather than throwing. Also
+// tolerates the old capitalized label ("Almond") a medication saved before
+// TabletShapesNames.label was still (incorrectly) named .name — byName() alone
+// only matches the true raw identifier ("almond"), so a straight strict lookup
+// would keep permanently misreading any medication saved under that bug as
+// TabletShapes.round even after the write-side fix.
 TabletShapes? _parseTabletShape(dynamic raw) {
   if (raw == null) return null;
+  final String value = raw.toString();
   try {
-    return TabletShapes.values.byName(raw.toString());
+    return TabletShapes.values.byName(value);
   } catch (_) {
+    for (final shape in TabletShapes.values) {
+      if (shape.name.toLowerCase() == value.toLowerCase() || shape.label.toLowerCase() == value.toLowerCase()) {
+        return shape;
+      }
+    }
     return null;
   }
 }
