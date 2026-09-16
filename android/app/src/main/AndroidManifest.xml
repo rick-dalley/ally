@@ -1,4 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Flutter's template declares INTERNET only in the debug and profile manifests,
+         for the dev-time VM service connection. Ally needs it in the real build too:
+         WearableSyncServer binds a LAN HTTP socket on 8787 for the Linux wearable
+         prototype, and without this permission that bind throws on a release install.
+         That failure used to propagate out of _initializeApp and stop the Wear OS Data
+         Layer bridge from ever starting, so a sideloaded release build could not talk
+         to the watch at all while debug builds worked fine. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.READ_CONTACTS"/>

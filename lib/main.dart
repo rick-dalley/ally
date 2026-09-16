@@ -153,16 +153,28 @@ class LuminescaHomeState extends State<LuminescaHome> {
       DrugFactory.instance.initialize(),
       SymptomFactory.instance.initialize('assets/assessment/symptoms.json'),
     ]);
+    // The two native watch transports come up first and unconditionally. They're the
+    // ones a real paired watch uses, they only attach a listener, and neither can
+    // fail in a way worth aborting startup over. No-ops on the platform that doesn't
+    // have them — the Data Layer bridge on iOS, WatchConnectivity on Android.
+    _wearableDataLayerBridge.start();
+    _watchConnectivityBridge.start();
+
     // Always on, not gated behind pairing — this is a same-network prototype server
     // with no auth, so the only real gate is "does anything know the IP to reach it,"
     // which is exactly what pairing communicates out of band (see WearableSyncServer).
-    await _wearableSyncServer.start();
-    // No-op on platforms without the native Data Layer bridge (iOS) — it just never
-    // receives anything there, same as the HTTP server being reachable but pointless
-    // if nothing's listening on the other end.
-    _wearableDataLayerBridge.start();
-    // Likewise a no-op on Android — WatchConnectivityBridge.swift only exists on iOS.
-    _watchConnectivityBridge.start();
+    //
+    // Binding a socket can fail for reasons that have nothing to do with any watch:
+    // a permission the install doesn't hold, or the port already taken. That used to
+    // throw straight out of _initializeApp and take the Data Layer bridge down with
+    // it, which is how a release build ended up unable to reach the Wear OS watch at
+    // all while debug builds were fine. Contained here so the prototype transport can
+    // fail on its own without costing the real one.
+    try {
+      await _wearableSyncServer.start();
+    } catch (error) {
+      debugPrint('Wearable LAN sync server unavailable, continuing without it: $error');
+    }
   }
 
   @override
