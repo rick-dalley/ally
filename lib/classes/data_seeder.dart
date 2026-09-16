@@ -8,28 +8,56 @@ import 'package:sqflite/sqflite.dart';
 import 'frequency_codes.dart';
 
 class DataSeeder {
-  /// Entry point for seeding data.
-  /// Only executes in debug mode to prevent data pollution in release builds.
-  static Future<void> seed(Database db) async {
-    if (!kDebugMode) return;
-
-    debugPrint('--- Starting Database Seeding ---');
-
-    await _seedPatientData(db);
-    await _seedObservations(db);
+  /// Reference catalogs the app cannot function without: the condition, supply,
+  /// allergen, metric/unit, test and drug-interaction lists every picker in the app
+  /// reads from. This is static clinical reference data, not sample data, so it runs
+  /// in every build — release included. Until 2026-09-11 the whole seeder sat behind
+  /// one kDebugMode gate, which meant a release build came up with an empty condition
+  /// table and Existing Medical Conditions rendered no chips at all.
+  ///
+  /// Safe to call on every launch: each step counts its own table first and returns
+  /// immediately once that catalog is populated, so the cost on an already-seeded
+  /// install is a handful of COUNT(*) queries. That's deliberate — installs created
+  /// before this fix already ran onCreate, so they'd never be backfilled otherwise.
+  ///
+  /// Order matters: supplies link themselves to condition rows, so conditions go first.
+  static Future<void> seedReferenceCatalogs(Database db) async {
     await _seedConditionsCatalog(db);
     await _seedSuppliesCatalog(db);
     await _seedAllergensCatalog(db);
-    await _seedProviders(db);
-    await _seedInteractions(db);
     await _seedMetricsAndUnits(db);
-    await _seedPatientMetricThresholds(db);
     await _seedTestCatalog(db);
+    await _seedInteractions(db);
+  }
 
-    debugPrint('--- Seeding Complete ---');
+  /// Sample patients, their observations, their providers and their thresholds —
+  /// demo content only. Stays behind kDebugMode so a real install boots to an empty
+  /// app the patient fills in themselves.
+  static Future<void> seedDemoData(Database db) async {
+    if (!kDebugMode) return;
+
+    debugPrint('--- Starting Demo Data Seeding ---');
+
+    await _seedPatientData(db);
+    await _seedObservations(db);
+    await _seedProviders(db);
+    await _seedPatientMetricThresholds(db);
+
+    debugPrint('--- Demo Data Seeding Complete ---');
   }
 
   static Future<void> _seedInteractions(Database db) async {
+    // Every other catalog checks its own table before doing any work; this one didn't,
+    // which was harmless while the seeder only ran once inside onCreate. Now that
+    // seedReferenceCatalogs runs on every launch, an unguarded re-parse of a 190k-row
+    // CSV would be the most expensive thing the app does at startup.
+    final List<Map<String, dynamic>> existingRecords = await db.rawQuery(
+      "SELECT COUNT(*) as total FROM interaction",
+    );
+    if (existingRecords.first['total'] as int > 0) {
+      return; // Catalog is already successfully configured!
+    }
+
     final rawData = await rootBundle.loadString(
       'assets/interactions/db_drug_interactions.csv',
     );

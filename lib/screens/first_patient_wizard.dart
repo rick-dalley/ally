@@ -17,14 +17,15 @@ import 'package:carbon_ui/widgets/carbon_style_textbox.dart';
 
 // Two entry points share this one wizard. (1) The very first thing a real (non-demo)
 // install shows — with zero patients in the roster every other screen has nothing to
-// work with (DataSeeder is gated behind kDebugMode, so a real release build boots to a
-// permanently blank roster with no way in) — that flow shows the welcome step and calls
-// onPatientCreated in place, no navigation involved. (2) Adding another family member
-// to an existing roster (from the top-corner avatar's long-press wheel, or the "Add
-// Family Member" button on UserScreen) — that flow is always pushed as a route, skips
-// the welcome step in favor of an upfront "how are they related to you" step, and pops
-// itself with the new patient's uuid instead of calling onPatientCreated, so the caller
-// can jump straight to the new profile. One small ask per page rather than the dense
+// work with (DataSeeder.seedDemoData is gated behind kDebugMode, so a real release
+// build boots to a permanently blank roster with no way in) — that flow shows the
+// welcome step and calls onPatientCreated in place, no navigation involved.
+// (2) Adding another family member to an existing roster (from the top-corner
+// avatar's long-press wheel, or the "Add Family Member" button on UserScreen) — that
+// flow is always pushed as a route, skips the welcome step in favor of an upfront
+// "how are they related to you" step, and pops itself with the new patient's uuid
+// instead of calling onPatientCreated, so the caller can jump straight to the new
+// profile. One small ask per page rather than the dense
 // UserScreen this is deliberately avoiding replicating; name and date of birth are the
 // only required step, everything else is skippable and can always be filled in later
 // from UserScreen itself.
