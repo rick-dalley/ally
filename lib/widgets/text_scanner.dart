@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:material_symbols_icons/symbols.dart';
+import 'package:carbon_ui/colors/carbon_theme_constants.dart';
+import 'package:carbon_ui/widgets/carbon_style_full_button.dart';
 
 import '../app_theme.dart';
 
@@ -23,6 +26,12 @@ class TextScanner extends StatefulWidget {
 class _TextScannerState extends State<TextScanner> with WidgetsBindingObserver {
   CameraController? _controller;
   bool _isPermissionGranted = false;
+  // iOS only ever shows its camera dialog once per install. After a "Don't Allow" —
+  // or on a bundle id that was denied under an earlier build — request() returns
+  // immediately with no prompt, which looked from the outside like the app simply
+  // never asked. Tracked separately so that case gets a way out (Settings) rather
+  // than the same dead-end "permission required" text as the not-yet-asked case.
+  bool _isPermanentlyDenied = false;
   bool _isProcessing = false;
   final TextRecognizer _textRecognizer = TextRecognizer();
 
@@ -58,8 +67,13 @@ class _TextScannerState extends State<TextScanner> with WidgetsBindingObserver {
   // --- Camera Lifecycle & Permissions ---
   Future<void> _requestCameraPermission() async {
     final status = await Permission.camera.request();
+    if (!mounted) return;
     setState(() {
       _isPermissionGranted = status.isGranted;
+      // isRestricted covers parental/MDM restrictions — the person can't grant it from
+      // Settings either, so it gets the same explanatory treatment rather than a
+      // button that would take them somewhere with nothing to toggle.
+      _isPermanentlyDenied = status.isPermanentlyDenied || status.isRestricted;
     });
     if (_isPermissionGranted) {
       _initializeCamera();
@@ -112,9 +126,35 @@ class _TextScannerState extends State<TextScanner> with WidgetsBindingObserver {
 
     if (!_isPermissionGranted) {
       return Center(
-        child: Text(
-          "Camera permission required",
-          style: TextStyle(color: AppTheme.onPrimaryColor),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                _isPermanentlyDenied
+                    ? "Ally doesn't have permission to use the camera."
+                    : "Waiting for camera permission…",
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppTheme.onPrimaryColor),
+              ),
+              if (_isPermanentlyDenied) ...[
+                const SizedBox(height: 8),
+                Text(
+                  "iOS only asks once. Turn the camera on for Ally in Settings and come back.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppTheme.onPrimaryColor),
+                ),
+                const SizedBox(height: 24),
+                CarbonFullButton(
+                  label: 'OPEN SETTINGS',
+                  icon: Symbols.settings,
+                  style: CarbonButtonStyle.tertiary,
+                  onTap: openAppSettings,
+                ),
+              ],
+            ],
+          ),
         ),
       );
     }

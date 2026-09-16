@@ -39,5 +39,28 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+
+    # permission_handler_apple compiles each permission out unless its macro is
+    # defined here. The defaults in PermissionHandlerEnums.h are 0, not 1 — so
+    # without this block AudioVideoPermissionStrategy is never built, and
+    # Permission.camera.request() returns denied instantly without ever reaching
+    # AVFoundation. iOS then has no record of the app asking, which is why Camera
+    # didn't appear under Settings for Ally at all and no prompt was ever shown.
+    #
+    # Only the camera is enabled: it's the one permission this app requests through
+    # permission_handler (see TextScanner). image_picker, geolocator and
+    # flutter_contacts each ask iOS directly through their own plugin code, so their
+    # macros stay off — App Store review flags permission code for anything the app
+    # doesn't actually use.
+    # Appends rather than the ||= the plugin's own README shows: some pods already
+    # carry a GCC_PREPROCESSOR_DEFINITIONS value, and ||= silently leaves those
+    # targets untouched — which is the difference between this working and looking
+    # like it was applied.
+    target.build_configurations.each do |config|
+      definitions = config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] || ['$(inherited)']
+      definitions = [definitions] unless definitions.is_a?(Array)
+      definitions << 'PERMISSION_CAMERA=1' unless definitions.include?('PERMISSION_CAMERA=1')
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = definitions
+    end
   end
 end
