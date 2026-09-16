@@ -76,6 +76,10 @@ class DatabaseManager {
       await deleteDatabase(path);
     }
 
+    // Set by onCreate below so the demo-data seed only fires on a genuinely fresh
+    // install, while the reference catalogs get their chance on every launch.
+    bool freshlyCreated = false;
+
     // CRITICAL: You must await this call.
     final db = await openDatabase(
       path,
@@ -84,7 +88,7 @@ class DatabaseManager {
         // 4. Ensure Foreign Keys are enabled for the session
         await db.execute('PRAGMA foreign_keys = ON;');
         await createSqlObjects(db);
-        await DataSeeder.seed(db);
+        freshlyCreated = true;
       },
       // Existing installs never re-run onCreate, so any table/index added to
       // sql.json after a device's db file was first created would otherwise
@@ -98,6 +102,18 @@ class DatabaseManager {
         if (oldVersion < 8) await _normalizeCareOrderTimestamps(db);
       },
     );
+
+    // Outside onCreate on purpose. onCreate only ever runs once per device, so a
+    // catalog that failed to seed — or, before 2026-09-11, was skipped entirely
+    // because the seeder was gated behind kDebugMode — would stay empty for the life
+    // of that install. Running it here backfills those installs on their next
+    // launch; each catalog no-ops once its table is populated.
+    await DataSeeder.seedReferenceCatalogs(db);
+
+    // Demo patients/providers/thresholds reference metric rows by id, so they go
+    // after the catalogs. Internally gated to debug builds.
+    if (freshlyCreated) await DataSeeder.seedDemoData(db);
+
     return db;
   }
 
@@ -126,7 +142,7 @@ class DatabaseManager {
   // Bump this whenever assets/sql/sql.json gains new tables/indexes, so
   // existing installs pick them up via onUpgrade instead of silently
   // missing them (see onUpgrade above).
-  static const int schemaVersion = 10;
+  static const int schemaVersion = 11;
 
   Future<void> createSqlObjects(Database db) async {
     if (sqlConfig == null) return;
@@ -214,8 +230,14 @@ class DatabaseManager {
     );
   }
 
-  Future<bool> trackMoodChange(String patientUuid, int mood) async {
+  // Returns the id of the mood period that is open once this call finishes — the
+  // newly inserted row when the mood actually changed, or the existing still-open row
+  // when it didn't. Callers that want to attach a cause to *this* tap (see
+  // setMoodReason / insertLifeEvent) need that id: "whichever period is currently
+  // open" is only the right row at this exact moment, and can be days stale later.
+  Future<int?> trackMoodChange(String patientUuid, int mood) async {
     final db = await database;
+    int? openMoodId;
 
     await db.transaction((txn) async {
       // 1. Get the latest mood
@@ -238,20 +260,27 @@ class DatabaseManager {
           await txn.update('patient_mood', {'end_date': now}, where: 'id = ?', whereArgs: [lastMood['id']]);
 
           // 3. Insert the new one
-          await txn.insert('patient_mood', {
+          openMoodId = await txn.insert('patient_mood', {
             'patient_uuid': patientUuid,
             'mood': mood,
             'start_date': now,
             'end_date': null, // Open-ended
           });
+        } else {
+          // Mood is the same — no new period, but this tap still belongs to the one
+          // already open, so hand back its id rather than nothing.
+          openMoodId = lastMood['id'] as int?;
         }
-        // Else: mood is the same, do nothing (as you requested)
       } else {
         // 4. First time ever logging? Just insert.
-        await txn.insert('patient_mood', {'patient_uuid': patientUuid, 'mood': mood, 'start_date': now});
+        openMoodId = await txn.insert('patient_mood', {
+          'patient_uuid': patientUuid,
+          'mood': mood,
+          'start_date': now,
+        });
       }
     });
-    return true;
+    return openMoodId;
   }
 
   // The current (still-open) mood period, if one exists — null only means this
@@ -312,14 +341,14 @@ class DatabaseManager {
     return db.query('patient_mood', where: 'patient_uuid = ?', whereArgs: [patientUuid], orderBy: 'start_date ASC');
   }
 
-  // Attaches a reason to whichever mood period is currently open — not necessarily
-  // tied to the moment the mood last changed, since a long-press to explain "why" can
-  // happen any time during that period.
-  Future<void> setMoodReason(String patientUuid, String reason) async {
-    final current = await getCurrentMood(patientUuid);
-    if (current == null) return;
+  // Attaches a reason to one specific mood period, identified by id — deliberately
+  // not "whichever period is currently open." The open period can have started days
+  // ago, so writing tonight's cause onto it would silently attribute this evening's
+  // event to Tuesday's sadness. The only caller is the check-in flow, which carries
+  // the id trackMoodChange just returned for the tap being explained.
+  Future<void> setMoodReason(int moodEntryId, String reason) async {
     final db = await database;
-    await db.update('patient_mood', {'reason': reason}, where: 'id = ?', whereArgs: [current['id']]);
+    await db.update('patient_mood', {'reason': reason}, where: 'id = ?', whereArgs: [moodEntryId]);
   }
 
   // Whether this patient has ever tapped a sentiment in the mood widget before —
@@ -342,6 +371,95 @@ class DatabaseManager {
       {'patient_uuid': patientUuid, 'shown_at': DateTime.now().toUtc().toIso8601String()},
       conflictAlgorithm: ConflictAlgorithm.ignore,
     );
+  }
+
+  // Life events — the thing that happened, and how it felt. Separate from patient_mood
+  // on purpose: a mood row is an open-ended *period*, an event is a point in time, and
+  // collapsing the two makes it impossible to say "this specific thing made me feel
+  // this specific way." The sentiment is denormalized onto the event (a plain Sentiment
+  // index, nullable — "job interview" is worth recording even with no rating attached)
+  // rather than pointed at a mood row, so it stays true no matter what the patient taps
+  // afterwards.
+  //
+  // occurredAt is when the thing happened; created_at is when it was written down.
+  // Those differing is the signal for "logged retrospectively," which is why there's no
+  // separate flag for it.
+  Future<int> insertLifeEvent(
+    String patientUuid,
+    String title, {
+    String? note,
+    int? mood,
+    DateTime? occurredAt,
+  }) async {
+    final db = await database;
+    final DateTime when = occurredAt ?? DateTime.now();
+    return db.insert('patient_life_event', {
+      'patient_uuid': patientUuid,
+      'title': title.trim(),
+      'note': (note == null || note.trim().isEmpty) ? null : note.trim(),
+      'mood': mood,
+      'occurred_at': when.toIso8601String(),
+      'created_at': DateTime.now().toIso8601String(),
+    });
+  }
+
+  Future<void> updateLifeEvent(int id, {required String title, String? note, int? mood}) async {
+    final db = await database;
+    await db.update(
+      'patient_life_event',
+      {
+        'title': title.trim(),
+        'note': (note == null || note.trim().isEmpty) ? null : note.trim(),
+        'mood': mood,
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  // The check-in screen promises in so many words that anything written there can be
+  // deleted any time — that promise is only keepable if this exists.
+  Future<void> deleteLifeEvent(int id) async {
+    final db = await database;
+    await db.delete('patient_life_event', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<List<Map<String, dynamic>>> getLifeEventsForDay(String patientUuid, DateTime date) async {
+    final db = await database;
+    final DateTime start = DateTime(date.year, date.month, date.day);
+    final DateTime end = start.add(const Duration(days: 1));
+    return db.query(
+      'patient_life_event',
+      where: 'patient_uuid = ? AND occurred_at >= ? AND occurred_at < ?',
+      whereArgs: [patientUuid, start.toIso8601String(), end.toIso8601String()],
+      orderBy: 'occurred_at',
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getLifeEventHistory(String patientUuid) async {
+    final db = await database;
+    return db.query('patient_life_event', where: 'patient_uuid = ?', whereArgs: [patientUuid], orderBy: 'occurred_at');
+  }
+
+  // Titles this patient has used before, most recently used first — the suggestion
+  // chips in the check-in flow. This is what turns one-off notes into something worth
+  // reading later: tapping "Work" again instead of typing a fresh phrase is what lets
+  // the same recurring thing accumulate a mood history rather than scattering across a
+  // dozen near-identical strings.
+  Future<List<String>> getLifeEventTitleSuggestions(String patientUuid, {int limit = 8}) async {
+    final db = await database;
+    final rows = await db.rawQuery(
+      '''
+      SELECT title, MAX(occurred_at) AS last_used
+      FROM patient_life_event
+      WHERE patient_uuid = ?
+      GROUP BY title COLLATE NOCASE
+      ORDER BY last_used DESC
+      LIMIT ?
+      ''',
+      [patientUuid, limit],
+    );
+    return rows.map((r) => r['title'] as String).toList();
   }
 
   Future<List<Map<String, dynamic>>> getPatientVaccinations(String patientUuid) async {
@@ -719,6 +837,15 @@ class DatabaseManager {
       orderBy: 'completed_on',
     );
 
+    // The only category here the patient authored themselves — everything else is
+    // derived from something clinical they did.
+    final lifeEvents = await db.query(
+      'patient_life_event',
+      where: 'patient_uuid = ? AND occurred_at >= ? AND occurred_at < ?',
+      whereArgs: [patientUuid, startIso, endIso],
+      orderBy: 'occurred_at',
+    );
+
     return {
       'doses': doses,
       'appointments': appointments,
@@ -726,10 +853,11 @@ class DatabaseManager {
       'symptoms': symptoms,
       'moods': moods,
       'tests': tests,
+      'lifeEvents': lifeEvents,
     };
   }
 
-  // Which dates in a month have at least one event, across all six sources — for the
+  // Which dates in a month have at least one event, across all seven sources — for the
   // month view's "something happened" marker, shown independent of whether a diary
   // entry was ever written for that day.
   Future<Set<String>> getEventDatesForMonth(String patientUuid, int year, int month) async {
@@ -798,6 +926,14 @@ class DatabaseManager {
         [patientUuid, startIso, endIso],
       ),
       'start_date',
+    );
+
+    addDatesFromIso(
+      await db.rawQuery(
+        'SELECT occurred_at FROM patient_life_event WHERE patient_uuid = ? AND occurred_at >= ? AND occurred_at < ?',
+        [patientUuid, startIso, endIso],
+      ),
+      'occurred_at',
     );
 
     return dates;
@@ -3307,16 +3443,17 @@ class DatabaseManager {
         UNION ALL SELECT datetime(recorded, 'unixepoch') FROM markers WHERE patient_uuid = ?
         UNION ALL SELECT start_date FROM patient_mood WHERE patient_uuid = ?
         UNION ALL SELECT completed_on FROM test_completion_log WHERE patient_uuid = ?
+        UNION ALL SELECT occurred_at FROM patient_life_event WHERE patient_uuid = ?
       )
       ''',
-      [patientUuid, patientUuid, patientUuid, patientUuid, patientUuid],
+      [patientUuid, patientUuid, patientUuid, patientUuid, patientUuid, patientUuid],
     );
     if (rows.length < 5) return false;
     final List<DateTime> dates = rows.map((r) => DateTime.parse(r['d'] as String)).toList()..sort();
     return dates.last.difference(dates.first).inDays >= 7;
   }
 
-  // Same five categories the Patient Diary already aggregates per-day (see
+  // Same categories the Patient Diary already aggregates per-day (see
   // DatabaseManager.getDayEvents) — this is the all-time version, since the timeline
   // windows by scrolling rather than by a single selected date.
   Future<Map<String, List<Map<String, dynamic>>>> getTimelineEventRows(String patientUuid) async {
@@ -3343,6 +3480,7 @@ class DatabaseManager {
     final moods = await db.query('patient_mood', where: 'patient_uuid = ?', whereArgs: [patientUuid]);
     final tests = await db.query('test_completion_log', where: 'patient_uuid = ?', whereArgs: [patientUuid]);
     final questionnaires = await getCompletedAssignedQuestionnaires(patientUuid);
+    final lifeEvents = await db.query('patient_life_event', where: 'patient_uuid = ?', whereArgs: [patientUuid]);
     return {
       'doses': doses,
       'appointments': appointments,
@@ -3350,6 +3488,7 @@ class DatabaseManager {
       'moods': moods,
       'tests': tests,
       'questionnaires': questionnaires,
+      'lifeEvents': lifeEvents,
     };
   }
 
@@ -3520,9 +3659,9 @@ class DatabaseManager {
   // Acuitage's DatabaseManager.wipeDemoDataForLicensedInstall exactly: the free trial
   // never lets someone enter their own data, so there's nothing of real value to lose,
   // and this clears every seeded table so a licensed install starts clean. Not a
-  // delete-and-recreate of the db file, since onCreate calls DataSeeder.seed and would
-  // just reseed the same demo content. Foreign keys are toggled off around the wipe
-  // rather than deleting in dependency order, since sqflite/SQLite won't let the pragma
+  // delete-and-recreate of the db file, since a fresh create reseeds demo data (see
+  // DataSeeder.seedDemoData) and would just put the same content back. Foreign keys
+  // are toggled off around the wipe rather than deleting in dependency order, since sqflite/SQLite won't let the pragma
   // change take effect mid-transaction anyway.
   // Ally has no verification/purchase event to hang this off of the way
   // Progressor/Acuitage's professional gate does — someone who has Ally at all

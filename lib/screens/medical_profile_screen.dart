@@ -130,20 +130,23 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
     setState(() => sentiment = Sentiment.values[row['mood'] as int]);
   }
 
-  void _recordMood(Sentiment newSentiment) {
-    setState(() {
-      sentiment = newSentiment;
-      DatabaseManager().trackMoodChange(
-        widget.user.patientUuid,
-        newSentiment.index,
-      );
-    });
+  // Returns the id of the mood period this tap left open, so a check-in opened right
+  // afterwards can attach its cause to *this* tap rather than to whatever period
+  // happens to be open by then (see DatabaseManager.setMoodReason). The write is
+  // awaited rather than fired off inside setState — the id is the point now, and a
+  // setState callback was never the right place for a database call anyway.
+  Future<int?> _recordMood(Sentiment newSentiment) async {
+    setState(() => sentiment = newSentiment);
+    return DatabaseManager().trackMoodChange(
+      widget.user.patientUuid,
+      newSentiment.index,
+    );
   }
 
   // skipPrompt: false is the automatic path (tapping a needsCheckIn mood) — starts
   // with "do you want to write about this?" skipPrompt: true is long-press/double-tap
   // on any mood, where the gesture itself already signals wanting to write.
-  void _openMoodCheckIn(Sentiment mood, {required bool skipPrompt}) {
+  void _openMoodCheckIn(Sentiment mood, {required bool skipPrompt, int? moodEntryId}) {
     Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute(
         fullscreenDialog: true,
@@ -151,8 +154,23 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
           mood: mood,
           patientUuid: widget.user.patientUuid,
           skipPrompt: skipPrompt,
+          moodEntryId: moodEntryId,
         ),
       ),
+    );
+  }
+
+  // The visible "Add what happened" path — records nothing new about the mood itself
+  // (the patient hasn't changed it, they're explaining the one they're already in), so
+  // it attaches to the period that's currently open rather than starting another one.
+  // This is the one place where "whatever is open" genuinely is the right row.
+  Future<void> _openStandaloneCheckIn() async {
+    final row = await DatabaseManager().getCurrentMood(widget.user.patientUuid);
+    if (!mounted) return;
+    _openMoodCheckIn(
+      sentiment is Sentiment ? sentiment as Sentiment : Sentiment.calm,
+      skipPrompt: true,
+      moodEntryId: row?['id'] as int?,
     );
   }
 
@@ -306,7 +324,9 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                                 onSelected: (Flyable item) async {
                                   final Sentiment newSentiment =
                                       item as Sentiment;
-                                  _recordMood(newSentiment);
+                                  final int? moodEntryId = await _recordMood(
+                                    newSentiment,
+                                  );
                                   await _maybeShowMoodIntro();
                                   if (newSentiment == Sentiment.sick) {
                                     _openSicknessCheckIn();
@@ -314,6 +334,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                                     _openMoodCheckIn(
                                       newSentiment,
                                       skipPrompt: false,
+                                      moodEntryId: moodEntryId,
                                     );
                                   }
                                 },
@@ -321,7 +342,9 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                                 onItemLongPress: (Flyable item) async {
                                   final Sentiment newSentiment =
                                       item as Sentiment;
-                                  _recordMood(newSentiment);
+                                  final int? moodEntryId = await _recordMood(
+                                    newSentiment,
+                                  );
                                   await _maybeShowMoodIntro();
                                   if (newSentiment == Sentiment.sick) {
                                     _openSicknessCheckIn();
@@ -329,13 +352,16 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                                     _openMoodCheckIn(
                                       newSentiment,
                                       skipPrompt: true,
+                                      moodEntryId: moodEntryId,
                                     );
                                   }
                                 },
                                 onItemDoubleTap: (Flyable item) async {
                                   final Sentiment newSentiment =
                                       item as Sentiment;
-                                  _recordMood(newSentiment);
+                                  final int? moodEntryId = await _recordMood(
+                                    newSentiment,
+                                  );
                                   await _maybeShowMoodIntro();
                                   if (newSentiment == Sentiment.sick) {
                                     _openSicknessCheckIn();
@@ -343,6 +369,7 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                                     _openMoodCheckIn(
                                       newSentiment,
                                       skipPrompt: true,
+                                      moodEntryId: moodEntryId,
                                     );
                                   }
                                 },
@@ -350,6 +377,26 @@ class MedicalProfileScreenState extends State<MedicalProfileScreen> {
                             ),
                           ],
                         ),
+                      ),
+                    ),
+                  ),
+                  // Positive events would otherwise go almost entirely unrecorded. The
+                  // automatic check-in only fires for the three needsCheckIn moods, and
+                  // every other way into it is a long press or a double tap on the mood
+                  // flyout — gestures nobody discovers. "They surprised me with lunch"
+                  // is exactly the kind of thing worth knowing about someone months
+                  // later, so it gets a plain visible button. Deliberately NOT an
+                  // automatic prompt on happy moods: being interrogated every time you
+                  // say you're fine is how mood tracking dies.
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: CarbonCompactButton(
+                        icon: Symbols.event_note,
+                        label: "Add what happened",
+                        style: CarbonButtonStyle.ghost,
+                        onTap: _openStandaloneCheckIn,
                       ),
                     ),
                   ),

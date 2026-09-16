@@ -12,24 +12,45 @@ import '../classes/patient_sentiment.dart';
 
 // Shown full-screen two ways: automatically for one of Sentiment's three
 // "needsCheckIn" flags (sad/angry/stressed — see patient_sentiment.dart) right after
-// tapping it, or on demand for any mood via a long press or double tap on the mood
-// widget — someone might want to explain why they're happy just as much as why
-// they're stressed. The mood itself is already recorded by the caller before this
-// even opens; this screen is only about the optional diary write.
+// tapping it, or on demand for any mood via the "Add what happened" button, a long
+// press, or a double tap on the mood widget — someone might want to explain why
+// they're happy just as much as why they're stressed. The mood itself is already
+// recorded by the caller before this even opens.
+//
+// Two things can come out of this screen, and they're deliberately different:
+//
+//   - Naming what happened writes a patient_life_event row — a real, queryable link
+//     between a thing and a feeling ("piano recital" / Sad). That's the whole point:
+//     a mood nobody can explain later is a number with no story attached.
+//   - Writing only in the box, with no name given, appends to today's diary exactly
+//     as it always has. That path has to survive. Sometimes someone needs to get
+//     something out and naming a cause is more than they can do right then, and an
+//     app that demands a label before it will listen is an app people stop opening.
 //
 // The automatic path starts with a Yes/No prompt (skipPrompt: false) since tapping a
 // mood doesn't necessarily mean wanting to write about it. The on-demand path
-// (skipPrompt: true) skips straight to the text box — long-pressing/double-tapping
-// already is the "yes, I want to write" signal. Answering No, or Nevermind while
-// writing, closes with nothing saved. Pressing Done appends whatever was written
-// (time-stamped) to today's diary entry. System back mirrors whichever of those is
-// the non-saving option for the current stage — never a silent save.
+// (skipPrompt: true) skips straight to the fields — the gesture already is the "yes,
+// I want to write" signal. Answering No, or Nevermind while writing, closes with
+// nothing saved. System back mirrors whichever of those is the non-saving option for
+// the current stage — never a silent save.
 class MoodCheckInScreen extends StatefulWidget {
   final Sentiment mood;
   final String patientUuid;
   final bool skipPrompt;
 
-  const MoodCheckInScreen({super.key, required this.mood, required this.patientUuid, this.skipPrompt = false});
+  // The mood period this check-in is explaining, as returned by trackMoodChange for
+  // the very tap that opened this screen. Deliberately passed in rather than looked
+  // up here as "whatever period is currently open" — see DatabaseManager.setMoodReason
+  // for why that distinction matters. Null only when the caller had no id to give.
+  final int? moodEntryId;
+
+  const MoodCheckInScreen({
+    super.key,
+    required this.mood,
+    required this.patientUuid,
+    this.skipPrompt = false,
+    this.moodEntryId,
+  });
 
   @override
   State<MoodCheckInScreen> createState() => _MoodCheckInScreenState();
@@ -39,19 +60,33 @@ class _MoodCheckInScreenState extends State<MoodCheckInScreen> {
   late bool _writing = widget.skipPrompt;
   bool _showReassurance = false;
   final TextEditingController _controller = TextEditingController();
+  final TextEditingController _titleController = TextEditingController();
   Timer? _pauseTimer;
+  List<String> _suggestions = [];
 
   @override
   void initState() {
     super.initState();
     _controller.addListener(_onTextChanged);
+    _loadSuggestions();
   }
 
   @override
   void dispose() {
     _pauseTimer?.cancel();
     _controller.dispose();
+    _titleController.dispose();
     super.dispose();
+  }
+
+  // Things this patient has named before. Tapping one instead of typing a fresh
+  // phrase is what makes the same recurring thing accumulate a mood history rather
+  // than scattering across a dozen near-identical strings — "Work" five times says
+  // something; "work stuff", "the office", "work again" says nothing.
+  Future<void> _loadSuggestions() async {
+    final List<String> titles = await DatabaseManager().getLifeEventTitleSuggestions(widget.patientUuid);
+    if (!mounted) return;
+    setState(() => _suggestions = titles);
   }
 
   // Reassurance appears once the patient has actually paused after writing
@@ -67,11 +102,29 @@ class _MoodCheckInScreenState extends State<MoodCheckInScreen> {
     });
   }
 
+  // Named event and unnamed note are two different saves, not one save with an
+  // optional field — see this class's doc comment.
   Future<void> _finish() async {
+    final String title = _titleController.text.trim();
     final String text = _controller.text.trim();
-    if (text.isNotEmpty) {
+
+    if (title.isNotEmpty) {
+      await DatabaseManager().insertLifeEvent(
+        widget.patientUuid,
+        title,
+        note: text,
+        mood: widget.mood.index,
+      );
+      // The other half of the link: the mood period now says what caused it, which is
+      // what makes the mood row read as "Sad — Piano recital" everywhere it already
+      // renders its reason (the diary day view, the timeline).
+      if (widget.moodEntryId != null) {
+        await DatabaseManager().setMoodReason(widget.moodEntryId!, title);
+      }
+    } else if (text.isNotEmpty) {
       await DatabaseManager().appendDiaryEntry(widget.patientUuid, DateTime.now(), text);
     }
+
     if (mounted) Navigator.of(context).pop();
   }
 
@@ -131,7 +184,7 @@ class _MoodCheckInScreenState extends State<MoodCheckInScreen> {
         ),
         const SizedBox(height: 12),
         Text(
-          "Do you want to write down what you're feeling or why you feel this way?",
+          "Do you want to note what happened, or how you're feeling about it?",
           textAlign: TextAlign.center,
           style: CarbonTheme.carbonTextStyle,
         ),
@@ -191,6 +244,31 @@ class _MoodCheckInScreenState extends State<MoodCheckInScreen> {
                   style: CarbonTheme.carbonHintTextStyle,
                 ),
         ),
+        const SizedBox(height: 16),
+        CarbonTextInput(
+          label: "What happened?",
+          controller: _titleController,
+          maxLines: 1,
+          fillColor: Colors.white.withValues(alpha: 0.6),
+          onChanged: (_) => setState(() {}),
+        ),
+        if (_suggestions.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final String suggestion in _suggestions)
+                ActionChip(
+                  label: Text(suggestion),
+                  backgroundColor: Colors.white.withValues(alpha: 0.6),
+                  onPressed: () => setState(() {
+                    _titleController.text = suggestion;
+                  }),
+                ),
+            ],
+          ),
+        ],
         const SizedBox(height: 16),
         CarbonTextInput(
           label: "What's on your mind",

@@ -7,10 +7,12 @@ import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
 import '../classes/patient.dart';
 import '../classes/patient_diary.dart';
+import '../classes/patient_life_event.dart';
 import '../classes/provider.dart';
 import 'package:carbon_ui/widgets/carbon_button_compact.dart';
 import 'package:carbon_ui/widgets/carbon_style_textbox.dart';
 import '../widgets/diary_month_calendar.dart';
+import '../widgets/life_event_sheet.dart';
 
 // Opens on today. Prev/next arrows flip a day at a time; a calendar toggle switches to
 // a month grid for jumping further. Auto-pulled events (meds, appointments, symptoms,
@@ -18,6 +20,10 @@ import '../widgets/diary_month_calendar.dart';
 // prompts, not a report — but nothing is ever saved unless the patient actually writes
 // something: leaving a day with empty text saves nothing, and clearing previously
 // saved text back to empty deletes that day's entry outright.
+//
+// Life events sit in that same list but are the exception to "auto-pulled": the patient
+// wrote them, here or from a mood check-in, so they're the only rows that can be tapped
+// to correct or delete.
 class PatientDiaryScreen extends StatefulWidget {
   final Patient user;
   const PatientDiaryScreen({super.key, required this.user});
@@ -65,6 +71,7 @@ class _PatientDiaryScreenState extends State<PatientDiaryScreen> {
       ...eventRows['symptoms']!.map(DiaryDayEvent.symptom),
       ...eventRows['moods']!.map(DiaryDayEvent.mood),
       ...eventRows['tests']!.map(DiaryDayEvent.test),
+      ...eventRows['lifeEvents']!.map(DiaryDayEvent.lifeEvent),
     ]..sort((a, b) => (a.time ?? DateTime(0)).compareTo(b.time ?? DateTime(0)));
 
     final String text = entryRow != null ? (entryRow['content'] as String? ?? '') : '';
@@ -88,6 +95,35 @@ class _PatientDiaryScreenState extends State<PatientDiaryScreen> {
       await DatabaseManager().saveDiaryEntry(widget.user.patientUuid, _currentDate, text);
     }
     _lastSavedText = text;
+  }
+
+  // Adds an event to whichever day is on screen — the reason this lives here and not
+  // only in the mood check-in. Nobody logs everything as it happens, and a diary you
+  // can't back-fill is a diary that stops matching the week you actually had.
+  Future<void> _addLifeEvent() async {
+    await _saveIfNeeded();
+    if (!mounted) return;
+    final bool changed = await showLifeEventSheet(
+      context,
+      patientUuid: widget.user.patientUuid,
+      day: _currentDate,
+    );
+    if (changed && mounted) await _loadDay();
+  }
+
+  // Only ever reached from a life-event row — every other row in this list is derived
+  // from a clinical record that has its own screen to be corrected on.
+  Future<void> _editLifeEvent(int id) async {
+    final rows = await DatabaseManager().getLifeEventsForDay(widget.user.patientUuid, _currentDate);
+    final match = rows.where((r) => r['id'] == id).toList();
+    if (match.isEmpty || !mounted) return;
+    final bool changed = await showLifeEventSheet(
+      context,
+      patientUuid: widget.user.patientUuid,
+      day: _currentDate,
+      existing: PatientLifeEvent.fromRow(match.first),
+    );
+    if (changed && mounted) await _loadDay();
   }
 
   Future<void> _changeDay(DateTime newDate) async {
@@ -237,11 +273,23 @@ class _PatientDiaryScreenState extends State<PatientDiaryScreen> {
           Text("What happened today", style: CarbonTheme.carbonLabelTextStyle),
           const SizedBox(height: 8),
           ..._events.map(_buildEventTile),
-          const SizedBox(height: 24),
+          const SizedBox(height: 12),
         ],
+        // Outside the isNotEmpty guard on purpose: a day with nothing auto-recorded is
+        // exactly the day most likely to need something written down by hand.
+        Align(
+          alignment: Alignment.centerLeft,
+          child: CarbonCompactButton(
+            icon: Symbols.add,
+            label: "Add something that happened",
+            style: CarbonButtonStyle.ghost,
+            onTap: _addLifeEvent,
+          ),
+        ),
+        const SizedBox(height: 24),
         CarbonTextInput(
           label: "Your notes",
-          helperText: "Write anything — thoughts, how you felt, what happened.",
+          helperText: "Write anything — thoughts, how you felt, what happened and how it left you.",
           controller: _textController,
           maxLines: 8,
           onChanged: (_) {},
@@ -258,13 +306,17 @@ class _PatientDiaryScreenState extends State<PatientDiaryScreen> {
     );
   }
 
+  // Life-event rows are the only tappable ones — they're the only thing here the
+  // patient wrote, so they're the only thing this screen has any business editing or
+  // deleting. The mood color, when there is one, is carried by the icon rather than
+  // restated in text; the sentiment face already says it.
   Widget _buildEventTile(DiaryDayEvent event) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+    final Widget row = Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(event.icon, size: 20),
+          Icon(event.icon, size: 20, color: event.accent),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -284,5 +336,8 @@ class _PatientDiaryScreenState extends State<PatientDiaryScreen> {
         ],
       ),
     );
+
+    if (event.lifeEventId == null) return row;
+    return InkWell(onTap: () => _editLifeEvent(event.lifeEventId!), child: row);
   }
 }

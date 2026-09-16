@@ -1,6 +1,7 @@
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:flutter/widgets.dart' show IconData;
+import 'package:flutter/widgets.dart' show Color, IconData;
 
+import 'patient_life_event.dart';
 import 'patient_pain.dart';
 import 'patient_sentiment.dart';
 
@@ -20,17 +21,30 @@ class DiaryEntry {
 }
 
 // A single thing that happened on a given day, flattened to a uniform shape purely
-// for display — medication doses, appointments, symptoms, mood changes, and test
-// completions are all real, differently-shaped domain objects; this exists only so
-// the diary's day view can render all five in one list without five separate
-// ListView sections.
+// for display — medication doses, appointments, symptoms, mood changes, test
+// completions and the patient's own life events are all real, differently-shaped
+// domain objects; this exists only so the diary's day view can render them in one
+// list without a separate ListView section each.
 class DiaryDayEvent {
   final IconData icon;
   final String title;
   final String subtitle;
   final DateTime? time;
 
-  const DiaryDayEvent({required this.icon, required this.title, required this.subtitle, this.time});
+  // Set only for life events — the one source here the patient wrote themselves, and
+  // so the only one the day view can offer to edit or delete. Everything else is
+  // derived from a clinical record that has its own home elsewhere in the app.
+  final int? lifeEventId;
+  final Color? accent;
+
+  const DiaryDayEvent({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    this.time,
+    this.lifeEventId,
+    this.accent,
+  });
 
   factory DiaryDayEvent.medicationDose(Map<String, dynamic> row) {
     final String status = row['status'] as String? ?? 'taken';
@@ -74,6 +88,21 @@ class DiaryDayEvent {
       title: 'Mood: ${mood.label}',
       subtitle: (reason != null && reason.isNotEmpty) ? reason : '',
       time: DateTime.tryParse(row['start_date'] as String? ?? ''),
+    );
+  }
+
+  // Reads as the patient's own voice, not a clinical record: the title is whatever
+  // they called it, and the mood (if they attached one) colors the row rather than
+  // being restated as text — the sentiment icon already says it.
+  factory DiaryDayEvent.lifeEvent(Map<String, dynamic> row) {
+    final PatientLifeEvent event = PatientLifeEvent.fromRow(row);
+    return DiaryDayEvent(
+      icon: event.icon ?? Symbols.event_note,
+      title: event.title,
+      subtitle: event.note ?? '',
+      time: event.occurredAt,
+      lifeEventId: event.id,
+      accent: event.mood?.color,
     );
   }
 

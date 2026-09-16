@@ -49,6 +49,7 @@ class _TimelineScrollerPageState extends State<TimelineScrollerPage> {
             ...rows['moods']!.map(PatientAction.mood),
             ...rows['tests']!.map(PatientAction.test),
             ...rows['questionnaires']!.map(PatientAction.questionnaire),
+            ...rows['lifeEvents']!.map(PatientAction.lifeEvent),
           ]..sort((a, b) => a.occurred.compareTo(b.occurred));
 
       final medRows = await DatabaseManager().getMedicationSpanRows(widget.patientUuid);

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import 'package:carbon_ui/carbon_ui.dart';
+import 'patient_life_event.dart';
 import 'patient_sentiment.dart';
 
 abstract interface class Actionable implements Listable {
@@ -18,7 +19,8 @@ enum PatientActionTypes implements Listable {
   symptomLogged,
   appointmentAttended,
   testCompleted,
-  questionnaireCompleted;
+  questionnaireCompleted,
+  lifeEvent;
 
   @override
   String get description {
@@ -39,6 +41,8 @@ enum PatientActionTypes implements Listable {
         return "Completed a test";
       case PatientActionTypes.questionnaireCompleted:
         return "Completed a questionnaire";
+      case PatientActionTypes.lifeEvent:
+        return "Something happened";
     }
   }
 
@@ -61,6 +65,8 @@ enum PatientActionTypes implements Listable {
         return "Test";
       case PatientActionTypes.questionnaireCompleted:
         return "Questionnaire";
+      case PatientActionTypes.lifeEvent:
+        return "Life Event";
     }
   }
 
@@ -86,6 +92,8 @@ enum PatientActionTypes implements Listable {
         return Symbols.lab_panel;
       case PatientActionTypes.questionnaireCompleted:
         return Symbols.ballot_sharp;
+      case PatientActionTypes.lifeEvent:
+        return Symbols.event_note;
     }
   }
 }
@@ -103,7 +111,12 @@ class PatientAction implements Actionable, CarbonTimelinePointEvent {
   DateTime? ended;
   final String? detail;
 
-  PatientAction({required this.actionType, required this.occurred, this.ended, this.detail});
+  // Null for every derived (clinical) dot, which keeps Ally's existing all-one-color
+  // timeline look — only a patient-authored life event with a mood attached paints
+  // itself, so color on this timeline means "this is how I felt," nothing else.
+  final Color? tint;
+
+  PatientAction({required this.actionType, required this.occurred, this.ended, this.detail, this.tint});
 
   factory PatientAction.medicationDose(Map<String, dynamic> row) {
     return PatientAction(
@@ -137,6 +150,19 @@ class PatientAction implements Actionable, CarbonTimelinePointEvent {
       actionType: PatientActionTypes.changedMood,
       occurred: DateTime.parse(row['start_date'] as String),
       detail: 'Mood changed to ${mood.label}',
+    );
+  }
+
+  // The only dot on this timeline the patient authored themselves, and the only one
+  // that carries a color — read against the mood trend lane, a sad-colored dot sitting
+  // where the lane turns is the whole point of recording life events at all.
+  factory PatientAction.lifeEvent(Map<String, dynamic> row) {
+    final PatientLifeEvent event = PatientLifeEvent.fromRow(row);
+    return PatientAction(
+      actionType: PatientActionTypes.lifeEvent,
+      occurred: event.occurredAt,
+      detail: event.mood != null ? '${event.title} — ${event.mood!.label}' : event.title,
+      tint: event.mood?.color,
     );
   }
 
@@ -178,5 +204,5 @@ class PatientAction implements Actionable, CarbonTimelinePointEvent {
   String get typeKey => actionType.name;
 
   @override
-  Color? get color => null; // widget's default; keeps Ally's existing all-one-color look
+  Color? get color => tint; // null for every derived dot — see the `tint` field
 }
