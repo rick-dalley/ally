@@ -23,6 +23,10 @@ class WatchConnectivityBridge {
 
   Future<String> _handle(MethodCall call) async {
     switch (call.method) {
+      case 'patients':
+        // The one call that takes no patientUuid — it is how the watch learns one,
+        // instead of making someone type a UUID on a 40mm screen.
+        return jsonEncode(await WearableSyncLogic.buildPatientList());
       case 'sync':
         final String patientUuid = call.arguments as String;
         return jsonEncode(await WearableSyncLogic.buildSyncPayload(patientUuid));

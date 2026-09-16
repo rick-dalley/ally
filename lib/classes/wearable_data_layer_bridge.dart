@@ -35,6 +35,12 @@ class WearableDataLayerBridge {
     final String payload = message['payload'] as String;
 
     switch (path) {
+      case '/wearable/patients/request':
+        // Answered before the watch knows any patient UUID — this is the one call
+        // that carries no patientUuid, because it is what the watch asks in order
+        // to learn one. See WearableSyncLogic.buildPatientList.
+        await _reply('/wearable/patients/response', await WearableSyncLogic.buildPatientList());
+        break;
       case '/wearable/sync/request':
         final String patientUuid = payload;
         await _reply('/wearable/sync/response', await WearableSyncLogic.buildSyncPayload(patientUuid));

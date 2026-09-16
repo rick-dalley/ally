@@ -26,6 +26,25 @@ enum WearableClient {
         return object
     }
 
+    // The only call that takes no patient UUID, because it is the one that discovers
+    // them. A 40mm screen has no keyboard worth typing a v4 UUID on, so pairing is
+    // "ask the phone who's on it, tap a name" — see PairingView.
+    struct PairablePatient: Identifiable, Hashable {
+        let id: String
+        let name: String
+    }
+
+    static func fetchPatients() async throws -> [PairablePatient] {
+        let json = try await WatchConnectivityClient.shared.send(method: "patients", arguments: nil)
+        let object = try decode(json)
+        guard let rows = object["patients"] as? [[String: Any]] else { return [] }
+        return rows.compactMap { row in
+            guard let uuid = row["uuid"] as? String else { return nil }
+            let name = (row["name"] as? String) ?? ""
+            return PairablePatient(id: uuid, name: name.isEmpty ? "Unnamed" : name)
+        }
+    }
+
     static func fetchSync() async throws -> [String: Any] {
         guard let patientUuid = getPatientUuid() else { throw WatchConnectivityError.remote("Not paired yet") }
         let json = try await WatchConnectivityClient.shared.send(method: "sync", arguments: patientUuid)

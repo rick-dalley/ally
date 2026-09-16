@@ -40,6 +40,28 @@ class WearableSyncLogic {
     'Joint Pain',
   ];
 
+  // The pairing handshake. A watch has no usable keyboard, so it must never ask
+  // anyone to transcribe a patient UUID — it asks the phone who it could be paired
+  // with instead, and the caregiver taps a name. The UUID still travels (it is what
+  // every other call keys on) but it stays machine-to-machine, never on screen.
+  //
+  // Names only: no DOB, PHN, address or anything else identifying. A watch is the
+  // easiest device in the suite to glance at over someone's shoulder, and picking
+  // which person this watch belongs to needs nothing more than what distinguishes
+  // them from the others in the household.
+  static Future<Map<String, dynamic>> buildPatientList() async {
+    final List<Map<String, dynamic>> rows = await DatabaseManager().getAllPatients();
+    return {
+      'patients': [
+        for (final Map<String, dynamic> row in rows)
+          {
+            'uuid': row['patient_uuid'],
+            'name': '${row['first_name'] ?? ''} ${row['last_name'] ?? ''}'.trim(),
+          },
+      ],
+    };
+  }
+
   static Future<Map<String, dynamic>> buildSyncPayload(String patientUuid) async {
     final List<Map<String, dynamic>> rows = await DatabaseManager().getPatientWithVitals(patientUuid: patientUuid);
     if (rows.isEmpty) return {'error': 'patient not found'};

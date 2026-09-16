@@ -75,8 +75,8 @@ enum WatchConnectivityError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .notSupported: return "Watch connectivity isn't supported on this device."
-        case .notReachable: return "Ally isn't reachable — make sure it's open on your phone."
+        case .notSupported: return "WCSession.isSupported() is false on this device."
+        case .notReachable: return "WCSession never became reachable (waited 2s after activation)."
         case .remote(let message): return message
         }
     }
