@@ -26,6 +26,10 @@ class GetMedicationColorState extends State<GetMedicationColor> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // The hosting sheet already lifts for the keyboard; a nested Scaffold left on
+      // the default would subtract that height again and squeeze this step's list to
+      // nothing. See AddMedicationWizard's build for the full chain.
+      resizeToAvoidBottomInset: false,
       backgroundColor: AppTheme.onPrimaryColor,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

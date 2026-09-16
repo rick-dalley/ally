@@ -97,6 +97,9 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
   }
 
   void _goNext() {
+    // Carrying an open keyboard onto a step that has no text field leaves it covering
+    // that step's content with nothing to type into.
+    FocusScope.of(context).unfocus();
     if (_currentStep == _lastStep) {
       _saveMedication();
     } else {
@@ -105,6 +108,7 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
   }
 
   void _goBack() {
+    FocusScope.of(context).unfocus();
     _pageController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
   }
 
@@ -180,6 +184,14 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
 
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBackgroundColor,
+      // The sheet that hosts this wizard (PrescriptionScreen.showAddMedicationSheet)
+      // already lifts itself by viewInsets.bottom when the keyboard opens. A Scaffold
+      // defaults resizeToAvoidBottomInset to true, so leaving it on subtracted the
+      // keyboard's height a second time from a sheet that had already shrunk by it —
+      // with a ~336pt software keyboard that took the PageView's height to nothing and
+      // every step after the name rendered as a bare heading over empty space. Never
+      // reproduced on the simulator, where a hardware keyboard leaves viewInsets at 0.
+      resizeToAvoidBottomInset: false,
       bottomNavigationBar: Padding(
         padding: EdgeInsets.all(CarbonSpacing.wide.width),
         child: Row(

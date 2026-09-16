@@ -27,16 +27,15 @@ class GetMedicationName extends StatefulWidget {
 class GetMedicationNameState extends State<GetMedicationName> {
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom, // Moves with keyboard
-        left: 24,
-        right: 24,
-        top: 24,
-      ),
+    // No viewInsets padding here on purpose: the hosting sheet already applies it
+    // once (PrescriptionScreen.showAddMedicationSheet), and this page applying it
+    // again shrank the step a second time — which is what put the name field itself
+    // under the keyboard. Scrollable instead, so the field stays reachable whatever
+    // height is left once the keyboard is up.
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        // Modal only takes as much space as needed
         children: [
           Align(
             alignment: Alignment.centerLeft,
