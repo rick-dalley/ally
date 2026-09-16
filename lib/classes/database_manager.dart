@@ -181,6 +181,24 @@ class DatabaseManager {
     }
   }
 
+  // Whether this patient has actually recorded a blood type, as opposed to having one
+  // inferred. Patient.fromJson collapses a null abo_type/rh_factor to index 0, which
+  // silently reads as "A+" — harmless on a profile screen, not harmless on an
+  // emergency QR handed to a paramedic. Anything that asserts blood type to a
+  // responder should ask this first and omit the field rather than guess.
+  Future<bool> isBloodTypeRecorded(String patientUuid) async {
+    final db = await database;
+    final rows = await db.query(
+      'patient',
+      columns: ['abo_type', 'rh_factor'],
+      where: 'patient_uuid = ?',
+      whereArgs: [patientUuid],
+      limit: 1,
+    );
+    if (rows.isEmpty) return false;
+    return rows.first['abo_type'] != null && rows.first['rh_factor'] != null;
+  }
+
   Future<void> updateAboType(String patientUuid, int aboType) async {
     final db = await database;
     await db.update('patient', {'abo_type': aboType}, where: 'patient_uuid = ?', whereArgs: [patientUuid]);

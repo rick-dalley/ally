@@ -1,12 +1,11 @@
 import SwiftUI
 
-// Same payload Ally's own EmergencyQRCodeView renders (see WearableSyncLogic, which
-// forwards Ally's buildEmergencyPayload verbatim under the "emergencyQr" key) — one
-// source of truth for what an emergency responder sees, whether they're reading it
-// off the phone or the wrist. CoreImage isn't available on watchOS at all, so unlike
-// the Wear OS/Linux siblings this view doesn't render the QR itself — the phone-side
-// WatchConnectivityBridge renders it (it has CoreImage) and hands over a PNG under
-// "emergencyQrImage" alongside the raw payload.
+// The wrist variant of Ally's emergency QR — name, blood type, allergies, conditions,
+// and nothing else (see EmergencyQRCodeView.buildWatchEmergencyText for why the full
+// phone payload can't be used at this size). CoreImage isn't available on watchOS at
+// all, so unlike the Wear OS sibling this view doesn't render the QR itself — the
+// phone-side WatchConnectivityBridge renders it and hands over a PNG under
+// "emergencyQrImage".
 struct EmergencyQrView: View {
     var demoData: [String: Any]?
 
@@ -27,10 +26,14 @@ struct EmergencyQrView: View {
                     Text("Show this to emergency staff")
                         .font(.caption2)
                         .multilineTextAlignment(.center)
+                    // Sized up from 140: at watch scale every point is a module the
+                    // responder's camera has to resolve, and this is only ever read at
+                    // arm's length in poor light. .interpolation(.none) keeps the module
+                    // edges hard rather than blurring them as it scales.
                     Image(uiImage: image)
                         .interpolation(.none)
                         .resizable()
-                        .frame(width: 140, height: 140)
+                        .frame(width: 160, height: 160)
                 }
             } else {
                 VStack(spacing: 8) {

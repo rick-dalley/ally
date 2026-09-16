@@ -67,6 +67,10 @@ class WearableSyncLogic {
     if (rows.isEmpty) return {'error': 'patient not found'};
     final Patient patient = Patient.fromJson(rows.first);
     final Map<String, dynamic> emergencyPayload = await EmergencyQRCodeView.buildEmergencyPayload(patient);
+    // The wrist-sized variant — see EmergencyQRCodeView.buildWatchEmergencyText for why
+    // the watch can't just render the payload above. Sent alongside rather than
+    // replacing it, so anything already reading 'emergencyQr' keeps working.
+    final String emergencyText = await EmergencyQRCodeView.buildWatchEmergencyText(patient);
     final Map<String, dynamic> due = await DatabaseManager().getWearableDueItems(patientUuid);
     final Map<String, dynamic> settingsRow = await DatabaseManager().getOrCreateWearableSettings(patientUuid);
     final List<WearableAlertConfig> alerts = alertConfigsFromRow(settingsRow);
@@ -74,6 +78,7 @@ class WearableSyncLogic {
     final Sentiment currentMood = currentMoodRow != null ? Sentiment.values[currentMoodRow['mood'] as int] : Sentiment.calm;
     return {
       'emergencyQr': emergencyPayload,
+      'emergencyQrText': emergencyText,
       ...due,
       'alerts': {for (final a in alerts) a.trigger.name: a.enabled},
       'currentMood': {'index': currentMood.index, 'label': currentMood.label, 'color': _hex(currentMood.color)},
