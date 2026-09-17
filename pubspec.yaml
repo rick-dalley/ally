@@ -4,7 +4,11 @@ description: "CWICare Ally — on-device patient health tracking and caregiver c
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.0+1
+# The build number must increase with every build handed to anyone — Play rejects a
+# repeat, and a sideloaded APK won't upgrade in place without it. Bumped for the first
+# build that carries the life-event schema (schemaVersion 11), so the beta's first
+# update is also the first real exercise of onUpgrade.
+version: 1.0.0+2
 
 environment:
   sdk: ^3.9.2
