@@ -48,6 +48,9 @@
 	<key>LSApplicationQueriesSchemes</key>
     <array>
       <string>mailto</string>
+      <string>tel</string>
+      <string>sms</string>
+      <string>https</string>
     </array>
 	<key>CFBundleURLTypes</key>
 	<array>

@@ -109,8 +109,17 @@ class _SeekCareSheetState extends State<SeekCareSheet> {
     final Phone? phone = _phoneFor(provider);
     if (phone == null || phone.number.isEmpty) return;
     final Uri telUri = Uri(scheme: 'tel', path: phone.number);
-    if (await canLaunchUrl(telUri)) {
-      await launchUrl(telUri);
+    bool launched;
+    try {
+      launched = await launchUrl(telUri);
+    } catch (_) {
+      launched = false;
+    }
+    if (!launched && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Couldn't start the call. Dial ${phone.number} yourself.")),
+      );
+      return;
     }
     if (mounted) Navigator.pop(context);
   }

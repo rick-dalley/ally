@@ -71,7 +71,7 @@ class _GetMedicationRemindersState extends State<GetMedicationReminders> {
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: ReminderChannel.values.map((channel) {
+                children: offeredReminderChannels.map((channel) {
                   final bool isSelected = _channels.contains(channel);
                   return GestureDetector(
                     onTap: () => _toggleChannel(channel),

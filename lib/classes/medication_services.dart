@@ -375,6 +375,11 @@ extension DosageUnitLabel on DosageUnit {
 
 enum ReminderChannel { chime, text, email, wearable }
 
+// What the reminder pickers actually offer. Text and email would need a server to
+// send from, which Ally deliberately doesn't have — they stay in the enum only so
+// rows already saved with them still parse, and are never offered again.
+const List<ReminderChannel> offeredReminderChannels = [ReminderChannel.chime, ReminderChannel.wearable];
+
 extension ReminderChannelDetails on ReminderChannel {
   String get label {
     switch (this) {

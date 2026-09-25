@@ -55,13 +55,28 @@ class _PanicAlertScreenState extends State<PanicAlertScreen> {
 
   Future<void> _call(EmergencyTarget target) async {
     final Uri uri = Uri(scheme: 'tel', path: target.phone);
-    if (await canLaunchUrl(uri)) await launchUrl(uri);
+    await _launchOrExplain(uri, "Couldn't start a call. Dial ${target.phone} yourself.");
   }
 
   Future<void> _text(EmergencyTarget target) async {
     final String name = _patient != null ? '${_patient!.firstName} ${_patient!.lastName}' : 'your contact';
     final Uri uri = Uri(scheme: 'sms', path: target.phone, queryParameters: {'body': '$name triggered a ${_trigger.defaultLabel.toLowerCase()} alert on their wearable.'});
-    if (await canLaunchUrl(uri)) await launchUrl(uri);
+    await _launchOrExplain(uri, "Couldn't open messages. Text ${target.phone} yourself.");
+  }
+
+  // Launch directly rather than asking canLaunchUrl first — on this screen a false
+  // negative from the package-visibility check means a button that silently does
+  // nothing, and someone who needs to reach help has to be told to dial by hand.
+  Future<void> _launchOrExplain(Uri uri, String failureMessage) async {
+    bool launched;
+    try {
+      launched = await launchUrl(uri);
+    } catch (_) {
+      launched = false;
+    }
+    if (!launched && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(failureMessage)));
+    }
   }
 
   @override

@@ -329,7 +329,19 @@ class _BodyOutlineScreenState extends State<BodyOutlineScreen> {
     );
     if (confirmed == true) {
       final Uri uri = Uri(scheme: 'tel', path: '911');
-      if (await canLaunchUrl(uri)) await launchUrl(uri);
+      // No canLaunchUrl gate — a false negative there turned this into a button
+      // that silently did nothing. Launch, and if that fails, say so plainly.
+      bool launched;
+      try {
+        launched = await launchUrl(uri);
+      } catch (_) {
+        launched = false;
+      }
+      if (!launched && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Couldn't start the call. Dial 911 yourself.")),
+        );
+      }
     }
   }
 

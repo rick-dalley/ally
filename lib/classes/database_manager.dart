@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
@@ -1254,8 +1255,8 @@ class DatabaseManager {
       'pharmacy_phone': '',
       'pharmacy_fax': '',
       'narrative_hint': '',
-      'abo_type': (abo ?? AboType.o).index,
-      'rh_factor': (rh ?? RhFactor.positive).index,
+      'abo_type': abo?.index, // null = not answered; never default a blood type
+      'rh_factor': rh?.index,
     });
     return newPatientUuid;
   }
@@ -3688,6 +3689,12 @@ class DatabaseManager {
   // ever opened, before the person sees the seeded "hero patient" and mistakes it
   // for their own. See start_up.dart, the only caller.
   Future<void> clearDemoDataOnFirstLaunch() async {
+    // Release builds never seed demo content (DataSeeder.seedDemoData is kDebugMode-
+    // only), so there is nothing here for this to clear — and the only thing gating
+    // it is a SharedPreferences flag. If prefs are ever lost or migrated while the
+    // database survives, running this would silently delete every medication, diary
+    // entry and metric a real patient has recorded.
+    if (!kDebugMode) return;
     final prefs = await SharedPreferences.getInstance();
     if (prefs.getBool('demo_data_cleared') ?? false) return;
     await wipeDemoDataForLicensedInstall();

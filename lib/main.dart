@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:app_links/app_links.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -124,6 +125,7 @@ class LuminescaHomeState extends State<LuminescaHome> {
   // We make the initialization a Future that we can listen to
   late Future<void> _initFuture;
   late final WearableSyncServer _wearableSyncServer = WearableSyncServer(onPanic: _handlePanic);
+  static const bool _lanWatchEnabled = bool.fromEnvironment('ALLY_LAN_WATCH');
   late final WearableDataLayerBridge _wearableDataLayerBridge = WearableDataLayerBridge(onPanic: _handlePanic);
   late final WatchConnectivityBridge _watchConnectivityBridge = WatchConnectivityBridge(onPanic: _handlePanic);
 
@@ -165,9 +167,11 @@ class LuminescaHomeState extends State<LuminescaHome> {
     _wearableDataLayerBridge.start();
     _watchConnectivityBridge.start();
 
-    // Always on, not gated behind pairing — this is a same-network prototype server
-    // with no auth, so the only real gate is "does anything know the IP to reach it,"
-    // which is exactly what pairing communicates out of band (see WearableSyncServer).
+    // Debug builds only (or an explicit --dart-define=ALLY_LAN_WATCH=true for a Linux
+    // watch demo). This is a same-network prototype server with no auth and no TLS:
+    // anyone on the same café or clinic Wi-Fi who learns a patient UUID could read
+    // the emergency payload or fire a fake panic. No shipping watch uses it — Wear OS
+    // and Apple Watch go through the two native bridges above.
     //
     // Binding a socket can fail for reasons that have nothing to do with any watch:
     // a permission the install doesn't hold, or the port already taken. That used to
@@ -175,6 +179,7 @@ class LuminescaHomeState extends State<LuminescaHome> {
     // it, which is how a release build ended up unable to reach the Wear OS watch at
     // all while debug builds were fine. Contained here so the prototype transport can
     // fail on its own without costing the real one.
+    if (!kDebugMode && !_lanWatchEnabled) return;
     try {
       await _wearableSyncServer.start();
     } catch (error) {

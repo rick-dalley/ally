@@ -182,7 +182,7 @@ class _AddTherapyScreenState extends State<AddTherapyScreen> {
               const SizedBox(height: 16),
               Text("HOW TO REMIND YOU", style: CarbonTheme.carbonLabelTextStyle),
               const SizedBox(height: 6),
-              ...ReminderChannel.values.map(
+              ...offeredReminderChannels.map(
                 (channel) => CarbonCheckboxListTile(
                   value: _channels.contains(channel),
                   onChanged: (_) => _toggleChannel(channel),
