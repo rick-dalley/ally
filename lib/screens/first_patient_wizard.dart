@@ -29,6 +29,11 @@ import 'package:carbon_ui/widgets/carbon_style_textbox.dart';
 // UserScreen this is deliberately avoiding replicating; name and date of birth are the
 // only required step, everything else is skippable and can always be filled in later
 // from UserScreen itself.
+/// The name step's validation message. Named once because the step both reserves
+/// space for it and later shows it, and the two must be the same string or the
+/// reserved space is the wrong size.
+const String _nameStepRequiredMessage = "First name, last name, and date of birth are all required.";
+
 class FirstPatientWizard extends StatefulWidget {
   final VoidCallback? onPatientCreated;
   final bool addingFamilyMember;
@@ -88,6 +93,15 @@ class _FirstPatientWizardState extends State<FirstPatientWizard> {
       _lastNameController.text.trim().isNotEmpty &&
       _dob != null;
 
+  /// Drops a "these fields are required" error once they no longer are. Leaving it up
+  /// while the person is actively filling the fields in just nags at them for something
+  /// they already fixed.
+  void _clearErrorWhenValid() {
+    setState(() {
+      if (_error != null && _nameStepValid) _error = null;
+    });
+  }
+
   void _goTo(int step) {
     setState(() {
       _step = step;
@@ -108,7 +122,10 @@ class _FirstPatientWizardState extends State<FirstPatientWizard> {
       firstDate: DateTime(now.year - 120),
       lastDate: now,
     );
-    if (picked != null) setState(() => _dob = picked);
+    if (picked != null) {
+      setState(() => _dob = picked);
+      _clearErrorWhenValid();
+    }
   }
 
   void _onAboChanged(Listable abo) {
@@ -272,6 +289,9 @@ class _FirstPatientWizardState extends State<FirstPatientWizard> {
     String nextLabel = "Next",
     bool showSkip = true,
     bool showBack = true,
+    /// The validation message this step can raise. Space is held open for it up front
+    /// so that raising it never moves the buttons underneath out from under a thumb.
+    String? errorReserve,
   }) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -283,11 +303,31 @@ class _FirstPatientWizardState extends State<FirstPatientWizard> {
           Text(subtitle, style: CarbonTheme.carbonLabelTextStyle),
           const SizedBox(height: 24),
           child,
-          if (_error != null) ...[
-            const SizedBox(height: 16),
-            Text(_error!, style: CarbonTheme.dangerTextStyle),
-          ],
-          const SizedBox(height: 32),
+          const SizedBox(height: 16),
+          // The error sits in a slot that is always in the tree, empty or not. It used
+          // to be spliced into the column only once _error was set, so the first tap on
+          // Next pushed Next/Skip/Back down the page — the button moved out from under
+          // the thumb at the exact moment the person was looking at it, which reads as
+          // a mis-tap rather than as a validation message. Reserving the space costs two
+          // lines of blank page and keeps every control where it was.
+          if (_error != null || errorReserve != null)
+            // Laid out even when there is no error: invisible, but occupying exactly
+            // the height the message will need. Sizing it from the real string rather
+            // than a hardcoded height means it stays correct when the wording changes,
+            // at any screen width, in any font, and once these strings are translated.
+            // maintainSize keeps the space; semantics are dropped while hidden, so a
+            // screen reader doesn't announce an error that isn't there.
+            Visibility(
+              visible: _error != null,
+              maintainSize: true,
+              maintainAnimation: true,
+              maintainState: true,
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: Text(_error ?? errorReserve ?? '', style: CarbonTheme.dangerTextStyle),
+              ),
+            ),
+          const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
             child: CarbonButton(
@@ -390,18 +430,19 @@ class _FirstPatientWizardState extends State<FirstPatientWizard> {
           : "Who is this profile for? We just need a name and date of birth.",
       showSkip: false,
       showBack: false,
+      errorReserve: _nameStepRequiredMessage,
       child: Column(
         children: [
           CarbonTextInput(
             label: "First Name",
             controller: _firstNameController,
-            onChanged: (_) => setState(() {}),
+            onChanged: (_) => _clearErrorWhenValid(),
           ),
           const SizedBox(height: 16),
           CarbonTextInput(
             label: "Last Name",
             controller: _lastNameController,
-            onChanged: (_) => setState(() {}),
+            onChanged: (_) => _clearErrorWhenValid(),
           ),
           const SizedBox(height: 16),
           Align(
@@ -411,7 +452,7 @@ class _FirstPatientWizardState extends State<FirstPatientWizard> {
               label: _dob == null
                   ? "Date of Birth"
                   : '${_dob!.month}/${_dob!.day}/${_dob!.year}',
-              style: CarbonButtonStyle.secondary,
+              style: CarbonButtonStyle.tertiary,
               onTap: _pickDob,
             ),
           ),
@@ -419,10 +460,7 @@ class _FirstPatientWizardState extends State<FirstPatientWizard> {
       ),
       onNext: _nameStepValid
           ? () => _goTo(_step + 1)
-          : () => setState(
-              () => _error =
-                  "First name, last name, and date of birth are all required.",
-            ),
+          : () => setState(() => _error = _nameStepRequiredMessage),
     );
   }
 

@@ -39,12 +39,53 @@ class _BodyMetricsEntryWidgetState extends State<BodyMetricsEntryWidget> {
     super.dispose();
   }
 
-  /// Grabs the live strings straight out of the controllers and emits them simultaneously
+  /// Grabs the live strings straight out of the controllers and emits them simultaneously.
+  ///
+  /// Called on every edit and again whenever a field loses focus, rather than from an
+  /// explicit SAVE button. Both fields are always emitted together, so editing one can
+  /// never publish a stale value for the other — which is the only thing the button was
+  /// actually buying, and it charged an extra tap for it on a step most people skip.
   void _submitData() {
     final double? parsedHeight = double.tryParse(_heightController.text);
     final double? parsedWeight = double.tryParse(_weightController.text);
 
     widget.onMetricsChanged(parsedWeight, parsedHeight);
+  }
+
+  /// Emitting on edit is what makes "tap Next straight after typing" work: tapping a
+  /// button elsewhere on the page does not necessarily pull focus out of a text field,
+  /// so focus loss alone would drop the last thing typed.
+  Widget _entryField({
+    required TextEditingController controller,
+    required String label,
+    required String uom,
+    bool autofocus = false,
+  }) {
+    return Expanded(
+      child: Row(
+        children: [
+          Expanded(
+            child: Focus(
+              onFocusChange: (hasFocus) {
+                if (!hasFocus) _submitData();
+              },
+              child: TextFormField(
+                controller: controller,
+                autofocus: autofocus,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(
+                  labelText: label,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                ),
+                onChanged: (_) => _submitData(),
+                onFieldSubmitted: (_) => _submitData(),
+              ),
+            ),
+          ),
+          Text(" ($uom)"),
+        ],
+      ),
+    );
   }
 
   @override
@@ -56,60 +97,19 @@ class _BodyMetricsEntryWidgetState extends State<BodyMetricsEntryWidget> {
         children: [
           Row(
             children: [
-              // 1. HEIGHT SECTION
-              Expanded(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _heightController,
-                        autofocus: true,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        decoration: const InputDecoration(
-                          labelText: 'Height',
-                          contentPadding: EdgeInsets.symmetric(vertical: 8),
-                        ),
-                        onFieldSubmitted: (_) => _submitData(),
-                      ),
-                    ),
-                    Text(" (${widget.heightUom})"),
-                  ],
-                ),
+              _entryField(
+                controller: _heightController,
+                label: 'Height',
+                uom: widget.heightUom,
+                autofocus: true,
               ),
-
               const SizedBox(width: 24),
-
-              // 2. WEIGHT SECTION
-              Expanded(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _weightController,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        decoration: const InputDecoration(
-                          labelText: 'Weight',
-                          contentPadding: EdgeInsets.symmetric(vertical: 8),
-                        ),
-                        onFieldSubmitted: (_) => _submitData(),
-                      ),
-                    ),
-                    Text(" (${widget.weightUom})"),
-                  ],
-                ),
+              _entryField(
+                controller: _weightController,
+                label: 'Weight',
+                uom: widget.weightUom,
               ),
             ],
-          ),
-
-          const SizedBox(height: 24),
-
-          // 3. EXPLICIT SAVE ACTION (Guarantees both items save at once)
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: _submitData,
-              child: const Text('SAVE', style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
           ),
         ],
       ),

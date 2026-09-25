@@ -1,0 +1,305 @@
+# Generic (INN) drug names, one per line, for the medication name type-ahead.
+#
+# STARTER LIST — deliberately small and hand-written, pending a licensing decision on
+# a full vocabulary. RxNorm (US), Health Canada's DPD and the WHO INN lists are all
+# downloadable but carry different terms, so shipping one of those in a commercial app
+# is a call to make with the terms in front of you, not a technical default.
+#
+# The matcher does not care how long this file is: drop a fuller list in here in the
+# same format and nothing else needs to change. Lines starting with # are ignored.
+#
+# These are INNs on purpose. Brand names differ by country; INNs are the same word in
+# Vancouver, Berlin and Osaka, which is what makes the type-ahead survive localisation.
+acetaminophen
+acetazolamide
+acetylsalicylic acid
+aciclovir
+albuterol
+alendronate
+allopurinol
+alprazolam
+amitriptyline
+amlodipine
+amoxicillin
+amphetamine
+anastrozole
+apixaban
+aripiprazole
+atenolol
+atomoxetine
+atorvastatin
+azathioprine
+azithromycin
+baclofen
+beclometasone
+benazepril
+benzonatate
+betamethasone
+bicalutamide
+bisoprolol
+brimonidine
+budesonide
+bupropion
+buspirone
+calcitriol
+candesartan
+capecitabine
+captopril
+carbamazepine
+carbidopa
+carvedilol
+cefalexin
+cefixime
+cefuroxime
+celecoxib
+cetirizine
+chlorthalidone
+ciprofloxacin
+citalopram
+clarithromycin
+clindamycin
+clobazam
+clomipramine
+clonazepam
+clonidine
+clopidogrel
+clotrimazole
+codeine
+colchicine
+cyclobenzaprine
+cyclosporine
+dabigatran
+dapagliflozin
+desvenlafaxine
+dexamethasone
+dexlansoprazole
+diazepam
+diclofenac
+dicyclomine
+digoxin
+diltiazem
+dimenhydrinate
+diphenhydramine
+divalproex
+domperidone
+donepezil
+doxazosin
+doxycycline
+dronedarone
+duloxetine
+dutasteride
+empagliflozin
+enalapril
+entacapone
+eplerenone
+escitalopram
+esomeprazole
+estradiol
+eszopiclone
+ethinylestradiol
+etodolac
+exemestane
+ezetimibe
+famotidine
+felodipine
+fenofibrate
+fentanyl
+ferrous fumarate
+ferrous gluconate
+ferrous sulfate
+fexofenadine
+finasteride
+flecainide
+fluconazole
+fluoxetine
+fluticasone
+fluvoxamine
+folic acid
+formoterol
+furosemide
+gabapentin
+gemfibrozil
+glibenclamide
+gliclazide
+glimepiride
+glipizide
+haloperidol
+hydralazine
+hydrochlorothiazide
+hydrocortisone
+hydromorphone
+hydroxychloroquine
+hydroxyzine
+ibandronate
+ibuprofen
+imatinib
+indapamide
+indomethacin
+insulin aspart
+insulin degludec
+insulin detemir
+insulin glargine
+insulin lispro
+ipratropium
+irbesartan
+isosorbide dinitrate
+isosorbide mononitrate
+isotretinoin
+ketoconazole
+ketorolac
+labetalol
+lacosamide
+lactulose
+lamivudine
+lamotrigine
+lansoprazole
+latanoprost
+letrozole
+leuprolide
+levetiracetam
+levocetirizine
+levodopa
+levofloxacin
+levothyroxine
+liothyronine
+liraglutide
+lisdexamfetamine
+lisinopril
+lithium carbonate
+loperamide
+loratadine
+lorazepam
+losartan
+lovastatin
+lurasidone
+magnesium oxide
+meclizine
+medroxyprogesterone
+melatonin
+meloxicam
+memantine
+metformin
+methadone
+methimazole
+methocarbamol
+methotrexate
+methylphenidate
+methylprednisolone
+metoclopramide
+metolazone
+metoprolol
+metronidazole
+minocycline
+mirabegron
+mirtazapine
+modafinil
+mometasone
+montelukast
+morphine
+moxifloxacin
+mupirocin
+mycophenolate
+nabumetone
+nadolol
+naloxone
+naltrexone
+naproxen
+naratriptan
+nebivolol
+nifedipine
+nitrofurantoin
+nitroglycerin
+nortriptyline
+olanzapine
+olmesartan
+omeprazole
+ondansetron
+oseltamivir
+oxcarbazepine
+oxybutynin
+oxycodone
+pantoprazole
+paroxetine
+penicillin v
+perindopril
+phenobarbital
+phenytoin
+pioglitazone
+piroxicam
+polyethylene glycol
+potassium chloride
+pramipexole
+pravastatin
+prazosin
+prednisolone
+prednisone
+pregabalin
+primidone
+probenecid
+prochlorperazine
+progesterone
+promethazine
+propafenone
+propranolol
+pseudoephedrine
+quetiapine
+quinapril
+rabeprazole
+raloxifene
+ramipril
+ranitidine
+rasagiline
+risedronate
+risperidone
+rivaroxaban
+rivastigmine
+rizatriptan
+ropinirole
+rosuvastatin
+salbutamol
+salmeterol
+selegiline
+semaglutide
+senna
+sertraline
+sildenafil
+simvastatin
+sitagliptin
+sodium bicarbonate
+solifenacin
+sotalol
+spironolactone
+sulfamethoxazole
+sumatriptan
+tacrolimus
+tadalafil
+tamoxifen
+tamsulosin
+telmisartan
+terazosin
+terbinafine
+testosterone
+tetracycline
+theophylline
+tiotropium
+tizanidine
+tolterodine
+topiramate
+torsemide
+tramadol
+trazodone
+triamcinolone
+triamterene
+trimethoprim
+valaciclovir
+valproic acid
+valsartan
+vardenafil
+venlafaxine
+verapamil
+vitamin b12
+vitamin d3
+warfarin
+zolmitriptan
+zolpidem
+zopiclone

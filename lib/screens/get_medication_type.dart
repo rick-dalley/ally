@@ -8,7 +8,11 @@ import '../classes/medication_services.dart';
 class GetMedicationType extends StatefulWidget {
   final Function(MedicationTypes) onTypeSelected;
 
-  const GetMedicationType({super.key, required this.onTypeSelected});
+  /// Pre-selection from a label scan ("...TABLET" printed on the bottle). Null when
+  /// nothing was scanned, or when the scan couldn't tell — the person picks as before.
+  final MedicationTypes? initialType;
+
+  const GetMedicationType({super.key, required this.onTypeSelected, this.initialType});
 
   @override
   State<GetMedicationType> createState() => _GetMedicationTypeState();
@@ -17,6 +21,25 @@ class GetMedicationType extends StatefulWidget {
 class _GetMedicationTypeState extends State<GetMedicationType> {
   MedicationTypes? _selectedType;
   final selectedColor = carbonColorBorderInteractive;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedType = widget.initialType;
+  }
+
+  // A label scan can land after this page has already been built — the PageView
+  // builds the step adjacent to the current one ahead of time, so initState has
+  // usually already run by the time the scan comes back. Adopting the value only
+  // when it actually changed means a rebuild for any other reason can never
+  // overwrite a type the person picked by hand.
+  @override
+  void didUpdateWidget(covariant GetMedicationType oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialType != oldWidget.initialType && widget.initialType != null) {
+      setState(() => _selectedType = widget.initialType);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

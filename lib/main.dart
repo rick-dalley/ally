@@ -22,6 +22,7 @@ import 'classes/watch_connectivity_bridge.dart';
 import 'package:carbon_ui/colors/carbon_brand.dart';
 import 'generated/l10n.dart';
 import 'app_theme.dart';
+import 'classes/drug_name_matcher.dart';
 
 Future<void> main() async {
   // Ensure the binding is ready for the splash screen to render
@@ -32,6 +33,10 @@ Future<void> main() async {
   // rather than relying on "nobody configured it" (see CarbonBrand's doc
   // comment; Acuitage/Progressor configure their own here too).
   CarbonBrand.configure(const Color(0xFF0f62fe));
+  // Tens of KB read once, off the bundle, with no network anywhere in it. Awaited so
+  // the medication field never renders briefly without suggestions; loadDrugNames
+  // swallows a missing or malformed asset, so this can't hold up launch on failure.
+  await loadDrugNames();
   runApp(const LuminescaApp());
 }
 

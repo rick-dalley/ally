@@ -1,23 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:carbon_ui/widgets/carbon_style_search_field.dart';
+import 'package:carbon_ui/widgets/carbon_style_autocomplete.dart';
 
-import '../app_theme.dart';
 import 'package:carbon_ui/colors/carbon_color_constants.dart';
 import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import 'package:carbon_ui/widgets/carbon_style_full_button.dart';
-import '../widgets/text_scanner.dart';
+import '../classes/drug_name_matcher.dart';
+import '../classes/medication_label_scanner.dart';
+import 'scan_medication_label.dart';
 
 class GetMedicationName extends StatefulWidget {
   final TextEditingController nameController;
   final Function(String) onAddMedication;
   final Function(String)? onSearchMedication;
+  /// Fired when a label scan has been read AND confirmed by the person. Carries the
+  /// whole label so the wizard can pre-fill the steps after this one, not just the name.
+  final Function(ScannedMedicationLabel)? onLabelScanned;
+
   const GetMedicationName({
     super.key,
     required this.nameController,
     required this.onAddMedication,
     this.onSearchMedication,
+    this.onLabelScanned,
   });
 
   @override
@@ -44,14 +50,20 @@ class GetMedicationNameState extends State<GetMedicationName> {
           const SizedBox(height: 24),
           Align(
             alignment: Alignment.centerLeft,
-            child: Text("Scan the bar code on the pill bottle", style: CarbonTheme.carbonHintTextStyle),
+            // Says "label", not "bar code", and means it. The bar code on a dispensed
+            // bottle is the pharmacy's own fill number — it identifies the prescription
+            // inside that one pharmacy's system and carries no drug identity, so there
+            // is nothing Ally could resolve it against. The drug name, strength and
+            // directions are all printed as text right beside it, which reads on-device
+            // with no lookup at all.
+            child: Text("Scan the printed label on the pill bottle", style: CarbonTheme.carbonHintTextStyle),
           ),
           const SizedBox(height: 24),
           CarbonFullButton(
-            label: 'SCAN',
-            onTap: _startBarcodeScanner,
+            label: 'SCAN LABEL',
+            onTap: _startLabelScan,
             style: CarbonButtonStyle.tertiary,
-            icon: Symbols.barcode_scanner,
+            icon: Symbols.document_scanner,
           ),
 
           const SizedBox(height: 24),
@@ -61,13 +73,20 @@ class GetMedicationNameState extends State<GetMedicationName> {
           ),
           const SizedBox(height: 24),
 
-          CarbonSearchField(
-            controller: widget.nameController,
+          // Ranked type-ahead over the bundled generic-name vocabulary rather than a
+          // bare text box. Three or four letters is enough to land a name nobody wants
+          // to spell on a phone keyboard, and the same matcher resolves a fragment a
+          // scan only half-read — see DrugNameMatcher.
+          CarbonAutocomplete(
             label: "Medication Name",
-            onSearch: (String searchTerm) {
-              if (widget.onSearchMedication != null) {
-                widget.onSearchMedication!(searchTerm); // 3. Call the passed-in function
-              }
+            controller: widget.nameController,
+            placeholder: "Start typing — e.g. \"hydro\"",
+            helperText: "Type a few letters and pick from the list, or type it out in full.",
+            filter: (String query) => drugNames.suggest(query),
+            onChanged: (String value) {
+              widget.onSearchMedication?.call(value);
+              // Keeps the wizard's progress bar and Save in step with the field.
+              widget.onAddMedication(value);
             },
           ),
           const SizedBox(height: 40),
@@ -84,91 +103,21 @@ class GetMedicationNameState extends State<GetMedicationName> {
     );
   }
 
-  void _startBarcodeScanner() async {
-    // Use a simple full-screen modal or a dedicated camera route
-    final String? scannedResult = await showModalBottomSheet<String>(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => _BarcodeScannerModal(),
+  Future<void> _startLabelScan() async {
+    final ScannedMedicationLabel? scanned = await Navigator.push<ScannedMedicationLabel>(
+      context,
+      MaterialPageRoute(builder: (_) => const ScanMedicationLabel()),
     );
 
-    if (scannedResult != null) {
-      // We found something!
-      setState(() {
-        // For now, let's assume the result is the DIN
-        // In the future, this is where you'd trigger your API lookup
-        widget.nameController.text = "Loading Med for $scannedResult...";
-      });
+    // Null means they backed out or the read failed — leave whatever they had typed
+    // alone rather than clearing the field out from under them.
+    if (scanned == null || !mounted) return;
 
-      // Auto-trigger your existing lookup logic
-      // This matches the background sync you already have in _addMedication
-      _lookupAndAdd(scannedResult);
-    }
-  }
+    setState(() {
+      widget.nameController.text = scanned.name ?? widget.nameController.text;
+    });
 
-  // A helper to handle the lookup after scanning
-  void _lookupAndAdd(String barcodeValue) {
-    // Check if it's a known DIN (like your Amlodipine example)
-    if (barcodeValue == "02331292") {
-      setState(() {
-        widget.nameController.text = "Amlodipine";
-      });
-    } else {
-      // If not in your "local" demo cache, use your existing name field
-      // to start the background sync process you've already built
-      widget.nameController.text = barcodeValue;
-      widget.onAddMedication(widget.nameController.text);
-    }
-  }
-}
-
-class _BarcodeScannerModal extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.8,
-      color: Colors.black,
-      child: Column(
-        children: [
-          const SizedBox(height: 16),
-          const Text(
-            "ALIGN BARCODE",
-            style: TextStyle(color: Colors.cyanAccent, fontWeight: FontWeight.bold),
-          ),
-          Expanded(
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Your existing scanner logic, configured for Barcodes
-                TextScanner(
-                  onTextDetected: (text) {
-                    // Search for an 8-digit sequence (DIN) in the OCR
-                    final dinRegex = RegExp(r'\b\d{8}\b');
-                    final match = dinRegex.firstMatch(text.text);
-                    if (match != null) {
-                      Navigator.pop(context, match.group(0));
-                    }
-                  },
-                ),
-                // Visual "Scope" to help the clinician
-                Container(
-                  width: 280,
-                  height: 150,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.cyanAccent, width: 2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("CANCEL", style: TextStyle(color: AppTheme.onPrimaryColor)),
-          ),
-          const SizedBox(height: 20),
-        ],
-      ),
-    );
+    widget.onAddMedication(widget.nameController.text);
+    widget.onLabelScanned?.call(scanned);
   }
 }

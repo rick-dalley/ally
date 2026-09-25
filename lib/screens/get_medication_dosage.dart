@@ -10,14 +10,38 @@ class GetMedicationDosage extends StatefulWidget {
   final TextEditingController controller;
   final String? dosage;
   final Function(String) onAddDosage;
-  const GetMedicationDosage({super.key, this.dosage, required this.controller, required this.onAddDosage});
+
+  /// Unit read off a scanned label. It matters that this is honoured rather than
+  /// left at the mg default: the wizard would be holding "25 mcg" from the scan while
+  /// this page displayed "25 mg", and the first time the person touched the amount
+  /// this page would re-emit the wrong one over top of it. A thousand-fold dose error
+  /// is not a display bug.
+  final DosageUnit? initialUnit;
+
+  const GetMedicationDosage({
+    super.key,
+    this.dosage,
+    this.initialUnit,
+    required this.controller,
+    required this.onAddDosage,
+  });
 
   @override
   State<StatefulWidget> createState() => GetMedicationDosageState();
 }
 
 class GetMedicationDosageState extends State<GetMedicationDosage> {
-  DosageUnit _unit = DosageUnit.mg;
+  late DosageUnit _unit = widget.initialUnit ?? DosageUnit.mg;
+
+  // See GetMedicationType.didUpdateWidget — same reason: the scan can arrive after
+  // this page was already built, and only an actual change may override a hand pick.
+  @override
+  void didUpdateWidget(covariant GetMedicationDosage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialUnit != oldWidget.initialUnit && widget.initialUnit != null) {
+      setState(() => _unit = widget.initialUnit!);
+    }
+  }
 
   void _emitDosage() {
     final String amount = widget.controller.text.trim();
