@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:math';
-import 'package:csv/csv.dart';
 import 'package:flutter/foundation.dart'; // For kDebugMode
 import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart';
@@ -27,7 +26,8 @@ class DataSeeder {
     await _seedAllergensCatalog(db);
     await _seedMetricsAndUnits(db);
     await _seedTestCatalog(db);
-    await _seedInteractions(db);
+    // Interactions are no longer seeded here: they ship as a separate read-only
+    // database (see InteractionStore).
   }
 
   /// Sample patients, their observations, their providers and their thresholds —
@@ -44,59 +44,6 @@ class DataSeeder {
     await _seedPatientMetricThresholds(db);
 
     debugPrint('--- Demo Data Seeding Complete ---');
-  }
-
-  static Future<void> _seedInteractions(Database db) async {
-    // Every other catalog checks its own table before doing any work; this one didn't,
-    // which was harmless while the seeder only ran once inside onCreate. Now that
-    // seedReferenceCatalogs runs on every launch, an unguarded re-parse of a 190k-row
-    // CSV would be the most expensive thing the app does at startup.
-    final List<Map<String, dynamic>> existingRecords = await db.rawQuery(
-      "SELECT COUNT(*) as total FROM interaction",
-    );
-    if (existingRecords.first['total'] as int > 0) {
-      return; // Catalog is already successfully configured!
-    }
-
-    final rawData = await rootBundle.loadString(
-      'assets/interactions/db_drug_interactions.csv',
-    );
-
-    //Parse the CSV (assumes first row is header)
-    List<List<dynamic>> rows = const CsvToListConverter(
-      fieldDelimiter: ',', // Double check this: is it actually a comma?
-      eol: '\n', // Or '\r\n' for Windows-style files
-      shouldParseNumbers: false,
-    ).convert(rawData);
-
-    // This CSV has 190k+ rows. Individually awaiting txn.insert() per row meant one
-    // platform-channel round trip per row — 190k of them, which is what actually made
-    // a fresh install/seed take minutes on a slower device. Batch.insert() queues the
-    // statement locally (no await, no round trip) and commit() sends a whole chunk in
-    // one channel call; noResult:true skips building per-statement results nobody
-    // reads. Chunked rather than one giant 190k-statement batch, so a single channel
-    // message doesn't balloon in size.
-    const int chunkSize = 2000;
-    await db.transaction((txn) async {
-      // Skip the header row (index 0)
-      for (
-        int chunkStart = 1;
-        chunkStart < rows.length;
-        chunkStart += chunkSize
-      ) {
-        final int chunkEnd = (chunkStart + chunkSize).clamp(0, rows.length);
-        final Batch batch = txn.batch();
-        for (int i = chunkStart; i < chunkEnd; i++) {
-          var row = rows[i];
-          batch.insert('interaction', {
-            'name_a': row[0].toString(),
-            'name_b': row[1].toString(),
-            'explanation': row[2].toString(),
-          }, conflictAlgorithm: ConflictAlgorithm.replace);
-        }
-        await batch.commit(noResult: true);
-      }
-    });
   }
 
   static Future<void> _seedProviders(Database db) async {

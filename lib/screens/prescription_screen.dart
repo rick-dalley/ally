@@ -457,13 +457,15 @@ class InteractionsWidgetState extends State<InteractionsWidget> {
     ),
     BannerType.acknowledged: const BannerData(
       color: carbonColorSupportSuccess,
-      message: "All Risks Acknowledged & Accepted",
+      message: "Warnings reviewed",
       icon: Icons.check_circle_outline,
     ),
     BannerType.none: BannerData(
       color: AppTheme.primaryColor,
-      message: "No Interactions Detected",
-      icon: Symbols.verified,
+      // Never a checkmark or "none detected": Ally only knows the pairs in its own
+      // list, so an empty result means "nothing found", not "safe".
+      message: "No matches in Ally's list. Ask your pharmacist.",
+      icon: Symbols.info,
     ),
     BannerType.unknown: BannerData(
       color: AppTheme.tertiaryColor,
@@ -491,9 +493,10 @@ class InteractionsWidgetState extends State<InteractionsWidget> {
     if (!audited) {
       bannerData = banners[BannerType.unknown]!;
     } else if (hasUnacknowledgedConflicts) {
-      // Advisory (amber), not critical (red) — the seeded interaction data (see
-      // data_seeder.dart's _seedInteractions) has no real severity rating at all,
-      // just a name pair and a text description. Flagging every match as "CRITICAL:
+      // Advisory (amber), not critical (red). The old seeded CSV had no severity at
+      // all; InteractionStore rows now carry the label's own instruction (avoid,
+      // adjust dose, monitor), which could drive a stronger banner later — the
+      // reasoning below still holds for anything short of "avoid". Flagging every match as "CRITICAL:
       // Contraindication Detected" makes the same claim regardless of whether it's
       // actually dangerous or just worth a mention, which reads as the app second-
       // guessing a doctor's own prescription — exactly what this app is not meant

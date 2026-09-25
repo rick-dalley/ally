@@ -53,6 +53,7 @@ dev_dependencies:
   # The core SQLite engine for Flutter
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.4
+  sqflite_common_ffi: ^2.3.7+1
 
 flutter_launcher_icons:
   android: true
@@ -79,7 +80,6 @@ flutter:
     - assets/images/
     - assets/images/faces/
     - assets/images/pills/
-    - assets/interactions/
     - assets/medications/
     - assets/metrics/
     - assets/observations/

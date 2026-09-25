@@ -9,6 +9,7 @@ import 'package:path/path.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:ally/classes/allergen.dart';
+import 'package:ally/classes/interaction_store.dart';
 import 'package:ally/classes/blood_type.dart';
 import 'package:ally/classes/patient_condition.dart';
 import 'package:ally/classes/patient_supply.dart';
@@ -101,6 +102,10 @@ class DatabaseManager {
         await db.execute('PRAGMA foreign_keys = ON;');
         await createSqlObjects(db);
         if (oldVersion < 8) await _normalizeCareOrderTimestamps(db);
+        // The interaction table held ~190k rows seeded from a DrugBank-derived CSV that
+        // can't ship in a paid app. Interactions now come from InteractionStore; the
+        // table stays (empty) so older code paths and the licence wipe list still see it.
+        if (oldVersion < 13) await db.delete('interaction');
       },
     );
 
@@ -143,7 +148,7 @@ class DatabaseManager {
   // Bump this whenever assets/sql/sql.json gains new tables/indexes, so
   // existing installs pick them up via onUpgrade instead of silently
   // missing them (see onUpgrade above).
-  static const int schemaVersion = 11;
+  static const int schemaVersion = 13;
 
   Future<void> createSqlObjects(Database db) async {
     if (sqlConfig == null) return;
@@ -959,42 +964,23 @@ class DatabaseManager {
   }
 
   // Drugs
+
+  // Interactions come from InteractionStore — FDA-label data built by the
+  // medications pipeline and shipped as a read-only asset — not from ally.db. These
+  // two keep their old shapes so the prescription audit and the medication card
+  // didn't have to change.
+
+  /// The strongest interaction between two medications, as a self-contained
+  /// explanation quoting the label, or null when neither label names the other.
   Future<String?> getInteractions(String drugNameA, String drugNameB) async {
-    final db = await database;
-    final List<Map<String, dynamic>> results = await db.query(
-      'interaction',
-      columns: ['explanation'],
-      where: '(name_a = ? AND name_b = ?) OR (name_a = ? AND name_b = ?)',
-      whereArgs: [drugNameA, drugNameB, drugNameB, drugNameA],
-    );
-    // Return the interaction description if found, otherwise the default message
-    if (results.isNotEmpty) {
-      String explanation = results.first['explanation'] as String;
-      return explanation;
-    } else {
-      return null;
-    }
+    final rows = await InteractionStore.instance.between(drugNameA, drugNameB);
+    return rows.isEmpty ? null : rows.first.explanation;
   }
 
+  /// Every interaction a medication's own label describes, strongest first.
   Future<List<Map<String, dynamic>>> getAllInteractionsForDrug(String drugName) async {
-    final db = await database;
-
-    // Query both columns to capture every interaction regardless of entry order
-    final List<Map<String, dynamic>> results = await db.rawQuery(
-      '''
-    SELECT 
-      CASE 
-        WHEN name_a = ? THEN name_b 
-        ELSE name_a 
-      END AS interacting_drug,
-      explanation
-    FROM interaction
-    WHERE name_a = ? OR name_b = ?
-  ''',
-      [drugName, drugName, drugName],
-    );
-
-    return results;
+    final rows = await InteractionStore.instance.forMedication(drugName);
+    return rows.map((r) => {'interacting_drug': r.interactant, 'explanation': r.explanation}).toList();
   }
 
   // Returns the generated row id (BodyMarker.id) — needed later to mark a marker
