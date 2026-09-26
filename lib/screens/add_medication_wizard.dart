@@ -13,7 +13,6 @@ import '../app_theme.dart';
 import 'package:carbon_ui/colors/carbon_color_constants.dart';
 import 'package:carbon_ui/colors/carbon_theme_constants.dart';
 import '../classes/database_manager.dart';
-import '../classes/medication_label_scanner.dart';
 import '../classes/medication_services.dart';
 import '../classes/uuid.dart';
 
@@ -44,9 +43,6 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
   final String _medicationId = uuid.v4();
 
   String? _dosage;
-  // Held separately from _dosage so the dosage step can show the unit the label
-  // actually said, rather than falling back to its mg default.
-  DosageUnit? _scannedUnit;
   Frequency? _frequency;
   MedicationTypes? _type;
   TabletShapes? _shape;
@@ -73,18 +69,14 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
   List<Widget> get _activePages => [
     GetMedicationName(
       nameController: widget.nameController,
-      // The name field itself keeps the text controller in sync regardless of whether
-      // the user scanned a label or typed manually; _saveMedication reads that
-      // controller directly, so this callback just keeps the wizard (e.g. the progress
-      // bar) in sync while the user is on this step.
+      // _saveMedication reads the text controller directly, so this callback just keeps
+      // the wizard (e.g. the progress bar) in sync while the user is on this step.
       onAddMedication: (val) => setState(() {}),
-      onLabelScanned: _applyScannedLabel,
     ),
     GetMedicationType(onTypeSelected: (val) => setState(() => _type = val), initialType: _type),
     GetMedicationDosage(
       controller: widget.dosageController,
       onAddDosage: (val) => setState(() => _dosage = val),
-      initialUnit: _scannedUnit,
     ),
     GetMedicationFrequency(
       controller: widget.frequencyController,
@@ -96,28 +88,6 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
       GetMedicationShape(onShapeSelect: (val) => setState(() => _shape = val), color: _color),
     ],
   ];
-
-  /// Carries what the label scan read into the steps that come after the name, so
-  /// those pages open pre-filled instead of blank.
-  ///
-  /// This only ever pre-fills — it never skips a step. The person still walks through
-  /// dosage and type and can correct either one, which is the whole point: an OCR read
-  /// of small print on a curved bottle is a strong starting guess, not an authority on
-  /// what someone is swallowing.
-  void _applyScannedLabel(ScannedMedicationLabel scanned) {
-    setState(() {
-      if (scanned.amount != null) {
-        widget.dosageController.text = scanned.amount!;
-      }
-      // Only set the dosage string when BOTH halves were read. GetMedicationDosage
-      // composes "<amount> <unit>" itself and re-emits on any edit, so a partial value
-      // here would just be overwritten — but an amount with a guessed unit would not,
-      // and that is exactly the error worth refusing to make.
-      _dosage = scanned.dosageLabel ?? _dosage;
-      _scannedUnit = scanned.unit ?? _scannedUnit;
-      _type = scanned.form ?? _type;
-    });
-  }
 
   int get _lastStep => _activeSteps.length - 1;
 
@@ -144,10 +114,8 @@ class _AddMedicationWizardState extends State<AddMedicationWizard> {
   }
 
   Future<void> _saveMedication() async {
-    // The name field's own screen supports two entry paths (label scan and manual
-    // typing) but only the scan path ever fed a value back up through a callback.
-    // The text controller is the one thing both paths always keep in sync, so it's
-    // the actual source of truth here rather than a separately-tracked field.
+    // The text controller is the source of truth for the name, rather than a
+    // separately-tracked field.
     final String name = widget.nameController.text.trim();
     if (name.isEmpty || _isSaving) return;
 
