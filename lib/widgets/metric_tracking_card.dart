@@ -217,6 +217,40 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
     if (saved == true) widget.onDataChanged?.call();
   }
 
+  // Untracking only removes the patient_metric_tracking row (and with it the metric's
+  // reminders and dashboard slot) — past readings stay, and come back if it's re-tracked.
+  Future<void> _confirmStopTracking() async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Stop tracking $title?"),
+        content: const Text(
+          "It moves back to Available Metrics and its reminders stop. Readings you've already recorded are kept.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Stop tracking"),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() {
+      tracked = false;
+      onDashboard = false;
+      expanded = false;
+      showInfoView = false;
+      _readingExpanded = false;
+      isNewValueEnabled = false;
+    });
+    widget.onTrackingChanged(false);
+  }
+
   Future<void> _stopTrackingTarget() async {
     await DatabaseManager().clearPatientMetricTarget(
       widget.patientUuid,
@@ -567,6 +601,19 @@ class MetricExpandableCardState extends State<MetricExpandableCard> {
             if (tracked) ...[
               _buildReadingSection(),
               _buildScheduleSection(),
+              // The header checkbox only exists on untracked cards, so without this a
+              // metric ticked by mistake had no way back to "Available Metrics".
+              Align(
+                alignment: Alignment.centerRight,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 8, 8),
+                  child: TextButton.icon(
+                    onPressed: _confirmStopTracking,
+                    icon: const Icon(Symbols.close, size: 16),
+                    label: const Text("Stop tracking"),
+                  ),
+                ),
+              ),
             ],
             // Untracked cards keep the original single expand arrow + combined
             // info/tracking-details flow, unchanged — see _buildInfoContent and
