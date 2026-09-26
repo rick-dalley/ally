@@ -12,11 +12,14 @@ class ClinicalFeature {
 
   ClinicalFeature({this.vitalSigns, this.neurological, this.physical});
 
+  // json.decode hands back List<dynamic>, which won't assign to List<String>.
+  static List<String>? _strings(dynamic raw) => raw == null ? null : List<String>.from(raw);
+
   factory ClinicalFeature.fromJson(Map<String, dynamic> items){
     return ClinicalFeature(
-      vitalSigns: items['vital_signs'],
-      neurological: items['neurological'],
-      physical: items['physical'],
+      vitalSigns: _strings(items['vital_signs']),
+      neurological: _strings(items['neurological']),
+      physical: _strings(items['physical']),
     );
   }
 }
@@ -59,7 +62,7 @@ class Drug {
 
   static NamedValues getNamedValuesFromJson(dynamic json) {
     NamedValues namedValues = [];
-    for (dynamic item in json) {
+    for (dynamic item in (json as List<dynamic>?) ?? const []) {
       namedValues.add(NamedValue.fromJson(item));
     }
     return namedValues;
@@ -68,9 +71,12 @@ class Drug {
 
   factory Drug.fromJson(Map<String, dynamic> item) {
 
+    // Most entries in drugs.json carry only name/medical_name/category/street_names,
+    // so every other field is optional here — one sparse entry used to throw and
+    // leave the whole database empty.
     dynamic rawClinicalFeatures = item['potential_affects'];
     List<ClinicalFeature> clinicalFeatures = [];
-    for (dynamic rawFeature in rawClinicalFeatures) {
+    for (dynamic rawFeature in (rawClinicalFeatures as List<dynamic>?) ?? const []) {
       clinicalFeatures.add(ClinicalFeature.fromJson(rawFeature));
     }
     dynamic rawManagement = item['medical_management'];
@@ -79,13 +85,15 @@ class Drug {
     NamedValues potentialAffects = getNamedValuesFromJson(rawAffects);
 
     return Drug(
-        id: item['id'],
+        // No id in the JSON; the name is unique within it.
+        id: item['id'] ?? item['name'],
         name: item['name'],
-        streetNames: item['street_names'],
-        category: item['category'],
+        streetNames: List<String>.from(item['street_names'] ?? const []),
+        // Stored capitalised ("Stimulants"), the enum is lower-case.
+        category: DrugCategories.values.byName((item['category'] as String).toLowerCase()),
         appearance: item['appearance'],
         features: clinicalFeatures,
-        methods: item['methods'],
+        methods: item['methods'] == null ? null : List<String>.from(item['methods']),
         management: medicalManagement,
         affects: potentialAffects
     );

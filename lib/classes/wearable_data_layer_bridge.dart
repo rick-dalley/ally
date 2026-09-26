@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/services.dart';
 
@@ -21,6 +22,9 @@ class WearableDataLayerBridge {
   WearableDataLayerBridge({this.onPanic});
 
   void start() {
+    // The native half lives in MainActivity.kt only — on iOS there's nothing on the
+    // other end of the channel and listening throws MissingPluginException.
+    if (!Platform.isAndroid) return;
     _subscription ??= _events.receiveBroadcastStream().listen(_onMessage);
   }
 
