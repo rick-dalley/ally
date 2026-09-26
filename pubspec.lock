@@ -224,6 +224,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.0"
+  cwicare_interactions:
+    dependency: "direct main"
+    description:
+      path: "../cwicare_interactions"
+      relative: true
+    source: path
+    version: "0.0.1"
   equatable:
     dependency: transitive
     description:
@@ -1178,5 +1185,5 @@ packages:
     source: hosted
     version: "3.1.3"
 sdks:
-  dart: ">=3.12.0 <4.0.0"
+  dart: ">=3.13.4 <4.0.0"
   flutter: ">=3.41.0"

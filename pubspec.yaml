@@ -42,6 +42,9 @@ dependencies:
   shared_preferences: ^2.3.2
   carbon_ui:
     path: ../carbon_ui
+  # FDA-label interaction data and lookups, shared with Acuitage and Progressor.
+  cwicare_interactions:
+    path: ../cwicare_interactions
 
 dev_dependencies:
   flutter_test:

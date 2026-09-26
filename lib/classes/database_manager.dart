@@ -9,7 +9,7 @@ import 'package:path/path.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:ally/classes/allergen.dart';
-import 'package:ally/classes/interaction_store.dart';
+import 'package:cwicare_interactions/cwicare_interactions.dart';
 import 'package:ally/classes/blood_type.dart';
 import 'package:ally/classes/patient_condition.dart';
 import 'package:ally/classes/patient_supply.dart';
@@ -965,8 +965,8 @@ class DatabaseManager {
 
   // Drugs
 
-  // Interactions come from InteractionStore — FDA-label data built by the
-  // medications pipeline and shipped as a read-only asset — not from ally.db. These
+  // Interactions come from InteractionStore (the shared cwicare_interactions package) —
+  // FDA-label data built by the medications pipeline, shipped read-only, not in ally.db. These
   // two keep their old shapes so the prescription audit and the medication card
   // didn't have to change.
 
