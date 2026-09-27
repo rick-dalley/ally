@@ -33,10 +33,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
-    }
-
     defaultConfig {
         applicationId = "com.cwicare.ally"
         // You can update the following values to match your application needs.
@@ -93,4 +89,11 @@ dependencies {
 
 flutter {
     source = "../.."
+}
+
+// Kotlin 2.3 rejects the old android { kotlinOptions { jvmTarget = "11" } } form.
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+    }
 }

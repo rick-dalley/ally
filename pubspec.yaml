@@ -112,3 +112,11 @@ flutter:
 
 flutter_intl:
   enabled: true
+
+dependency_overrides:
+  # Ally doesn't use permission_handler itself, but carbon_ui does, so it's still in the
+  # build. Its loose constraint lets pub pick permission_handler_android 14.x, whose
+  # build.gradle.kts references AGP 9 / compileSdk 37 without applying the Kotlin Gradle
+  # plugin, and the Android build breaks. 13.0.1 is the version aligned with
+  # permission_handler 13.x and builds cleanly.
+  permission_handler_android: 13.0.1
